@@ -1,5 +1,30 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-2 first interactive editor green build
+
+**Result: CI PASS / LOCAL RUNTIME TEST REQUIRED**
+
+Exact SHA: `c94e5024d5adc7b4bcfa7da77d653986c1cd5a33`  
+GitHub Actions run #37: **SUCCESS**
+
+Green scope:
+- Loom Studios home screen;
+- Recent Projects/open flow;
+- blank project creation;
+- LoomButton + LoomCanvasWidget;
+- Pencil/Eraser;
+- starter palette;
+- Undo/Redo;
+- Save + Save/Equip;
+- unsaved ProjectSession 3D preview;
+- editor/world equipped-state separation;
+- ProjectEdits common model;
+- automated project-core tests.
+
+The editor is now ready for first local hands-on testing.
+
+---
+
 ## 2026-10-01 — Phase-2 LoomButton narration compile correction
 
 Initial Phase-2 editor SHA `b002d1fdea0e00bdac8bfce8c341ee7e9e906598` reached client compilation and failed because the custom LoomButton inherited AbstractButton but had not implemented the required narration callback.

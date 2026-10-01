@@ -515,3 +515,18 @@ Implemented:
 - ProjectEdits provides immutable common-layer pixel editing.
 
 The visual shell is intentionally only an MVP. Reference-image fidelity remains a later dedicated phase, but the editor is now operating on the real project/session/render/network architecture.
+
+
+## Phase-2 first editor CI checkpoint
+
+Exact SHA `c94e5024d5adc7b4bcfa7da77d653986c1cd5a33` passed GitHub Actions run #37.
+
+Verified by CI:
+- common/client compilation;
+- Phase-1 project tests;
+- Phase-2 editor/widget compilation;
+- narration-capable LoomButton;
+- remapped mod artifact;
+- artifact upload.
+
+The first interactive Cape Editor now requires local runtime/UX verification.

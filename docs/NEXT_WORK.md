@@ -2,7 +2,9 @@
 
 ## Immediate test: first real Cape Editor
 
-After CI is green:
+**CI green at exact SHA `c94e5024d5adc7b4bcfa7da77d653986c1cd5a33`, GitHub Actions #37.**
+
+Now perform the first local editor test:
 1. git pull;
 2. runClient;
 3. enter a world;
