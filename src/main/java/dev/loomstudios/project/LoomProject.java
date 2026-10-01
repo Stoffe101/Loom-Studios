@@ -7,6 +7,7 @@ public record LoomProject(
         int schemaVersion,
         UUID projectId,
         String name,
+        LoomProjectMetadata metadata,
         LoomCanvas cape,
         LoomCanvas elytra,
         LoomRuntimeSettings runtime
@@ -24,6 +25,7 @@ public record LoomProject(
 
         Objects.requireNonNull(projectId, "projectId");
         Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(metadata, "metadata");
         Objects.requireNonNull(cape, "cape");
         Objects.requireNonNull(elytra, "elytra");
         Objects.requireNonNull(runtime, "runtime");
@@ -46,6 +48,30 @@ public record LoomProject(
                             + " in schema v1"
             );
         }
+    }
+
+    public LoomProject withMetadata(LoomProjectMetadata nextMetadata) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                name,
+                Objects.requireNonNull(nextMetadata, "nextMetadata"),
+                cape,
+                elytra,
+                runtime
+        );
+    }
+
+    public LoomProject withName(String nextName) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                nextName,
+                metadata,
+                cape,
+                elytra,
+                runtime
+        );
     }
 
     public byte[] encode() {

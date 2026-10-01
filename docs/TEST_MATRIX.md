@@ -259,3 +259,19 @@ Deferred UX check:
 - trailing-byte rejection;
 - 64x32 runtime canvas invariant;
 - undo/redo and redo invalidation after branching edits.
+
+
+## Project session/persistence automated checks
+
+- created/modified metadata round-trip
+- unsupported schema rejected through migration gate
+- unsaved session starts dirty
+- save establishes clean persisted hash
+- real edit becomes dirty
+- edit updates modified timestamp
+- undo back to saved content becomes clean
+- redo becomes dirty again
+- reload starts clean
+- saved project round-trips exactly
+- file-store rejects paths outside configured library root
+- library listing ignores non-.loom files

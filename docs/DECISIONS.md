@@ -222,3 +222,38 @@ Editor changes are expressed as project transformations through ProjectHistory.
 The first implementation stores bounded immutable project snapshots because it keeps correctness simple while tools are still being designed.
 
 High-volume paint operations may later store specialized deltas internally without changing the editor/session-facing undo/redo contract.
+
+
+## ADR-029 — ProjectSession owns editor history and dirty state
+**Status:** Accepted / implemented
+
+The future editor must not independently track "changed" booleans alongside project history.
+
+One ProjectSession owns:
+- ProjectHistory;
+- current project revision;
+- persisted source path;
+- last saved content hash;
+- dirty-state calculation.
+
+Dirty state is content-based: current project hash differs from the last saved hash, or the project has never been saved.
+
+This naturally allows undoing back to the exact saved project to become clean again.
+
+## ADR-030 — File storage core is independent from Fabric game-directory lookup
+**Status:** Accepted / implemented
+
+ProjectFileStore receives an explicit root Path and contains all bounded load/save/list behavior.
+
+LocalProjectLibrary is only the Minecraft/Fabric adapter that points the store at the game's Loom Studios project folder.
+
+This keeps file safety and save/load behavior unit-testable without starting Minecraft.
+
+## ADR-031 — Every schema load passes an explicit migration gate
+**Status:** Accepted / implemented
+
+LoomProjectCodec does not silently treat unknown schema versions as current data.
+
+Loading first inspects the schema version and dispatches through LoomProjectMigrations.
+
+Schema v1 currently decodes directly because there is no released legacy schema. Future schema versions must add explicit migration logic.

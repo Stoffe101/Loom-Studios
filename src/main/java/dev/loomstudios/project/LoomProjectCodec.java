@@ -39,6 +39,8 @@ public final class LoomProjectCodec {
                 out.writeInt(project.schemaVersion());
                 writeUuid(out, project.projectId());
                 writeString(out, project.name());
+                out.writeLong(project.metadata().createdAtEpochMillis());
+                out.writeLong(project.metadata().modifiedAtEpochMillis());
 
                 LoomRuntimeSettings runtime = project.runtime();
                 out.writeFloat(runtime.elytraThickness());
@@ -62,9 +64,26 @@ public final class LoomProjectCodec {
     }
 
     public static LoomProject decode(byte[] data) {
-        if (data == null || data.length == 0 || data.length > MAX_SERIALIZED_BYTES) {
-            throw new IllegalArgumentException("Invalid Loom project byte size");
+        return LoomProjectMigrations.decodeAndMigrate(data);
+    }
+
+    static int peekSchemaVersion(byte[] data) {
+        validateEnvelopeSize(data);
+
+        try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(data))) {
+            if (in.readInt() != MAGIC) {
+                throw new IllegalArgumentException("Invalid Loom project magic");
+            }
+            return in.readInt();
+        } catch (EOFException e) {
+            throw new IllegalArgumentException("Truncated Loom project", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Malformed Loom project", e);
         }
+    }
+
+    static LoomProject decodeVersion1(byte[] data) {
+        validateEnvelopeSize(data);
 
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(data))) {
             if (in.readInt() != MAGIC) {
@@ -72,14 +91,18 @@ public final class LoomProjectCodec {
             }
 
             int schemaVersion = in.readInt();
-            if (schemaVersion != LoomProject.CURRENT_SCHEMA_VERSION) {
+            if (schemaVersion != 1) {
                 throw new IllegalArgumentException(
-                        "Unsupported Loom project schema " + schemaVersion
+                        "Expected Loom project schema 1 but found " + schemaVersion
                 );
             }
 
             UUID projectId = readUuid(in);
             String name = readString(in, MAX_PROJECT_NAME_CHARS);
+            LoomProjectMetadata metadata = new LoomProjectMetadata(
+                    in.readLong(),
+                    in.readLong()
+            );
             LoomRuntimeSettings runtime = new LoomRuntimeSettings(
                     in.readFloat(),
                     in.readInt(),
@@ -98,6 +121,7 @@ public final class LoomProjectCodec {
                     schemaVersion,
                     projectId,
                     name,
+                    metadata,
                     cape,
                     elytra,
                     runtime
@@ -106,6 +130,12 @@ public final class LoomProjectCodec {
             throw new IllegalArgumentException("Truncated Loom project", e);
         } catch (IOException | ArithmeticException e) {
             throw new IllegalArgumentException("Malformed Loom project", e);
+        }
+    }
+
+    private static void validateEnvelopeSize(byte[] data) {
+        if (data == null || data.length == 0 || data.length > MAX_SERIALIZED_BYTES) {
+            throw new IllegalArgumentException("Invalid Loom project byte size");
         }
     }
 

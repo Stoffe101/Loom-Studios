@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Elytra visual calibration accepted + Phase-1 session slice
+
+**Elytra result: PASS**
+
+The calibrated 100% Loom Elytra thickness was locally verified and accepted as the default.
+
+**Project-core implementation staged:**
+- created/modified project metadata;
+- explicit schema migration dispatch;
+- root-bounded reusable ProjectFileStore;
+- ProjectSession owns undo/redo, revision, dirty state, save/load state;
+- save uses temporary file + atomic replace where supported;
+- LocalProjectLibrary delegates to the tested pure file-store core;
+- new tests cover migration rejection, save/load, dirty transitions and path containment.
+
+CI verification required before this Phase-1 slice is marked green.
+
+---
+
 ## 2026-10-01 — Phase-1 project core green checkpoint
 
 **Result: PASS**

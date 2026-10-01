@@ -139,3 +139,41 @@ Only `NORMAL` blend is implemented in the compiler today. The enum is already se
 The local library uses `<gameDir>/loom-studios/projects/<project UUID>.loom`.
 
 The development cosmetics used by the runtime/network proof are now generated as real schema-v1 projects, encoded through this codec, SHA-256 addressed, transferred, decoded and compiled locally.
+
+
+## Project metadata and load/migration policy
+
+Schema v1 now stores:
+- created timestamp (epoch milliseconds);
+- modified timestamp (epoch milliseconds).
+
+The editor session updates the modified timestamp when a real project edit is committed.
+
+All project loading goes through `LoomProjectMigrations`.
+
+Current migration table:
+- schema 1 -> decode directly as current schema;
+- every other schema -> reject explicitly.
+
+There are no legacy public schemas yet. When schema 2 is introduced, schema-1 migration must be implemented here before old projects are considered supported.
+
+## Persistence/session lifecycle
+
+`ProjectSession` owns:
+- current immutable project;
+- undo/redo history;
+- monotonically increasing in-memory revision;
+- persisted source path;
+- persisted content hash;
+- dirty-state calculation.
+
+A session starts dirty when created from an unsaved project.
+
+Saving:
+1. encodes the current project;
+2. writes to a temporary file;
+3. atomically replaces the target where the filesystem supports it;
+4. records the saved content hash;
+5. becomes clean.
+
+Loading a saved .loom file creates a clean session.

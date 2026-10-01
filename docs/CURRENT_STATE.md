@@ -401,3 +401,25 @@ Verified in the normal `build` lifecycle:
 The obsolete ProofProject class is now removed. Development multiplayer/runtime data uses LoomProject end-to-end.
 
 Local verification still required for the newly calibrated Elytra 100% visual baseline.
+
+
+## Elytra calibrated baseline runtime verification
+
+**Result: PASS**
+
+Local visual feedback confirms the calibrated Loom Elytra default now looks good. The user-facing 100% baseline (raw model Z scale 0.5 for Loom-owned wings) is accepted as the default.
+
+## Phase 1 — project session/persistence slice
+
+Implemented:
+- project timestamps via LoomProjectMetadata;
+- explicit schema-loader/migration dispatch through LoomProjectMigrations;
+- pure ProjectFileStore with bounded safe-root loading and atomic-save fallback;
+- ProjectSession owning ProjectHistory, revision, dirty state and source path;
+- edits automatically update modified timestamp;
+- undo/redo participate in dirty-state tracking;
+- save establishes the persisted hash baseline;
+- load starts clean;
+- LocalProjectLibrary now binds the pure file store to Minecraft's game directory.
+
+Schema v1 remains pre-release. There are no historical migrations yet, but future versions must be routed explicitly rather than silently reinterpreted.

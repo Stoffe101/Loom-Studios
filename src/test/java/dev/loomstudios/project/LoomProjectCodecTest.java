@@ -77,11 +77,25 @@ class LoomProjectCodecTest {
                         LoomProject.CURRENT_SCHEMA_VERSION,
                         valid.projectId(),
                         valid.name(),
+                        valid.metadata(),
                         wrong,
                         valid.elytra(),
                         valid.runtime()
                 )
         );
+    }
+
+    @Test
+    void unsupportedSchemaUsesExplicitMigrationGate() {
+        byte[] encoded = LoomProjectFactory.forPlayer(PLAYER_ID).encode();
+        encoded[7] = 2;
+
+        IllegalArgumentException error = assertThrows(
+                IllegalArgumentException.class,
+                () -> LoomProjectCodec.decode(encoded)
+        );
+
+        assertTrue(error.getMessage().contains("Unsupported Loom project schema"));
     }
 
     @Test
@@ -93,6 +107,7 @@ class LoomProjectCodecTest {
                 first.schemaVersion(),
                 first.projectId(),
                 "Second",
+                first.metadata(),
                 first.cape(),
                 first.elytra(),
                 first.runtime()
@@ -102,6 +117,7 @@ class LoomProjectCodecTest {
                 first.schemaVersion(),
                 first.projectId(),
                 "Third",
+                first.metadata(),
                 first.cape(),
                 first.elytra(),
                 first.runtime()

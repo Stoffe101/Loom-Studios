@@ -38,6 +38,7 @@ public final class LoomProjectFactory {
                 LoomProject.CURRENT_SCHEMA_VERSION,
                 projectId,
                 "Development " + playerId.toString().substring(0, 8),
+                new LoomProjectMetadata(0L, 0L),
                 cape,
                 elytra,
                 LoomRuntimeSettings.defaults()
