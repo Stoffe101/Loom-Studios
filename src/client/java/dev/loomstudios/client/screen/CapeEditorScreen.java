@@ -17,6 +17,7 @@ import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -39,6 +40,7 @@ public final class CapeEditorScreen extends Screen {
     private int selectedColor = 0xFF22D7E8;
     private int brushSize = 1;
     private boolean rectangleFilled;
+    private SymmetryMode symmetryMode = SymmetryMode.NONE;
     private UUID selectedLayerId;
 
     private LoomButton pencilButton;
@@ -55,6 +57,7 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton brushUpButton;
     private LoomButton resolutionLabelButton;
     private LoomButton brushLabelButton;
+    private LoomButton symmetryButton;
     private LoomButton zoomOutButton;
     private LoomButton zoomLabelButton;
     private LoomButton zoomInButton;
@@ -63,6 +66,12 @@ public final class CapeEditorScreen extends Screen {
 
     private LoomCapeFaceWidget canvasWidget;
     private LoomColorPickerWidget colorPicker;
+    private EditBox hexColorField;
+    private EditBox redColorField;
+    private EditBox greenColorField;
+    private EditBox blueColorField;
+    private EditBox alphaColorField;
+    private boolean syncingColorFields;
     private LoomPaletteWindow paletteWindow;
 
     private boolean paletteWindowVisible;
@@ -230,6 +239,13 @@ public final class CapeEditorScreen extends Screen {
         brushRow.addChild(brushUpButton);
         tools.addChild(brushRow);
 
+        symmetryButton = createLoomButton(
+                contentWidth,
+                symmetryLabel(),
+                this::cycleSymmetry
+        );
+        tools.addChild(symmetryButton);
+
         LinearLayout zoomRow = LinearLayout.horizontal().spacing(4);
         zoomOutButton = createLoomButton(
                 48, "Zoom -", () -> canvasWidget.zoomOut()
@@ -251,11 +267,42 @@ public final class CapeEditorScreen extends Screen {
                 0,
                 0,
                 contentWidth,
-                132,
+                150,
                 this.selectedColor,
-                color -> this.selectedColor = color
+                this::setSelectedColor
         );
         tools.addChild(this.colorPicker);
+
+        this.hexColorField = createHexColorField(contentWidth);
+        tools.addChild(this.hexColorField);
+
+        LinearLayout rgbaRow = LinearLayout.horizontal().spacing(4);
+        int channelWidth = Math.max(30, (contentWidth - 12) / 4);
+
+        this.redColorField = createChannelField(
+                channelWidth,
+                "R",
+                16
+        );
+        this.greenColorField = createChannelField(
+                channelWidth,
+                "G",
+                8
+        );
+        this.blueColorField = createChannelField(
+                channelWidth,
+                "B",
+                0
+        );
+        this.alphaColorField = createAlphaField(
+                contentWidth - channelWidth * 3 - 12
+        );
+
+        rgbaRow.addChild(this.redColorField);
+        rgbaRow.addChild(this.greenColorField);
+        rgbaRow.addChild(this.blueColorField);
+        rgbaRow.addChild(this.alphaColorField);
+        tools.addChild(rgbaRow);
 
         tools.addChild(new LoomPaletteButton(
                 0,
@@ -321,6 +368,7 @@ public final class CapeEditorScreen extends Screen {
         );
 
         restoreOrCreatePaletteWindow();
+        syncColorFields();
         updateButtonStates();
     }
 
@@ -346,6 +394,60 @@ public final class CapeEditorScreen extends Screen {
 
         ClientProjectWorkspace.endCompoundEdit();
         super.removed();
+    }
+
+    private EditBox createHexColorField(int width) {
+        EditBox field = new EditBox(
+                this.font,
+                0,
+                0,
+                width,
+                18,
+                Component.literal("Hex color")
+        );
+        field.setHint(Component.literal("#RRGGBB"));
+        field.setMaxLength(7);
+        field.setFilter(value ->
+                value.matches("#?[0-9A-Fa-f]{0,6}")
+        );
+        field.setResponder(this::applyHexColorField);
+        return field;
+    }
+
+    private EditBox createChannelField(
+            int width,
+            String hint,
+            int shift
+    ) {
+        EditBox field = new EditBox(
+                this.font,
+                0,
+                0,
+                Math.max(30, width),
+                18,
+                Component.literal(hint + " channel")
+        );
+        field.setHint(Component.literal(hint));
+        field.setMaxLength(3);
+        field.setFilter(value -> value.matches("[0-9]{0,3}"));
+        field.setResponder(ignored -> applyNumericColorFields());
+        return field;
+    }
+
+    private EditBox createAlphaField(int width) {
+        EditBox field = new EditBox(
+                this.font,
+                0,
+                0,
+                Math.max(30, width),
+                18,
+                Component.literal("Alpha channel")
+        );
+        field.setHint(Component.literal("A"));
+        field.setMaxLength(3);
+        field.setFilter(value -> value.matches("[0-9]{0,3}"));
+        field.setResponder(ignored -> applyNumericColorFields());
+        return field;
     }
 
     private LoomButton createLoomButton(
@@ -389,8 +491,14 @@ public final class CapeEditorScreen extends Screen {
             this.paletteWindowPinned = this.paletteWindow.pinned();
         }
 
-        int width = 230;
-        int height = Math.min(302, Math.max(260, this.height - 28));
+        boolean compact = this.width <= 700 || this.height <= 420;
+
+        int width = compact
+                ? Math.min(188, Math.max(168, this.width / 4 + 20))
+                : 230;
+        int height = compact
+                ? Math.min(236, Math.max(190, this.height - 48))
+                : Math.min(302, Math.max(260, this.height - 28));
 
         int defaultX = Math.max(
                 8,
@@ -425,9 +533,101 @@ public final class CapeEditorScreen extends Screen {
     private void setSelectedColor(int color) {
         this.selectedColor = color;
 
-        if (this.colorPicker != null) {
+        if (this.colorPicker != null
+                && this.colorPicker.color() != color) {
             this.colorPicker.setColor(color);
         }
+
+        syncColorFields();
+    }
+
+    private void applyHexColorField(String value) {
+        if (syncingColorFields) {
+            return;
+        }
+
+        String normalized = value.startsWith("#")
+                ? value.substring(1)
+                : value;
+
+        if (normalized.length() != 6) {
+            return;
+        }
+
+        try {
+            int rgb = Integer.parseInt(normalized, 16);
+            int alpha = selectedColor & 0xFF000000;
+            setSelectedColor(alpha | rgb);
+        } catch (NumberFormatException ignored) {
+        }
+    }
+
+    private void applyNumericColorFields() {
+        if (syncingColorFields
+                || redColorField == null
+                || greenColorField == null
+                || blueColorField == null
+                || alphaColorField == null) {
+            return;
+        }
+
+        try {
+            int red = Integer.parseInt(redColorField.getValue());
+            int green = Integer.parseInt(greenColorField.getValue());
+            int blue = Integer.parseInt(blueColorField.getValue());
+            int alpha = Integer.parseInt(alphaColorField.getValue());
+
+            if (red > 255
+                    || green > 255
+                    || blue > 255
+                    || alpha > 255) {
+                return;
+            }
+
+            setSelectedColor(
+                    (alpha << 24)
+                            | (red << 16)
+                            | (green << 8)
+                            | blue
+            );
+        } catch (NumberFormatException ignored) {
+        }
+    }
+
+    private void syncColorFields() {
+        if (hexColorField == null) {
+            return;
+        }
+
+        syncingColorFields = true;
+
+        if (!hexColorField.isFocused()) {
+            hexColorField.setValue(
+                    String.format("#%06X", selectedColor & 0x00FFFFFF)
+            );
+        }
+        if (!redColorField.isFocused()) {
+            redColorField.setValue(
+                    Integer.toString((selectedColor >>> 16) & 0xFF)
+            );
+        }
+        if (!greenColorField.isFocused()) {
+            greenColorField.setValue(
+                    Integer.toString((selectedColor >>> 8) & 0xFF)
+            );
+        }
+        if (!blueColorField.isFocused()) {
+            blueColorField.setValue(
+                    Integer.toString(selectedColor & 0xFF)
+            );
+        }
+        if (!alphaColorField.isFocused()) {
+            alphaColorField.setValue(
+                    Integer.toString((selectedColor >>> 24) & 0xFF)
+            );
+        }
+
+        syncingColorFields = false;
     }
 
     private String resolutionLabel() {
@@ -481,6 +681,15 @@ public final class CapeEditorScreen extends Screen {
     private void toggleRectangleMode() {
         this.rectangleFilled = !this.rectangleFilled;
         updateButtonStates();
+    }
+
+    private void cycleSymmetry() {
+        this.symmetryMode = this.symmetryMode.next();
+        updateButtonStates();
+    }
+
+    private String symmetryLabel() {
+        return "Symmetry: " + this.symmetryMode.label;
     }
 
     private LoomCapeFaceWidget.GestureMode gestureMode() {
@@ -557,6 +766,10 @@ public final class CapeEditorScreen extends Screen {
             brushLabelButton.setMessage(Component.literal(brushLabel()));
         }
 
+        if (symmetryButton != null) {
+            symmetryButton.setMessage(Component.literal(symmetryLabel()));
+        }
+
         if (canvasWidget != null) {
             if (zoomLabelButton != null) {
                 zoomLabelButton.setMessage(
@@ -605,38 +818,32 @@ public final class CapeEditorScreen extends Screen {
     private void editPixel(int x, int y) {
         switch (tool) {
             case PENCIL -> ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.paintCapeRegionBrush(
+                    paintBrushWithSymmetry(
                             project,
-                            selectedLayerId,
-                            this.capeRegion,
                             x,
                             y,
-                            this.brushSize,
                             selectedColor
                     )
             );
             case ERASER -> ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.paintCapeRegionBrush(
+                    paintBrushWithSymmetry(
                             project,
-                            selectedLayerId,
-                            this.capeRegion,
                             x,
                             y,
-                            this.brushSize,
                             0x00000000
                     )
             );
             case FILL -> ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.floodFillCapeRegion(
+                    fillWithSymmetry(
                             project,
-                            selectedLayerId,
-                            this.capeRegion,
                             x,
                             y,
                             selectedColor
                     )
             );
             case EYEDROPPER -> sampleVisibleColor(x, y);
+            case LINE, RECTANGLE -> {
+            }
         }
 
         updateButtonStates();
@@ -650,30 +857,21 @@ public final class CapeEditorScreen extends Screen {
     ) {
         switch (tool) {
             case LINE -> ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.paintCapeRegionLine(
+                    paintLineWithSymmetry(
                             project,
-                            selectedLayerId,
-                            this.capeRegion,
                             startX,
                             startY,
                             endX,
-                            endY,
-                            this.brushSize,
-                            this.selectedColor
+                            endY
                     )
             );
             case RECTANGLE -> ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.paintCapeRegionRectangle(
+                    paintRectangleWithSymmetry(
                             project,
-                            selectedLayerId,
-                            this.capeRegion,
                             startX,
                             startY,
                             endX,
-                            endY,
-                            this.brushSize,
-                            this.selectedColor,
-                            this.rectangleFilled
+                            endY
                     )
             );
             default -> {
@@ -681,6 +879,141 @@ public final class CapeEditorScreen extends Screen {
         }
 
         updateButtonStates();
+    }
+
+    private dev.loomstudios.project.LoomProject paintBrushWithSymmetry(
+            dev.loomstudios.project.LoomProject project,
+            int x,
+            int y,
+            int color
+    ) {
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int width = capeRegion.width(scale);
+        int height = capeRegion.height(scale);
+        var result = project;
+
+        for (int mask : symmetryMasks()) {
+            int px = (mask & 1) != 0 ? width - 1 - x : x;
+            int py = (mask & 2) != 0 ? height - 1 - y : y;
+
+            result = ProjectEdits.paintCapeRegionBrush(
+                    result,
+                    selectedLayerId,
+                    capeRegion,
+                    px,
+                    py,
+                    brushSize,
+                    color
+            );
+        }
+
+        return result;
+    }
+
+    private dev.loomstudios.project.LoomProject fillWithSymmetry(
+            dev.loomstudios.project.LoomProject project,
+            int x,
+            int y,
+            int color
+    ) {
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int width = capeRegion.width(scale);
+        int height = capeRegion.height(scale);
+        var result = project;
+
+        for (int mask : symmetryMasks()) {
+            int px = (mask & 1) != 0 ? width - 1 - x : x;
+            int py = (mask & 2) != 0 ? height - 1 - y : y;
+
+            result = ProjectEdits.floodFillCapeRegion(
+                    result,
+                    selectedLayerId,
+                    capeRegion,
+                    px,
+                    py,
+                    color
+            );
+        }
+
+        return result;
+    }
+
+    private dev.loomstudios.project.LoomProject paintLineWithSymmetry(
+            dev.loomstudios.project.LoomProject project,
+            int startX,
+            int startY,
+            int endX,
+            int endY
+    ) {
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int width = capeRegion.width(scale);
+        int height = capeRegion.height(scale);
+        var result = project;
+
+        for (int mask : symmetryMasks()) {
+            int sx = (mask & 1) != 0 ? width - 1 - startX : startX;
+            int sy = (mask & 2) != 0 ? height - 1 - startY : startY;
+            int ex = (mask & 1) != 0 ? width - 1 - endX : endX;
+            int ey = (mask & 2) != 0 ? height - 1 - endY : endY;
+
+            result = ProjectEdits.paintCapeRegionLine(
+                    result,
+                    selectedLayerId,
+                    capeRegion,
+                    sx,
+                    sy,
+                    ex,
+                    ey,
+                    brushSize,
+                    selectedColor
+            );
+        }
+
+        return result;
+    }
+
+    private dev.loomstudios.project.LoomProject paintRectangleWithSymmetry(
+            dev.loomstudios.project.LoomProject project,
+            int startX,
+            int startY,
+            int endX,
+            int endY
+    ) {
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int width = capeRegion.width(scale);
+        int height = capeRegion.height(scale);
+        var result = project;
+
+        for (int mask : symmetryMasks()) {
+            int sx = (mask & 1) != 0 ? width - 1 - startX : startX;
+            int sy = (mask & 2) != 0 ? height - 1 - startY : startY;
+            int ex = (mask & 1) != 0 ? width - 1 - endX : endX;
+            int ey = (mask & 2) != 0 ? height - 1 - endY : endY;
+
+            result = ProjectEdits.paintCapeRegionRectangle(
+                    result,
+                    selectedLayerId,
+                    capeRegion,
+                    sx,
+                    sy,
+                    ex,
+                    ey,
+                    brushSize,
+                    selectedColor,
+                    rectangleFilled
+            );
+        }
+
+        return result;
+    }
+
+    private int[] symmetryMasks() {
+        return switch (symmetryMode) {
+            case NONE -> new int[]{0};
+            case HORIZONTAL -> new int[]{0, 1};
+            case VERTICAL -> new int[]{0, 2};
+            case BOTH -> new int[]{0, 1, 2, 3};
+        };
     }
 
     private void sampleVisibleColor(int x, int y) {
@@ -706,7 +1039,7 @@ public final class CapeEditorScreen extends Screen {
             return;
         }
 
-        setSelectedColor(0xFF000000 | (color & 0x00FFFFFF));
+        setSelectedColor(color);
     }
 
     private void save() {
@@ -878,9 +1211,7 @@ public final class CapeEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (paletteWindowVisible
-                && paletteWindow != null
-                && paletteWindow.isEditingName()) {
+        if (isEditingText()) {
             return super.keyPressed(event);
         }
 
@@ -953,6 +1284,20 @@ public final class CapeEditorScreen extends Screen {
         return super.keyPressed(event);
     }
 
+    private boolean isEditingText() {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.isEditingName()) {
+            return true;
+        }
+
+        return (hexColorField != null && hexColorField.isFocused())
+                || (redColorField != null && redColorField.isFocused())
+                || (greenColorField != null && greenColorField.isFocused())
+                || (blueColorField != null && blueColorField.isFocused())
+                || (alphaColorField != null && alphaColorField.isFocused());
+    }
+
     @Override
     public boolean isPauseScreen() {
         return false;
@@ -970,5 +1315,23 @@ public final class CapeEditorScreen extends Screen {
         EYEDROPPER,
         LINE,
         RECTANGLE
+    }
+
+    private enum SymmetryMode {
+        NONE("Off"),
+        HORIZONTAL("Horizontal"),
+        VERTICAL("Vertical"),
+        BOTH("Both");
+
+        private final String label;
+
+        SymmetryMode(String label) {
+            this.label = label;
+        }
+
+        private SymmetryMode next() {
+            SymmetryMode[] values = values();
+            return values[(ordinal() + 1) % values.length];
+        }
     }
 }
