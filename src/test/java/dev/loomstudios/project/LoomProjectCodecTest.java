@@ -314,6 +314,70 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void capeLayerOperationsPreserveEditableStackRules() {
+        LoomProject project = LoomProjectFactory.blank("Layers", 1L);
+        UUID baseId = project.cape().layers().getFirst().id();
+
+        LoomProject added = ProjectEdits.addCapeLayer(project, "Paint");
+        assertEquals(2, added.cape().layers().size());
+
+        UUID paintId = added.cape().layers().getLast().id();
+        LoomProject duplicated = ProjectEdits.duplicateCapeLayer(
+                added,
+                paintId
+        );
+        assertEquals(3, duplicated.cape().layers().size());
+        assertNotEquals(
+                paintId,
+                duplicated.cape().layers().getLast().id()
+        );
+
+        LoomProject hidden = ProjectEdits.setCapeLayerVisible(
+                duplicated,
+                paintId,
+                false
+        );
+        assertFalse(
+                hidden.cape().layers().stream()
+                        .filter(layer -> layer.id().equals(paintId))
+                        .findFirst()
+                        .orElseThrow()
+                        .visible()
+        );
+
+        LoomProject faded = ProjectEdits.setCapeLayerOpacity(
+                hidden,
+                paintId,
+                0.4F
+        );
+        assertEquals(
+                0.4F,
+                faded.cape().layers().stream()
+                        .filter(layer -> layer.id().equals(paintId))
+                        .findFirst()
+                        .orElseThrow()
+                        .opacity()
+        );
+
+        LoomProject removed = ProjectEdits.removeCapeLayer(
+                faded,
+                paintId
+        );
+        assertEquals(2, removed.cape().layers().size());
+
+        LoomProject single = LoomProjectFactory.blank("Single", 1L);
+        LoomProject stillSingle = ProjectEdits.removeCapeLayer(
+                single,
+                single.cape().layers().getFirst().id()
+        );
+        assertEquals(1, stillSingle.cape().layers().size());
+        assertEquals(
+                baseId,
+                project.cape().layers().getFirst().id()
+        );
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 
