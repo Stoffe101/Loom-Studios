@@ -3,6 +3,7 @@ package dev.loomstudios.client.ui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 
@@ -26,6 +27,11 @@ public final class LoomButton extends AbstractButton {
         if (this.active) {
             action.run();
         }
+    }
+
+    @Override
+    public void updateWidgetNarration(NarrationElementOutput output) {
+        this.defaultButtonNarrationText(output);
     }
 
     @Override

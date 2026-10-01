@@ -1,5 +1,17 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-2 LoomButton narration compile correction
+
+Initial Phase-2 editor SHA `b002d1fdea0e00bdac8bfce8c341ee7e9e906598` reached client compilation and failed because the custom LoomButton inherited AbstractButton but had not implemented the required narration callback.
+
+Correction:
+- implement `updateWidgetNarration`;
+- reuse Minecraft's default button narration text.
+
+This also keeps the reusable control on the right accessibility path instead of bypassing narration.
+
+---
+
 ## 2026-10-01 — Phase-2 first interactive Cape Editor slice
 
 **Status: IMPLEMENTED / CI + LOCAL TEST PENDING**
