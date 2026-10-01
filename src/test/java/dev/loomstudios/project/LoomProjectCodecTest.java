@@ -165,6 +165,48 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void floodFillStaysInsideConnectedCapeRegion() {
+        LoomProject project = LoomProjectFactory.blank("Fill", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject divider = project;
+        for (int y = 0; y < CapeUvRegion.OUTSIDE.height(); y++) {
+            divider = ProjectEdits.setCapeRegionPixel(
+                    divider,
+                    layer.id(),
+                    CapeUvRegion.OUTSIDE,
+                    5,
+                    y,
+                    0xFFFFFFFF
+            );
+        }
+
+        LoomProject filled = ProjectEdits.floodFillCapeRegion(
+                divider,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                2,
+                0xFF112233
+        );
+
+        int leftX = CapeUvRegion.OUTSIDE.atlasX(2);
+        int rightX = CapeUvRegion.OUTSIDE.atlasX(8);
+        int y = CapeUvRegion.OUTSIDE.atlasY(2);
+
+        assertEquals(
+                0xFF112233,
+                filled.cape().layers().getFirst()
+                        .pixelAt(y * filled.cape().width() + leftX)
+        );
+        assertEquals(
+                0,
+                filled.cape().layers().getFirst()
+                        .pixelAt(y * filled.cape().width() + rightX)
+        );
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 

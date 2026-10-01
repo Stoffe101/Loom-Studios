@@ -3,6 +3,7 @@ package dev.loomstudios.client.screen;
 import dev.loomstudios.LoomStudios;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.WorkspaceState;
+import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomCapeFaceWidget;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
@@ -19,6 +20,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
@@ -39,6 +42,8 @@ public final class CapeEditorScreen extends Screen {
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
+    private LoomButton fillButton;
+    private LoomButton eyedropperButton;
     private LoomButton faceButton;
     private LoomButton resolutionDownButton;
     private LoomButton resolutionUpButton;
@@ -46,6 +51,9 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton brushUpButton;
     private LoomButton resolutionLabelButton;
     private LoomButton brushLabelButton;
+    private LoomButton zoomOutButton;
+    private LoomButton zoomLabelButton;
+    private LoomButton zoomInButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
 
@@ -117,7 +125,10 @@ public final class CapeEditorScreen extends Screen {
                         ClientProjectWorkspace.endCompoundEdit();
                         updateButtonStates();
                     }
-                }
+                },
+                () -> this.brushSize,
+                () -> this.tool == Tool.PENCIL || this.tool == Tool.ERASER,
+                () -> this.tool == Tool.PENCIL || this.tool == Tool.ERASER
         ));
 
         int contentWidth = Math.max(150, this.toolPanelWidth - 20);
@@ -162,6 +173,20 @@ public final class CapeEditorScreen extends Screen {
         );
         tools.addChild(eraserButton);
 
+        fillButton = createLoomButton(
+                contentWidth,
+                "Fill",
+                () -> setTool(Tool.FILL)
+        );
+        tools.addChild(fillButton);
+
+        eyedropperButton = createLoomButton(
+                contentWidth,
+                "Eyedropper",
+                () -> setTool(Tool.EYEDROPPER)
+        );
+        tools.addChild(eyedropperButton);
+
         LinearLayout brushRow = LinearLayout.horizontal().spacing(4);
         brushDownButton = createLoomButton(
                 48, "Brush -", () -> changeBrushSize(-1)
@@ -179,6 +204,23 @@ public final class CapeEditorScreen extends Screen {
         brushRow.addChild(brushLabelButton);
         brushRow.addChild(brushUpButton);
         tools.addChild(brushRow);
+
+        LinearLayout zoomRow = LinearLayout.horizontal().spacing(4);
+        zoomOutButton = createLoomButton(
+                48, "Zoom -", () -> canvasWidget.zoomOut()
+        );
+        zoomLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "100%",
+                () -> canvasWidget.resetZoom()
+        );
+        zoomInButton = createLoomButton(
+                48, "Zoom +", () -> canvasWidget.zoomIn()
+        );
+        zoomRow.addChild(zoomOutButton);
+        zoomRow.addChild(zoomLabelButton);
+        zoomRow.addChild(zoomInButton);
+        tools.addChild(zoomRow);
 
         this.colorPicker = new LoomColorPickerWidget(
                 0,
@@ -424,6 +466,18 @@ public final class CapeEditorScreen extends Screen {
             ));
         }
 
+        if (fillButton != null) {
+            fillButton.setMessage(Component.literal(
+                    tool == Tool.FILL ? "Fill ●" : "Fill"
+            ));
+        }
+
+        if (eyedropperButton != null) {
+            eyedropperButton.setMessage(Component.literal(
+                    tool == Tool.EYEDROPPER ? "Eyedropper ●" : "Eyedropper"
+            ));
+        }
+
         if (undoButton != null) {
             undoButton.active = ClientProjectWorkspace.session().canUndo();
         }
@@ -437,6 +491,20 @@ public final class CapeEditorScreen extends Screen {
         }
         if (brushLabelButton != null) {
             brushLabelButton.setMessage(Component.literal(brushLabel()));
+        }
+
+        if (canvasWidget != null) {
+            if (zoomLabelButton != null) {
+                zoomLabelButton.setMessage(
+                        Component.literal(canvasWidget.zoomPercent() + "%")
+                );
+            }
+            if (zoomOutButton != null) {
+                zoomOutButton.active = canvasWidget.canZoomOut();
+            }
+            if (zoomInButton != null) {
+                zoomInButton.active = canvasWidget.canZoomIn();
+            }
         }
 
         CanvasResolution resolution =
@@ -471,20 +539,69 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private void editPixel(int x, int y) {
-        int color = tool == Tool.ERASER ? 0x00000000 : selectedColor;
+        switch (tool) {
+            case PENCIL -> ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.paintCapeRegionBrush(
+                            project,
+                            selectedLayerId,
+                            this.capeRegion,
+                            x,
+                            y,
+                            this.brushSize,
+                            selectedColor
+                    )
+            );
+            case ERASER -> ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.paintCapeRegionBrush(
+                            project,
+                            selectedLayerId,
+                            this.capeRegion,
+                            x,
+                            y,
+                            this.brushSize,
+                            0x00000000
+                    )
+            );
+            case FILL -> ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.floodFillCapeRegion(
+                            project,
+                            selectedLayerId,
+                            this.capeRegion,
+                            x,
+                            y,
+                            selectedColor
+                    )
+            );
+            case EYEDROPPER -> sampleVisibleColor(x, y);
+        }
 
-        ClientProjectWorkspace.apply(project ->
-                ProjectEdits.paintCapeRegionBrush(
-                        project,
-                        selectedLayerId,
-                        this.capeRegion,
-                        x,
-                        y,
-                        this.brushSize,
-                        color
-                )
-        );
         updateButtonStates();
+    }
+
+    private void sampleVisibleColor(int x, int y) {
+        var project = ClientProjectWorkspace.project();
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int width = this.capeRegion.width(scale);
+        int height = this.capeRegion.height(scale);
+
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        int[] pixels = LoomTextureCompiler.compileCapeRegion(
+                project.cape(),
+                this.capeRegion,
+                0,
+                false,
+                false
+        );
+
+        int color = pixels[y * width + x];
+        if (((color >>> 24) & 0xFF) == 0) {
+            return;
+        }
+
+        setSelectedColor(0xFF000000 | (color & 0x00FFFFFF));
     }
 
     private void save() {
@@ -587,6 +704,143 @@ public final class CapeEditorScreen extends Screen {
     }
 
     @Override
+    public boolean mouseClicked(
+            MouseButtonEvent event,
+            boolean doubleClick
+    ) {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.visible
+                && paletteWindow.isMouseOver(event.x(), event.y())
+                && paletteWindow.mouseClicked(event, doubleClick)) {
+            this.setFocused(paletteWindow);
+            return true;
+        }
+
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseDragged(
+            MouseButtonEvent event,
+            double dx,
+            double dy
+    ) {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.visible
+                && paletteWindow.mouseDragged(event, dx, dy)) {
+            return true;
+        }
+
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.visible
+                && paletteWindow.mouseReleased(event)) {
+            return true;
+        }
+
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(
+            double mouseX,
+            double mouseY,
+            double scrollX,
+            double scrollY
+    ) {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.visible
+                && paletteWindow.isMouseOver(mouseX, mouseY)
+                && paletteWindow.mouseScrolled(
+                        mouseX,
+                        mouseY,
+                        scrollX,
+                        scrollY
+                )) {
+            return true;
+        }
+
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (paletteWindowVisible
+                && paletteWindow != null
+                && paletteWindow.isEditingName()) {
+            return super.keyPressed(event);
+        }
+
+        if (event.hasControlDownWithQuirk()) {
+            if (event.key() == 90) {
+                ClientProjectWorkspace.undo();
+                return true;
+            }
+            if (event.key() == 89) {
+                ClientProjectWorkspace.redo();
+                return true;
+            }
+            if (event.key() == 83) {
+                if (event.hasShiftDown()) {
+                    saveAndEquip();
+                } else {
+                    save();
+                }
+                return true;
+            }
+        }
+
+        if (!event.hasControlDown()
+                && !event.hasAltDown()
+                && !event.hasShiftDown()) {
+            switch (event.key()) {
+                case 66 -> {
+                    setTool(Tool.PENCIL);
+                    return true;
+                }
+                case 69 -> {
+                    setTool(Tool.ERASER);
+                    return true;
+                }
+                case 71 -> {
+                    setTool(Tool.FILL);
+                    return true;
+                }
+                case 73 -> {
+                    setTool(Tool.EYEDROPPER);
+                    return true;
+                }
+                case 91 -> {
+                    changeBrushSize(-1);
+                    return true;
+                }
+                case 93 -> {
+                    changeBrushSize(1);
+                    return true;
+                }
+                case 48 -> {
+                    if (canvasWidget != null) {
+                        canvasWidget.resetZoom();
+                    }
+                    return true;
+                }
+                default -> {
+                }
+            }
+        }
+
+        return super.keyPressed(event);
+    }
+
+    @Override
     public boolean isPauseScreen() {
         return false;
     }
@@ -598,6 +852,8 @@ public final class CapeEditorScreen extends Screen {
 
     private enum Tool {
         PENCIL,
-        ERASER
+        ERASER,
+        FILL,
+        EYEDROPPER
     }
 }

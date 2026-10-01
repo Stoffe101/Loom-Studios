@@ -1,5 +1,6 @@
 package dev.loomstudios.project;
 
+import java.util.ArrayDeque;
 import java.util.UUID;
 
 public final class ProjectEdits {
@@ -97,6 +98,94 @@ public final class ProjectEdits {
                     pixels[index] = argb;
                     changed = true;
                 }
+            }
+        }
+
+        if (!changed) {
+            return project;
+        }
+
+        LoomCanvas nextCanvas = canvas.replaceLayer(
+                layerId,
+                layer.withPixels(pixels)
+        );
+        return project.withCape(nextCanvas);
+    }
+
+    public static LoomProject floodFillCapeRegion(
+            LoomProject project,
+            UUID layerId,
+            CapeUvRegion region,
+            int localX,
+            int localY,
+            int argb
+    ) {
+        LoomCanvas canvas = project.cape();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int regionWidth = region.width(scale);
+        int regionHeight = region.height(scale);
+
+        if (localX < 0
+                || localY < 0
+                || localX >= regionWidth
+                || localY >= regionHeight) {
+            return project;
+        }
+
+        LoomLayer layer = canvas.layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown layer " + layerId
+                ));
+
+        int startAtlasX = region.atlasX(localX, scale);
+        int startAtlasY = region.atlasY(localY, scale);
+        int startIndex = startAtlasY * canvas.width() + startAtlasX;
+        int target = layer.pixelAt(startIndex);
+
+        if (target == argb) {
+            return project;
+        }
+
+        int[] pixels = layer.pixels();
+        boolean[] visited = new boolean[regionWidth * regionHeight];
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        queue.add(localY * regionWidth + localX);
+
+        boolean changed = false;
+
+        while (!queue.isEmpty()) {
+            int localIndex = queue.removeFirst();
+            if (visited[localIndex]) {
+                continue;
+            }
+            visited[localIndex] = true;
+
+            int x = localIndex % regionWidth;
+            int y = localIndex / regionWidth;
+            int atlasX = region.atlasX(x, scale);
+            int atlasY = region.atlasY(y, scale);
+            int atlasIndex = atlasY * canvas.width() + atlasX;
+
+            if (pixels[atlasIndex] != target) {
+                continue;
+            }
+
+            pixels[atlasIndex] = argb;
+            changed = true;
+
+            if (x > 0) {
+                queue.add(localIndex - 1);
+            }
+            if (x + 1 < regionWidth) {
+                queue.add(localIndex + 1);
+            }
+            if (y > 0) {
+                queue.add(localIndex - regionWidth);
+            }
+            if (y + 1 < regionHeight) {
+                queue.add(localIndex + regionWidth);
             }
         }
 

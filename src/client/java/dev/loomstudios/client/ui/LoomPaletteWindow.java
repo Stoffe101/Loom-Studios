@@ -162,6 +162,10 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         return pinned;
     }
 
+    public boolean isEditingName() {
+        return nameBox.isFocused();
+    }
+
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
         this.pinButton.setMessage(
