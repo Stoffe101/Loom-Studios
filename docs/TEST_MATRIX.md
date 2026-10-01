@@ -363,3 +363,38 @@ Every meaningful editor-layout change must be visually checked at:
 | 3440×1440 | 3 | LOCAL TEST REQUIRED |
 
 Pass criteria are defined in `UI_COMPATIBILITY.md`.
+
+
+## Zoom / pan / brush cursor
+
+- 100% is fit-to-view
+- Zoom +/- reaches configured limits only
+- mouse wheel over canvas changes zoom
+- mouse wheel over right tool rail still scrolls the rail
+- middle drag pans only the zoomed canvas
+- panning clamps so the canvas cannot be lost
+- zoomed canvas is scissored to its editor viewport
+- painted pixel mapping remains correct after zoom/pan
+- brush radius cursor scales with Brush size
+- radius cursor remains correctly centered at 1x/2x/4x project resolution
+- 4x at high zoom remains interactive
+
+## Palette overlay interaction regression
+
+- palette overlay receives click before underlying canvas/tool widgets
+- palette name field accepts keyboard input
+- New / Save Name / Add Current Color buttons operate
+- palette list row selection operates
+- palette swatch left-click applies color
+- palette swatch right-click removes color
+- title-bar drag operates only while unpinned
+- Pin prevents moving
+- Import/Export buttons operate while overlay overlaps canvas
+
+## Fill / Eyedropper
+
+- Fill affects only four-connected matching pixels
+- Fill cannot cross semantic face bounds
+- Fill is one undo entry
+- Eyedropper reads composited visible color
+- transparent Eyedropper target leaves selected paint color unchanged

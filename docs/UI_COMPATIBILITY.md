@@ -82,3 +82,15 @@ For each required profile:
 11. resize/re-enter the screen and verify no window becomes inaccessible.
 
 Record results in `TEST_MATRIX.md` / `PASS_LOG.md`.
+
+
+## Zoomed canvas behavior
+
+Zoom is explicitly supported at every required display/GUI-scale profile.
+
+- 100% remains fit-to-view;
+- up to 800% zoom is allowed;
+- canvas content is clipped to its viewport;
+- middle-mouse panning must remain reachable;
+- zoom must not force the right tool rail off-screen;
+- floating palette overlay must continue receiving topmost interaction even when it overlaps the zoomed canvas.

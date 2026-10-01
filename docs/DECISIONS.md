@@ -465,3 +465,45 @@ Imported palettes receive a new UUID so importing another person's palette canno
 The Palettes window is an editor overlay rather than part of the vertical tool rail.
 
 It may be moved by its title bar. Pin locks its position. This keeps palette switching reachable on compact GUI layouts without permanently consuming the canvas/tool-rail width.
+
+
+## ADR-049 — Zoom changes the semantic canvas viewport, never project resolution
+**Status:** Accepted / implemented
+
+Canvas resolution (1x/2x/4x) and editor zoom are separate concepts.
+
+- project resolution changes stored texture detail;
+- zoom only changes how large the current semantic face is displayed;
+- zoom never resamples project pixels;
+- 100% means fit-to-editor viewport;
+- zoom can increase to 800%;
+- middle-mouse pan is available when the zoomed face exceeds the viewport.
+
+This avoids conflating "more detail" with "bigger on screen."
+
+## ADR-050 — Brush radius is visible before painting
+**Status:** Accepted / implemented
+
+Pencil and Eraser show a circular hover outline representing their current brush radius.
+
+The radius preview is editor-only and does not alter project data.
+
+Fill/Eyedropper retain a single-pixel hover target instead.
+
+## ADR-051 — Floating editor overlays receive topmost input routing
+**Status:** Accepted / implemented
+
+Minecraft screen child iteration can allow an earlier underlying widget to receive input even when a later floating overlay is drawn visually above it.
+
+CapeEditorScreen therefore routes mouse/focus/scroll events to a visible Palettes overlay first when the pointer is within that window.
+
+This pattern should be reused by future floating Layers, Animation, Import, and Effects windows.
+
+## ADR-052 — Flood Fill operates on the active layer inside one semantic face
+**Status:** Accepted / implemented
+
+Fill compares pixels on the active editable layer and performs four-connected flood fill.
+
+It never crosses from the selected semantic cape face into another UV face.
+
+Eyedropper differs intentionally: it samples the final composited visible face color so the selected color matches what the user sees.

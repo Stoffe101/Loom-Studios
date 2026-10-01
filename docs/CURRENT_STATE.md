@@ -661,3 +661,40 @@ Two exact-SHA CI checkpoints are now green:
   - palette share-code automated test.
 
 The remaining gate for this slice is local runtime/UX verification at the required resolution/GUI-scale matrix.
+
+
+## Zoom / brush-radius / palette-interaction + paint tools checkpoint
+
+Local runtime feedback after the previous pass:
+- 1920x1080 GUI scale 3 is now visually good;
+- 4x editor lag is resolved in normal painting;
+- the first floating Palettes window rendered, but its controls were not actually usable because the visually topmost overlay could lose mouse/focus routing to editor widgets behind it.
+
+Exact SHA `05bb23149368e0fc75b205b43c11357af76f960c` passed GitHub Actions run #48.
+
+Implemented in this checkpoint:
+- palette overlay now receives mouse/focus/keyboard routing before underlying editor widgets;
+- palette-name EditBox can own keyboard focus correctly;
+- canvas zoom from 100% through 800%;
+- mouse wheel over canvas changes zoom;
+- Zoom-/percentage/Zoom+ toolbar controls;
+- clicking the percentage resets to fit/100%;
+- middle-mouse drag pans a zoomed canvas;
+- zoomed rendering is clipped to the canvas viewport;
+- brush/eraser hover now shows a circular radius outline centered on the target pixel;
+- Fill tool;
+- Eyedropper tool sampling the composited visible face color;
+- keyboard shortcuts:
+  - B Pencil
+  - E Eraser
+  - G Fill
+  - I Eyedropper
+  - [ / ] brush size
+  - 0 reset zoom
+  - Ctrl+Z Undo
+  - Ctrl+Y Redo
+  - Ctrl+S Save
+  - Ctrl+Shift+S Save + Equip
+- automated flood-fill containment test.
+
+Line and Rectangle remain the next paint-tool milestone.

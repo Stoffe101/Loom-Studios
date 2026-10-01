@@ -1,5 +1,30 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Zoom, brush-radius preview, palette-input fix, Fill/Eyedropper
+
+**Result: CI PASS / LOCAL UX TEST REQUIRED**
+
+Exact SHA: `05bb23149368e0fc75b205b43c11357af76f960c`  
+GitHub Actions #48: **SUCCESS**
+
+Runtime feedback entering the pass:
+- 4x performance fix: confirmed good locally;
+- 1920x1080 GUI scale 3: confirmed good locally;
+- palette window: visible but interaction broken.
+
+Fixes/features:
+- topmost palette overlay now gets first input/focus routing;
+- zoom 100%-800%, toolbar + mouse wheel;
+- MMB pan while zoomed;
+- canvas scissoring while zoomed;
+- circular brush/eraser radius cursor;
+- Fill;
+- Eyedropper;
+- editor keyboard shortcuts;
+- flood-fill automated test.
+
+---
+
 ## 2026-10-01 — Performance/layout + custom palettes CI checkpoint
 
 **Result: CI PASS / LOCAL UX TEST REQUIRED**

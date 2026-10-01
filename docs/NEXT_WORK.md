@@ -1,42 +1,69 @@
 # Loom Studios — Next Work
 
-## Immediate verification
+## Immediate local verification
 
-Performance/layout:
-1. test 1920x1080 GUI scale 2 and 3;
-2. test 3440x1440 GUI scale 2 and 3;
-3. paint continuously at 1x/2x/4x;
-4. verify high-resolution painting is dramatically smoother;
-5. verify one drag = one Undo step;
-6. verify right tool rail scrollbar works at compact height.
+Use the current head after pulling.
 
-Palettes:
-1. click the Palettes icon button;
-2. move the floating window by dragging its title bar;
-3. Pin it and confirm dragging is disabled;
-4. type a palette name and click New;
-5. choose colors in HSV/RGB picker and Add Current Color;
-6. click saved swatches to switch active paint color;
-7. right-click a swatch to remove it;
-8. Export and confirm a share code is copied to clipboard;
-9. Import that share code and confirm a copied palette appears.
+### Palette interaction regression
 
-Export files:
-`loom-studios/palettes/exports/`
+1. open Palettes;
+2. click the name field and type;
+3. New must create a palette;
+4. Add Current Color must update it;
+5. saved palette rows must be clickable;
+6. palette swatches must switch the active editor color;
+7. right-click a saved swatch must remove it;
+8. Pin/unpin + window dragging must work;
+9. Export must copy a `LOOMPAL1:` share code;
+10. Import must accept that clipboard code.
 
-Manual import inbox:
-`loom-studios/palettes/imports/`
+This pass specifically fixes the overlay input-routing bug from the previous local test.
 
-## Next Phase-2 work
+### Canvas zoom / pan / cursor
 
-- Fill;
-- Eyedropper;
-- Line / Rectangle;
-- editable hex/RGB numeric fields;
-- alpha/opacity;
-- symmetry;
-- layer panel;
-- keyboard shortcuts;
-- Recent Project thumbnail rendering;
-- Cape Loom block interaction;
-- Elytra Editor.
+1. hover Pencil/Eraser at brush size 1 and several larger sizes;
+2. confirm the cyan circle reflects brush radius;
+3. use Zoom + / Zoom -;
+4. click the percentage to reset to 100%;
+5. mouse-wheel over the canvas to zoom;
+6. at >100%, middle-drag to pan;
+7. verify drawing coordinates remain correct after panning/zooming;
+8. verify 4x remains smooth at high zoom.
+
+### New paint tools
+
+- Fill: connected-color flood fill must stay inside the active semantic cape face;
+- Eyedropper: clicking a visible pixel must update the HSV/RGB picker and active paint color.
+
+Keyboard:
+- B Pencil
+- E Eraser
+- G Fill
+- I Eyedropper
+- [ / ] brush size
+- 0 reset zoom
+- Ctrl+Z / Ctrl+Y
+- Ctrl+S
+- Ctrl+Shift+S
+
+## Next Phase-2 milestone
+
+After this local verification:
+1. Line tool with live drag preview;
+2. Rectangle tool with outline/filled mode;
+3. editable hex and RGB numeric text fields;
+4. alpha/opacity control;
+5. symmetry;
+6. layer panel;
+7. keyboard-shortcut help/tooltip surface;
+8. Recent Project thumbnail rendering;
+9. Cape Loom block interaction;
+10. Elytra Editor.
+
+## Required UI profiles
+
+Continue checking:
+- 1920x1080 GUI x2;
+- 1920x1080 GUI x3;
+- 3440x1440 GUI x2;
+- 3440x1440 GUI x3.
