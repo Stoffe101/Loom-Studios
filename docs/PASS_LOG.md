@@ -1,5 +1,25 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-1 project core green checkpoint
+
+**Result: PASS**
+
+Exact SHA: `66695ffc66458c675654746c473809e9a13f1488`  
+GitHub Actions run #27: **SUCCESS**
+
+Passed:
+- Java 21 / Minecraft 1.21.11 build;
+- common and client compilation;
+- JUnit project-core test suite;
+- remap JAR/sources;
+- artifact upload.
+
+The old ProofProject spike type is removed after this green replacement. LoomProject is now the real network/runtime project object.
+
+Elytra visual calibration still needs local eyes-on verification because CI cannot judge appearance.
+
+---
+
 ## 2026-10-01 — Gradle 9 JUnit launcher correction
 
 **Initial test-wiring SHA:** `58f25c610a8f27b002def89cfac0dfc51ae8d9cc`  

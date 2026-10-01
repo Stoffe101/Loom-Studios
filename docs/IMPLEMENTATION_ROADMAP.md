@@ -2,6 +2,8 @@
 
 ## Phase 0 — Foundation spikes
 
+**Status:** primary technical paths proven; final SPIKE-06 emissive/shader smoke test still pending.
+
 SPIKE-00 through SPIKE-06:
 - toolchain
 - static cape
@@ -14,6 +16,8 @@ SPIKE-00 through SPIKE-06:
 **Gate:** no full editor build before foundation is green or explicitly redesigned.
 
 ## Phase 1 — Project core
+
+**Status:** IN PROGRESS. Schema-v1 model/codec, basic layer compiler, local-library plumbing and undo/redo foundation are implemented and CI-green.
 
 - versioned project model
 - canvas model

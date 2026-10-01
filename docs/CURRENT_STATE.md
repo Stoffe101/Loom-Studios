@@ -383,3 +383,21 @@ Implemented first real project-core slice:
 - development project factory now produces real schema-v1 projects.
 
 The old ProofProject source remains temporarily in-tree only as dead spike history and can be removed after the new runtime path is locally reverified.
+
+
+## Latest Phase-1 green checkpoint
+
+Exact SHA `66695ffc66458c675654746c473809e9a13f1488` passed GitHub Actions run #27.
+
+Verified in the normal `build` lifecycle:
+- common/client compilation;
+- remapped production and sources JARs;
+- schema-v1 project-core JUnit tests;
+- deterministic encode/decode/hash;
+- deep immutable layer equality;
+- project-history behavior;
+- artifact upload.
+
+The obsolete ProofProject class is now removed. Development multiplayer/runtime data uses LoomProject end-to-end.
+
+Local verification still required for the newly calibrated Elytra 100% visual baseline.
