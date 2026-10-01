@@ -437,3 +437,19 @@ Green scope:
 - revision and undo/redo ownership;
 - expanded automated project-core tests;
 - production/common/client build and artifact upload.
+
+
+## Phase 1 — live workspace/runtime-cache/library slice
+
+Implemented:
+- ClientProjectWorkspace now owns the live local ProjectSession;
+- local rendering and networking read the same session/project/hash;
+- multiplayer automatically republishes when the workspace project hash changes;
+- GPU DynamicTexture ownership moved to RuntimeCosmeticCache;
+- PlayerCosmeticRenderer replaces the old DynamicCosmeticSpike facade;
+- project library now has ProjectDescriptor entries sorted by modified time;
+- saved projects receive cached compiled-cape PNG thumbnails;
+- unreadable/corrupt .loom files are isolated and skipped during library indexing;
+- project save refreshes the Recent Projects index.
+
+This removes the largest remaining duplicate local-project state before the editor starts mutating projects.

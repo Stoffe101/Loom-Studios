@@ -1,48 +1,41 @@
 # Loom Studios — Next Work
 
-## Immediate state
+## Phase 1 — active verification
 
-Elytra visual baseline: **VERIFIED / ACCEPTED**.
+Current implementation now has:
+- one live ClientProjectWorkspace / ProjectSession;
+- automatic project-hash republishing to multiplayer;
+- production RuntimeCosmeticCache;
+- PlayerCosmeticRenderer facade;
+- Recent Projects descriptor/index;
+- cached project thumbnails.
 
-Phase 1 Project Core is active.
+After CI is green, do one quick local regression:
+- runClient;
+- confirm cape still renders/animates;
+- P preview still works;
+- Elytra still looks correct;
+- optional G/V debug controls still work.
 
-## Current Phase-1 slice
+No dedicated two-client test is required unless the single-client regression or CI exposes a networking issue.
 
-**GREEN at exact SHA `3de9c581c212ac390f699841dc844c6478d3927e`, GitHub Actions #29.**
+## Next Phase-1 work
 
-Completed:
-- project created/modified metadata;
-- explicit schema-loader/migration dispatch;
-- ProjectSession owning undo/redo;
-- revision tracking;
-- hash-based dirty state;
-- save/load lifecycle;
-- reusable root-bounded ProjectFileStore;
-- Minecraft LocalProjectLibrary adapter;
-- automated persistence/session tests.
+1. add a production client workspace controller API for create/open/save/save-as/equip;
+2. add project-library selection/recent-project state;
+3. expose live-session change notifications for editor widgets;
+4. finish removing SPIKE naming from preview/effect scaffolding where appropriate;
+5. make thumbnail/render-cache invalidation explicit on edits.
 
-## Next Phase-1 slices
-
-1. client workspace/session manager that makes ProjectSession the live local editing source;
-2. runtime cache ownership separated from DynamicCosmeticSpike;
-3. project-library index/descriptor model for Recent Projects;
-4. thumbnail generation/cache;
-5. decompose remaining SPIKE-named runtime code into production services.
-
-After those are stable, begin Phase 2 Cape Editor MVP:
+Then begin **Phase 2 Cape Editor MVP**:
 - Cape Loom block interaction;
-- home/start screen;
-- real cape canvas;
+- home/start screen using the Recent Projects index;
+- cape canvas;
 - pencil/eraser/fill/eyedropper;
 - color controls;
-- live 3D preview wired to ProjectSession;
+- live 3D preview bound to the ProjectSession;
 - save/equip.
 
-## Remaining foundation compatibility gate
+## Remaining compatibility gate
 
-SPIKE-06 still needs a final shader smoke test:
-- G off/on;
-- Iris shaders OFF;
-- Iris shaders ON with one shader pack.
-
-This no longer blocks Phase-1 implementation, but remains required before release-hardening.
+SPIKE-06 still needs final Iris shader smoke testing before release hardening.

@@ -275,3 +275,16 @@ Deferred UX check:
 - saved project round-trips exactly
 - file-store rejects paths outside configured library root
 - library listing ignores non-.loom files
+
+
+## Workspace/runtime/library checks
+
+- one workspace project is used for local render + network hash
+- workspace project hash change triggers multiplayer republish
+- runtime textures are cached by project content hash
+- non-Loom texture lookups do not acquire Loom thickness/effects
+- cache shutdown releases registered textures
+- Recent Projects sort newest modified first
+- corrupt .loom file is skipped without aborting entire scan
+- thumbnail filename changes when project content hash changes
+- save refreshes project-library index

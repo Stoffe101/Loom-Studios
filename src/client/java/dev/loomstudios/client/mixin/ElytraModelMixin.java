@@ -1,6 +1,6 @@
 package dev.loomstudios.client.mixin;
 
-import dev.loomstudios.client.render.DynamicCosmeticSpike;
+import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.object.equipment.ElytraModel;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -22,7 +22,7 @@ public abstract class ElytraModelMixin {
         float depthScale = 1.0F;
 
         if (state instanceof AvatarRenderState avatarState) {
-            depthScale = DynamicCosmeticSpike.getElytraThicknessScale(avatarState);
+            depthScale = PlayerCosmeticRenderer.getElytraThicknessScale(avatarState);
         }
 
         this.leftWing.zScale = depthScale;

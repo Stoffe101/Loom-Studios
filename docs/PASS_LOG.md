@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-1 live workspace/runtime cache/library implementation
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Changes:
+- one ClientProjectWorkspace owns the local ProjectSession;
+- ClientCosmeticSync no longer owns a duplicate local LoomProject;
+- changed workspace hashes automatically trigger a new HELLO/cache-miss publication;
+- RuntimeCosmeticCache owns GPU textures and animation uploads;
+- PlayerCosmeticRenderer owns player skin patching/debug render controls;
+- DynamicCosmeticSpike removed from the active architecture;
+- Recent Projects descriptor/index added;
+- compiled cape thumbnails cached as PNG files;
+- library index skips broken files instead of poisoning the whole library.
+
+Next: exact-SHA CI and then one local runtime regression.
+
+---
+
 ## 2026-10-01 — Phase-1 session/persistence green checkpoint
 
 **Result: PASS**

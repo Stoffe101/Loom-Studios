@@ -3,7 +3,8 @@ package dev.loomstudios.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.loomstudios.LoomStudios;
 import dev.loomstudios.client.network.ClientCosmeticSync;
-import dev.loomstudios.client.render.DynamicCosmeticSpike;
+import dev.loomstudios.client.project.ProjectLibraryIndex;
+import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import dev.loomstudios.client.render.LoomCapeGlowLayer;
 import dev.loomstudios.client.screen.LoomPreviewSpikeScreen;
 import net.fabricmc.api.ClientModInitializer;
@@ -26,6 +27,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
         LoomStudios.LOGGER.info("Loom Studios client initialization complete.");
         OptionalModSupport.logDetectedMods();
         ClientCosmeticSync.register();
+        ProjectLibraryIndex.refresh();
 
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register(
                 (entityType, renderer, helper, context) -> {
@@ -68,7 +70,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (cycleElytraThickness.consumeClick()) {
-                DynamicCosmeticSpike.cycleElytraThickness(client);
+                PlayerCosmeticRenderer.cycleElytraThickness(client);
             }
 
             while (openPreview.consumeClick()) {
@@ -78,13 +80,13 @@ public final class LoomStudiosClient implements ClientModInitializer {
             }
 
             while (toggleEmissive.consumeClick()) {
-                DynamicCosmeticSpike.toggleEmissivePass(client);
+                PlayerCosmeticRenderer.toggleEmissivePass(client);
             }
 
             ClientCosmeticSync.tick(client);
-            DynamicCosmeticSpike.tick(client);
+            PlayerCosmeticRenderer.tick(client);
         });
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> DynamicCosmeticSpike.close());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> PlayerCosmeticRenderer.close());
     }
 }

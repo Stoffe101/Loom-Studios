@@ -257,3 +257,36 @@ LoomProjectCodec does not silently treat unknown schema versions as current data
 Loading first inspects the schema version and dispatches through LoomProjectMigrations.
 
 Schema v1 currently decodes directly because there is no released legacy schema. Future schema versions must add explicit migration logic.
+
+
+## ADR-032 — ClientProjectWorkspace is the sole local editable project owner
+**Status:** Accepted / implemented
+
+Networking, rendering and the future editor must not each retain their own mutable local project copy.
+
+ClientProjectWorkspace owns exactly one local ProjectSession. Consumers query the workspace project/hash/revision.
+
+When the content hash changes, ClientCosmeticSync republishes the new hash through the existing cache-miss protocol.
+
+## ADR-033 — GPU texture lifetime belongs to RuntimeCosmeticCache
+**Status:** Accepted / implemented
+
+Project/session state contains editable data only.
+
+RuntimeCosmeticCache owns:
+- NativeImage buffers;
+- DynamicTexture objects;
+- registered texture identifiers;
+- animation-phase uploads;
+- hash-keyed compiled runtime bundles.
+
+PlayerCosmeticRenderer owns only render-state patching and small render-facing lookup/debug behavior.
+
+## ADR-034 — Recent Projects index tolerates individual corrupt files
+**Status:** Accepted / implemented
+
+A single malformed .loom file must not prevent the library/home screen from opening.
+
+ProjectLibraryIndex loads each project independently, logs/rejects broken entries, and exposes the count of rejected files.
+
+Thumbnails are derived caches and are keyed by project UUID + content-hash prefix.

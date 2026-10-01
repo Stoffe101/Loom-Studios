@@ -1,6 +1,6 @@
 package dev.loomstudios.client.mixin;
 
-import dev.loomstudios.client.render.DynamicCosmeticSpike;
+import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.world.entity.Avatar;
@@ -21,6 +21,6 @@ public abstract class AvatarRendererMixin {
             float partialTick,
             CallbackInfo ci
     ) {
-        DynamicCosmeticSpike.apply(avatar, state);
+        PlayerCosmeticRenderer.apply(avatar, state);
     }
 }

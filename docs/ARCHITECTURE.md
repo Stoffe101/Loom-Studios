@@ -154,3 +154,35 @@ editable/project bytes
 ```
 
 This keeps rendered frames off the network and makes the future .loom project store/cache architecture concrete.
+
+
+## Phase-1 live client ownership
+
+The local editing/runtime path now has a single source of truth:
+
+```
+ClientProjectWorkspace
+        |
+        v
+   ProjectSession
+   /     |      \
+history dirty   LoomProject
+                 |
+        +--------+--------+
+        |                 |
+        v                 v
+ClientCosmeticSync   RuntimeCosmeticCache
+(multiplayer hash)  (compiled GPU textures)
+        |                 |
+        +--------+--------+
+                 |
+                 v
+       PlayerCosmeticRenderer
+```
+
+Networking no longer owns a second local project copy.
+
+Saved project discovery is separate:
+`ProjectLibraryIndex -> ProjectDescriptor -> cached cape thumbnail`.
+
+This ownership model is the baseline for Phase 2 editor widgets.

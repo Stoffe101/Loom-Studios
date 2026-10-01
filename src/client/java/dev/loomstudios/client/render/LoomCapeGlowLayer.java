@@ -60,7 +60,7 @@ public final class LoomCapeGlowLayer
             return;
         }
 
-        Identifier emissiveTexture = DynamicCosmeticSpike.getCapeEmissiveTexture(state);
+        Identifier emissiveTexture = PlayerCosmeticRenderer.getCapeEmissiveTexture(state);
         if (emissiveTexture == null) {
             return;
         }
