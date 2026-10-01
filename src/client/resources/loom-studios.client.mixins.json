@@ -3,7 +3,8 @@
   "package": "dev.loomstudios.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "AvatarRendererMixin"
+    "AvatarRendererMixin",
+    "ElytraModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

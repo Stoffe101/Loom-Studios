@@ -175,3 +175,17 @@ Implementation target:
 - thinner/thicker values scale the Elytra model on its local depth axis;
 - preserve vanilla animation/pose logic;
 - keep the feature optional and fall back to vanilla geometry if compatibility requires it.
+
+
+## Elytra geometry-thickness proof
+
+**Status: IMPLEMENTED / VERIFICATION PENDING**
+
+Default dedicated Elytra UVs are opaque again so 100% thickness retains vanilla volume.
+
+A client-only ElytraModel hook now applies Loom-specific Z-depth scaling while retaining vanilla wing width, height, pivot, rotation, and gliding animation.
+
+Temporary development key:
+- V cycles 100%, 75%, 50%, 25%, 150% thickness.
+
+Non-Loom Elytras are reset to 100% every setup call to avoid state leaking through reused model instances.

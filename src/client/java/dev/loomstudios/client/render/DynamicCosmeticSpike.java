@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.resources.Identifier;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.player.PlayerSkin;
 
@@ -22,6 +23,11 @@ public final class DynamicCosmeticSpike {
     private static final int WIDTH = 64;
     private static final int HEIGHT = 32;
     private static final int UPDATE_INTERVAL_TICKS = 40;
+
+    // Temporary SPIKE-03 debug values. The final editor will expose a proper
+    // slider/config value rather than cycling presets with a key.
+    private static final float[] THICKNESS_PRESETS = {1.0F, 0.75F, 0.5F, 0.25F, 1.5F};
+    private static int thicknessPresetIndex = 0;
 
     private static final Identifier CAPE_TEXTURE_ID =
             Identifier.fromNamespaceAndPath("loom-studios", "dynamic/spike_cape");
@@ -173,18 +179,30 @@ public final class DynamicCosmeticSpike {
             return;
         }
 
-        // Start fully transparent. The vanilla Elytra cube uses UV origin (22,0),
-        // width 10, height 20, depth 2 on a 64x32 texture. Keeping only the
-        // NORTH/SOUTH face rectangles opaque hides the thin edge-face strips and
-        // gives a less boxy visual without replacing vanilla wing geometry.
+        // Keep every UV face opaque so 100% thickness looks exactly like a
+        // normal volumetric Elytra. Thickness is now controlled by geometry,
+        // not by punching transparent holes into side-face texture regions.
+        int base = 0xFF081421;
+        int edge = 0xFF00BFCB;
+
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
-                elytraImage.setPixel(x, y, 0x00000000);
+                int checker = ((x / 4) + (y / 4)) & 1;
+                elytraImage.setPixel(x, y, checker == 0 ? base : darken(base, 12));
             }
         }
 
+        // Main vanilla wing face UV regions.
         drawWingFace(24, 2, false);
         drawWingFace(36, 2, true);
+
+        // Give the surrounding UV strips some visible color so side/top/bottom
+        // faces remain intentionally present at vanilla thickness.
+        drawRect(elytraImage, 22, 0, 24, 2, edge);
+        drawRect(elytraImage, 22, 22, 24, 2, edge);
+        drawRect(elytraImage, 22, 2, 2, 20, edge);
+        drawRect(elytraImage, 34, 2, 2, 20, edge);
+        drawRect(elytraImage, 46, 2, 2, 20, edge);
     }
 
     private static void drawWingFace(int startX, int startY, boolean reverse) {
@@ -236,6 +254,34 @@ public final class DynamicCosmeticSpike {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
+    public static boolean isUsingLoomElytra(AvatarRenderState state) {
+        return state.skin != null
+                && state.skin.elytra() != null
+                && ELYTRA_TEXTURE_ID.equals(state.skin.elytra().texturePath());
+    }
+
+    public static float getElytraThicknessScale() {
+        return THICKNESS_PRESETS[thicknessPresetIndex];
+    }
+
+    public static void cycleElytraThickness(Minecraft client) {
+        thicknessPresetIndex = (thicknessPresetIndex + 1) % THICKNESS_PRESETS.length;
+        float scale = getElytraThicknessScale();
+
+        if (client.player != null) {
+            int percent = Math.round(scale * 100.0F);
+            client.player.displayClientMessage(
+                    Component.literal("Loom Studios Elytra thickness: " + percent + "%"),
+                    true
+            );
+        }
+
+        LoomStudios.LOGGER.info(
+                "SPIKE-03 Elytra thickness changed to {}%",
+                Math.round(scale * 100.0F)
+        );
+    }
+
     public static void close() {
         Minecraft client = Minecraft.getInstance();
 
@@ -255,5 +301,6 @@ public final class DynamicCosmeticSpike {
         cachedPatched = null;
         ticksUntilUpdate = 0;
         phase = 0;
+        thicknessPresetIndex = 0;
     }
 }

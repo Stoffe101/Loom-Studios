@@ -145,3 +145,15 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 - gliding pose remains vanilla
 - edge transparency renders correctly
 - inspect visual thickness from side/top/rear angles
+
+
+## Elytra thickness proof checks
+
+- 100% visually matches normal vanilla wing volume
+- 75/50/25% progressively reduce depth
+- 150% increases depth
+- wing length/width remain unchanged
+- gliding rotations remain vanilla
+- returning to 100% fully restores vanilla depth
+- non-Loom Elytras remain 100%
+- no stale zScale leaks between rendered players

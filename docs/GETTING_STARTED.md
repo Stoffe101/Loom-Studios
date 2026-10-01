@@ -98,3 +98,16 @@ After changing optional JARs in `dev-mods/`, run:
 ```
 
 The output should show the four top-level test mods plus extracted TRansition/TRender library JARs when 3D Skin Layers is present.
+
+
+## SPIKE-03 Elytra thickness debug control
+
+During the current Elytra geometry proof, press **V** in the development client to cycle:
+
+- 100% vanilla thickness
+- 75%
+- 50%
+- 25%
+- 150%
+
+The selected value appears in the action bar. This key is temporary developer tooling; the finished editor will use a proper control/slider and default to 100%.

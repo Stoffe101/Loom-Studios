@@ -1,5 +1,21 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-03 geometry-thickness proof implementation
+
+**Status: IMPLEMENTED / CI + LOCAL TEST PENDING**
+
+Changes:
+- restored opaque Elytra edge/top/bottom UV coverage so default 100% appears volumetric like vanilla;
+- added an ElytraModel mixin that changes only wing local Z scale;
+- default is exactly 1.0 (100% vanilla thickness);
+- temporary V key cycles 100%, 75%, 50%, 25%, 150%;
+- non-Loom Elytras are explicitly reset to zScale 1.0 because vanilla model instances are reused;
+- thickness is visual only and does not affect hitboxes/gameplay.
+
+Goal: prove that Loom Studios can expose thickness customization without replacing vanilla pose/animation behavior.
+
+---
+
 ## 2026-10-01 — Elytra thickness design correction
 
 **Result: DECISION ACCEPTED**
