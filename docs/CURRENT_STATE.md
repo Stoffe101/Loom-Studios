@@ -55,6 +55,19 @@ Decision: keep Loom Studios development on Java 21 and pin Loom to the latest 1.
 - Loader 0.18.4 runtime
 - optional-mod runtime detection
 
+## SPIKE-01 implementation staged
+
+A static development cape has now been implemented in source:
+
+- local-player-only render-state patch;
+- vanilla CapeLayer retained;
+- body/Elytra/model type untouched;
+- cached patched PlayerSkin;
+- obvious 64x32 cyan/magenta LS development texture;
+- client-only mixin configuration.
+
+Compile/CI and local visual verification are still required before SPIKE-01 can be marked DONE.
+
 ## Next
 
-Verify corrected CI, then local IntelliJ client/server launch. After SPIKE-00 is green, begin static cape rendering.
+Verify corrected CI and then launch the IntelliJ development client/server locally. In third person, the local player should show the LS test cape. After that, validate optional Sodium/Iris/3D Skin Layers compatibility.

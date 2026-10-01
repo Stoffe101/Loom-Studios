@@ -1,23 +1,38 @@
 # Loom Studios — Next Work
 
-## Finish SPIKE-00
+## 1. Complete CI verification
 
-1. Verify GitHub Actions on the bootstrap commit.
-2. Clone/open the project in IntelliJ.
-3. Put optional JARs in `dev-mods/`.
-4. Run **Loom Studios - Client** / `runClient`.
-5. Confirm optional-mod detection in logs.
-6. Run `runServer` and verify client-only classes do not leak to the server.
-7. Record exact results and SHA.
+- confirm the Gradle bootstrap is green on the newest exact SHA;
+- if the SPIKE-01 mixin fails compilation, fix only the mapped 1.21.11 seam and document it.
 
-## SPIKE-01
+## 2. Local IntelliJ verification
 
-After SPIKE-00 is green:
+Pull/clone the repository, place optional compatibility JARs in `dev-mods/`, sync Gradle, then launch **Loom Studios - Client**.
 
-- add an obvious static test cape;
-- override the cape texture through the narrowest vanilla-compatible player render path;
-- preserve vanilla geometry/movement;
-- test plain Fabric first;
-- then smoke-test Sodium/Iris/3D Skin Layers.
+Verify:
 
-Update canonical docs with every result.
+- Minecraft 1.21.11 launches;
+- Loom Studios logs both common/client initialization;
+- optional mods present in `dev-mods/` are detected;
+- F5/third-person shows the cyan/magenta LS test cape on the local player;
+- the cape moves with vanilla cape physics.
+
+Then launch **Loom Studios - Server** / `runServer` and verify clean dedicated-server startup.
+
+## 3. SPIKE-01 compatibility smoke tests
+
+After plain Fabric works:
+
+- Sodium
+- Sodium + Sodium Extra
+- Sodium + Iris, shaders off
+- Sodium + Iris, shaders on
+- 3D Skin Layers
+
+These are optional compatibility targets, not required dependencies.
+
+## 4. Then SPIKE-02
+
+Replace the static resource cape with a runtime-generated dynamic texture and prove live texture changes without restart/reconnect.
+
+Update documentation with every result.

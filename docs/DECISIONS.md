@@ -74,3 +74,18 @@ Loom Studios remains proprietary / All Rights Reserved. Third-party test JARs ar
 **Status:** Accepted
 
 Optional compatibility JARs live in gitignored `dev-mods/` and are loaded only by the Loom development runtime.
+
+
+## ADR-016 — Patch PlayerSkin in AvatarRenderer render-state extraction
+**Status:** Implemented for SPIKE-01, runtime verification pending
+
+For Minecraft 1.21.11, inject at the tail of `AvatarRenderer.extractRenderState(Avatar, AvatarRenderState, float)`.
+
+For the static cape spike:
+- affect only the local player;
+- replace only the cape field using `PlayerSkin.Patch`;
+- preserve body, Elytra, and model-type fields;
+- force `showCape` only for the development spike;
+- cache the patched skin to avoid allocating a new record every rendered frame.
+
+This deliberately keeps vanilla `CapeLayer` responsible for geometry and movement.

@@ -112,3 +112,23 @@ When a new external source materially affects architecture:
 2. record what question it answered;
 3. note license constraints;
 4. update DECISIONS.md if the result changes architecture.
+
+
+## Custom Capes by builtdoor1
+
+Repository:
+- `builtdoor1/Custom-Capes`
+
+License:
+- CC0 1.0 Universal
+
+Question answered:
+- confirmed a clean Minecraft 1.21.11 Mojang-mapped approach for applying a cape without replacing vanilla cape geometry;
+- inject after `AvatarRenderer.extractRenderState`;
+- patch only the cape slot on `PlayerSkin`;
+- let vanilla `CapeLayer` retain movement, armor offsets, and Elytra suppression.
+
+Loom Studios implementation:
+- uses the same public 1.21.11 rendering seam;
+- keeps its own names, project architecture, state model, and future dynamic-texture system;
+- the consulted source is CC0, but the source is still recorded here for traceability.

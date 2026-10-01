@@ -25,5 +25,11 @@
     "minecraft": "~1.21.11",
     "java": ">=21",
     "fabric-api": ">=0.141.1"
-  }
+  },
+  "mixins": [
+    {
+      "config": "loom-studios.client.mixins.json",
+      "environment": "client"
+    }
+  ]
 }
