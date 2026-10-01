@@ -1,5 +1,17 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-06 vanilla cape alignment parity
+
+**Status: IMPLEMENTED / CI RETEST REQUIRED**
+
+The emissive feature pass now mirrors vanilla CapeLayer's chest-equipment behavior:
+- suppress glow when the equipped chest asset provides a WINGS layer;
+- apply the same armor offset when the chest asset provides a HUMANOID layer.
+
+Reason: the second glow model must stay pixel-aligned with the vanilla base cape under armor and non-vanilla wing equipment, not merely when the chest slot is empty.
+
+---
+
 ## 2026-10-01 — SPIKE-05/06 first green compile checkpoint
 
 **Result: CI PASS / RUNTIME VERIFICATION PENDING**

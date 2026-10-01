@@ -12,25 +12,34 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
 
 /**
  * SPIKE-06 additive/fullbright cape pass.
  *
  * <p>The base cape remains entirely vanilla. This layer only submits a second
- * PlayerCapeModel with the project's generated emissive mask.</p>
+ * PlayerCapeModel with the project's generated emissive mask and mirrors the
+ * same chest-equipment offset/suppression rules as vanilla CapeLayer.</p>
  */
 public final class LoomCapeGlowLayer
         extends RenderLayer<AvatarRenderState, PlayerModel> {
     private final PlayerCapeModel model;
+    private final EquipmentAssetManager equipmentAssets;
 
     public LoomCapeGlowLayer(
             RenderLayerParent<AvatarRenderState, PlayerModel> renderer,
-            EntityModelSet modelSet
+            EntityModelSet modelSet,
+            EquipmentAssetManager equipmentAssets
     ) {
         super(renderer);
         this.model = new PlayerCapeModel(modelSet.bakeLayer(ModelLayers.PLAYER_CAPE));
+        this.equipmentAssets = equipmentAssets;
     }
 
     @Override
@@ -42,7 +51,12 @@ public final class LoomCapeGlowLayer
             float yRot,
             float xRot
     ) {
-        if (state.isInvisible || !state.showCape || state.chestEquipment.is(Items.ELYTRA)) {
+        if (state.isInvisible
+                || !state.showCape
+                || hasEquipmentLayer(
+                        state.chestEquipment,
+                        EquipmentClientInfo.LayerType.WINGS
+                )) {
             return;
         }
 
@@ -52,6 +66,14 @@ public final class LoomCapeGlowLayer
         }
 
         poseStack.pushPose();
+
+        if (hasEquipmentLayer(
+                state.chestEquipment,
+                EquipmentClientInfo.LayerType.HUMANOID
+        )) {
+            poseStack.translate(0.0F, -0.053125F, 0.06875F);
+        }
+
         submitNodeCollector.submitModel(
                 this.model,
                 state,
@@ -63,5 +85,19 @@ public final class LoomCapeGlowLayer
                 (ModelFeatureRenderer.CrumblingOverlay)null
         );
         poseStack.popPose();
+    }
+
+    private boolean hasEquipmentLayer(
+            ItemStack stack,
+            EquipmentClientInfo.LayerType layerType
+    ) {
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable == null || equippable.assetId().isEmpty()) {
+            return false;
+        }
+
+        ResourceKey assetId = (ResourceKey)equippable.assetId().get();
+        EquipmentClientInfo clientInfo = this.equipmentAssets.get(assetId);
+        return !clientInfo.getLayers(layerType).isEmpty();
     }
 }

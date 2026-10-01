@@ -33,7 +33,8 @@ public final class LoomStudiosClient implements ClientModInitializer {
                         helper.register(
                                 new LoomCapeGlowLayer(
                                         avatarRenderer,
-                                        context.getModelSet()
+                                        context.getModelSet(),
+                                        context.getEquipmentAssets()
                                 )
                         );
                     }

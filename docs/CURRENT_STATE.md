@@ -311,3 +311,8 @@ Exact SHA `f33c8adf3baa7cfdd7f6a4d1e7fd28e15c0a357c` passed GitHub Actions run #
 A small follow-up hardens the client handshake by deferring HELLO until player/level state exists if Fabric's JOIN callback arrives before the local entity is ready.
 
 Manual verification remains the completion gate.
+
+
+## SPIKE-06 alignment hardening
+
+The emissive cape layer now mirrors vanilla CapeLayer's chest-equipment WINGS suppression and HUMANOID armor translation. This keeps the optional glow mask aligned with the base cape instead of drifting when armor is worn.
