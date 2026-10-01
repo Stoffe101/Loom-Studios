@@ -302,3 +302,12 @@ The animation/emissive proof now uses:
 Initial combined implementation SHA `9312856fc1449895b3b973371a1a0b566ed85a2f` failed common compilation only because `ServerPlayer#getServer()` is not exposed in the Minecraft 1.21.11 Mojang-mapped API.
 
 The implementation now obtains the server through `ServerPlayer.level().getServer()`. Networking architecture is unchanged.
+
+
+## SPIKE-05/06 CI checkpoint
+
+Exact SHA `f33c8adf3baa7cfdd7f6a4d1e7fd28e15c0a357c` passed GitHub Actions run #20, including full Java 21/Minecraft 1.21.11 build and artifact upload.
+
+A small follow-up hardens the client handshake by deferring HELLO until player/level state exists if Fabric's JOIN callback arrives before the local entity is ready.
+
+Manual verification remains the completion gate.

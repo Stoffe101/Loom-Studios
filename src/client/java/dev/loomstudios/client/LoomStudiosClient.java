@@ -80,6 +80,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
                 DynamicCosmeticSpike.toggleEmissivePass(client);
             }
 
+            ClientCosmeticSync.tick(client);
             DynamicCosmeticSpike.tick(client);
         });
 

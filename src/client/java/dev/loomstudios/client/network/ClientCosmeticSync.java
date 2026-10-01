@@ -25,6 +25,7 @@ public final class ClientCosmeticSync {
     private static ProofProject localProject;
     private static String localProjectHash;
     private static boolean serverSupportsLoom;
+    private static boolean helloPending;
 
     private ClientCosmeticSync() {
     }
@@ -48,14 +49,20 @@ public final class ClientCosmeticSync {
 
     private static void onJoin(Minecraft client) {
         resetSession();
+        helloPending = true;
+        tick(client);
+    }
 
-        if (client.player == null) {
+    public static void tick(Minecraft client) {
+        if (!helloPending || client.player == null || client.level == null) {
             return;
         }
 
         ensureLocalProject(client.player.getUUID());
 
         serverSupportsLoom = ClientPlayNetworking.canSend(HelloC2SPayload.ID);
+        helloPending = false;
+
         if (serverSupportsLoom) {
             ClientPlayNetworking.send(
                     new HelloC2SPayload(
@@ -164,6 +171,7 @@ public final class ClientCosmeticSync {
         PROJECTS.clear();
         EQUIPPED.clear();
         serverSupportsLoom = false;
+        helloPending = false;
 
         if (localPlayerId != null && localProject != null && localProjectHash != null) {
             PROJECTS.put(localProjectHash, localProject);

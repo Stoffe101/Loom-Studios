@@ -1,5 +1,28 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-05/06 first green compile checkpoint
+
+**Result: CI PASS / RUNTIME VERIFICATION PENDING**
+
+Exact SHA `f33c8adf3baa7cfdd7f6a4d1e7fd28e15c0a357c`  
+GitHub Actions run #20: **SUCCESS**
+
+Verified by CI:
+- common networking payloads compile;
+- server cache/validation code compiles;
+- client synchronization/cache code compiles;
+- remote-capable dynamic cosmetic renderer compiles;
+- Fabric player emissive feature layer compiles;
+- Client A / Client B run configurations configure successfully;
+- packaged development artifact uploads successfully.
+
+Follow-up robustness improvement:
+- client hello is now allowed to wait until the local player/level are actually available after JOIN instead of silently giving up if JOIN fires slightly early.
+
+Manual two-client and shader/emissive verification is still required before SPIKE-05/06 are marked DONE.
+
+---
+
 ## 2026-10-01 — SPIKE-05 Mojang-mapping server accessor correction
 
 **Status: FIX APPLIED / CI RETEST REQUIRED**
