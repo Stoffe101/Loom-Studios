@@ -416,6 +416,102 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void selectionMoveAndFlipStayInsideSemanticFace() {
+        LoomProject project = LoomProjectFactory.blank("Selection", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject painted = ProjectEdits.setCapeRegionPixel(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                1,
+                1,
+                0xFFFF0000
+        );
+        painted = ProjectEdits.setCapeRegionPixel(
+                painted,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                1,
+                0xFF00FF00
+        );
+
+        PixelSelection selection = new PixelSelection(1, 1, 2, 1);
+
+        LoomProject flipped = ProjectEdits.flipCapeRegionSelection(
+                painted,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                selection,
+                true,
+                false
+        );
+
+        int left = CapeUvRegion.OUTSIDE.atlasY(1)
+                * flipped.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(1);
+        int right = CapeUvRegion.OUTSIDE.atlasY(1)
+                * flipped.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(2);
+
+        assertEquals(
+                0xFF00FF00,
+                flipped.cape().layers().getFirst().pixelAt(left)
+        );
+        assertEquals(
+                0xFFFF0000,
+                flipped.cape().layers().getFirst().pixelAt(right)
+        );
+
+        LoomProject moved = ProjectEdits.moveCapeRegionSelection(
+                flipped,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                selection,
+                2,
+                3
+        );
+
+        assertEquals(
+                0,
+                moved.cape().layers().getFirst().pixelAt(left)
+        );
+        assertEquals(
+                0,
+                moved.cape().layers().getFirst().pixelAt(right)
+        );
+
+        int movedLeft = CapeUvRegion.OUTSIDE.atlasY(4)
+                * moved.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(3);
+        int movedRight = CapeUvRegion.OUTSIDE.atlasY(4)
+                * moved.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(4);
+
+        assertEquals(
+                0xFF00FF00,
+                moved.cape().layers().getFirst().pixelAt(movedLeft)
+        );
+        assertEquals(
+                0xFFFF0000,
+                moved.cape().layers().getFirst().pixelAt(movedRight)
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ProjectEdits.flipCapeRegionSelection(
+                        project,
+                        layer.id(),
+                        CapeUvRegion.OUTSIDE,
+                        new PixelSelection(0, 0, 20, 20),
+                        true,
+                        false
+                )
+        );
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 
