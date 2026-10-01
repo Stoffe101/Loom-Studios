@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Cape face-first/static-default green build
+
+**Result: CI PASS / LOCAL UX TEST REQUIRED**
+
+Exact SHA: `475355119f491a631de8a1b5311e5c0e9f1bbdb4`  
+GitHub Actions run #39: **SUCCESS**
+
+Green scope:
+- editor-created projects are static by default;
+- semantic cape-face UV model;
+- Outside/Back 10x16 primary canvas;
+- face switching;
+- pixel hover highlight;
+- local + atlas coordinate readout;
+- region-aware immutable edits;
+- automated mapping/default tests.
+
+---
+
 ## 2026-10-01 — Cape paint clarity + static default correction
 
 **Runtime feedback:** functional paint/save/render path works, but raw-atlas editing was confusing and blank-project colors animated unexpectedly.

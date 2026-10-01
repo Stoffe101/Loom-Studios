@@ -552,3 +552,19 @@ Corrections implemented:
 - ProjectEdits can edit local face coordinates without exposing UV math to the UI.
 
 The 64x32 atlas remains the underlying source of truth; the editor now presents semantic cape faces instead of raw atlas space by default.
+
+
+## Cape face-first editor green checkpoint
+
+Exact SHA `475355119f491a631de8a1b5311e5c0e9f1bbdb4` passed GitHub Actions run #39.
+
+Verified:
+- static editor runtime defaults;
+- CapeUvRegion model;
+- face-first editor widget;
+- project edit mapping tests;
+- client compilation;
+- remapped artifact;
+- artifact upload.
+
+Second local UX verification is now the gate.
