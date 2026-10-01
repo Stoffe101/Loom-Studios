@@ -49,7 +49,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
     }
 
     private void setColor(int argb, boolean notify) {
-        this.color = 0xFF000000 | (argb & 0x00FFFFFF);
+        this.color = argb;
 
         int r = (color >>> 16) & 0xFF;
         int g = (color >>> 8) & 0xFF;
@@ -139,7 +139,9 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int rightX = hueX + hueW + 8;
         int rightW = Math.max(56, getRight() - rightX - 8);
 
+        renderChecker(graphics, rightX, svY, 26, 18);
         graphics.fill(rightX, svY, rightX + 26, svY + 18, color);
+
         graphics.fill(
                 rightX + 28,
                 svY,
@@ -159,8 +161,9 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         renderRgbSlider(graphics, rightX, svY + 24, rightW, 'R', 16);
         renderRgbSlider(graphics, rightX, svY + 39, rightW, 'G', 8);
         renderRgbSlider(graphics, rightX, svY + 54, rightW, 'B', 0);
+        renderAlphaSlider(graphics, rightX, svY + 69, rightW);
 
-        int paletteY = svY + svH + 9;
+        int paletteY = svY + svH + 24;
         int swatch = 16;
         int gap = 3;
         int columns = Math.max(1, Math.min(7, (getWidth() - 16) / (swatch + gap)));
@@ -202,11 +205,11 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         for (int i = 0; i < barW; i++) {
             int channel = Math.round(i / (float)Math.max(1, barW - 1) * 255.0F);
             int sample = switch (shift) {
-                case 16 -> 0xFF000000 | (channel << 16) | (color & 0x0000FFFF);
-                case 8 -> 0xFF000000 | (color & 0x00FF00FF) | (channel << 8);
-                default -> 0xFF000000 | (color & 0x00FFFF00) | channel;
+                case 16 -> (color & 0xFF00FFFF) | (channel << 16);
+                case 8 -> (color & 0xFFFF00FF) | (channel << 8);
+                default -> (color & 0xFFFFFF00) | channel;
             };
-            graphics.fill(barX + i, y + 2, barX + i + 1, y + 11, sample);
+            graphics.fill(barX + i, y + 2, barX + i + 1, y + 11, sample | 0xFF000000);
         }
 
         int marker = barX + Math.round(value / 255.0F * Math.max(1, barW - 1));
@@ -220,6 +223,77 @@ public final class LoomColorPickerWidget extends AbstractWidget {
                 LoomUiTheme.TEXT,
                 false
         );
+    }
+
+    private void renderAlphaSlider(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int width
+    ) {
+        int alpha = (color >>> 24) & 0xFF;
+        int labelWidth = 12;
+        int valueWidth = 24;
+        int barX = x + labelWidth;
+        int barW = Math.max(20, width - labelWidth - valueWidth - 2);
+
+        graphics.drawString(
+                Minecraft.getInstance().font,
+                Component.literal("A"),
+                x,
+                y + 3,
+                LoomUiTheme.TEXT_MUTED,
+                false
+        );
+
+        for (int i = 0; i < barW; i++) {
+            int a = Math.round(i / (float)Math.max(1, barW - 1) * 255.0F);
+            int checker = ((i / 4) & 1) == 0 ? 0xFF38424A : 0xFF252C32;
+            graphics.fill(barX + i, y + 2, barX + i + 1, y + 11, checker);
+            graphics.fill(
+                    barX + i,
+                    y + 2,
+                    barX + i + 1,
+                    y + 11,
+                    (a << 24) | (color & 0x00FFFFFF)
+            );
+        }
+
+        int marker = barX + Math.round(alpha / 255.0F * Math.max(1, barW - 1));
+        graphics.fill(marker - 1, y, marker + 1, y + 13, 0xFFFFFFFF);
+
+        graphics.drawString(
+                Minecraft.getInstance().font,
+                Component.literal(Integer.toString(alpha)),
+                barX + barW + 4,
+                y + 3,
+                LoomUiTheme.TEXT,
+                false
+        );
+    }
+
+    private static void renderChecker(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        int cell = 4;
+        for (int py = 0; py < height; py += cell) {
+            for (int px = 0; px < width; px += cell) {
+                int checker = (((px / cell) + (py / cell)) & 1) == 0
+                        ? 0xFF3B444C
+                        : 0xFF252C32;
+                graphics.fill(
+                        x + px,
+                        y + py,
+                        Math.min(x + width, x + px + cell),
+                        Math.min(y + height, y + py + cell),
+                        checker
+                );
+            }
+        }
     }
 
     @Override
@@ -258,7 +332,9 @@ public final class LoomColorPickerWidget extends AbstractWidget {
                 dragTarget = DragTarget.GREEN;
             } else if (inside(mouseX, mouseY, rightX + 12, svY + 54, rightW - 38, 13)) {
                 dragTarget = DragTarget.BLUE;
-            } else if (selectPalette(mouseX, mouseY, svY + svH + 9)) {
+            } else if (inside(mouseX, mouseY, rightX + 12, svY + 69, rightW - 38, 13)) {
+                dragTarget = DragTarget.ALPHA;
+            } else if (selectPalette(mouseX, mouseY, svY + svH + 24)) {
                 return;
             } else {
                 dragTarget = DragTarget.NONE;
@@ -280,6 +356,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
             case RED -> setChannel(16, channelFromMouse(mouseX, rightX, rightW));
             case GREEN -> setChannel(8, channelFromMouse(mouseX, rightX, rightW));
             case BLUE -> setChannel(0, channelFromMouse(mouseX, rightX, rightW));
+            case ALPHA -> setAlpha(channelFromMouse(mouseX, rightX, rightW));
             case NONE -> {
             }
         }
@@ -293,15 +370,21 @@ public final class LoomColorPickerWidget extends AbstractWidget {
     }
 
     private void setChannel(int shift, int value) {
+        int alpha = color & 0xFF000000;
         int rgb = color & 0x00FFFFFF;
         rgb &= ~(0xFF << shift);
         rgb |= value << shift;
-        setColor(0xFF000000 | rgb, true);
+        setColor(alpha | rgb, true);
+    }
+
+    private void setAlpha(int alpha) {
+        setColor((alpha << 24) | (color & 0x00FFFFFF), true);
     }
 
     private void updateFromHsb() {
+        int alpha = color & 0xFF000000;
         int rgb = Color.HSBtoRGB(hue, saturation, brightness);
-        this.color = 0xFF000000 | (rgb & 0x00FFFFFF);
+        this.color = alpha | (rgb & 0x00FFFFFF);
         onChanged.accept(color);
     }
 
@@ -355,6 +438,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         HUE,
         RED,
         GREEN,
-        BLUE
+        BLUE,
+        ALPHA
     }
 }
