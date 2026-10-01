@@ -1,74 +1,82 @@
 # Loom Studios — Next Work
 
-## Immediate local verification
+## Runtime verification queue
 
-### Compact Swatches regression
+These features are implemented/CI-green but still need local in-game verification when available:
 
-At **1920x1080 GUI scale 3**:
-1. open Swatches;
-2. confirm the window is substantially smaller than the previous screenshot;
-3. confirm Saved palettes no longer overlaps Import/Export;
-4. confirm compact mode opens with management controls collapsed;
-5. click Edit -> controls appear;
-6. click Done -> controls collapse and the swatch area expands;
-7. verify several named palettes remain directly clickable;
-8. test move + Pin.
+### Compact Swatches
+- 1920x1080 GUI 3 smaller footprint;
+- no Saved palettes overlap;
+- Edit / Done management collapse;
+- multiple palettes;
+- move + Pin.
 
-Also recheck:
-- 1920x1080 GUI x2;
-- 3440x1440 GUI x2;
-- 3440x1440 GUI x3.
-
-### Numeric color / alpha
-
-- type a Hex color and verify picker/sliders update;
-- type R/G/B values and verify Hex/picker update;
-- change A from 255 to a lower value;
-- paint semi-transparent pixels;
-- add a transparent/semi-transparent color to a custom palette;
-- export/import it and verify alpha survives.
+### Color / alpha
+- editable Hex/R/G/B/A;
+- alpha slider;
+- semi-transparent paint;
+- alpha-aware custom palette export/import.
 
 ### Symmetry
-
-Test Pencil, Eraser, Fill, Line and Rectangle with:
 - Off;
 - Horizontal;
 - Vertical;
-- Both.
-
-Confirm symmetry always stays inside the active semantic face.
+- Both;
+- Pencil/Eraser/Fill/Line/Rectangle.
 
 ### Layers
+- New / Duplicate / Delete;
+- selection;
+- visibility;
+- reorder;
+- opacity;
+- rename;
+- Emissive;
+- blend modes:
+  - Normal
+  - Add / Glow
+  - Screen
+  - Multiply
+  - Overlay
+- Undo/Redo;
+- 3D Preview compositing.
 
-- New layer;
-- select rows;
-- paint different artwork on each layer;
-- toggle visibility with the left visibility square;
-- Duplicate;
-- Layer Up / Layer Down;
-- change opacity;
-- Delete;
-- Undo / Redo each operation;
-- verify the last remaining layer cannot be deleted;
-- verify 3D Preview reflects the composed layer stack.
+## CI-safe work that can continue without local runtime
 
-## Next Phase-2 work
+Priority order:
 
-After this verification:
-1. layer rename;
-2. layer lock;
-3. emissive-layer/effect controls;
-4. blend-mode UI once more blend implementations exist;
-5. transform/selection tools;
-6. shortcut/tooltips help surface;
-7. Recent Project thumbnail cards;
-8. Cape Loom block interaction;
-9. Elytra Editor;
-10. smart PNG/image import after layer/transform foundations are stable.
+1. selection model;
+2. Move tool;
+3. Flip Horizontal / Vertical;
+4. crop/selection bounds architecture;
+5. Recent Project thumbnail-card component;
+6. reusable tooltip/icon-button primitives;
+7. Smart Import processing core tests;
+8. Elytra semantic UV/editor model;
+9. animation authoring schema research/design.
+
+## Schema-expansion gate
+
+Do **not** bolt persistent layer lock or new layer kinds directly onto schema v1.
+
+The next schema version should group:
+- persistent layer lock;
+- layer kind/type;
+- non-destructive image-layer data;
+- gradient-layer data;
+- effect/animation metadata as appropriate;
+- migration fixtures from schema v1.
+
+## Reference-image priority
+
+Every new UI feature must be checked against the five approved reference screens.
+
+See `REFERENCE_FIDELITY_ROADMAP.md`.
+
+The near-term goal is not final pixel-perfect styling. It is to build the correct screen hierarchy and reusable controls so the final fidelity pass does not require another UI rewrite.
 
 ## Required UI profiles
 
-Every editor layout change continues to target:
 - 1920x1080 GUI x2;
 - 1920x1080 GUI x3;
 - 3440x1440 GUI x2;

@@ -472,3 +472,20 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - opacity changes compiled result
 - layer actions participate in undo/redo
 - Layers list displays top-most first
+
+
+## Layer effects / blend modes
+
+- layer rename persists through project encode/decode
+- emissive flag persists through project encode/decode
+- blend mode persists through project encode/decode
+- schema-v1 BlendMode ordinal mapping is pinned by automated test
+- Normal behaves as standard source-over
+- Add / Glow does not hide source over transparent destination
+- Screen does not hide source over transparent destination
+- Multiply does not hide source over transparent destination
+- Overlay does not hide source over transparent destination
+- opacity remains applied before blend calculation
+- semantic face preview and full runtime compiler use the same blend mode
+- emissive-only compilation still excludes non-emissive layers
+- shader-on/off runtime smoke test is required before calling emissive UI DONE

@@ -33,6 +33,7 @@ Every meaningful pass must record:
 - `NETWORK_PROTOCOL.md` — multiplayer synchronization design
 - `PROJECT_FORMAT.md` — Loom project/code serialization
 - `IMPLEMENTATION_ROADMAP.md` — staged build roadmap
+- `REFERENCE_FIDELITY_ROADMAP.md` — per-reference-screen implementation/status map
 - `TEST_MATRIX.md` — required automated/manual validation
 - `DECISIONS.md` — architecture decision record
 - `references/ui/` — visual reference mockups

@@ -761,3 +761,26 @@ Layers milestone foundation:
 - per-layer opacity controls;
 - last remaining layer cannot be deleted;
 - layer stack operations remain immutable ProjectSession edits and participate in undo/redo.
+
+
+## Layer effects / reference-roadmap checkpoint
+
+While local runtime testing is unavailable, CI-safe editor work continued.
+
+Exact green implementation checkpoints:
+- `27a40a72c1b7fb0ffb17162a250a58f9d63cef74` — GitHub Actions #65 SUCCESS
+- `86fcc37183e5150359fe04d83508c940b964e73b` — GitHub Actions #66 SUCCESS
+- `4bad39c53e81d09bb49f8540bf72f5db5e2b2a1c` — GitHub Actions #67 SUCCESS
+
+Implemented:
+- layer rename;
+- persisted per-layer emissive flag controls;
+- real blend modes: Normal, Add / Glow, Screen, Multiply, Overlay;
+- blend-mode compiler support for full canvas and semantic-face compilation;
+- selected-layer controls in the Cape Editor;
+- automated schema-v1 persistence checks for rename/blend/emissive;
+- explicit enum-ordinal compatibility assertions because schema v1 serializes blend-mode ordinals.
+
+Reference-image direction is now tracked explicitly in `REFERENCE_FIDELITY_ROADMAP.md` so the five approved screens remain an active design constraint rather than an end-of-project reminder.
+
+Persistent layer lock is intentionally deferred to the next coordinated project-schema expansion, together with non-pixel layer kinds, rather than mutating schema v1 piecemeal.

@@ -1,5 +1,26 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Layer effects + reference-fidelity roadmap
+
+**Result: IMPLEMENTATION CI PASS / LOCAL VISUAL TEST PENDING**
+
+Green SHAs:
+- `27a40a72c1b7fb0ffb17162a250a58f9d63cef74` — run #65
+- `86fcc37183e5150359fe04d83508c940b964e73b` — run #66
+- `4bad39c53e81d09bb49f8540bf72f5db5e2b2a1c` — run #67
+
+Added:
+- layer rename;
+- Emissive On/Off;
+- Normal / Add-Glow / Screen / Multiply / Overlay;
+- compiler support for those blend modes;
+- schema-v1 persistence tests;
+- canonical per-reference-screen status/roadmap.
+
+No local runtime/visual claims are made for this slice yet.
+
+---
+
 ## 2026-10-02 — Compact Swatches + alpha/numeric color + symmetry + Layers foundation
 
 **Status: IMPLEMENTED / FINAL CI + LOCAL UX VERIFICATION PENDING**

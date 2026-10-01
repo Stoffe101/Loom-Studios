@@ -2,132 +2,197 @@
 
 ## Phase 0 — Foundation spikes
 
-**Status:** primary technical paths proven; final SPIKE-06 emissive/shader smoke test still pending.
+**Status:** PRIMARY PATHS PROVEN.
 
-SPIKE-00 through SPIKE-06:
-- toolchain
-- static cape
-- dynamic texture
-- Elytra
-- GUI preview
-- multiplayer sync
-- animated/emissive compatibility
+Implemented/proven:
+- toolchain;
+- static/dynamic cape;
+- Elytra;
+- GUI preview;
+- multiplayer sync;
+- animation/emissive proof.
 
-**Gate:** no full editor build before foundation is green or explicitly redesigned.
+Remaining release-hardening item:
+- broader final Iris/shader matrix.
 
 ## Phase 1 — Project core
 
-**Status:** IN PROGRESS. Schema-v1 model/codec, basic layer compiler, local-library plumbing and undo/redo foundation are implemented and CI-green.
+**Status:** FOUNDATION GREEN / EXPANDING AS EDITOR NEEDS IT.
 
-- versioned project model
-- canvas model
-- layers
-- serialization
-- local project library
-- texture compiler
-- runtime cache
-- undo/redo command model
+Implemented:
+- schema-v1 project model;
+- cape + Elytra canvases;
+- immutable pixel layers;
+- serialization/hash;
+- local project library;
+- runtime texture cache;
+- project thumbnails;
+- ProjectSession;
+- dirty-state/save/load;
+- undo/redo;
+- multiplayer transfer/cache.
 
-## Phase 2 — Cape editor MVP
+Future schema expansion is intentionally deferred until non-pixel layer types and persistent layer locking are designed together.
 
-**Status:** IN PROGRESS. Home screen, blank/open project flow, pixel canvas, pencil/eraser, undo/redo, save/equip and unsaved preview are implemented pending runtime verification.
+## Phase 2 — Cape editor core
 
-- Cape Loom block interaction
-- home/start screen
-- cape canvas
-- pencil
-- eraser
-- fill
-- eyedropper
-- line/rectangle
-- move/crop/flip
-- color picker/palette
-- symmetry
-- live 3D preview
-- save/equip
+**Status:** ACTIVE / MAJOR FUNCTIONAL CORE IMPLEMENTED.
+
+Implemented:
+- home/start bootstrap;
+- semantic cape face canvas;
+- Pencil / Eraser;
+- Fill / Eyedropper;
+- Line;
+- Rectangle outline/filled;
+- 1x / 2x / 4x;
+- zoom/pan;
+- brush size + transient footprint preview;
+- alpha-aware HSV/RGB/Hex controls;
+- custom grouped Swatches;
+- symmetry;
+- undo/redo;
+- live unsaved 3D preview;
+- save/equip;
+- responsive scrollable tool rail.
+
+Still required:
+- selection;
+- Move;
+- Crop;
+- Flip Horizontal / Vertical;
+- first-class Gradient;
+- shortcut/tooltips surface;
+- final reference-image editor composition.
 
 ## Phase 3 — Layer system
 
-- add/delete/duplicate/reorder
-- visibility/lock
-- opacity
-- blend modes
-- non-destructive base/paint/image/gradient layers
-- thumbnails
+**Status:** ACTIVE / PAINT-LAYER WORKFLOW IMPLEMENTED.
+
+Implemented:
+- add;
+- delete;
+- duplicate;
+- reorder;
+- visibility;
+- opacity;
+- rename;
+- emissive flag;
+- Normal;
+- Add / Glow;
+- Screen;
+- Multiply;
+- Overlay.
+
+Remaining:
+- persistent lock;
+- richer layer row/icon UI;
+- non-destructive image layers;
+- gradient layers;
+- effect/reference layers.
+
+Persistent lock and new layer kinds should be introduced in one coordinated project-schema expansion rather than patched into schema v1 piecemeal.
 
 ## Phase 4 — Smart Import
 
-- PNG import
-- fit/stretch/crop/center
-- aspect lock
-- mirror/rotate
-- brightness/contrast/saturation
-- color reduction
-- dithering
-- transparency/background handling
-- Direct
-- Pixel-art
-- Outline
-- Monochrome
-- Palette Limited
-- Posterize
-- imported image transforms
+**Status:** NOT STARTED / PREREQUISITES IN PROGRESS.
+
+Planned:
+- PNG import;
+- Fit / Stretch / Crop / Center;
+- aspect lock;
+- mirror/rotate;
+- brightness/contrast/saturation;
+- color reduction;
+- dithering;
+- transparency/background handling;
+- Direct;
+- Pixel-art;
+- Outline;
+- Monochrome;
+- Palette Limited;
+- Posterize;
+- imported image transforms;
+- original/processed/texture/3D previews.
+
+Gate:
+- selection/transform primitives;
+- non-destructive image-layer representation.
 
 ## Phase 5 — Elytra editor
 
-- separate Elytra canvas
-- linked/mirrored wings
-- independent wings
-- cape-to-Elytra starting conversion
-- open/closed/gliding preview
+**Status:** RENDERING FOUNDATION PROVEN / EDITOR NOT STARTED.
+
+Already available underneath:
+- independent Elytra texture;
+- calibrated thickness rendering;
+- high-resolution Elytra project canvas/resizer;
+- preview Cape/Elytra switching.
+
+Planned:
+- semantic unfolded-wing canvas;
+- linked/mirrored wings;
+- independent wings;
+- cape-to-Elytra starting conversion;
+- thickness UI;
+- standing/open/gliding preview controls.
 
 ## Phase 6 — Animation/effects
 
-- timeline
-- tracks/keyframes
-- pulse
-- scroll
-- hue shift
-- moving gradient
-- sparkle
-- emissive/additive effects
-- performance controls
+**Status:** RUNTIME PROOF EXISTS / AUTHORING MODEL NOT STARTED.
+
+Planned:
+- timeline;
+- tracks/keyframes;
+- pulse;
+- scroll;
+- hue shift;
+- moving gradient;
+- sparkle;
+- emissive/additive effects;
+- performance controls.
+
+Gate:
+- layer/effect schema design.
 
 ## Phase 7 — Multiplayer library/sharing
 
-- server validation/storage
-- content-hash cache
-- remote-player sync
-- short Loom Codes
-- portable codes
-- private clickable chat result
-- copy/import/preview/favorite flow
-- permissions/visibility
+**Status:** MULTIPLAYER CONTENT-HASH SYNC IMPLEMENTED / PRODUCT SHARING UI NOT STARTED.
+
+Implemented:
+- server/client project validation;
+- content-hash cache;
+- remote-player sync.
+
+Planned:
+- short Loom Codes;
+- portable codes;
+- private clickable chat result;
+- Copy / Import / Preview / Favorite;
+- permissions/visibility.
 
 ## Phase 8 — Reference-image fidelity
 
-Rebuild/polish each approved reference screen:
-- home
-- cape editor
-- Smart Import
-- Elytra animation editor
-- Loom Codes/share
+Reference fidelity is no longer treated as something to remember only at the very end.
 
-Validate:
-- 1080p
-- 1440p
-- ultrawide
-- multiple GUI scales
-- keyboard/mouse navigation
-- narration/accessibility where supported
+Every phase should preserve the hierarchy and UX direction of the approved references while functional pieces are built.
+
+A final dedicated polish pass will then unify:
+- Home;
+- Cape Editor;
+- Smart Import;
+- Elytra + Animation Editor;
+- Loom Codes / Share.
+
+See `REFERENCE_FIDELITY_ROADMAP.md`.
 
 ## Phase 9 — Release hardening
 
-- CI matrix
-- clean dedicated server
-- Sodium/Iris/shader matrix
-- project migrations
-- malformed input tests
-- performance profiling
-- packaging
-- release documentation
+- full CI matrix;
+- clean dedicated server;
+- Sodium/Iris/shader matrix;
+- project migrations;
+- malformed input tests;
+- performance profiling;
+- packaging;
+- release documentation.

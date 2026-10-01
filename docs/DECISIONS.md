@@ -607,3 +607,52 @@ LoomCanvas layer order remains render order:
 The Layers UI displays this in graphics-editor convention with the top-most layer first.
 
 Layer create/duplicate/delete/reorder/visibility/opacity are ProjectSession edits and therefore participate in undo/redo and dirty-state tracking.
+
+
+## ADR-060 — Blend-mode enum ordinals are schema-v1 compatibility data
+**Status:** Accepted / implemented
+
+Schema v1 stores `BlendMode.ordinal()`.
+
+Therefore:
+- existing blend modes must never be reordered;
+- new schema-v1-compatible modes may only be appended;
+- automated tests pin the current ordinal mapping.
+
+Current order:
+1. Normal
+2. Add / Glow
+3. Screen
+4. Multiply
+5. Overlay
+
+A future schema should encode stable identifiers rather than relying on enum ordinals.
+
+## ADR-061 — Persistent layer lock waits for coordinated schema expansion
+**Status:** Accepted
+
+Layer lock must persist with the project.
+
+It will not be implemented as temporary editor-only state and will not be jammed into schema v1 without a migration plan.
+
+The next project-schema expansion should coordinate:
+- lock state;
+- layer kind/type;
+- image/gradient layer payloads;
+- future effect/animation metadata where appropriate.
+
+## ADR-062 — Reference fidelity is continuous, not Phase-8-only
+**Status:** Accepted
+
+The five approved visual references remain active constraints while functionality is built.
+
+Phase 8 remains the dedicated final polish/unification pass, but earlier phases should already preserve:
+- screen hierarchy;
+- panel roles;
+- control density;
+- major interactions;
+- dark/cyan/violet Loom identity;
+- live-preview placement intent;
+- responsive behavior.
+
+This reduces the chance of a final full UI rewrite.
