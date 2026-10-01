@@ -423,3 +423,17 @@ Implemented:
 - LocalProjectLibrary now binds the pure file store to Minecraft's game directory.
 
 Schema v1 remains pre-release. There are no historical migrations yet, but future versions must be routed explicitly rather than silently reinterpreted.
+
+
+## Phase-1 session/persistence green checkpoint
+
+Exact SHA `3de9c581c212ac390f699841dc844c6478d3927e` passed GitHub Actions run #29.
+
+Green scope:
+- project metadata timestamps;
+- explicit schema migration/load gate;
+- ProjectFileStore safety and atomic-save fallback;
+- ProjectSession dirty/save/load lifecycle;
+- revision and undo/redo ownership;
+- expanded automated project-core tests;
+- production/common/client build and artifact upload.

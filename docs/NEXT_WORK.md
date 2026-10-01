@@ -8,7 +8,9 @@ Phase 1 Project Core is active.
 
 ## Current Phase-1 slice
 
-Implemented and awaiting CI:
+**GREEN at exact SHA `3de9c581c212ac390f699841dc844c6478d3927e`, GitHub Actions #29.**
+
+Completed:
 - project created/modified metadata;
 - explicit schema-loader/migration dispatch;
 - ProjectSession owning undo/redo;
@@ -20,8 +22,6 @@ Implemented and awaiting CI:
 - automated persistence/session tests.
 
 ## Next Phase-1 slices
-
-After this exact SHA is green:
 
 1. client workspace/session manager that makes ProjectSession the live local editing source;
 2. runtime cache ownership separated from DynamicCosmeticSpike;

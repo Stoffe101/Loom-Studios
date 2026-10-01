@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-1 session/persistence green checkpoint
+
+**Result: PASS**
+
+Exact SHA: `3de9c581c212ac390f699841dc844c6478d3927e`  
+GitHub Actions run #29: **SUCCESS**
+
+Verified:
+- common/client compilation;
+- schema-v1 metadata serialization;
+- explicit migration gate;
+- ProjectFileStore save/load/path containment tests;
+- ProjectSession dirty/save/load/undo/redo tests;
+- remapped artifact build/upload.
+
+Phase 1 can now move to the client workspace/runtime-cache ownership slice.
+
+---
+
 ## 2026-10-01 — Elytra visual calibration accepted + Phase-1 session slice
 
 **Elytra result: PASS**
