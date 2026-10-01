@@ -38,12 +38,16 @@ public final class CapeEditorScreen extends Screen {
     private CapeUvRegion capeRegion = CapeUvRegion.OUTSIDE;
     private int selectedColor = 0xFF22D7E8;
     private int brushSize = 1;
+    private boolean rectangleFilled;
     private UUID selectedLayerId;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
     private LoomButton fillButton;
     private LoomButton eyedropperButton;
+    private LoomButton lineButton;
+    private LoomButton rectangleButton;
+    private LoomButton rectangleModeButton;
     private LoomButton faceButton;
     private LoomButton resolutionDownButton;
     private LoomButton resolutionUpButton;
@@ -114,6 +118,7 @@ public final class CapeEditorScreen extends Screen {
                 () -> this.workspaceState.revision(),
                 () -> this.capeRegion,
                 this::editPixel,
+                this::commitShape,
                 new LoomCapeFaceWidget.StrokeLifecycle() {
                     @Override
                     public void begin() {
@@ -127,8 +132,7 @@ public final class CapeEditorScreen extends Screen {
                     }
                 },
                 () -> this.brushSize,
-                () -> this.tool == Tool.PENCIL || this.tool == Tool.ERASER,
-                () -> this.tool == Tool.PENCIL || this.tool == Tool.ERASER
+                this::gestureMode
         ));
 
         int contentWidth = Math.max(150, this.toolPanelWidth - 20);
@@ -186,6 +190,27 @@ public final class CapeEditorScreen extends Screen {
                 () -> setTool(Tool.EYEDROPPER)
         );
         tools.addChild(eyedropperButton);
+
+        lineButton = createLoomButton(
+                contentWidth,
+                "Line",
+                () -> setTool(Tool.LINE)
+        );
+        tools.addChild(lineButton);
+
+        rectangleButton = createLoomButton(
+                contentWidth,
+                "Rectangle",
+                () -> setTool(Tool.RECTANGLE)
+        );
+        tools.addChild(rectangleButton);
+
+        rectangleModeButton = createLoomButton(
+                contentWidth,
+                "Rectangle: Outline",
+                this::toggleRectangleMode
+        );
+        tools.addChild(rectangleModeButton);
 
         LinearLayout brushRow = LinearLayout.horizontal().spacing(4);
         brushDownButton = createLoomButton(
@@ -445,7 +470,26 @@ public final class CapeEditorScreen extends Screen {
                 ).scale() * 8
         );
         this.brushSize = Math.max(1, Math.min(max, this.brushSize + delta));
+
+        if (canvasWidget != null) {
+            canvasWidget.showBrushSizePreview();
+        }
+
         updateButtonStates();
+    }
+
+    private void toggleRectangleMode() {
+        this.rectangleFilled = !this.rectangleFilled;
+        updateButtonStates();
+    }
+
+    private LoomCapeFaceWidget.GestureMode gestureMode() {
+        return switch (tool) {
+            case PENCIL, ERASER -> LoomCapeFaceWidget.GestureMode.BRUSH;
+            case LINE -> LoomCapeFaceWidget.GestureMode.LINE;
+            case RECTANGLE -> LoomCapeFaceWidget.GestureMode.RECTANGLE;
+            case FILL, EYEDROPPER -> LoomCapeFaceWidget.GestureMode.CLICK;
+        };
     }
 
     private void setTool(Tool next) {
@@ -475,6 +519,26 @@ public final class CapeEditorScreen extends Screen {
         if (eyedropperButton != null) {
             eyedropperButton.setMessage(Component.literal(
                     tool == Tool.EYEDROPPER ? "Eyedropper ●" : "Eyedropper"
+            ));
+        }
+
+        if (lineButton != null) {
+            lineButton.setMessage(Component.literal(
+                    tool == Tool.LINE ? "Line ●" : "Line"
+            ));
+        }
+
+        if (rectangleButton != null) {
+            rectangleButton.setMessage(Component.literal(
+                    tool == Tool.RECTANGLE ? "Rectangle ●" : "Rectangle"
+            ));
+        }
+
+        if (rectangleModeButton != null) {
+            rectangleModeButton.setMessage(Component.literal(
+                    rectangleFilled
+                            ? "Rectangle: Filled"
+                            : "Rectangle: Outline"
             ));
         }
 
@@ -573,6 +637,47 @@ public final class CapeEditorScreen extends Screen {
                     )
             );
             case EYEDROPPER -> sampleVisibleColor(x, y);
+        }
+
+        updateButtonStates();
+    }
+
+    private void commitShape(
+            int startX,
+            int startY,
+            int endX,
+            int endY
+    ) {
+        switch (tool) {
+            case LINE -> ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.paintCapeRegionLine(
+                            project,
+                            selectedLayerId,
+                            this.capeRegion,
+                            startX,
+                            startY,
+                            endX,
+                            endY,
+                            this.brushSize,
+                            this.selectedColor
+                    )
+            );
+            case RECTANGLE -> ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.paintCapeRegionRectangle(
+                            project,
+                            selectedLayerId,
+                            this.capeRegion,
+                            startX,
+                            startY,
+                            endX,
+                            endY,
+                            this.brushSize,
+                            this.selectedColor,
+                            this.rectangleFilled
+                    )
+            );
+            default -> {
+            }
         }
 
         updateButtonStates();
@@ -818,6 +923,14 @@ public final class CapeEditorScreen extends Screen {
                     setTool(Tool.EYEDROPPER);
                     return true;
                 }
+                case 76 -> {
+                    setTool(Tool.LINE);
+                    return true;
+                }
+                case 82 -> {
+                    setTool(Tool.RECTANGLE);
+                    return true;
+                }
                 case 91 -> {
                     changeBrushSize(-1);
                     return true;
@@ -854,6 +967,8 @@ public final class CapeEditorScreen extends Screen {
         PENCIL,
         ERASER,
         FILL,
-        EYEDROPPER
+        EYEDROPPER,
+        LINE,
+        RECTANGLE
     }
 }

@@ -19,19 +19,23 @@ import net.minecraft.resources.Identifier;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /**
- * Focused cape-face editor with revision-cached GPU preview, crisp zoom, and
- * middle-mouse panning.
+ * Focused cape-face editor with revision-cached GPU preview, crisp zoom,
+ * middle-mouse panning, temporary brush-size preview and shape previews.
  */
 public final class LoomCapeFaceWidget extends AbstractWidget {
     @FunctionalInterface
     public interface PixelAction {
         void apply(int localX, int localY);
+    }
+
+    @FunctionalInterface
+    public interface ShapeAction {
+        void apply(int startX, int startY, int endX, int endY);
     }
 
     public interface StrokeLifecycle {
@@ -40,8 +44,16 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         void end();
     }
 
+    public enum GestureMode {
+        BRUSH,
+        CLICK,
+        LINE,
+        RECTANGLE
+    }
+
     private static final int HEADER_HEIGHT = 24;
     private static final int INNER_MARGIN = 10;
+    private static final long BRUSH_PREVIEW_NANOS = 1_400_000_000L;
     private static final float[] ZOOM_STEPS = {
             1.0F, 1.25F, 1.5F, 2.0F, 3.0F, 4.0F, 6.0F, 8.0F
     };
@@ -50,10 +62,10 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
     private final LongSupplier revisionSupplier;
     private final Supplier<CapeUvRegion> regionSupplier;
     private final PixelAction pixelAction;
+    private final ShapeAction shapeAction;
     private final StrokeLifecycle strokeLifecycle;
     private final IntSupplier brushSizeSupplier;
-    private final BooleanSupplier brushPreviewSupplier;
-    private final BooleanSupplier dragPaintSupplier;
+    private final Supplier<GestureMode> gestureModeSupplier;
 
     private final Identifier textureId = Identifier.fromNamespaceAndPath(
             LoomStudios.MOD_ID,
@@ -69,12 +81,20 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
 
     private int hoveredX = -1;
     private int hoveredY = -1;
-    private boolean strokeActive;
-    private boolean panning;
 
+    private boolean strokeActive;
+    private boolean shapeActive;
+    private int shapeStartX;
+    private int shapeStartY;
+    private int shapeEndX;
+    private int shapeEndY;
+
+    private boolean panning;
     private int zoomIndex;
     private int panX;
     private int panY;
+
+    private long brushPreviewUntilNanos;
 
     public LoomCapeFaceWidget(
             int x,
@@ -85,20 +105,20 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             LongSupplier revisionSupplier,
             Supplier<CapeUvRegion> regionSupplier,
             PixelAction pixelAction,
+            ShapeAction shapeAction,
             StrokeLifecycle strokeLifecycle,
             IntSupplier brushSizeSupplier,
-            BooleanSupplier brushPreviewSupplier,
-            BooleanSupplier dragPaintSupplier
+            Supplier<GestureMode> gestureModeSupplier
     ) {
         super(x, y, width, height, Component.literal("Cape face canvas"));
         this.projectSupplier = Objects.requireNonNull(projectSupplier);
         this.revisionSupplier = Objects.requireNonNull(revisionSupplier);
         this.regionSupplier = Objects.requireNonNull(regionSupplier);
         this.pixelAction = Objects.requireNonNull(pixelAction);
+        this.shapeAction = Objects.requireNonNull(shapeAction);
         this.strokeLifecycle = Objects.requireNonNull(strokeLifecycle);
         this.brushSizeSupplier = Objects.requireNonNull(brushSizeSupplier);
-        this.brushPreviewSupplier = Objects.requireNonNull(brushPreviewSupplier);
-        this.dragPaintSupplier = Objects.requireNonNull(dragPaintSupplier);
+        this.gestureModeSupplier = Objects.requireNonNull(gestureModeSupplier);
     }
 
     public int zoomPercent() {
@@ -125,6 +145,10 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         zoomIndex = 0;
         panX = 0;
         panY = 0;
+    }
+
+    public void showBrushSizePreview() {
+        brushPreviewUntilNanos = System.nanoTime() + BRUSH_PREVIEW_NANOS;
     }
 
     private void setZoomIndex(int next) {
@@ -250,32 +274,11 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         );
 
         if (geometry.pixelScale >= 4) {
-            int gridColor = 0x3A000000;
-
-            for (int x = 0; x <= regionWidth; x++) {
-                int px = geometry.left + x * geometry.pixelScale;
-                graphics.fill(
-                        px,
-                        geometry.top,
-                        px + 1,
-                        geometry.top + geometry.drawHeight,
-                        gridColor
-                );
-            }
-
-            for (int y = 0; y <= regionHeight; y++) {
-                int py = geometry.top + y * geometry.pixelScale;
-                graphics.fill(
-                        geometry.left,
-                        py,
-                        geometry.left + geometry.drawWidth,
-                        py + 1,
-                        gridColor
-                );
-            }
+            renderGrid(graphics, geometry, regionWidth, regionHeight);
         }
 
-        renderHoverAndBrush(graphics, geometry);
+        renderCursor(graphics, geometry);
+        renderShapePreview(graphics, geometry);
         graphics.disableScissor();
 
         if (zoomIndex > 0) {
@@ -290,7 +293,38 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         }
     }
 
-    private void renderHoverAndBrush(
+    private void renderGrid(
+            GuiGraphics graphics,
+            CanvasGeometry geometry,
+            int regionWidth,
+            int regionHeight
+    ) {
+        int gridColor = 0x3A000000;
+
+        for (int x = 0; x <= regionWidth; x++) {
+            int px = geometry.left + x * geometry.pixelScale;
+            graphics.fill(
+                    px,
+                    geometry.top,
+                    px + 1,
+                    geometry.top + geometry.drawHeight,
+                    gridColor
+            );
+        }
+
+        for (int y = 0; y <= regionHeight; y++) {
+            int py = geometry.top + y * geometry.pixelScale;
+            graphics.fill(
+                    geometry.left,
+                    py,
+                    geometry.left + geometry.drawWidth,
+                    py + 1,
+                    gridColor
+            );
+        }
+    }
+
+    private void renderCursor(
             GuiGraphics graphics,
             CanvasGeometry geometry
     ) {
@@ -302,7 +336,11 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         int py = geometry.top + hoveredY * geometry.pixelScale;
         int s = geometry.pixelScale;
 
-        if (!brushPreviewSupplier.getAsBoolean()) {
+        boolean temporaryBrushPreview =
+                gestureModeSupplier.get() == GestureMode.BRUSH
+                        && System.nanoTime() < brushPreviewUntilNanos;
+
+        if (!temporaryBrushPreview) {
             graphics.fill(px, py, px + s, py + 2, LoomUiTheme.ACCENT);
             graphics.fill(px, py + s - 2, px + s, py + s, LoomUiTheme.ACCENT);
             graphics.fill(px, py, px + 2, py + s, LoomUiTheme.ACCENT);
@@ -333,6 +371,87 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                 centerY + 2,
                 0xCCFFFFFF
         );
+    }
+
+    private void renderShapePreview(
+            GuiGraphics graphics,
+            CanvasGeometry geometry
+    ) {
+        if (!shapeActive) {
+            return;
+        }
+
+        int startX = geometry.left
+                + shapeStartX * geometry.pixelScale
+                + geometry.pixelScale / 2;
+        int startY = geometry.top
+                + shapeStartY * geometry.pixelScale
+                + geometry.pixelScale / 2;
+        int endX = geometry.left
+                + shapeEndX * geometry.pixelScale
+                + geometry.pixelScale / 2;
+        int endY = geometry.top
+                + shapeEndY * geometry.pixelScale
+                + geometry.pixelScale / 2;
+
+        GestureMode mode = gestureModeSupplier.get();
+
+        if (mode == GestureMode.LINE) {
+            drawScreenLine(
+                    graphics,
+                    startX,
+                    startY,
+                    endX,
+                    endY,
+                    LoomUiTheme.ACCENT
+            );
+            return;
+        }
+
+        if (mode == GestureMode.RECTANGLE) {
+            int left = Math.min(startX, endX);
+            int right = Math.max(startX, endX);
+            int top = Math.min(startY, endY);
+            int bottom = Math.max(startY, endY);
+
+            graphics.fill(left, top, right + 1, top + 2, LoomUiTheme.ACCENT);
+            graphics.fill(left, bottom - 1, right + 1, bottom + 1, LoomUiTheme.ACCENT);
+            graphics.fill(left, top, left + 2, bottom + 1, LoomUiTheme.ACCENT);
+            graphics.fill(right - 1, top, right + 1, bottom + 1, LoomUiTheme.ACCENT);
+        }
+    }
+
+    private static void drawScreenLine(
+            GuiGraphics graphics,
+            int x0,
+            int y0,
+            int x1,
+            int y1,
+            int color
+    ) {
+        int dx = Math.abs(x1 - x0);
+        int sx = x0 < x1 ? 1 : -1;
+        int dy = -Math.abs(y1 - y0);
+        int sy = y0 < y1 ? 1 : -1;
+        int error = dx + dy;
+
+        while (true) {
+            graphics.fill(x0, y0, x0 + 2, y0 + 2, color);
+
+            if (x0 == x1 && y0 == y1) {
+                break;
+            }
+
+            int doubled = 2 * error;
+            if (doubled >= dy) {
+                error += dy;
+                x0 += sx;
+            }
+            if (doubled <= dx) {
+                error += dx;
+                y0 += sy;
+            }
+        }
     }
 
     private static void drawCircleOutline(
@@ -487,6 +606,15 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             return true;
         }
 
+        if (shapeActive && event.button() == 0) {
+            int[] pixel = localPixel(event.x(), event.y());
+            if (pixel != null) {
+                shapeEndX = pixel[0];
+                shapeEndY = pixel[1];
+            }
+            return true;
+        }
+
         return super.mouseDragged(event, dx, dy);
     }
 
@@ -494,6 +622,22 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
     public boolean mouseReleased(MouseButtonEvent event) {
         if (event.button() == 2 && panning) {
             panning = false;
+            return true;
+        }
+
+        if (event.button() == 0 && shapeActive) {
+            shapeActive = false;
+            shapeAction.apply(
+                    shapeStartX,
+                    shapeStartY,
+                    shapeEndX,
+                    shapeEndY
+            );
+
+            if (strokeActive) {
+                strokeActive = false;
+                strokeLifecycle.end();
+            }
             return true;
         }
 
@@ -521,18 +665,39 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
 
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
+        int[] pixel = localPixel(event.x(), event.y());
+        if (pixel == null) {
+            return;
+        }
+
+        GestureMode mode = gestureModeSupplier.get();
+
         if (!strokeActive) {
             strokeActive = true;
             strokeLifecycle.begin();
         }
 
-        applyAt(event.x(), event.y());
+        if (mode == GestureMode.LINE || mode == GestureMode.RECTANGLE) {
+            shapeActive = true;
+            shapeStartX = pixel[0];
+            shapeStartY = pixel[1];
+            shapeEndX = pixel[0];
+            shapeEndY = pixel[1];
+            return;
+        }
+
+        pixelAction.apply(pixel[0], pixel[1]);
     }
 
     @Override
     protected void onDrag(MouseButtonEvent event, double dx, double dy) {
-        if (dragPaintSupplier.getAsBoolean()) {
-            applyAt(event.x(), event.y());
+        if (gestureModeSupplier.get() != GestureMode.BRUSH) {
+            return;
+        }
+
+        int[] pixel = localPixel(event.x(), event.y());
+        if (pixel != null) {
+            pixelAction.apply(pixel[0], pixel[1]);
         }
     }
 
@@ -544,7 +709,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         }
     }
 
-    private void applyAt(double mouseX, double mouseY) {
+    private int[] localPixel(double mouseX, double mouseY) {
         CapeUvRegion region = regionSupplier.get();
         int scale = CanvasResolution.fromCanvas(projectSupplier.get().cape()).scale();
         CanvasGeometry geometry = geometry(region, scale);
@@ -557,40 +722,33 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                 || mouseY < geometry.top
                 || mouseX >= geometry.left + geometry.drawWidth
                 || mouseY >= geometry.top + geometry.drawHeight) {
-            return;
+            return null;
         }
 
         int localX = (int)((mouseX - geometry.left) / geometry.pixelScale);
         int localY = (int)((mouseY - geometry.top) / geometry.pixelScale);
 
-        if (localX >= 0
-                && localY >= 0
-                && localX < region.width(scale)
-                && localY < region.height(scale)) {
-            pixelAction.apply(localX, localY);
+        if (localX < 0
+                || localY < 0
+                || localX >= region.width(scale)
+                || localY >= region.height(scale)) {
+            return null;
         }
+
+        return new int[]{localX, localY};
     }
 
     private void updateHover(double mouseX, double mouseY) {
-        CapeUvRegion region = regionSupplier.get();
-        int scale = CanvasResolution.fromCanvas(projectSupplier.get().cape()).scale();
-        CanvasGeometry geometry = geometry(region, scale);
+        int[] pixel = localPixel(mouseX, mouseY);
 
-        if (mouseX < geometry.clipLeft
-                || mouseY < geometry.clipTop
-                || mouseX >= geometry.clipRight
-                || mouseY >= geometry.clipBottom
-                || mouseX < geometry.left
-                || mouseY < geometry.top
-                || mouseX >= geometry.left + geometry.drawWidth
-                || mouseY >= geometry.top + geometry.drawHeight) {
+        if (pixel == null) {
             hoveredX = -1;
             hoveredY = -1;
             return;
         }
 
-        hoveredX = (int)((mouseX - geometry.left) / geometry.pixelScale);
-        hoveredY = (int)((mouseY - geometry.top) / geometry.pixelScale);
+        hoveredX = pixel[0];
+        hoveredY = pixel[1];
     }
 
     private CanvasGeometry geometry(CapeUvRegion region, int scale) {
@@ -657,6 +815,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             strokeLifecycle.end();
         }
 
+        shapeActive = false;
         panning = false;
         releaseTexture();
     }
