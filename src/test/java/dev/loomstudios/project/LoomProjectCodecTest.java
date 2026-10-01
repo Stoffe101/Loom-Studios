@@ -207,6 +207,85 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void lineToolPaintsBothEndpoints() {
+        LoomProject project = LoomProjectFactory.blank("Line", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject painted = ProjectEdits.paintCapeRegionLine(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                1,
+                1,
+                8,
+                12,
+                1,
+                0xFF44AAFF
+        );
+
+        int start = CapeUvRegion.OUTSIDE.atlasY(1)
+                * painted.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(1);
+        int end = CapeUvRegion.OUTSIDE.atlasY(12)
+                * painted.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(8);
+
+        assertEquals(
+                0xFF44AAFF,
+                painted.cape().layers().getFirst().pixelAt(start)
+        );
+        assertEquals(
+                0xFF44AAFF,
+                painted.cape().layers().getFirst().pixelAt(end)
+        );
+    }
+
+    @Test
+    void rectangleToolSupportsOutlineAndFilledModes() {
+        LoomProject project = LoomProjectFactory.blank("Rectangle", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject outline = ProjectEdits.paintCapeRegionRectangle(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                2,
+                6,
+                6,
+                1,
+                0xFFFF00AA,
+                false
+        );
+
+        int center = CapeUvRegion.OUTSIDE.atlasY(4)
+                * outline.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(4);
+        assertEquals(
+                0,
+                outline.cape().layers().getFirst().pixelAt(center)
+        );
+
+        LoomProject filled = ProjectEdits.paintCapeRegionRectangle(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                2,
+                6,
+                6,
+                1,
+                0xFFFF00AA,
+                true
+        );
+
+        assertEquals(
+                0xFFFF00AA,
+                filled.cape().layers().getFirst().pixelAt(center)
+        );
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 
