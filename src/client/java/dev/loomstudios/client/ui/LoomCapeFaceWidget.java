@@ -328,17 +328,30 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             GuiGraphics graphics,
             CanvasGeometry geometry
     ) {
-        if (hoveredX < 0 || hoveredY < 0) {
-            return;
-        }
-
-        int px = geometry.left + hoveredX * geometry.pixelScale;
-        int py = geometry.top + hoveredY * geometry.pixelScale;
-        int s = geometry.pixelScale;
-
         boolean temporaryBrushPreview =
                 gestureModeSupplier.get() == GestureMode.BRUSH
                         && System.nanoTime() < brushPreviewUntilNanos;
+
+        if (!temporaryBrushPreview && (hoveredX < 0 || hoveredY < 0)) {
+            return;
+        }
+
+        int cursorX = hoveredX;
+        int cursorY = hoveredY;
+
+        if (temporaryBrushPreview && (cursorX < 0 || cursorY < 0)) {
+            CapeUvRegion region = regionSupplier.get();
+            int scale = CanvasResolution.fromCanvas(
+                    projectSupplier.get().cape()
+            ).scale();
+
+            cursorX = Math.max(0, region.width(scale) / 2);
+            cursorY = Math.max(0, region.height(scale) / 2);
+        }
+
+        int px = geometry.left + cursorX * geometry.pixelScale;
+        int py = geometry.top + cursorY * geometry.pixelScale;
+        int s = geometry.pixelScale;
 
         if (!temporaryBrushPreview) {
             graphics.fill(px, py, px + s, py + 2, LoomUiTheme.ACCENT);
