@@ -9,15 +9,26 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 /**
- * Owns the one local editable project session used by rendering, networking
- * and the future editor.
+ * Sole owner of the local editable project session.
+ *
+ * <p>The editor session and the world/multiplayer equipped project are
+ * deliberately separate. Unsaved edits can update the editor preview without
+ * silently changing what other players see.</p>
  */
 public final class ClientProjectWorkspace {
+    private static final CopyOnWriteArrayList<Consumer<WorkspaceState>> LISTENERS =
+            new CopyOnWriteArrayList<>();
+
     private static UUID playerId;
     private static ProjectSession session;
+
+    private static LoomProject equippedProject;
+    private static String equippedHash;
 
     private ClientProjectWorkspace() {
     }
@@ -31,15 +42,22 @@ public final class ClientProjectWorkspace {
         }
 
         playerId = localPlayerId;
+        LoomProject development = LoomProjectFactory.forPlayer(localPlayerId);
         session = new ProjectSession(
-                LoomProjectFactory.forPlayer(localPlayerId),
+                development,
                 LocalProjectLibrary.store()
         );
+
+        // Development bootstrap only: give the player a visible cosmetic even
+        // before the real editor/library flow chooses a saved project.
+        equippedProject = development;
+        equippedHash = development.hash();
 
         LoomStudios.LOGGER.info(
                 "Created Loom project workspace for {}",
                 localPlayerId
         );
+        notifyListeners();
         return session;
     }
 
@@ -70,22 +88,69 @@ public final class ClientProjectWorkspace {
         return session().revision();
     }
 
+    public static boolean isDirty() {
+        return session().isDirty();
+    }
+
+    public static LoomProject equippedProject() {
+        if (equippedProject == null) {
+            throw new IllegalStateException("No Loom project is equipped");
+        }
+        return equippedProject;
+    }
+
+    public static String equippedProjectHash() {
+        if (equippedHash == null) {
+            throw new IllegalStateException("No Loom project is equipped");
+        }
+        return equippedHash;
+    }
+
+    public static boolean isCurrentProjectEquipped() {
+        return equippedHash != null && equippedHash.equals(projectHash());
+    }
+
     public static LoomProject apply(UnaryOperator<LoomProject> edit) {
-        return session().apply(edit);
+        LoomProject result = session().apply(edit);
+        notifyListeners();
+        return result;
     }
 
     public static LoomProject undo() {
-        return session().undo();
+        LoomProject result = session().undo();
+        notifyListeners();
+        return result;
     }
 
     public static LoomProject redo() {
-        return session().redo();
+        LoomProject result = session().redo();
+        notifyListeners();
+        return result;
     }
 
     public static Path save() throws IOException {
         Path saved = session().save();
         ProjectLibraryIndex.refresh();
+        notifyListeners();
         return saved;
+    }
+
+    public static Path saveAndEquip() throws IOException {
+        Path saved = save();
+        equipCurrent();
+        return saved;
+    }
+
+    public static void equipCurrent() {
+        if (session().isDirty()) {
+            throw new IllegalStateException(
+                    "Save the Loom project before equipping it"
+            );
+        }
+
+        equippedProject = project();
+        equippedHash = equippedProject.hash();
+        notifyListeners();
     }
 
     public static void createBlank(
@@ -99,6 +164,7 @@ public final class ClientProjectWorkspace {
                 LoomProjectFactory.blank(name, nowEpochMillis),
                 LocalProjectLibrary.store()
         );
+        notifyListeners();
     }
 
     public static void open(Path path, UUID localPlayerId) throws IOException {
@@ -106,6 +172,7 @@ public final class ClientProjectWorkspace {
         session = ProjectSession.load(path, LocalProjectLibrary.store());
         playerId = localPlayerId;
         ProjectLibraryIndex.refresh();
+        notifyListeners();
     }
 
     public static void bindPlayer(UUID localPlayerId) {
@@ -113,15 +180,49 @@ public final class ClientProjectWorkspace {
         playerId = localPlayerId;
 
         if (session == null) {
-            session = new ProjectSession(
-                    LoomProjectFactory.forPlayer(localPlayerId),
-                    LocalProjectLibrary.store()
-            );
+            ensure(localPlayerId);
+        }
+    }
+
+    public static WorkspaceState state() {
+        return new WorkspaceState(
+                project(),
+                revision(),
+                isDirty(),
+                session().sourcePath(),
+                equippedProject,
+                equippedHash
+        );
+    }
+
+    public static void addListener(Consumer<WorkspaceState> listener) {
+        LISTENERS.add(Objects.requireNonNull(listener, "listener"));
+
+        if (session != null) {
+            listener.accept(state());
+        }
+    }
+
+    public static void removeListener(Consumer<WorkspaceState> listener) {
+        LISTENERS.remove(listener);
+    }
+
+    private static void notifyListeners() {
+        if (session == null) {
+            return;
+        }
+
+        WorkspaceState snapshot = state();
+        for (Consumer<WorkspaceState> listener : LISTENERS) {
+            listener.accept(snapshot);
         }
     }
 
     public static void resetForTestsAndShutdown() {
         playerId = null;
         session = null;
+        equippedProject = null;
+        equippedHash = null;
+        LISTENERS.clear();
     }
 }

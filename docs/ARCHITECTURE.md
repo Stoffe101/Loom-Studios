@@ -186,3 +186,28 @@ Saved project discovery is separate:
 `ProjectLibraryIndex -> ProjectDescriptor -> cached cape thumbnail`.
 
 This ownership model is the baseline for Phase 2 editor widgets.
+
+
+## Editing versus equipped state
+
+Phase 1 now enforces a second ownership boundary:
+
+```
+ProjectSession (dirty allowed)
+        |
+        +---- editor preview / widgets
+        |
+       save
+        |
+        v
+saved .loom
+        |
+      equip
+        v
+Equipped LoomProject snapshot
+        |
+        +---- world renderer
+        +---- multiplayer sync
+```
+
+Unsaved edits never automatically cross the equip/network boundary.

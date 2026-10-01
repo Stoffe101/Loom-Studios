@@ -1,5 +1,22 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Editor/equipped state separation
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Implemented:
+- dirty ProjectSession is now distinct from saved/equipped world state;
+- multiplayer publishes only the equipped project hash;
+- in-world renderer consumes only the equipped project;
+- unsaved edits can remain local to the editor;
+- equip requires the current session to be saved/clean;
+- save-and-equip convenience path added;
+- WorkspaceState + listener registration added for future widgets/status bars.
+
+This aligns the implementation with the original architecture rule that unsaved preview edits must not silently mutate multiplayer equipped state.
+
+---
+
 ## 2026-10-01 — Workspace refactor compile correction
 
 Initial workspace-refactor SHA `b62392d0e80acdc2afdc4a326c2320d290b10752` failed client compilation because the lifecycle callback still invoked `PlayerCosmeticRenderer.close()` with no argument after the renderer close method was changed to accept the Minecraft client.

@@ -463,3 +463,20 @@ Before Phase 2, two editor-critical ownership issues were addressed:
 - changing the live project hash releases the previous local GPU runtime bundle and invalidates the local patched skin.
 
 LoomProjectFactory can now create true blank editable projects with transparent cape/Elytra base layers and real timestamps.
+
+
+## Phase 1 — edit session vs equipped-state separation
+
+The live workspace now distinguishes:
+- **editing project**: mutable through ProjectSession/history and allowed to be dirty;
+- **equipped project**: saved immutable project snapshot used by world rendering and multiplayer.
+
+Consequences:
+- unsaved editor changes no longer automatically alter the player's visible/networked cape;
+- `equipCurrent()` requires a clean/saved session;
+- `saveAndEquip()` is the explicit convenience path;
+- ClientCosmeticSync publishes the equipped hash, not the dirty editing hash;
+- PlayerCosmeticRenderer renders the equipped project in-world;
+- WorkspaceState/listeners provide a live change-notification surface for Phase-2 widgets.
+
+The existing development project is still auto-equipped at first bootstrap so current runtime tests remain visible.

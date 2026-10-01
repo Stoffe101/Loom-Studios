@@ -41,7 +41,7 @@ public final class PlayerCosmeticRenderer {
 
         ClientProjectWorkspace.ensure(client.player.getUUID());
 
-        String currentLocalHash = ClientProjectWorkspace.projectHash();
+        String currentLocalHash = ClientProjectWorkspace.equippedProjectHash();
         if (lastLocalProjectHash != null
                 && !lastLocalProjectHash.equals(currentLocalHash)) {
             RuntimeCosmeticCache.release(client, lastLocalProjectHash);

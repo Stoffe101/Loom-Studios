@@ -21,13 +21,13 @@ No dedicated two-client test is required unless the single-client regression or 
 
 ## Next Phase-1 work
 
-1. finish the production workspace controller API around create/open/save/equip;
-2. add project-library selection/recent-project state;
-3. expose live-session change notifications for editor widgets;
-4. finish removing SPIKE naming from preview/effect scaffolding where appropriate;
-5. invalidate/regenerate saved thumbnails when edits are saved.
+1. add project-library selection/recent-project state;
+2. finish removing SPIKE naming from preview/effect scaffolding where appropriate;
+3. invalidate/regenerate saved thumbnails when edits are saved;
+4. add preview-only project override so Phase-2 can render unsaved ProjectSession output;
+5. add first reusable editor widgets.
 
-Blank editable project creation and local runtime-cache invalidation on project hash changes are now implemented.
+Create/open/save/save-and-equip/equip and live WorkspaceState notifications are now implemented.
 
 Then begin **Phase 2 Cape Editor MVP**:
 - Cape Loom block interaction;

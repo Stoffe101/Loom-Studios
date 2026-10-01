@@ -290,3 +290,37 @@ A single malformed .loom file must not prevent the library/home screen from open
 ProjectLibraryIndex loads each project independently, logs/rejects broken entries, and exposes the count of rejected files.
 
 Thumbnails are derived caches and are keyed by project UUID + content-hash prefix.
+
+
+## ADR-035 — Editing state and equipped state are separate
+**Status:** Accepted / implemented
+
+ClientProjectWorkspace owns both concepts but they have different lifecycles.
+
+Editing state:
+- lives in ProjectSession;
+- may be dirty;
+- feeds future editor/canvas/preview widgets;
+- supports undo/redo before saving.
+
+Equipped state:
+- is a saved immutable LoomProject snapshot;
+- is what PlayerCosmeticRenderer shows in the world;
+- is what ClientCosmeticSync publishes to the server;
+- changes only through an explicit equip action.
+
+`equipCurrent()` requires the session to be clean. `saveAndEquip()` performs the common combined action.
+
+This prevents a paint stroke or undo operation from unexpectedly changing other players' view before the user saves/equips.
+
+## ADR-036 — Workspace widgets observe immutable WorkspaceState snapshots
+**Status:** Accepted / implemented foundation
+
+ClientProjectWorkspace exposes listener registration using immutable WorkspaceState values containing:
+- current project;
+- revision;
+- dirty state;
+- source path;
+- equipped project/hash.
+
+Phase-2 UI widgets should react to these snapshots rather than polling unrelated global fields.
