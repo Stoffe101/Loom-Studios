@@ -30,7 +30,7 @@ Loom Studios does not replace Mojang's official cape entitlement system. When no
 8. Graceful fallback when optional effects or mods are unavailable.
 9. Versioned/migratable project data.
 10. Strong Minecraft-friendly visual identity.
-11. Sodium and Iris compatibility are release requirements.
+11. Sodium, Sodium Extra, Iris/shaders, and 3D Skin Layers are optional compatibility targets; none are required to use Loom Studios.
 12. Documentation is part of implementation and is a hard completion gate.
 
 ## 3. Visual identity
@@ -418,18 +418,18 @@ Goals:
 
 Dynamic texture updates should occur only when compiled output changes.
 
-## 18. Sodium / Iris / shaders
+## 18. Sodium / Iris / shaders / 3D Skin Layers
 
-Mandatory configurations:
+These are optional supported integrations, not Loom Studios dependencies. Compatibility should be tested in:
 
 1. Fabric only
 2. Fabric + Sodium
 3. Fabric + Sodium + Iris, shaders OFF
 4. Fabric + Sodium + Iris, shaders ON
 
-Loom Studios must not require Sodium or Iris.
+Loom Studios must work on plain Fabric without Sodium, Sodium Extra, Iris, shader packs, or 3D Skin Layers.
 
-Shader packs must not be able to turn a failed optional glow pass into a missing base cape or hard crash.
+Shader packs must not be able to turn a failed optional glow pass into a missing base cape or hard crash. 3D Skin Layers should be smoke-tested around player feature rendering but needs no dedicated integration unless a real conflict is found.
 
 See COMPATIBILITY.md and TEST_MATRIX.md.
 

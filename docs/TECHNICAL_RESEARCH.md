@@ -120,9 +120,9 @@ Use a separate optional feature pass rather than forcing true emissive semantics
 
 Base cape/Elytra must survive if an optional shader-sensitive pass is disabled.
 
-## Sodium/Iris
+## Sodium / Iris / Sodium Extra / 3D Skin Layers
 
-Both are mandatory compatibility targets.
+These are optional compatibility targets, not dependencies. Plain Fabric remains the required core runtime.
 
 Design rule:
 - use Minecraft/Fabric-supported rendering paths;

@@ -7,8 +7,8 @@ Loom Studios is a Minecraft Java Edition Fabric mod for creating, editing, anima
 - Minecraft Java Edition **1.21.11**
 - Fabric Loader **0.18.4**
 - Java **21**
-- Sodium compatibility: **required**
-- Iris + shader compatibility: **required**
+- Sodium compatibility: **optional supported integration**
+- Iris + shader compatibility: **optional supported integration**
 
 ## Current status
 

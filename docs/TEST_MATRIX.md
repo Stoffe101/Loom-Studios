@@ -19,16 +19,18 @@ Required:
 
 ## Rendering compatibility matrix
 
-Every rendering milestone must be tested in:
+Plain Fabric is the required runtime. The other configurations are optional compatibility targets we actively support and should smoke-test for relevant rendering changes.
 
-| Configuration | Required |
-| --- | --- |
-| Fabric only | Yes |
-| Fabric + Sodium | Yes |
-| Fabric + Sodium + Iris, shaders OFF | Yes |
-| Fabric + Sodium + Iris, shaders ON | Yes |
+| Configuration | Runtime requirement | Compatibility target |
+| --- | --- | --- |
+| Fabric only | Yes | Primary |
+| Fabric + Sodium | No | Supported |
+| Fabric + Sodium + Sodium Extra | No | Supported |
+| Fabric + Sodium + Iris, shaders OFF | No | Supported |
+| Fabric + Sodium + Iris, shaders ON | No | Supported |
+| Fabric + 3D Skin Layers | No | Smoke test when player feature rendering changes |
 
-Shader-sensitive effects should also be checked with a second materially different shader pack before release.
+Shader-sensitive effects should be checked with at least one representative shader pack before release.
 
 ## Cape tests
 

@@ -1,5 +1,46 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-01 compile checkpoint
+
+**Result: CI PASS / RUNTIME VISUAL TEST PENDING**
+
+Exact SHA: `c7386f0ed3a46bfb51c7ae8614162deb03ee4fd4`
+
+GitHub Actions run #5:
+- Java 21 setup: PASS
+- Gradle wrapper: PASS
+- project build: PASS
+- SPIKE-01 client mixin compilation: PASS
+- resources/mixin JSON/test cape packaging: PASS
+- artifact upload: PASS
+
+Implemented:
+- local-player-only AvatarRenderer render-state injection;
+- cape-only `PlayerSkin.Patch`;
+- vanilla `CapeLayer` remains responsible for motion/geometry;
+- cyan/magenta 64x32 LS test cape;
+- patched-skin cache;
+- client-only mixin configuration.
+
+Still required before SPIKE-01 is DONE:
+- local runClient visual confirmation;
+- normal vanilla cape movement;
+- optional Sodium/Iris/Sodium Extra/3D Skin Layers smoke tests.
+
+---
+
+## 2026-10-01 — First green SPIKE-00 CI baseline
+
+**Result: CI PASS**
+
+Exact SHA: `a620de1a16334657b7e33f1606c800a673580214`
+
+GitHub Actions run #4 completed successfully and uploaded the Loom Studios development artifact. This proves the Java 21 + Minecraft 1.21.11 + Loader 0.18.4 dependency baseline + Fabric API 0.141.1 + Loom 1.17.21 + Gradle 9.6.1 build combination.
+
+Local dev-client and dedicated-server launches remain required before SPIKE-00 is fully DONE.
+
+---
+
 ## 2026-10-01 — SPIKE-00 JAR configuration-cache correction
 
 **Status: IN PROGRESS**
