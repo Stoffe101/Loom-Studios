@@ -45,15 +45,16 @@ These features are implemented/CI-green but still need local in-game verificatio
 
 Priority order:
 
-1. selection model;
-2. Move tool;
-3. Flip Horizontal / Vertical;
-4. crop/selection bounds architecture;
-5. Recent Project thumbnail-card component;
-6. reusable tooltip/icon-button primitives;
-7. Smart Import processing core tests;
-8. Elytra semantic UV/editor model;
-9. animation authoring schema research/design.
+1. expose the implemented PixelSelection model in the Cape Editor;
+2. drag-to-select overlay;
+3. Move/nudge selected pixels;
+4. Flip Horizontal / Vertical controls;
+5. crop/selection bounds architecture;
+6. Recent Project thumbnail-card component;
+7. reusable tooltip/icon-button primitives;
+8. Smart Import processing core tests;
+9. Elytra semantic UV/editor model;
+10. animation authoring schema research/design.
 
 ## Schema-expansion gate
 

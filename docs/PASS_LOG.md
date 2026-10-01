@@ -1,5 +1,26 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Selection / transform core foundation
+
+**Status: IMPLEMENTED / CI RUNNING OR GREEN AT CHECKPOINT**
+
+Implemented common, testable transform primitives before exposing the visual editor tool:
+- `PixelSelection`;
+- semantic-face move;
+- horizontal/vertical flip;
+- bounds validation;
+- deterministic overlapping move behavior.
+
+Automated coverage verifies:
+- horizontal flip order;
+- move clears the source;
+- moved pixels land at expected destination coordinates;
+- out-of-face selections are rejected.
+
+This deliberately builds the transform engine before the final reference-image toolbar interaction.
+
+---
+
 ## 2026-10-02 — Layer effects + reference-fidelity roadmap
 
 **Result: IMPLEMENTATION CI PASS / LOCAL VISUAL TEST PENDING**

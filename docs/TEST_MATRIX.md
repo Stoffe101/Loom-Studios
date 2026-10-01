@@ -489,3 +489,20 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - semantic face preview and full runtime compiler use the same blend mode
 - emissive-only compilation still excludes non-emissive layers
 - shader-on/off runtime smoke test is required before calling emissive UI DONE
+
+
+## Selection / transform core
+
+- PixelSelection normalizes drag endpoints through `between(...)`
+- invalid negative/inverted direct selections are rejected
+- selection outside active semantic face is rejected
+- horizontal flip reverses selected x order only
+- vertical flip reverses selected y order only
+- combined flip applies both axes
+- move captures source before clearing
+- overlapping moves are deterministic
+- move clears original selected pixels
+- destination pixels remain inside semantic face
+- pixels moved outside semantic face are clipped rather than touching other UV faces
+- transform affects selected layer only
+- transform participates in normal ProjectSession history once exposed through editor UI

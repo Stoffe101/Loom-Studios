@@ -784,3 +784,22 @@ Implemented:
 Reference-image direction is now tracked explicitly in `REFERENCE_FIDELITY_ROADMAP.md` so the five approved screens remain an active design constraint rather than an end-of-project reminder.
 
 Persistent layer lock is intentionally deferred to the next coordinated project-schema expansion, together with non-pixel layer kinds, rather than mutating schema v1 piecemeal.
+
+
+## Selection / transform core foundation
+
+CI-safe transform work continued without depending on local visual testing.
+
+Implemented:
+- reusable `PixelSelection` model for inclusive semantic-face selections;
+- selection bounds are editor/session state rather than serialized project data;
+- move selected pixels within one cape semantic face;
+- horizontal flip;
+- vertical flip;
+- combined horizontal+vertical flip;
+- selection transforms operate on the active layer only;
+- move captures source pixels before clearing, so overlapping moves are deterministic;
+- moves clip safely at semantic-face bounds;
+- invalid selections that cross the active semantic face are rejected.
+
+This is the common-core foundation for the upcoming Select/Move/Flip editor tools and later Smart Import transforms.

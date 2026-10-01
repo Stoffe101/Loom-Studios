@@ -656,3 +656,19 @@ Phase 8 remains the dedicated final polish/unification pass, but earlier phases 
 - responsive behavior.
 
 This reduces the chance of a final full UI rewrite.
+
+
+## ADR-063 — Pixel selection is editor state, transforms are project edits
+**Status:** Accepted / implemented foundation
+
+The rectangular selection itself is not serialized into `.loom`.
+
+It represents temporary editor state.
+
+Operations performed on that selection are immutable project edits and therefore:
+- update dirty state;
+- participate in Undo/Redo;
+- operate on the selected layer;
+- stay inside the currently active semantic cape face.
+
+This separation keeps project files free of accidental UI-session state while still making selection transforms deterministic and undoable.

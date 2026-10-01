@@ -118,7 +118,7 @@ Implemented:
 Missing/reference gap:
 - layer lock;
 - proper icon toolbar;
-- Move / selection / crop / flip tools;
+- Select/Move/Flip UI (common selection/move/flip engine is now implemented);
 - first-class editable Gradient tool/layer;
 - recent colors;
 - richer tooltips/shortcut help;
