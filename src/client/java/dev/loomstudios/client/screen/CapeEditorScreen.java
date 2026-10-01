@@ -7,6 +7,7 @@ import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomCapeFaceWidget;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
+import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPaletteButton;
 import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -32,7 +33,10 @@ import java.util.function.Consumer;
 public final class CapeEditorScreen extends Screen {
     private final Screen parent;
     private final Consumer<WorkspaceState> workspaceListener =
-            state -> this.workspaceState = state;
+            state -> {
+                this.workspaceState = state;
+                ensureSelectedLayerExists();
+            };
 
     private WorkspaceState workspaceState;
     private Tool tool = Tool.PENCIL;
@@ -61,11 +65,20 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton zoomOutButton;
     private LoomButton zoomLabelButton;
     private LoomButton zoomInButton;
+    private LoomButton layerAddButton;
+    private LoomButton layerDuplicateButton;
+    private LoomButton layerDeleteButton;
+    private LoomButton layerUpButton;
+    private LoomButton layerDownButton;
+    private LoomButton layerOpacityDownButton;
+    private LoomButton layerOpacityLabelButton;
+    private LoomButton layerOpacityUpButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
 
     private LoomCapeFaceWidget canvasWidget;
     private LoomColorPickerWidget colorPicker;
+    private LoomLayerListWidget layerListWidget;
     private EditBox hexColorField;
     private EditBox redColorField;
     private EditBox greenColorField;
@@ -311,6 +324,79 @@ public final class CapeEditorScreen extends Screen {
                 22,
                 this::togglePaletteWindow
         ));
+
+        this.layerListWidget = new LoomLayerListWidget(
+                0,
+                0,
+                contentWidth,
+                92,
+                () -> this.workspaceState.project(),
+                () -> this.selectedLayerId,
+                this::selectLayer,
+                this::toggleLayerVisibility
+        );
+        tools.addChild(this.layerListWidget);
+
+        LinearLayout layerCreateRow = LinearLayout.horizontal().spacing(4);
+        int layerThird = Math.max(38, (contentWidth - 8) / 3);
+
+        layerAddButton = createLoomButton(
+                layerThird,
+                "New",
+                this::addLayer
+        );
+        layerDuplicateButton = createLoomButton(
+                layerThird,
+                "Duplicate",
+                this::duplicateLayer
+        );
+        layerDeleteButton = createLoomButton(
+                contentWidth - layerThird * 2 - 8,
+                "Delete",
+                this::deleteLayer
+        );
+
+        layerCreateRow.addChild(layerAddButton);
+        layerCreateRow.addChild(layerDuplicateButton);
+        layerCreateRow.addChild(layerDeleteButton);
+        tools.addChild(layerCreateRow);
+
+        LinearLayout layerMoveRow = LinearLayout.horizontal().spacing(4);
+        layerUpButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Layer Up",
+                () -> moveLayer(1)
+        );
+        layerDownButton = createLoomButton(
+                contentWidth - 4 - layerUpButton.getWidth(),
+                "Layer Down",
+                () -> moveLayer(-1)
+        );
+        layerMoveRow.addChild(layerUpButton);
+        layerMoveRow.addChild(layerDownButton);
+        tools.addChild(layerMoveRow);
+
+        LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
+        layerOpacityDownButton = createLoomButton(
+                48,
+                "Op -",
+                () -> changeLayerOpacity(-0.1F)
+        );
+        layerOpacityLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "Opacity 100%",
+                () -> { }
+        );
+        layerOpacityLabelButton.active = false;
+        layerOpacityUpButton = createLoomButton(
+                48,
+                "Op +",
+                () -> changeLayerOpacity(0.1F)
+        );
+        layerOpacityRow.addChild(layerOpacityDownButton);
+        layerOpacityRow.addChild(layerOpacityLabelButton);
+        layerOpacityRow.addChild(layerOpacityUpButton);
+        tools.addChild(layerOpacityRow);
 
         LinearLayout historyRow = LinearLayout.horizontal().spacing(4);
         undoButton = createLoomButton(
@@ -803,6 +889,56 @@ public final class CapeEditorScreen extends Screen {
                             this.workspaceState.project().cape()
                     ).scale() * 8;
         }
+
+        if (workspaceState != null
+                && !workspaceState.project().cape().layers().isEmpty()) {
+            ensureSelectedLayerExists();
+
+            var layers = workspaceState.project().cape().layers();
+            int selectedIndex = -1;
+            for (int i = 0; i < layers.size(); i++) {
+                if (layers.get(i).id().equals(selectedLayerId)) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+
+            LoomLayer layer = selectedLayer();
+
+            if (layerDeleteButton != null) {
+                layerDeleteButton.active = layers.size() > 1;
+            }
+            if (layerDuplicateButton != null) {
+                layerDuplicateButton.active =
+                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerAddButton != null) {
+                layerAddButton.active =
+                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerUpButton != null) {
+                layerUpButton.active =
+                        selectedIndex >= 0 && selectedIndex < layers.size() - 1;
+            }
+            if (layerDownButton != null) {
+                layerDownButton.active = selectedIndex > 0;
+            }
+            if (layerOpacityDownButton != null) {
+                layerOpacityDownButton.active = layer.opacity() > 0.0F;
+            }
+            if (layerOpacityUpButton != null) {
+                layerOpacityUpButton.active = layer.opacity() < 1.0F;
+            }
+            if (layerOpacityLabelButton != null) {
+                layerOpacityLabelButton.setMessage(
+                        Component.literal(
+                                "Opacity "
+                                        + Math.round(layer.opacity() * 100.0F)
+                                        + "%"
+                        )
+                );
+            }
+        }
     }
 
     private UUID findEditableLayer() {
@@ -813,6 +949,166 @@ public final class CapeEditorScreen extends Screen {
                 .orElseThrow(() -> new IllegalStateException(
                         "Cape project has no editable paint layer"
                 ));
+    }
+
+    private void ensureSelectedLayerExists() {
+        if (workspaceState == null
+                || workspaceState.project().cape().layers().isEmpty()) {
+            return;
+        }
+
+        boolean exists = selectedLayerId != null
+                && workspaceState.project().cape().layers().stream()
+                .anyMatch(layer -> layer.id().equals(selectedLayerId));
+
+        if (!exists) {
+            selectedLayerId = workspaceState.project()
+                    .cape()
+                    .layers()
+                    .getLast()
+                    .id();
+        }
+    }
+
+    private LoomLayer selectedLayer() {
+        ensureSelectedLayerExists();
+
+        return workspaceState.project().cape().layers().stream()
+                .filter(layer -> layer.id().equals(selectedLayerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Selected cape layer does not exist"
+                ));
+    }
+
+    private void selectLayer(UUID layerId) {
+        this.selectedLayerId = layerId;
+        updateButtonStates();
+    }
+
+    private void toggleLayerVisibility(UUID layerId) {
+        LoomLayer layer = workspaceState.project().cape().layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElse(null);
+
+        if (layer == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerVisible(
+                        project,
+                        layerId,
+                        !layer.visible()
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void addLayer() {
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.addCapeLayer(project, "Layer")
+        );
+        selectedLayerId = result.cape().layers().getLast().id();
+        updateButtonStates();
+    }
+
+    private void duplicateLayer() {
+        ensureSelectedLayerExists();
+
+        var before = ClientProjectWorkspace.project().cape().layers();
+        int index = -1;
+
+        for (int i = 0; i < before.size(); i++) {
+            if (before.get(i).id().equals(selectedLayerId)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index < 0) {
+            return;
+        }
+
+        int originalIndex = index;
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.duplicateCapeLayer(
+                        project,
+                        selectedLayerId
+                )
+        );
+
+        selectedLayerId = result.cape()
+                .layers()
+                .get(originalIndex + 1)
+                .id();
+        updateButtonStates();
+    }
+
+    private void deleteLayer() {
+        ensureSelectedLayerExists();
+
+        var before = ClientProjectWorkspace.project().cape().layers();
+        if (before.size() <= 1) {
+            return;
+        }
+
+        int index = 0;
+        for (int i = 0; i < before.size(); i++) {
+            if (before.get(i).id().equals(selectedLayerId)) {
+                index = i;
+                break;
+            }
+        }
+
+        int oldIndex = index;
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.removeCapeLayer(
+                        project,
+                        selectedLayerId
+                )
+        );
+
+        int nextIndex = Math.min(
+                oldIndex,
+                result.cape().layers().size() - 1
+        );
+        selectedLayerId = result.cape()
+                .layers()
+                .get(nextIndex)
+                .id();
+        updateButtonStates();
+    }
+
+    private void moveLayer(int delta) {
+        ensureSelectedLayerExists();
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.moveCapeLayer(
+                        project,
+                        selectedLayerId,
+                        delta
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void changeLayerOpacity(float delta) {
+        LoomLayer layer = selectedLayer();
+        float next = Math.max(
+                0.0F,
+                Math.min(1.0F, layer.opacity() + delta)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerOpacity(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
     }
 
     private void editPixel(int x, int y) {
