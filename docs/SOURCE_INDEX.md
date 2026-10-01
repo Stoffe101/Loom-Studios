@@ -132,3 +132,46 @@ Loom Studios implementation:
 - uses the same public 1.21.11 rendering seam;
 - keeps its own names, project architecture, state model, and future dynamic-texture system;
 - the consulted source is CC0, but the source is still recorded here for traceability.
+
+
+## Fabric 1.21.11 networking documentation
+
+Repository/source:
+- `FabricMC/fabric-docs`
+- 1.21.11 networking guide and reference examples
+
+Questions answered:
+- `CustomPacketPayload` record structure;
+- `PayloadTypeRegistry.playC2S()/playS2C()`;
+- `ClientPlayNetworking` and `ServerPlayNetworking` receiver/send shape;
+- server-side validation expectations;
+- tracking/networking architecture.
+
+Use:
+- API and architecture reference only.
+
+## Minecraft 1.21.11 mapped/decompiled API inspection
+
+Source inspected:
+- `rrrRex1024/minecraft-1-21-11-source`
+
+Classes inspected during the foundation spikes:
+- `AvatarRenderer`
+- `CapeLayer`
+- `WingsLayer`
+- `ElytraModel`
+- `PlayerCapeModel`
+- `InventoryScreen`
+- `RenderTypes`
+- player/entity render-state classes
+
+Questions answered:
+- cape/Elytra fallback behavior;
+- vanilla cape armor/wing suppression offsets;
+- Elytra model dimensions and thickness;
+- GUI entity render-state submission;
+- emissive render type availability.
+
+Use:
+- version-specific API behavior inspection and independent Loom Studios implementation.
+- No Minecraft assets are copied into the Loom Studios source.

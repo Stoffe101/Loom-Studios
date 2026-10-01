@@ -316,3 +316,24 @@ Manual verification remains the completion gate.
 ## SPIKE-06 alignment hardening
 
 The emissive cape layer now mirrors vanilla CapeLayer's chest-equipment WINGS suppression and HUMANOID armor translation. This keeps the optional glow mask aligned with the base cape instead of drifting when armor is worn.
+
+
+## Latest combined SPIKE-05/06 implementation checkpoint
+
+Exact SHA `20451c816ecf9f8f806968c2663f462d161e659c` is the latest fully green implementation checkpoint.
+
+GitHub Actions run #23:
+- wrapper verification: PASS
+- full Java 21 / Minecraft 1.21.11 build: PASS
+- mod artifact upload: PASS
+
+This checkpoint includes:
+- multiplayer project/hash synchronization proof;
+- remote-player runtime cosmetic rendering;
+- deterministic local animation;
+- emissive cape feature pass;
+- vanilla armor/wing alignment rules for the emissive layer;
+- Client A / Client B run profiles;
+- Windows-safe concurrent optional-dev-mod handling.
+
+SPIKE-05 and SPIKE-06 remain **runtime verification pending**, not DONE.

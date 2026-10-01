@@ -1,5 +1,32 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-05/06 latest green implementation checkpoint
+
+**Result: CI PASS / MANUAL RUNTIME PASS REQUIRED**
+
+Exact SHA: `20451c816ecf9f8f806968c2663f462d161e659c`  
+GitHub Actions run #23: **SUCCESS**
+
+Green scope:
+- content-addressed multiplayer proof protocol;
+- server-side project validation/cache/equipped state;
+- client-side cache-miss retrieval and remote compilation;
+- remote-player cape/Elytra render-state application;
+- deterministic local animation;
+- generated emissive cape mask;
+- Fabric-registered emissive player feature layer;
+- vanilla chest-armor offset and wing-suppression parity;
+- Client A and Client B dev profiles;
+- Windows-safe nested optional-mod extraction for concurrent clients.
+
+Completion gate remaining:
+- actual two-client LAN synchronization;
+- visible remote cosmetics on both sides;
+- emissive ON/OFF visual proof;
+- Iris/shader smoke test.
+
+---
+
 ## 2026-10-01 — Multi-client Windows dev-runtime hardening
 
 **Status: IMPLEMENTED / CI RETEST REQUIRED**
