@@ -1,5 +1,15 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Official Gradle launcher scripts
+
+**Result: DONE**
+
+Replaced the temporary minimal wrapper launcher scripts with the full official `gradlew` and `gradlew.bat` scripts from Fabric's 1.21.11 example project. The committed wrapper JAR remains the official Gradle wrapper binary.
+
+Reason: Windows/IntelliJ is the primary local development workflow, so wrapper launching should handle quoting, JAVA_HOME, and platform edge cases exactly as the standard Fabric project does.
+
+---
+
 ## 2026-10-01 — SPIKE-01 compile checkpoint
 
 **Result: CI PASS / RUNTIME VISUAL TEST PENDING**
