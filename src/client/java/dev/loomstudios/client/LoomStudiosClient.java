@@ -6,7 +6,7 @@ import dev.loomstudios.client.network.ClientCosmeticSync;
 import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import dev.loomstudios.client.render.LoomCapeGlowLayer;
-import dev.loomstudios.client.screen.LoomPreviewSpikeScreen;
+import dev.loomstudios.client.screen.LoomPlayerPreviewScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -75,7 +75,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
 
             while (openPreview.consumeClick()) {
                 if (client.player != null && client.level != null) {
-                    client.setScreen(new LoomPreviewSpikeScreen());
+                    client.setScreen(new LoomPlayerPreviewScreen());
                 }
             }
 

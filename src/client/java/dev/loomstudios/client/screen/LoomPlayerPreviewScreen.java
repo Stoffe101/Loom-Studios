@@ -1,5 +1,7 @@
 package dev.loomstudios.client.screen;
 
+import dev.loomstudios.client.project.ClientProjectWorkspace;
+import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,14 +23,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * SPIKE-04 functional player-preview screen.
+ * Reusable player-preview foundation for the Loom editor.
  *
- * <p>This intentionally does not resemble the final Loom Studios reference UI.
- * Its job is to prove that we can render and manipulate isolated player render
- * state inside a GUI before the real widget library is built.</p>
+ * <p>The final visual treatment will follow the approved reference screens;
+ * this class owns the preview interaction/render mechanics.</p>
  */
-public final class LoomPreviewSpikeScreen extends Screen {
-    private static final Component TITLE = Component.literal("Loom Studios - Preview Spike");
+public final class LoomPlayerPreviewScreen extends Screen {
+    private static final Component TITLE = Component.literal("Loom Studios - Player Preview");
     private static final int PANEL_COLOR = 0xE6121720;
     private static final int INNER_COLOR = 0xB8060A10;
     private static final int ACCENT_COLOR = 0xFF20D9E8;
@@ -41,7 +42,7 @@ public final class LoomPreviewSpikeScreen extends Screen {
     private float zoom = 1.0F;
     private boolean draggingPreview;
 
-    public LoomPreviewSpikeScreen() {
+    public LoomPlayerPreviewScreen() {
         super(TITLE);
     }
 
@@ -181,16 +182,24 @@ public final class LoomPreviewSpikeScreen extends Screen {
         );
     }
 
-    private static EntityRenderState extractRenderState(LivingEntity entity) {
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        EntityRenderer<? super LivingEntity, ?> renderer =
-                dispatcher.getRenderer((Entity)entity);
+    private EntityRenderState extractRenderState(LivingEntity entity) {
+        return PlayerCosmeticRenderer.withPreviewProject(
+                this.minecraft,
+                ClientProjectWorkspace.project(),
+                () -> {
+                    EntityRenderDispatcher dispatcher =
+                            Minecraft.getInstance().getEntityRenderDispatcher();
+                    EntityRenderer<? super LivingEntity, ?> renderer =
+                            dispatcher.getRenderer((Entity)entity);
 
-        EntityRenderState renderState = renderer.createRenderState(entity, 1.0F);
-        renderState.lightCoords = 15728880;
-        renderState.shadowPieces.clear();
-        renderState.outlineColor = 0;
-        return renderState;
+                    EntityRenderState renderState =
+                            renderer.createRenderState(entity, 1.0F);
+                    renderState.lightCoords = 15728880;
+                    renderState.shadowPieces.clear();
+                    renderState.outlineColor = 0;
+                    return renderState;
+                }
+        );
     }
 
     @Override
@@ -282,6 +291,12 @@ public final class LoomPreviewSpikeScreen extends Screen {
     private static float wrapDegrees(float degrees) {
         float wrapped = degrees % 360.0F;
         return wrapped < 0.0F ? wrapped + 360.0F : wrapped;
+    }
+
+    @Override
+    public void removed() {
+        PlayerCosmeticRenderer.clearPreviewProject(this.minecraft);
+        super.removed();
     }
 
     @Override

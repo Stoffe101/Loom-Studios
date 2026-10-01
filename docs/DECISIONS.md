@@ -324,3 +324,27 @@ ClientProjectWorkspace exposes listener registration using immutable WorkspaceSt
 - equipped project/hash.
 
 Phase-2 UI widgets should react to these snapshots rather than polling unrelated global fields.
+
+
+## ADR-037 — Editor preview uses a scoped render-state project override
+**Status:** Accepted / implemented
+
+The in-GUI player preview must show unsaved ProjectSession output without mutating the player's world/equipped state.
+
+PlayerCosmeticRenderer therefore supports a scoped preview override only while the preview extracts the local player's render state.
+
+Outside that scope:
+- world renderer uses the equipped project;
+- multiplayer publishes the equipped project;
+- no global player entity/equipment mutation occurs.
+
+Preview runtime texture bundles are derived caches and are evicted when the preview hash changes or the screen closes.
+
+## ADR-038 — Project-library selection belongs to the library model
+**Status:** Accepted / implemented foundation
+
+ProjectLibraryIndex owns the currently selected project UUID and preserves it across refreshes when the project still exists.
+
+If selection disappears, the newest remaining project becomes the default selection.
+
+This gives the Phase-2 home/Recent Projects screen stable selection behavior independent of widget instances.

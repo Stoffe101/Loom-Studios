@@ -1,5 +1,22 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Unsaved preview + production preview/library cleanup
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Implemented:
+- LoomPlayerPreviewScreen production naming;
+- scoped preview-project override during local player render-state extraction;
+- dirty editor project can render in preview while world/multiplayer retain equipped project;
+- preview GPU bundle eviction on replacement/close;
+- preview Elytra thickness comes from preview project;
+- Recent Projects selection state;
+- stale content-hash thumbnail pruning.
+
+This is the final ownership bridge required before the real Phase-2 editor canvas can mutate ProjectSession live.
+
+---
+
 ## 2026-10-01 — Editor/equipped state separation
 
 **Status: IMPLEMENTED / CI PENDING**

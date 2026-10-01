@@ -50,6 +50,7 @@ public final class RuntimeCosmeticCache {
         );
 
         RuntimeBundle bundle = new RuntimeBundle(
+                projectHash,
                 project,
                 capeId,
                 elytraId,
@@ -249,6 +250,7 @@ public final class RuntimeCosmeticCache {
     }
 
     public static final class RuntimeBundle {
+        final String projectHash;
         final LoomProject project;
         final Identifier capeTextureId;
         final Identifier elytraTextureId;
@@ -265,6 +267,7 @@ public final class RuntimeCosmeticCache {
         int phase = -1;
 
         RuntimeBundle(
+                String projectHash,
                 LoomProject project,
                 Identifier capeTextureId,
                 Identifier elytraTextureId,
@@ -275,6 +278,7 @@ public final class RuntimeCosmeticCache {
                 NativeImage elytraImage,
                 NativeImage emissiveImage
         ) {
+            this.projectHash = projectHash;
             this.project = project;
             this.capeTextureId = capeTextureId;
             this.elytraTextureId = elytraTextureId;

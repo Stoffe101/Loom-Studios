@@ -1,43 +1,51 @@
 # Loom Studios — Next Work
 
-## Phase 1 — active verification
+## Phase 1 — finalization
 
-Current implementation now has:
-- one live ClientProjectWorkspace / ProjectSession;
-- automatic project-hash republishing to multiplayer;
-- production RuntimeCosmeticCache;
-- PlayerCosmeticRenderer facade;
-- Recent Projects descriptor/index;
-- cached project thumbnails.
+Current implementation now covers:
+- versioned project model/codec/migrations;
+- session/undo/redo/dirty/save/load;
+- edit state separate from equipped state;
+- multiplayer uses equipped content hash;
+- runtime GPU cache;
+- unsaved project preview override;
+- Recent Projects index/selection;
+- cached thumbnails with stale-cache pruning;
+- production player-preview foundation.
 
-After CI is green, do one quick local regression:
+After exact-SHA CI and one runtime regression, Phase 1 is functionally ready for Phase 2.
+
+## Immediate local regression
+
 - runClient;
-- confirm cape still renders/animates;
-- P preview still works;
-- Elytra still looks correct;
-- optional G/V debug controls still work.
+- world cape still renders/animates;
+- P opens **Loom Studios - Player Preview**;
+- preview Cape/Elytra toggle still works;
+- V/G dev controls still work;
+- Elytra baseline remains correct.
 
-No dedicated two-client test is required unless the single-client regression or CI exposes a networking issue.
+No UI for editing exists yet, so the dirty-preview override will receive its first interactive exercise in Phase 2.
 
-## Next Phase-1 work
+## Next: Phase 2 Cape Editor MVP
 
-1. add project-library selection/recent-project state;
-2. finish removing SPIKE naming from preview/effect scaffolding where appropriate;
-3. invalidate/regenerate saved thumbnails when edits are saved;
-4. add preview-only project override so Phase-2 can render unsaved ProjectSession output;
-5. add first reusable editor widgets.
+Start with:
+1. editor/home screen shell using ProjectLibraryIndex;
+2. create blank project + open recent project;
+3. reusable Loom widgets;
+4. 64x32 cape pixel canvas bound to ClientProjectWorkspace;
+5. pencil + eraser;
+6. undo/redo buttons/shortcuts;
+7. live player preview showing unsaved session state;
+8. save and save+equip.
 
-Create/open/save/save-and-equip/equip and live WorkspaceState notifications are now implemented.
+Then add:
+- fill;
+- eyedropper;
+- line/rectangle;
+- color picker/palette;
+- symmetry;
+- move/crop/flip.
 
-Then begin **Phase 2 Cape Editor MVP**:
-- Cape Loom block interaction;
-- home/start screen using the Recent Projects index;
-- cape canvas;
-- pencil/eraser/fill/eyedropper;
-- color controls;
-- live 3D preview bound to the ProjectSession;
-- save/equip.
+## Compatibility gate
 
-## Remaining compatibility gate
-
-SPIKE-06 still needs final Iris shader smoke testing before release hardening.
+Final Iris shader emissive smoke test remains a release-hardening requirement.

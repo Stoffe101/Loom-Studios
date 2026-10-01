@@ -17,6 +17,7 @@ import java.util.UUID;
 public final class ProjectLibraryIndex {
     private static List<ProjectDescriptor> entries = List.of();
     private static int rejectedFiles;
+    private static UUID selectedProjectId;
 
     private ProjectLibraryIndex() {
     }
@@ -62,6 +63,14 @@ public final class ProjectLibraryIndex {
 
         entries = List.copyOf(next);
         rejectedFiles = rejected;
+
+        if (selectedProjectId != null && find(selectedProjectId).isEmpty()) {
+            selectedProjectId = null;
+        }
+
+        if (selectedProjectId == null && !entries.isEmpty()) {
+            selectedProjectId = entries.getFirst().projectId();
+        }
     }
 
     public static List<ProjectDescriptor> entries() {
@@ -76,5 +85,25 @@ public final class ProjectLibraryIndex {
 
     public static int rejectedFiles() {
         return rejectedFiles;
+    }
+
+    public static Optional<ProjectDescriptor> selected() {
+        return selectedProjectId == null
+                ? Optional.empty()
+                : find(selectedProjectId);
+    }
+
+    public static void select(UUID projectId) {
+        if (find(projectId).isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Project is not present in the current Loom library index"
+            );
+        }
+
+        selectedProjectId = projectId;
+    }
+
+    public static void clearSelection() {
+        selectedProjectId = null;
     }
 }

@@ -480,3 +480,17 @@ Consequences:
 - WorkspaceState/listeners provide a live change-notification surface for Phase-2 widgets.
 
 The existing development project is still auto-equipped at first bootstrap so current runtime tests remain visible.
+
+
+## Phase 1 — unsaved preview + library-state refinement
+
+Implemented:
+- reusable LoomPlayerPreviewScreen replaces the SPIKE-04 class name;
+- preview render-state extraction can temporarily override the local player's cosmetic with the dirty ProjectSession project;
+- world/multiplayer rendering remains on the saved/equipped snapshot;
+- preview runtime bundles are released when replaced/closed;
+- Elytra preview thickness resolves from the preview project's runtime settings instead of the equipped debug preset;
+- project library index now owns stable selection state for the future Recent Projects UI;
+- stale thumbnail files for older hashes of the same project are pruned when a new thumbnail is generated.
+
+This completes the core editing/equipped/preview separation needed by the Phase-2 canvas.

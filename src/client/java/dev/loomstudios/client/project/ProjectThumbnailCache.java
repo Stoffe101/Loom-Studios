@@ -32,6 +32,23 @@ public final class ProjectThumbnailCache {
             return target;
         }
 
+        String prefix = project.projectId() + "-";
+        try (var stream = Files.list(ROOT)) {
+            stream.filter(path -> {
+                        String name = path.getFileName().toString();
+                        return name.startsWith(prefix)
+                                && name.endsWith(".png")
+                                && !path.equals(target);
+                    })
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (IOException ignored) {
+                            // Derived-cache cleanup failure is non-fatal.
+                        }
+                    });
+        }
+
         int[] pixels = LoomTextureCompiler.compile(
                 project.cape(),
                 0,

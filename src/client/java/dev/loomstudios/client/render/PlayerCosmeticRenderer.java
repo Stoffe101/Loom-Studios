@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Production render-state facade for Loom cape/Elytra cosmetics.
@@ -30,6 +31,8 @@ public final class PlayerCosmeticRenderer {
     private static int thicknessPresetIndex;
     private static boolean emissivePassEnabled = true;
     private static String lastLocalProjectHash;
+    private static String previewProjectHash;
+    private static final ThreadLocal<PreviewOverride> PREVIEW_OVERRIDE = new ThreadLocal<>();
 
     private PlayerCosmeticRenderer() {
     }
@@ -63,8 +66,18 @@ public final class PlayerCosmeticRenderer {
         }
 
         UUID playerId = avatar.getUUID();
-        LoomProject project = ClientCosmeticSync.projectFor(playerId);
-        String projectHash = ClientCosmeticSync.projectHashFor(playerId);
+        PreviewOverride preview = PREVIEW_OVERRIDE.get();
+
+        LoomProject project;
+        String projectHash;
+
+        if (preview != null && ClientProjectWorkspace.isLocalPlayer(playerId)) {
+            project = preview.project();
+            projectHash = preview.projectHash();
+        } else {
+            project = ClientCosmeticSync.projectFor(playerId);
+            projectHash = ClientCosmeticSync.projectHashFor(playerId);
+        }
 
         if (project == null || projectHash == null) {
             return;
@@ -108,12 +121,15 @@ public final class PlayerCosmeticRenderer {
         }
 
         Minecraft client = Minecraft.getInstance();
-        float userScale;
+        float userScale = bundle.project.runtime().elytraThickness();
 
-        if (client.player != null && state.id == client.player.getId()) {
+        if (client.player != null
+                && state.id == client.player.getId()
+                && ClientProjectWorkspace.isInitialized()
+                && bundle.projectHash.equals(
+                        ClientProjectWorkspace.equippedProjectHash()
+                )) {
             userScale = THICKNESS_PRESETS[thicknessPresetIndex];
-        } else {
-            userScale = bundle.project.runtime().elytraThickness();
         }
 
         return ELYTRA_VISUAL_BASELINE_Z_SCALE * userScale;
@@ -136,6 +152,46 @@ public final class PlayerCosmeticRenderer {
         }
 
         return bundle.emissiveTextureId;
+    }
+
+    public static <T> T withPreviewProject(
+            Minecraft client,
+            LoomProject project,
+            Supplier<T> action
+    ) {
+        String hash = project.hash();
+
+        if (previewProjectHash != null
+                && !previewProjectHash.equals(hash)
+                && (!ClientProjectWorkspace.isInitialized()
+                || !previewProjectHash.equals(
+                        ClientProjectWorkspace.equippedProjectHash()
+                ))) {
+            RuntimeCosmeticCache.release(client, previewProjectHash);
+        }
+
+        previewProjectHash = hash;
+        PREVIEW_OVERRIDE.set(new PreviewOverride(project, hash));
+
+        try {
+            return action.get();
+        } finally {
+            PREVIEW_OVERRIDE.remove();
+        }
+    }
+
+    public static void clearPreviewProject(Minecraft client) {
+        PREVIEW_OVERRIDE.remove();
+
+        if (previewProjectHash != null
+                && (!ClientProjectWorkspace.isInitialized()
+                || !previewProjectHash.equals(
+                        ClientProjectWorkspace.equippedProjectHash()
+                ))) {
+            RuntimeCosmeticCache.release(client, previewProjectHash);
+        }
+
+        previewProjectHash = null;
     }
 
     public static void cycleElytraThickness(Minecraft client) {
@@ -181,6 +237,7 @@ public final class PlayerCosmeticRenderer {
         SKINS.clear();
         thicknessPresetIndex = 0;
         emissivePassEnabled = true;
+        clearPreviewProject(client);
         RuntimeCosmeticCache.close(client);
         lastLocalProjectHash = null;
     }
@@ -189,6 +246,12 @@ public final class PlayerCosmeticRenderer {
             PlayerSkin source,
             String projectHash,
             PlayerSkin patched
+    ) {
+    }
+
+    private record PreviewOverride(
+            LoomProject project,
+            String projectHash
     ) {
     }
 }
