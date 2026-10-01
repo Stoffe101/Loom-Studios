@@ -87,3 +87,30 @@ Never trust:
 - project/schema versions
 
 Malformed or unsupported payloads must be rejected cleanly without disconnecting unrelated players where avoidable.
+
+
+## SPIKE-05 implemented proof protocol
+
+Protocol version: 1
+
+Flow:
+
+1. Client creates a tiny versioned ProofProject and SHA-256 hash.
+2. Client sends HELLO(protocol, hash) only if the server advertises the Loom channel.
+3. Server sends PROJECT_NEEDED(hash) when the content is not cached.
+4. Client uploads PROJECT_BLOB(hash, bytes).
+5. Server verifies:
+   - maximum bytes;
+   - SHA-256;
+   - schema version;
+   - field ranges.
+6. Server stores hash -> bytes and broadcasts EQUIPPED_STATE(player UUID, hash).
+7. A remote client receiving an unknown equipped hash sends PROJECT_REQUEST(hash).
+8. Server returns PROJECT_BLOB(hash, bytes).
+9. Client verifies, caches, compiles local runtime textures, and renders the remote player.
+
+Disconnect broadcasts an empty equipped hash as an unequip signal.
+
+The proof project is deliberately tiny. The final .loom transport will retain this same content-addressed/cache-miss architecture and move oversized project blobs to Fabric's 1.21.11 large-payload registration path when required.
+
+Animation is not transported frame-by-frame. The project carries animation parameters; clients evaluate them locally.

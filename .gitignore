@@ -10,6 +10,8 @@ out/
 # Loom / Minecraft runtime
 run/
 run-server/
+run-client-a/
+run-client-b/
 
 # Optional local compatibility mods
 dev-mods/*.jar

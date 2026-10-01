@@ -21,13 +21,10 @@ public abstract class ElytraModelMixin {
     private void loomStudios$applyThickness(HumanoidRenderState state, CallbackInfo ci) {
         float depthScale = 1.0F;
 
-        if (state instanceof AvatarRenderState avatarState
-                && DynamicCosmeticSpike.isUsingLoomElytra(avatarState)) {
-            depthScale = DynamicCosmeticSpike.getElytraThicknessScale();
+        if (state instanceof AvatarRenderState avatarState) {
+            depthScale = DynamicCosmeticSpike.getElytraThicknessScale(avatarState);
         }
 
-        // ElytraModel instances are reused, so always restore vanilla scale for
-        // non-Loom entities instead of only mutating Loom players.
         this.leftWing.zScale = depthScale;
         this.rightWing.zScale = depthScale;
     }

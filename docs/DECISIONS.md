@@ -160,3 +160,25 @@ This allows preview-only changes such as:
 without equipping items or mutating the actual world/player entity.
 
 The preview should reuse the same Loom cosmetic texture/render integrations as gameplay rather than maintaining a separate fake model pipeline.
+
+
+## ADR-023 — Server-authoritative equipped hash with client-side compiled cache
+**Status:** Implemented for SPIKE-05, runtime verification pending
+
+The server owns the authoritative UUID -> equipped project hash mapping. Project blobs are content-addressed by SHA-256 and transferred only on cache miss.
+
+Clients verify received blobs before caching/compiling them.
+
+Players connected to a server without Loom Studios keep local-only Loom rendering because client sends are guarded by `ClientPlayNetworking.canSend`.
+
+## ADR-024 — Animation time is evaluated locally
+**Status:** Implemented for SPIKE-06, runtime verification pending
+
+Animation definitions/parameters belong to project data. Clients derive animation phase locally from synchronized game time. Rendered texture frames are never continuously transmitted.
+
+## ADR-025 — Emissive cape is an additive feature layer
+**Status:** Implemented for SPIKE-06, runtime verification pending
+
+The base cape remains Minecraft's normal CapeLayer. Loom Studios registers an additional player feature layer that submits a second PlayerCapeModel using the project's generated emissive mask and Minecraft's translucent-emissive render type.
+
+If this optional layer has a compatibility problem, disabling it must leave the base cape intact.

@@ -60,3 +60,10 @@ Loom Studios' Gradle setup therefore:
 - never publishes or commits those third-party binaries.
 
 This is currently required for 3D Skin Layers 1.11.3's embedded TRansition/TRender libraries.
+
+
+## SPIKE-06 compatibility rule
+
+The emissive layer is deliberately independent from the base cape. A shader or renderer incompatibility must be containable by disabling the effect layer while retaining the vanilla-path Loom cape.
+
+The G development key exists specifically to compare base-only versus base+emissive rendering during Sodium/Iris testing.

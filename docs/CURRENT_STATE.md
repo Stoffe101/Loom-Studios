@@ -255,3 +255,43 @@ Observed UX refinement:
 SPIKE-04 is DONE.
 
 Next active milestone: **SPIKE-05 — multiplayer synchronization**.
+
+
+## SPIKE-05 implementation
+
+**Status: IMPLEMENTED / CI + TWO-CLIENT RUNTIME VERIFICATION PENDING**
+
+The multiplayer proof now implements:
+- versioned C2S/S2C Fabric payloads;
+- graceful `canSend` detection for servers without Loom Studios;
+- per-client proof project with SHA-256 content identity;
+- server cache-miss request before upload;
+- strict project byte/hash/schema validation;
+- server-side project cache;
+- authoritative equipped-project hash per player;
+- equipped-state broadcast;
+- client cache-miss project request;
+- remote project cache and remote player rendering;
+- project data contains parameters, not rendered animation frames;
+- disconnect unequip broadcast;
+- server-stop cache cleanup.
+
+Two additional Loom run profiles exist:
+- Loom Studios - Client A
+- Loom Studios - Client B
+
+They use separate run directories and deterministic development identities.
+
+## SPIKE-06 implementation
+
+**Status: IMPLEMENTED / CI + VISUAL/SHADER VERIFICATION PENDING**
+
+The animation/emissive proof now uses:
+- deterministic animation phase from world game time + project animation period;
+- no frame networking;
+- generated emissive mask per compiled project;
+- Fabric player feature-render registration;
+- second PlayerCapeModel submission using entityTranslucentEmissive;
+- base cape remains on vanilla CapeLayer;
+- G debug key toggles the emissive pass for A/B comparison;
+- remote projects use the same local animation/effect evaluation path.

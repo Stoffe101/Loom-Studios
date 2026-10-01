@@ -189,3 +189,31 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 Deferred UX check:
 - neutral/locked head orientation during orbit
 - independent Player Facing and 3D Orbit/Pivot controls
+
+
+## SPIKE-05 multiplayer runtime checks
+
+- server without Loom Studios: client remains local-only and does not error
+- first project on server: cache miss -> one upload -> equip broadcast
+- second client: equipped hash -> cache miss -> one project download
+- remote player cape renders
+- distinct Client A / Client B proof colors visible
+- malformed hash rejected
+- oversized proof blob rejected by codec/validation
+- mismatched SHA-256 rejected
+- disconnect removes equipped state
+- reconnect reuses architecture cleanly
+- no animation-frame packets
+
+## SPIKE-06 animation/emissive checks
+
+- base cape animation remains deterministic
+- G toggles only the emissive pass
+- base cape remains visible when emissive is OFF
+- emissive geometry follows cape movement
+- remote player emissive layer renders
+- preview does not crash with feature layer registered
+- Sodium compatibility smoke test
+- Iris shaders OFF smoke test
+- Iris shaders ON smoke test
+- 3D Skin Layers coexistence smoke test

@@ -1,5 +1,6 @@
 package dev.loomstudios;
 
+import dev.loomstudios.network.LoomNetworking;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ public final class LoomStudios implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        LoomNetworking.register();
         LOGGER.info("Loom Studios common initialization complete.");
     }
 }

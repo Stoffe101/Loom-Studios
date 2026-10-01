@@ -1,5 +1,32 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-05 + SPIKE-06 implementation
+
+**Status: IMPLEMENTED / CI + RUNTIME VERIFICATION PENDING**
+
+SPIKE-05:
+- SHA-256 content-addressed proof project;
+- server cache-miss upload;
+- project validation;
+- equipped-state broadcast;
+- remote cache-miss download;
+- remote player cosmetic rendering;
+- graceful no-server-mod behavior via `ClientPlayNetworking.canSend`;
+- separate Client A / Client B IntelliJ run profiles.
+
+SPIKE-06:
+- deterministic client-side animation using synchronized world time;
+- no animation-frame packets;
+- generated per-project emissive mask;
+- additional Fabric-registered player render layer;
+- vanilla base CapeLayer retained;
+- fullbright/translucent-emissive second cape pass;
+- G toggles effect locally for visual comparison.
+
+Runtime verification remains required before either spike is DONE.
+
+---
+
 ## 2026-10-01 — SPIKE-04 local runtime verification
 
 **Result: PASS**

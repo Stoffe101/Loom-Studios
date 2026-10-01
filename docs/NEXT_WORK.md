@@ -1,44 +1,51 @@
 # Loom Studios — Next Work
 
-## Active: SPIKE-05 — multiplayer synchronization
+## Verify SPIKE-05 and SPIKE-06
 
-Prove that Loom Studios cosmetics can be synchronized between two clients through a dedicated/integrated server without streaming texture frames.
+After the exact implementation commit is CI-green, perform one combined runtime pass.
 
-Initial goals:
-- define/register versioned Fabric payloads;
-- advertise Loom Studios capability on join;
-- synchronize each player's equipped Loom cosmetic identity/state;
-- transfer project/compiled proof data only on cache miss;
-- render another player's Loom cape/Elytra;
-- preserve vanilla behavior for players without Loom Studios;
-- reject malformed/oversized payloads cleanly;
-- document exact server/client state ownership.
+### Single-client emissive check
 
-The first network proof can use the current technical-spike cosmetic rather than the full future .loom project format.
+- run normal Loom Studios - Client;
+- enter a world;
+- verify the cape still animates;
+- press G and confirm the glow/emissive details visibly toggle;
+- open P preview and confirm the same base cosmetic still renders.
 
-## Deferred preview refinement bundle
+### Two-client multiplayer check
 
-Do not spend a dedicated pass on these yet. Fold them into the next appropriate UI/editor refinement pass:
+Use the generated IntelliJ profiles:
+- Loom Studios - Client A
+- Loom Studios - Client B
 
-- stop the head from automatically following model rotation;
-- add a **Facing** control for body/player orientation;
-- add a separate **3D Orbit / Pivot** control for full 360-degree inspection;
-- keep mouse drag as a fast direct-manipulation option;
-- later expose front/back/left/right snap buttons;
-- evaluate whether head orientation should be locked by default with an optional head-facing control.
+Recommended easy topology:
+1. Client A creates/opens a world.
+2. Open the world to LAN.
+3. Note the LAN port.
+4. Client B joins `localhost:<port>`.
+5. Put both players in third person / observe each other.
 
-The final editor should distinguish:
+Expected:
+- A sees B's Loom cape;
+- B sees A's Loom cape;
+- the two deterministic UUIDs produce different project accent colors;
+- remote animation runs without streamed frames;
+- emissive pass appears on remote players;
+- disconnecting one player removes their equipped Loom state cleanly.
 
-```
-Player Facing     [ horizontal control / angle ]
-3D Orbit/Pivot    [ free 360° inspection control ]
-Zoom              [ slider + wheel ]
-```
+### Optional rendering compatibility
 
-## After SPIKE-05
+With the current optional dev stack:
+- Sodium/Sodium Extra remain stable;
+- Iris shaders OFF;
+- Iris shaders ON with one installed shader pack;
+- G toggle should never make the base cape disappear;
+- 3D Skin Layers should remain unaffected.
 
-SPIKE-06 — animation/emissive compatibility proof.
+## If green
 
-## Documentation
+Mark SPIKE-05 and SPIKE-06 DONE. The foundation-spike gate is then complete and full editor/core implementation can begin.
 
-Record exact CI SHA, multi-client topology, packet behavior, validation results, and runtime screenshots/results.
+## Known deferred preview refinements
+
+Keep head lock, Facing, Orbit/Pivot, snap angles, and final camera controls bundled into later UI refinement rather than opening a dedicated foundation pass.

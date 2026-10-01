@@ -1,5 +1,6 @@
 {
   "key.category.loom-studios.debug": "Loom Studios (Development)",
   "key.loom-studios.cycle_elytra_thickness": "Cycle Elytra Thickness (Debug)",
-  "key.loom-studios.open_preview": "Open Player Preview (Debug)"
+  "key.loom-studios.open_preview": "Open Player Preview (Debug)",
+  "key.loom-studios.toggle_emissive": "Toggle Cape Emissive Pass (Debug)"
 }

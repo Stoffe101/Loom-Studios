@@ -2,59 +2,41 @@ package dev.loomstudios.client.render;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.loomstudios.LoomStudios;
+import dev.loomstudios.client.network.ClientCosmeticSync;
+import dev.loomstudios.network.ProofProject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.player.PlayerSkin;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Technical proof for Loom Studios runtime cape + Elytra textures.
+ * Foundation runtime for SPIKE-02 through SPIKE-06.
  *
- * <p>The cape changes palette every two seconds. The Elytra uses a separate
- * dedicated texture so Minecraft never needs to fall back to the cape image.</p>
+ * <p>Saved projects eventually compile into this same long-lived texture-bundle
+ * concept. Animation is evaluated locally from project parameters and world
+ * time; no rendered frames are sent over the network.</p>
  */
 public final class DynamicCosmeticSpike {
     private static final int WIDTH = 64;
     private static final int HEIGHT = 32;
-    private static final int UPDATE_INTERVAL_TICKS = 40;
 
-    // Temporary SPIKE-03 debug values. The final editor will expose a proper
-    // slider/config value rather than cycling presets with a key.
     private static final float[] THICKNESS_PRESETS = {1.0F, 0.75F, 0.5F, 0.25F, 1.5F};
-    private static int thicknessPresetIndex = 0;
+    private static int thicknessPresetIndex;
+    private static boolean emissivePassEnabled = true;
 
-    private static final Identifier CAPE_TEXTURE_ID =
-            Identifier.fromNamespaceAndPath("loom-studios", "dynamic/spike_cape");
-    private static final Identifier ELYTRA_TEXTURE_ID =
-            Identifier.fromNamespaceAndPath("loom-studios", "dynamic/spike_elytra");
-
-    private static final ClientAsset.ResourceTexture CAPE_ASSET =
-            new ClientAsset.ResourceTexture(
-                    Identifier.fromNamespaceAndPath("loom-studios", "dynamic_spike_cape"),
-                    CAPE_TEXTURE_ID
-            );
-    private static final ClientAsset.ResourceTexture ELYTRA_ASSET =
-            new ClientAsset.ResourceTexture(
-                    Identifier.fromNamespaceAndPath("loom-studios", "dynamic_spike_elytra"),
-                    ELYTRA_TEXTURE_ID
-            );
-
-    private static NativeImage capeImage;
-    private static DynamicTexture capeTexture;
-    private static NativeImage elytraImage;
-    private static DynamicTexture elytraTexture;
-
-    private static int ticksUntilUpdate;
-    private static int phase;
-
-    private static PlayerSkin cachedSource;
-    private static PlayerSkin cachedPatched;
+    private static final Map<String, RuntimeBundle> BUNDLES = new HashMap<>();
+    private static final Map<Identifier, RuntimeBundle> BY_CAPE_TEXTURE = new HashMap<>();
+    private static final Map<Identifier, RuntimeBundle> BY_ELYTRA_TEXTURE = new HashMap<>();
+    private static final Map<UUID, CachedSkin> SKINS = new HashMap<>();
 
     private DynamicCosmeticSpike() {
     }
@@ -64,169 +46,249 @@ public final class DynamicCosmeticSpike {
             return;
         }
 
-        ensureInitialized(client);
+        ClientCosmeticSync.ensureLocalProject(client.player.getUUID());
 
-        if (--ticksUntilUpdate <= 0) {
-            ticksUntilUpdate = UPDATE_INTERVAL_TICKS;
-            phase = (phase + 1) % 4;
-            redrawCape();
-            capeTexture.upload();
-            LoomStudios.LOGGER.debug("SPIKE-02 cape texture uploaded, phase={}", phase);
+        long gameTime = client.level.getGameTime();
+        for (RuntimeBundle bundle : BUNDLES.values()) {
+            int phase = (int)((gameTime / bundle.project.animationPeriodTicks()) % 4L);
+            if (phase != bundle.phase) {
+                bundle.phase = phase;
+                redrawCape(bundle);
+                redrawEmissive(bundle);
+                bundle.capeTexture.upload();
+                bundle.emissiveTexture.upload();
+            }
         }
     }
 
     public static void apply(Avatar avatar, AvatarRenderState state) {
-        Minecraft client = Minecraft.getInstance();
-        if (client.player != avatar || state.skin == null) {
+        if (state.skin == null) {
             return;
         }
 
-        ensureInitialized(client);
-
-        if (state.skin != cachedSource || cachedPatched == null) {
-            cachedSource = state.skin;
-            cachedPatched = state.skin.with(new PlayerSkin.Patch(
-                    Optional.empty(),
-                    Optional.of(CAPE_ASSET),
-                    Optional.of(ELYTRA_ASSET),
-                    Optional.empty()
-            ));
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            ClientCosmeticSync.ensureLocalProject(client.player.getUUID());
         }
 
-        state.skin = cachedPatched;
+        UUID playerId = avatar.getUUID();
+        ProofProject project = ClientCosmeticSync.projectFor(playerId);
+        String projectHash = ClientCosmeticSync.projectHashFor(playerId);
+
+        if (project == null || projectHash == null) {
+            return;
+        }
+
+        RuntimeBundle bundle = ensureBundle(client, projectHash, project);
+        CachedSkin cached = SKINS.get(playerId);
+
+        if (cached == null
+                || cached.source != state.skin
+                || !cached.projectHash.equals(projectHash)) {
+            PlayerSkin patched = state.skin.with(new PlayerSkin.Patch(
+                    Optional.empty(),
+                    Optional.of(bundle.capeAsset),
+                    Optional.of(bundle.elytraAsset),
+                    Optional.empty()
+            ));
+
+            cached = new CachedSkin(state.skin, projectHash, patched);
+            SKINS.put(playerId, cached);
+        }
+
+        state.skin = cached.patched;
         state.showCape = true;
     }
 
-    private static void ensureInitialized(Minecraft client) {
-        if (capeTexture != null && elytraTexture != null) {
-            return;
+    private static RuntimeBundle ensureBundle(
+            Minecraft client,
+            String projectHash,
+            ProofProject project
+    ) {
+        RuntimeBundle existing = BUNDLES.get(projectHash);
+        if (existing != null) {
+            return existing;
         }
 
-        capeImage = new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false);
-        redrawCape();
-        capeTexture = new DynamicTexture(
-                () -> "Loom Studios SPIKE-02 dynamic cape",
-                capeImage
+        String suffix = projectHash.substring(0, 16);
+        Identifier capeId = Identifier.fromNamespaceAndPath(
+                LoomStudios.MOD_ID,
+                "dynamic/cape_" + suffix
         );
-        client.getTextureManager().register(CAPE_TEXTURE_ID, capeTexture);
-        capeTexture.upload();
-
-        elytraImage = new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false);
-        redrawElytra();
-        elytraTexture = new DynamicTexture(
-                () -> "Loom Studios SPIKE-03 dedicated Elytra",
-                elytraImage
+        Identifier elytraId = Identifier.fromNamespaceAndPath(
+                LoomStudios.MOD_ID,
+                "dynamic/elytra_" + suffix
         );
-        client.getTextureManager().register(ELYTRA_TEXTURE_ID, elytraTexture);
-        elytraTexture.upload();
+        Identifier emissiveId = Identifier.fromNamespaceAndPath(
+                LoomStudios.MOD_ID,
+                "dynamic/emissive_" + suffix
+        );
 
-        ticksUntilUpdate = UPDATE_INTERVAL_TICKS;
+        RuntimeBundle bundle = new RuntimeBundle(
+                project,
+                capeId,
+                elytraId,
+                emissiveId,
+                new ClientAsset.ResourceTexture(
+                        Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID, "cape_asset_" + suffix),
+                        capeId
+                ),
+                new ClientAsset.ResourceTexture(
+                        Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID, "elytra_asset_" + suffix),
+                        elytraId
+                ),
+                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false),
+                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false),
+                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false)
+        );
+
+        redrawCape(bundle);
+        redrawElytra(bundle);
+        redrawEmissive(bundle);
+
+        bundle.capeTexture = new DynamicTexture(
+                () -> "Loom Studios cape " + suffix,
+                bundle.capeImage
+        );
+        bundle.elytraTexture = new DynamicTexture(
+                () -> "Loom Studios Elytra " + suffix,
+                bundle.elytraImage
+        );
+        bundle.emissiveTexture = new DynamicTexture(
+                () -> "Loom Studios emissive cape " + suffix,
+                bundle.emissiveImage
+        );
+
+        client.getTextureManager().register(capeId, bundle.capeTexture);
+        client.getTextureManager().register(elytraId, bundle.elytraTexture);
+        client.getTextureManager().register(emissiveId, bundle.emissiveTexture);
+
+        bundle.capeTexture.upload();
+        bundle.elytraTexture.upload();
+        bundle.emissiveTexture.upload();
+
+        BUNDLES.put(projectHash, bundle);
+        BY_CAPE_TEXTURE.put(capeId, bundle);
+        BY_ELYTRA_TEXTURE.put(elytraId, bundle);
 
         LoomStudios.LOGGER.info(
-                "Runtime cosmetic textures registered: cape={}, elytra={}",
-                CAPE_TEXTURE_ID,
-                ELYTRA_TEXTURE_ID
+                "Compiled runtime Loom textures for project {}",
+                suffix
         );
+
+        return bundle;
     }
 
-    private static void redrawCape() {
-        if (capeImage == null) {
-            return;
-        }
-
-        int background = switch (phase) {
-            case 0 -> 0xFF081A2A;
-            case 1 -> 0xFF1A0A34;
-            case 2 -> 0xFF052B2D;
-            default -> 0xFF29102A;
-        };
-
-        int primary = switch (phase) {
-            case 0 -> 0xFF00E5FF;
-            case 1 -> 0xFFFF2FD1;
-            case 2 -> 0xFF7CFF6B;
-            default -> 0xFFFFB02E;
-        };
-
-        int secondary = switch (phase) {
-            case 0 -> 0xFFFF2FD1;
-            case 1 -> 0xFF00E5FF;
-            case 2 -> 0xFFFF2FD1;
-            default -> 0xFF7D5CFF;
-        };
+    private static void redrawCape(RuntimeBundle bundle) {
+        int accent = rotateAccent(bundle.project.accentArgb(), bundle.phase);
+        int secondary = rotateAccent(bundle.project.accentArgb(), bundle.phase + 2);
+        int background = darken(accent, 105);
 
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
-                int checker = ((x / 4) + (y / 4) + phase) & 1;
-                capeImage.setPixel(x, y, checker == 0 ? background : darken(background, 18));
+                int checker = ((x / 4) + (y / 4) + bundle.phase) & 1;
+                bundle.capeImage.setPixel(
+                        x,
+                        y,
+                        checker == 0 ? background : darken(background, 14)
+                );
             }
         }
 
-        drawRect(capeImage, 8, 5, 5, 20, primary);
-        drawRect(capeImage, 8, 20, 15, 5, primary);
-        drawRect(capeImage, 27, 5, 18, 5, secondary);
-        drawRect(capeImage, 27, 5, 5, 11, secondary);
-        drawRect(capeImage, 27, 13, 18, 5, secondary);
-        drawRect(capeImage, 40, 13, 5, 11, secondary);
-        drawRect(capeImage, 27, 20, 18, 5, secondary);
+        drawRect(bundle.capeImage, 8, 5, 5, 20, accent);
+        drawRect(bundle.capeImage, 8, 20, 15, 5, accent);
+        drawRect(bundle.capeImage, 27, 5, 18, 5, secondary);
+        drawRect(bundle.capeImage, 27, 5, 5, 11, secondary);
+        drawRect(bundle.capeImage, 27, 13, 18, 5, secondary);
+        drawRect(bundle.capeImage, 40, 13, 5, 11, secondary);
+        drawRect(bundle.capeImage, 27, 20, 18, 5, secondary);
 
-        int stripeX = 50 + phase * 3;
-        drawRect(capeImage, stripeX, 2, 3, 28, primary);
+        int stripeX = 48 + bundle.phase * 3;
+        drawRect(bundle.capeImage, stripeX, 2, 3, 28, accent);
     }
 
-    private static void redrawElytra() {
-        if (elytraImage == null) {
-            return;
-        }
-
-        // Keep every UV face opaque so 100% thickness looks exactly like a
-        // normal volumetric Elytra. Thickness is now controlled by geometry,
-        // not by punching transparent holes into side-face texture regions.
-        int base = 0xFF081421;
-        int edge = 0xFF00BFCB;
+    private static void redrawElytra(RuntimeBundle bundle) {
+        int accent = bundle.project.accentArgb();
+        int secondary = rotateAccent(accent, 2);
+        int base = darken(accent, 115);
 
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 int checker = ((x / 4) + (y / 4)) & 1;
-                elytraImage.setPixel(x, y, checker == 0 ? base : darken(base, 12));
+                bundle.elytraImage.setPixel(
+                        x,
+                        y,
+                        checker == 0 ? base : darken(base, 12)
+                );
             }
         }
 
-        // Main vanilla wing face UV regions.
-        drawWingFace(24, 2, false);
-        drawWingFace(36, 2, true);
+        drawWingFace(bundle.elytraImage, 24, 2, false, accent, secondary, base);
+        drawWingFace(bundle.elytraImage, 36, 2, true, accent, secondary, base);
 
-        // Give the surrounding UV strips some visible color so side/top/bottom
-        // faces remain intentionally present at vanilla thickness.
-        drawRect(elytraImage, 22, 0, 24, 2, edge);
-        drawRect(elytraImage, 22, 22, 24, 2, edge);
-        drawRect(elytraImage, 22, 2, 2, 20, edge);
-        drawRect(elytraImage, 34, 2, 2, 20, edge);
-        drawRect(elytraImage, 46, 2, 2, 20, edge);
+        drawRect(bundle.elytraImage, 22, 0, 24, 2, accent);
+        drawRect(bundle.elytraImage, 22, 22, 24, 2, accent);
+        drawRect(bundle.elytraImage, 22, 2, 2, 20, accent);
+        drawRect(bundle.elytraImage, 34, 2, 2, 20, accent);
+        drawRect(bundle.elytraImage, 46, 2, 2, 20, accent);
     }
 
-    private static void drawWingFace(int startX, int startY, boolean reverse) {
-        int deep = 0xFF091626;
-        int cyan = 0xFF00DCE8;
-        int violet = 0xFF8E2CFF;
-        int pink = 0xFFFF36C8;
+    private static void redrawEmissive(RuntimeBundle bundle) {
+        clear(bundle.emissiveImage);
 
+        if (!bundle.project.emissiveEnabled()) {
+            return;
+        }
+
+        int glow = rotateAccent(bundle.project.accentArgb(), bundle.phase + 1);
+        int pulse = (bundle.phase & 1) == 0 ? glow : lighten(glow, 55);
+
+        // Small glowing LS strokes plus a moving vertical shimmer.
+        drawRect(bundle.emissiveImage, 8, 5, 2, 20, pulse);
+        drawRect(bundle.emissiveImage, 8, 22, 12, 2, pulse);
+        drawRect(bundle.emissiveImage, 27, 5, 15, 2, glow);
+        drawRect(bundle.emissiveImage, 27, 5, 2, 9, glow);
+        drawRect(bundle.emissiveImage, 27, 13, 15, 2, glow);
+        drawRect(bundle.emissiveImage, 40, 13, 2, 11, glow);
+        drawRect(bundle.emissiveImage, 27, 22, 15, 2, glow);
+
+        int shimmerX = 49 + bundle.phase * 3;
+        drawRect(bundle.emissiveImage, shimmerX, 4, 2, 24, 0xCCFFFFFF);
+    }
+
+    private static void drawWingFace(
+            NativeImage target,
+            int startX,
+            int startY,
+            boolean reverse,
+            int accent,
+            int secondary,
+            int base
+    ) {
         for (int y = 0; y < 20; y++) {
             for (int x = 0; x < 10; x++) {
                 int visualX = reverse ? 9 - x : x;
                 int color;
 
                 if (visualX <= 1) {
-                    color = cyan;
+                    color = accent;
                 } else if ((y / 4) % 2 == 0 && visualX >= 6) {
-                    color = pink;
+                    color = secondary;
                 } else if (visualX == 5 || visualX == 6) {
-                    color = violet;
+                    color = lighten(accent, 35);
                 } else {
-                    color = deep;
+                    color = base;
                 }
 
-                elytraImage.setPixel(startX + x, startY + y, color);
+                target.setPixel(startX + x, startY + y, color);
+            }
+        }
+    }
+
+    private static void clear(NativeImage target) {
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                target.setPixel(x, y, 0x00000000);
             }
         }
     }
@@ -246,6 +308,20 @@ public final class DynamicCosmeticSpike {
         }
     }
 
+    private static int rotateAccent(int argb, int phase) {
+        int a = (argb >>> 24) & 0xFF;
+        int r = (argb >>> 16) & 0xFF;
+        int g = (argb >>> 8) & 0xFF;
+        int b = argb & 0xFF;
+
+        return switch (Math.floorMod(phase, 4)) {
+            case 1 -> (a << 24) | (b << 16) | (r << 8) | g;
+            case 2 -> (a << 24) | (g << 16) | (b << 8) | r;
+            case 3 -> (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
+            default -> argb;
+        };
+    }
+
     private static int darken(int argb, int amount) {
         int a = (argb >>> 24) & 0xFF;
         int r = Math.max(0, ((argb >>> 16) & 0xFF) - amount);
@@ -254,53 +330,131 @@ public final class DynamicCosmeticSpike {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public static boolean isUsingLoomElytra(AvatarRenderState state) {
-        return state.skin != null
-                && state.skin.elytra() != null
-                && ELYTRA_TEXTURE_ID.equals(state.skin.elytra().texturePath());
+    private static int lighten(int argb, int amount) {
+        int a = (argb >>> 24) & 0xFF;
+        int r = Math.min(255, ((argb >>> 16) & 0xFF) + amount);
+        int g = Math.min(255, ((argb >>> 8) & 0xFF) + amount);
+        int b = Math.min(255, (argb & 0xFF) + amount);
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public static float getElytraThicknessScale() {
-        return THICKNESS_PRESETS[thicknessPresetIndex];
+    public static float getElytraThicknessScale(AvatarRenderState state) {
+        if (state.skin == null || state.skin.elytra() == null) {
+            return 1.0F;
+        }
+
+        RuntimeBundle bundle = BY_ELYTRA_TEXTURE.get(state.skin.elytra().texturePath());
+        if (bundle == null) {
+            return 1.0F;
+        }
+
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null && state.id == client.player.getId()) {
+            return THICKNESS_PRESETS[thicknessPresetIndex];
+        }
+
+        return bundle.project.elytraThickness();
+    }
+
+    public static Identifier getCapeEmissiveTexture(AvatarRenderState state) {
+        if (!emissivePassEnabled
+                || state.skin == null
+                || state.skin.cape() == null) {
+            return null;
+        }
+
+        RuntimeBundle bundle = BY_CAPE_TEXTURE.get(state.skin.cape().texturePath());
+        if (bundle == null || !bundle.project.emissiveEnabled()) {
+            return null;
+        }
+
+        return bundle.emissiveTextureId;
     }
 
     public static void cycleElytraThickness(Minecraft client) {
         thicknessPresetIndex = (thicknessPresetIndex + 1) % THICKNESS_PRESETS.length;
-        float scale = getElytraThicknessScale();
-
         if (client.player != null) {
-            int percent = Math.round(scale * 100.0F);
+            int percent = Math.round(THICKNESS_PRESETS[thicknessPresetIndex] * 100.0F);
             client.player.displayClientMessage(
                     Component.literal("Loom Studios Elytra thickness: " + percent + "%"),
                     true
             );
         }
+    }
 
-        LoomStudios.LOGGER.info(
-                "SPIKE-03 Elytra thickness changed to {}%",
-                Math.round(scale * 100.0F)
-        );
+    public static void toggleEmissivePass(Minecraft client) {
+        emissivePassEnabled = !emissivePassEnabled;
+        if (client.player != null) {
+            client.player.displayClientMessage(
+                    Component.literal(
+                            "Loom Studios emissive pass: "
+                                    + (emissivePassEnabled ? "ON" : "OFF")
+                    ),
+                    true
+            );
+        }
     }
 
     public static void close() {
         Minecraft client = Minecraft.getInstance();
 
-        if (capeTexture != null) {
-            client.getTextureManager().release(CAPE_TEXTURE_ID);
-            capeTexture = null;
-            capeImage = null;
+        for (RuntimeBundle bundle : BUNDLES.values()) {
+            client.getTextureManager().release(bundle.capeTextureId);
+            client.getTextureManager().release(bundle.elytraTextureId);
+            client.getTextureManager().release(bundle.emissiveTextureId);
         }
 
-        if (elytraTexture != null) {
-            client.getTextureManager().release(ELYTRA_TEXTURE_ID);
-            elytraTexture = null;
-            elytraImage = null;
-        }
-
-        cachedSource = null;
-        cachedPatched = null;
-        ticksUntilUpdate = 0;
-        phase = 0;
+        BUNDLES.clear();
+        BY_CAPE_TEXTURE.clear();
+        BY_ELYTRA_TEXTURE.clear();
+        SKINS.clear();
         thicknessPresetIndex = 0;
+        emissivePassEnabled = true;
+    }
+
+    private record CachedSkin(
+            PlayerSkin source,
+            String projectHash,
+            PlayerSkin patched
+    ) {
+    }
+
+    private static final class RuntimeBundle {
+        private final ProofProject project;
+        private final Identifier capeTextureId;
+        private final Identifier elytraTextureId;
+        private final Identifier emissiveTextureId;
+        private final ClientAsset.ResourceTexture capeAsset;
+        private final ClientAsset.ResourceTexture elytraAsset;
+        private final NativeImage capeImage;
+        private final NativeImage elytraImage;
+        private final NativeImage emissiveImage;
+
+        private DynamicTexture capeTexture;
+        private DynamicTexture elytraTexture;
+        private DynamicTexture emissiveTexture;
+        private int phase = -1;
+
+        private RuntimeBundle(
+                ProofProject project,
+                Identifier capeTextureId,
+                Identifier elytraTextureId,
+                Identifier emissiveTextureId,
+                ClientAsset.ResourceTexture capeAsset,
+                ClientAsset.ResourceTexture elytraAsset,
+                NativeImage capeImage,
+                NativeImage elytraImage,
+                NativeImage emissiveImage
+        ) {
+            this.project = project;
+            this.capeTextureId = capeTextureId;
+            this.elytraTextureId = elytraTextureId;
+            this.emissiveTextureId = emissiveTextureId;
+            this.capeAsset = capeAsset;
+            this.elytraAsset = elytraAsset;
+            this.capeImage = capeImage;
+            this.elytraImage = elytraImage;
+            this.emissiveImage = emissiveImage;
+        }
     }
 }

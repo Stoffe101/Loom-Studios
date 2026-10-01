@@ -122,3 +122,35 @@ Reference images define visual targets, not screenshot backgrounds.
 ## Compatibility philosophy
 
 Loom Studios should integrate with Minecraft/Fabric rendering rather than replace large rendering systems. Sodium and Iris must work without being dependencies.
+
+
+## Implemented multiplayer proof
+
+The SPIKE-05 implementation now proves the intended separation:
+
+```
+editable/project bytes
+        |
+        v
+     SHA-256
+        |
+ Client HELLO(hash)
+        |
+        v
+ Server project cache
+        |
+        +---- cache miss ---> request blob once
+        |
+        v
+ equipped UUID -> hash
+        |
+        v
+ remote client
+        |
+        +---- local cache miss ---> request blob once
+        |
+        v
+ local texture compiler / animator
+```
+
+This keeps rendered frames off the network and makes the future .loom project store/cache architecture concrete.
