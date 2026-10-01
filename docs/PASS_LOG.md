@@ -1,5 +1,30 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-00 toolchain correction
+
+**Status: IN PROGRESS**
+
+Bootstrap SHA `400d82c798db6a62a750ba2236481b22897c612e`:
+
+- Gradle wrapper itself: PASS
+- Java runtime: Java 21 PASS
+- Build: FAIL during Loom plugin resolution
+- Cause: current Loom 1.18.2 requires Java 25 to run Gradle
+
+Correction:
+
+- pin Fabric Loom to `1.17.21`
+- pin Gradle distribution to `9.6.1`
+- retain Java 21
+- retain Minecraft 1.21.11
+- retain Fabric Loader 0.18.4 baseline
+
+Reason: Loom 1.17 already contains the modern property-based run configuration API and `preferGradleTask`, while avoiding Loom 1.18's Java 25 build-runtime requirement.
+
+Next: CI verification on the corrected exact SHA.
+
+---
+
 ## 2026-10-01 — SPIKE-00 bootstrap implementation
 
 **Status: IN PROGRESS**
@@ -12,7 +37,7 @@ Implemented:
 - Fabric API 0.141.1+1.21.11 initial pin
 - Mojang mappings
 - split common/client sources
-- Gradle 9.7.1 wrapper
+- Gradle wrapper
 - IntelliJ/Loom client and server run profiles
 - client run prefers Gradle runClient
 - local optional compatibility mods through dev-mods/ + modLocalRuntime
@@ -22,7 +47,7 @@ Implemented:
 - compatibility docs corrected: optional supported integrations, not dependencies
 
 Verification pending:
-- CI on exact bootstrap commit
+- corrected CI
 - local client/server launches
 - optional test stack runtime
 
