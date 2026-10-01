@@ -1,5 +1,28 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-2 first interactive Cape Editor slice
+
+**Status: IMPLEMENTED / CI + LOCAL TEST PENDING**
+
+Implemented:
+- Loom Studios home screen;
+- Recent Projects selection/open;
+- blank cape creation;
+- reusable LoomButton;
+- reusable 64x32 LoomCanvasWidget;
+- pencil/eraser;
+- starter palette;
+- undo/redo;
+- save;
+- save+equip;
+- unsaved live 3D preview;
+- immutable ProjectEdits pixel mutation helper;
+- L dev key opens the studio.
+
+This is the first pass where a user can actually paint a Loom project in-game.
+
+---
+
 ## 2026-10-01 — Unsaved preview + production preview/library cleanup
 
 **Status: IMPLEMENTED / CI PENDING**

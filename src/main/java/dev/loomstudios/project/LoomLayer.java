@@ -49,6 +49,18 @@ public record LoomLayer(
         return pixels.length;
     }
 
+    public LoomLayer withPixels(int[] nextPixels) {
+        return new LoomLayer(
+                id,
+                name,
+                visible,
+                opacity,
+                blendMode,
+                emissive,
+                nextPixels
+        );
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

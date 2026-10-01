@@ -494,3 +494,24 @@ Implemented:
 - stale thumbnail files for older hashes of the same project are pruned when a new thumbnail is generated.
 
 This completes the core editing/equipped/preview separation needed by the Phase-2 canvas.
+
+
+## Phase 2 — Cape Editor MVP first interactive slice
+
+Implemented:
+- L development key opens the first Loom Studios home screen;
+- Create New Cape creates a real blank ProjectSession;
+- Recent Projects are sourced from ProjectLibraryIndex;
+- selected saved project can be opened into the editor;
+- first reusable LoomButton and LoomCanvasWidget controls;
+- real 64x32 cape canvas renders the compiled ProjectSession;
+- Pencil and Eraser edit the first non-emissive cape layer;
+- four starter palette colors;
+- undo/redo;
+- Save;
+- Save + Equip;
+- 3D Preview returns to the editor when closed;
+- editor title/status reflects dirty/equipped state;
+- ProjectEdits provides immutable common-layer pixel editing.
+
+The visual shell is intentionally only an MVP. Reference-image fidelity remains a later dedicated phase, but the editor is now operating on the real project/session/render/network architecture.

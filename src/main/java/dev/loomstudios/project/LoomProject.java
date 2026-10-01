@@ -50,6 +50,30 @@ public record LoomProject(
         }
     }
 
+    public LoomProject withCape(LoomCanvas nextCape) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                name,
+                metadata,
+                Objects.requireNonNull(nextCape, "nextCape"),
+                elytra,
+                runtime
+        );
+    }
+
+    public LoomProject withElytra(LoomCanvas nextElytra) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                name,
+                metadata,
+                cape,
+                Objects.requireNonNull(nextElytra, "nextElytra"),
+                runtime
+        );
+    }
+
     public LoomProject withMetadata(LoomProjectMetadata nextMetadata) {
         return new LoomProject(
                 schemaVersion,

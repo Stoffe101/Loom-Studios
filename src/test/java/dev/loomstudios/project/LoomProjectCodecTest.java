@@ -32,6 +32,31 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void pixelEditReplacesOnlyRequestedCapePixel() {
+        LoomProject project = LoomProjectFactory.blank("Paint Test", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject edited = ProjectEdits.setCapePixel(
+                project,
+                layer.id(),
+                3,
+                4,
+                0xFFABCDEF
+        );
+
+        int changedIndex = 4 * LoomProject.TEXTURE_WIDTH + 3;
+        assertEquals(
+                0xFFABCDEF,
+                edited.cape().layers().getFirst().pixelAt(changedIndex)
+        );
+        assertEquals(
+                0,
+                project.cape().layers().getFirst().pixelAt(changedIndex)
+        );
+        assertEquals(project.elytra(), edited.elytra());
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 

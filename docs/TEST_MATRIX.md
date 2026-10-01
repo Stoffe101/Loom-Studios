@@ -288,3 +288,20 @@ Deferred UX check:
 - corrupt .loom file is skipped without aborting entire scan
 - thumbnail filename changes when project content hash changes
 - save refreshes project-library index
+
+
+## Phase-2 first editor runtime checks
+
+- L opens Loom Studios home screen
+- Create New Cape creates dirty blank project
+- canvas shows 64x32 checker transparency
+- Pencil changes requested pixel
+- Eraser restores transparency
+- drag painting works
+- Undo/Redo operate on edits
+- 3D Preview shows unsaved session output
+- world cape remains equipped old project before Save + Equip
+- Save creates .loom file and thumbnail
+- saved project appears in Recent Projects
+- Save + Equip changes world cape
+- multiplayer sync republishes newly equipped saved hash

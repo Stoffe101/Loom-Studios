@@ -1,7 +1,9 @@
 package dev.loomstudios.project;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public record LoomCanvas(
         int width,
@@ -32,5 +34,27 @@ public record LoomCanvas(
         }
 
         layers = List.copyOf(layers);
+    }
+
+    public LoomCanvas replaceLayer(UUID layerId, LoomLayer replacement) {
+        Objects.requireNonNull(layerId, "layerId");
+        Objects.requireNonNull(replacement, "replacement");
+
+        List<LoomLayer> next = new ArrayList<>(layers);
+        boolean replaced = false;
+
+        for (int i = 0; i < next.size(); i++) {
+            if (next.get(i).id().equals(layerId)) {
+                next.set(i, replacement);
+                replaced = true;
+                break;
+            }
+        }
+
+        if (!replaced) {
+            throw new IllegalArgumentException("Unknown layer " + layerId);
+        }
+
+        return new LoomCanvas(width, height, next);
     }
 }

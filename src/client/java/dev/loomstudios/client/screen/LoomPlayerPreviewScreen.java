@@ -36,6 +36,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private static final int TEXT_COLOR = 0xFFEAFBFF;
     private static final int MUTED_TEXT_COLOR = 0xFF9CB2BA;
 
+    private final Screen parent;
+
     private PreviewMode mode = PreviewMode.CAPE;
     private float yaw = 180.0F;
     private float pitch = 0.0F;
@@ -43,7 +45,12 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private boolean draggingPreview;
 
     public LoomPlayerPreviewScreen() {
+        this(null);
+    }
+
+    public LoomPlayerPreviewScreen(Screen parent) {
         super(TITLE);
+        this.parent = parent;
     }
 
     @Override
@@ -291,6 +298,15 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private static float wrapDegrees(float degrees) {
         float wrapped = degrees % 360.0F;
         return wrapped < 0.0F ? wrapped + 360.0F : wrapped;
+    }
+
+    @Override
+    public void onClose() {
+        if (this.parent != null) {
+            this.minecraft.setScreen(this.parent);
+        } else {
+            super.onClose();
+        }
     }
 
     @Override

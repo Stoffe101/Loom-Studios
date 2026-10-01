@@ -30,6 +30,8 @@ SPIKE-00 through SPIKE-06:
 
 ## Phase 2 — Cape editor MVP
 
+**Status:** IN PROGRESS. Home screen, blank/open project flow, pixel canvas, pencil/eraser, undo/redo, save/equip and unsaved preview are implemented pending runtime verification.
+
 - Cape Loom block interaction
 - home/start screen
 - cape canvas

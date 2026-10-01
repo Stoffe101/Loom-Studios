@@ -6,6 +6,7 @@ import dev.loomstudios.client.network.ClientCosmeticSync;
 import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.render.PlayerCosmeticRenderer;
 import dev.loomstudios.client.render.LoomCapeGlowLayer;
+import dev.loomstudios.client.screen.LoomHomeScreen;
 import dev.loomstudios.client.screen.LoomPlayerPreviewScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -20,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 public final class LoomStudiosClient implements ClientModInitializer {
     private static KeyMapping cycleElytraThickness;
     private static KeyMapping openPreview;
+    private static KeyMapping openStudio;
     private static KeyMapping toggleEmissive;
 
     @Override
@@ -61,6 +63,13 @@ public final class LoomStudiosClient implements ClientModInitializer {
                 debugCategory
         ));
 
+        openStudio = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.loom-studios.open_studio",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_L,
+                debugCategory
+        ));
+
         toggleEmissive = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.loom-studios.toggle_emissive",
                 InputConstants.Type.KEYSYM,
@@ -76,6 +85,12 @@ public final class LoomStudiosClient implements ClientModInitializer {
             while (openPreview.consumeClick()) {
                 if (client.player != null && client.level != null) {
                     client.setScreen(new LoomPlayerPreviewScreen());
+                }
+            }
+
+            while (openStudio.consumeClick()) {
+                if (client.player != null && client.level != null) {
+                    client.setScreen(new LoomHomeScreen());
                 }
             }
 

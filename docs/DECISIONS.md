@@ -348,3 +348,24 @@ ProjectLibraryIndex owns the currently selected project UUID and preserves it ac
 If selection disappears, the newest remaining project becomes the default selection.
 
 This gives the Phase-2 home/Recent Projects screen stable selection behavior independent of widget instances.
+
+
+## ADR-039 — Phase-2 editor writes immutable project edits through the workspace
+**Status:** Accepted / implemented
+
+Editor widgets never mutate NativeImage/runtime textures directly.
+
+Pixel tools produce a new LoomProject through ProjectEdits, then submit that project through ClientProjectWorkspace/ProjectSession.
+
+Consequences:
+- undo/redo remains authoritative;
+- dirty state remains correct;
+- preview compilation follows the same project data;
+- save/equip/network behavior remains downstream of one model.
+
+## ADR-040 — Functional editor UI precedes reference-fidelity polish
+**Status:** Accepted
+
+Phase 2 builds reusable controls and complete editing behavior first.
+
+The approved reference images remain the visual target, but exact decorative framing/layout fidelity is deferred to the dedicated reference-fidelity phase so core editor behavior is not entangled with temporary screen scaffolding.
