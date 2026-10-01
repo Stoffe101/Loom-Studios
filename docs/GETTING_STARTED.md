@@ -54,3 +54,34 @@ Linux/macOS:
 ## Spike order
 
 SPIKE-00 toolchain → SPIKE-01 static cape → SPIKE-02 dynamic texture → SPIKE-03 Elytra → SPIKE-04 preview → SPIKE-05 multiplayer → SPIKE-06 animation/emissive.
+
+
+## Troubleshooting runClient
+
+If Gradle ends with only a generic Windows exit such as:
+
+```
+Process ... finished with non-zero exit value -1
+```
+
+the useful Minecraft/Fabric error is normally in:
+
+- `run/logs/latest.log`
+- the newest `run/crash-reports/crash-*.txt`, if a crash report was generated
+
+PowerShell helpers:
+
+```powershell
+Get-Content .\run\logs\latest.log -Tail 250
+```
+
+and, when a crash report exists:
+
+```powershell
+$crash = Get-ChildItem .\run\crash-reports\*.txt |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+Get-Content $crash.FullName -Tail 300
+```
+
+For isolation, temporarily moving JARs out of `dev-mods/` gives a plain-Fabric client without changing the project dependencies.

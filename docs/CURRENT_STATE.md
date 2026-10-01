@@ -79,3 +79,10 @@ Compile/CI and local visual verification are still required before SPIKE-01 can 
 ## Next
 
 Verify corrected CI and then launch the IntelliJ development client/server locally. In third person, the local player should show the LS test cape. After that, validate optional Sodium/Iris/3D Skin Layers compatibility.
+
+
+## Latest local test feedback
+
+The first Windows `runClient` attempt started the Java client process but exited with status `0xFFFFFFFF`. This is a runtime/client failure rather than a compile failure. The actual cause must be read from `run/logs/latest.log` or the newest crash report before changing rendering code.
+
+The `listDevMods` helper exposed a separate Gradle configuration-cache incompatibility. Configuration cache is now intentionally disabled for the IntelliJ/Loom development workflow.

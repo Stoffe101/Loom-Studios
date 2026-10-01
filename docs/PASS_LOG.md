@@ -1,5 +1,23 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Local IntelliJ test feedback
+
+**Status: FIX APPLIED / CLIENT CRASH UNDER INVESTIGATION**
+
+User local results:
+- `runClient` reached the Java client process but exited with Windows status `0xFFFFFFFF`;
+- Gradle's outer error does not identify the Minecraft/Fabric cause, so `run/logs/latest.log` / crash report is required;
+- `listDevMods` failed solely because the helper task was incompatible with Gradle configuration cache.
+
+Correction:
+- disable Gradle configuration cache for this project;
+- this matches the development-first IntelliJ/Loom workflow and removes needless friction from helper/run tasks;
+- add exact log/crash-report troubleshooting commands to GETTING_STARTED.md.
+
+The client crash itself is not yet attributed to Loom Studios or an optional compatibility mod.
+
+---
+
 ## 2026-10-01 — Official Gradle launcher scripts
 
 **Result: CI PASS**

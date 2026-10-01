@@ -89,3 +89,11 @@ For the static cape spike:
 - cache the patched skin to avoid allocating a new record every rendered frame.
 
 This deliberately keeps vanilla `CapeLayer` responsible for geometry and movement.
+
+
+## ADR-017 — Disable Gradle configuration cache for development
+**Status:** Accepted
+
+Loom Studios prioritizes a predictable IntelliJ + Fabric Loom development workflow over configuration-cache reuse.
+
+Gradle configuration cache is disabled because Loom/custom development tasks and generated run configurations still have rough edges around cache-safe script closures. This avoids repeated false failures in helper tasks such as `listDevMods` and reduces friction during rapid client testing.
