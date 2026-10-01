@@ -371,6 +371,157 @@ public final class ProjectEdits {
         return project.withCape(nextCanvas);
     }
 
+    public static LoomProject moveCapeRegionSelection(
+            LoomProject project,
+            UUID layerId,
+            CapeUvRegion region,
+            PixelSelection selection,
+            int deltaX,
+            int deltaY
+    ) {
+        if (deltaX == 0 && deltaY == 0) {
+            return project;
+        }
+
+        LoomCanvas canvas = project.cape();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int regionWidth = region.width(scale);
+        int regionHeight = region.height(scale);
+        validateSelection(selection, regionWidth, regionHeight);
+
+        LoomLayer layer = canvas.layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown layer " + layerId
+                ));
+
+        int[] pixels = layer.pixels();
+        int[] captured = new int[selection.width() * selection.height()];
+
+        for (int y = 0; y < selection.height(); y++) {
+            for (int x = 0; x < selection.width(); x++) {
+                int sourceX = selection.minX() + x;
+                int sourceY = selection.minY() + y;
+                int atlasX = region.atlasX(sourceX, scale);
+                int atlasY = region.atlasY(sourceY, scale);
+
+                captured[y * selection.width() + x] =
+                        pixels[atlasY * canvas.width() + atlasX];
+                pixels[atlasY * canvas.width() + atlasX] = 0;
+            }
+        }
+
+        for (int y = 0; y < selection.height(); y++) {
+            for (int x = 0; x < selection.width(); x++) {
+                int destinationX = selection.minX() + x + deltaX;
+                int destinationY = selection.minY() + y + deltaY;
+
+                if (destinationX < 0
+                        || destinationY < 0
+                        || destinationX >= regionWidth
+                        || destinationY >= regionHeight) {
+                    continue;
+                }
+
+                int atlasX = region.atlasX(destinationX, scale);
+                int atlasY = region.atlasY(destinationY, scale);
+                pixels[atlasY * canvas.width() + atlasX] =
+                        captured[y * selection.width() + x];
+            }
+        }
+
+        return project.withCape(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    public static LoomProject flipCapeRegionSelection(
+            LoomProject project,
+            UUID layerId,
+            CapeUvRegion region,
+            PixelSelection selection,
+            boolean horizontal,
+            boolean vertical
+    ) {
+        if (!horizontal && !vertical) {
+            return project;
+        }
+
+        LoomCanvas canvas = project.cape();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int regionWidth = region.width(scale);
+        int regionHeight = region.height(scale);
+        validateSelection(selection, regionWidth, regionHeight);
+
+        LoomLayer layer = canvas.layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown layer " + layerId
+                ));
+
+        int[] pixels = layer.pixels();
+        int[] captured = new int[selection.width() * selection.height()];
+
+        for (int y = 0; y < selection.height(); y++) {
+            for (int x = 0; x < selection.width(); x++) {
+                int sourceX = selection.minX() + x;
+                int sourceY = selection.minY() + y;
+                int atlasX = region.atlasX(sourceX, scale);
+                int atlasY = region.atlasY(sourceY, scale);
+                captured[y * selection.width() + x] =
+                        pixels[atlasY * canvas.width() + atlasX];
+            }
+        }
+
+        for (int y = 0; y < selection.height(); y++) {
+            for (int x = 0; x < selection.width(); x++) {
+                int sourceX = horizontal
+                        ? selection.width() - 1 - x
+                        : x;
+                int sourceY = vertical
+                        ? selection.height() - 1 - y
+                        : y;
+
+                int destinationX = selection.minX() + x;
+                int destinationY = selection.minY() + y;
+                int atlasX = region.atlasX(destinationX, scale);
+                int atlasY = region.atlasY(destinationY, scale);
+
+                pixels[atlasY * canvas.width() + atlasX] =
+                        captured[
+                                sourceY * selection.width()
+                                        + sourceX
+                        ];
+            }
+        }
+
+        return project.withCape(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    private static void validateSelection(
+            PixelSelection selection,
+            int regionWidth,
+            int regionHeight
+    ) {
+        if (selection == null
+                || selection.maxX() >= regionWidth
+                || selection.maxY() >= regionHeight) {
+            throw new IllegalArgumentException(
+                    "Selection is outside semantic region"
+            );
+        }
+    }
+
     public static LoomProject paintCapeRegionLine(
             LoomProject project,
             UUID layerId,
