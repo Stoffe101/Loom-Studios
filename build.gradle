@@ -122,7 +122,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+    testImplementation platform("org.junit:junit-bom:5.10.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     // Optional local compatibility mods for runClient.
     // JARs in dev-mods/ are not published or bundled with Loom Studios.

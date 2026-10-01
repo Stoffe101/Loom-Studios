@@ -1,5 +1,21 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Gradle 9 JUnit launcher correction
+
+**Initial test-wiring SHA:** `58f25c610a8f27b002def89cfac0dfc51ae8d9cc`  
+**GitHub Actions run #26:** FAILED in `:test`
+
+Production/common/client compilation all passed. The failure was test-runner wiring only: Gradle 9 requires the JUnit Platform launcher to be present explicitly on the test runtime classpath.
+
+Correction:
+- JUnit BOM 5.10.2;
+- JUnit Jupiter test implementation;
+- explicit `junit-platform-launcher` test runtime.
+
+No Loom runtime/project behavior changed in this correction.
+
+---
+
 ## 2026-10-01 — Phase-1 project-core CI + invariant hardening
 
 Exact SHA `fe734caa608bf1e3524222dd467f606d8a5dd6cc` passed GitHub Actions run #25.
