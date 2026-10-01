@@ -1,5 +1,21 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Elytra thickness design correction
+
+**Result: DECISION ACCEPTED**
+
+Runtime screenshots showed the transparent edge-face UV experiment made the dedicated Elytra texture look effectively paper-thin.
+
+Decision:
+- remove edge-face transparency as the default visual strategy;
+- preserve normal vanilla Elytra appearance at the default setting;
+- separate artwork from geometry;
+- add future user-controlled Elytra thickness as a render-only model setting.
+
+The intended implementation will scale wing depth rather than hiding side-face textures.
+
+---
+
 ## 2026-10-01 — SPIKE-02 local runtime verification
 
 **Result: PASS**

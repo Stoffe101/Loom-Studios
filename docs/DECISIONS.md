@@ -129,3 +129,19 @@ The default Loom Studios Elytra renderer keeps vanilla WingsLayer/ElytraModel ge
 The vanilla model is intentionally volumetric (10x20x2 plus CubeDeformation 1.0 per wing), which can look thick. The first low-risk visual experiment hides edge-face UV strips through transparency.
 
 A future optional "Slim Elytra" visual mode may use custom geometry if desired, but it must be opt-in and separately compatibility-tested.
+
+
+## ADR-021 — Elytra thickness is a geometry setting, not a texture trick
+**Status:** Accepted
+
+Default Loom Studios Elytra rendering must preserve vanilla wing thickness.
+
+User customization may expose an Elytra thickness control. The preferred implementation is local model-depth scaling while keeping vanilla WingsLayer animation and equipment behavior.
+
+Proposed semantics:
+- 100% = exact vanilla thickness;
+- values below 100% = slimmer wings;
+- values above 100% = chunkier/stylized wings;
+- setting is purely visual and never changes collision/hitboxes.
+
+Do not implement "thin Elytra" by making UV edge faces transparent. That changes visual surface coverage rather than actual geometry and produced an undesirable paper-thin result.

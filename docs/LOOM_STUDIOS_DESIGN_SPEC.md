@@ -554,3 +554,30 @@ A player should be able to:
 13. generate a private clickable Loom Code and share it intentionally.
 
 That is the core Loom Studios promise.
+
+
+## 27. Elytra geometry customization
+
+Loom Studios should preserve vanilla Elytra geometry by default while allowing optional cosmetic geometry customization.
+
+### Thickness
+
+The editor may expose an **Elytra Thickness** control.
+
+Requirements:
+- default is 100%, matching vanilla Minecraft;
+- thinner and thicker values are render-only;
+- no gameplay, collision, physics, durability, or hitbox changes;
+- vanilla wing pose/gliding animation remains authoritative;
+- texture artwork is independent from thickness;
+- reset-to-vanilla is always available.
+
+A model-depth scaling approach is preferred over hiding texture edge faces.
+
+Potential future advanced geometry controls, only if stable:
+- wing width
+- wing length
+- back offset
+- resting spread/angle
+
+These advanced options are not required for the first editor release and must remain compatible with vanilla gliding animation and optional rendering mods.

@@ -158,3 +158,20 @@ The SPIKE-03 test Elytra:
 - does not inherit cape animation;
 - uses the vanilla Elytra model/animation;
 - makes the edge-face UV strips transparent while leaving the major front/back wing faces opaque, as a low-risk experiment to reduce the boxy appearance without replacing vanilla geometry.
+
+
+## Elytra thickness direction
+
+The transparent edge-face experiment made the Elytra visually paper-thin. That confirms texture alpha is the wrong control for user-adjustable thickness.
+
+Product direction:
+- default Elytra geometry/appearance uses vanilla thickness;
+- texture controls artwork only;
+- an optional Loom Studios geometry setting controls visual wing thickness independently;
+- the setting is cosmetic/render-only and does not affect hitboxes or gameplay.
+
+Implementation target:
+- 100% = vanilla Elytra thickness;
+- thinner/thicker values scale the Elytra model on its local depth axis;
+- preserve vanilla animation/pose logic;
+- keep the feature optional and fall back to vanilla geometry if compatibility requires it.
