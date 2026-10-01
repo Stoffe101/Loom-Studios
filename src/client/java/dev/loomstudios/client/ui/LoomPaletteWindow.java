@@ -24,17 +24,19 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /**
- * Movable/pinnable custom-palette side window.
+ * Illustrator/Photoshop-style swatches dock.
  *
- * <p>Left-click palette colors to use them. Right-click a selected palette
- * color to remove it. Export writes a .loompalette file and also copies a
- * share code to the clipboard. Import first tries a share code from the
- * clipboard and otherwise scans the palette imports folder.</p>
+ * <p>All named custom palettes are shown as stacked swatch groups. Clicking a
+ * group header selects it for rename/add/export/delete. Clicking any swatch
+ * immediately selects that color and its parent palette.</p>
  */
 public final class LoomPaletteWindow extends AbstractContainerWidget {
     private static final int TITLE_HEIGHT = 22;
-    private static final int PALETTE_ROW_HEIGHT = 18;
-    private static final int VISIBLE_PALETTE_ROWS = 4;
+    private static final int CONTROLS_HEIGHT = 104;
+    private static final int GROUP_HEADER_HEIGHT = 17;
+    private static final int SWATCH = 15;
+    private static final int SWATCH_GAP = 3;
+    private static final int GROUP_GAP = 7;
 
     private final List<AbstractWidget> children = new ArrayList<>();
     private final IntSupplier selectedColorSupplier;
@@ -49,11 +51,12 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     private final LoomButton addColorButton;
     private final LoomButton importButton;
     private final LoomButton exportButton;
+    private final LoomButton deleteButton;
     private final LoomButton pinButton;
 
     private boolean pinned;
     private boolean moving;
-    private int paletteScroll;
+    private int swatchesScroll;
 
     public LoomPaletteWindow(
             int x,
@@ -67,7 +70,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             IntSupplier screenWidth,
             IntSupplier screenHeight
     ) {
-        super(x, y, width, height, Component.literal("Palettes"));
+        super(x, y, width, height, Component.literal("Swatches"));
         this.pinned = pinned;
         this.selectedColorSupplier = selectedColorSupplier;
         this.colorSelected = colorSelected;
@@ -80,7 +83,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         this.nameBox = new EditBox(
                 Minecraft.getInstance().font,
                 x + 8,
-                y + 29,
+                y + 28,
                 width - 16,
                 18,
                 Component.literal("Palette name")
@@ -88,43 +91,51 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         this.nameBox.setMaxLength(ColorPalette.MAX_NAME_CHARS);
         this.children.add(nameBox);
 
-        int half = (width - 20) / 2;
+        int third = Math.max(48, (width - 24) / 3);
 
         this.newButton = button(
                 x + 8,
-                y + 52,
-                half,
-                "New",
+                y + 51,
+                third,
+                "New Palette",
                 this::createPalette
         );
         this.saveButton = button(
-                x + 12 + half,
-                y + 52,
-                half,
+                x + 12 + third,
+                y + 51,
+                third,
                 "Save Name",
                 this::saveName
+        );
+        this.deleteButton = button(
+                x + 16 + third * 2,
+                y + 51,
+                width - 24 - third * 2,
+                "Delete",
+                this::deletePalette
         );
 
         this.addColorButton = button(
                 x + 8,
-                y + 77,
+                y + 76,
                 width - 16,
                 "Add Current Color",
                 this::addCurrentColor
         );
 
+        int half = (width - 20) / 2;
         this.importButton = button(
                 x + 8,
-                y + 102,
+                y + 101,
                 half,
                 "Import",
                 this::importPalette
         );
         this.exportButton = button(
                 x + 12 + half,
-                y + 102,
+                y + 101,
                 half,
-                "Export",
+                "Export Selected",
                 this::exportPalette
         );
 
@@ -149,7 +160,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         LoomButton button = new LoomButton(
                 x,
                 y,
-                width,
+                Math.max(28, width),
                 20,
                 Component.literal(label),
                 action
@@ -168,9 +179,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
 
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
-        this.pinButton.setMessage(
-                Component.literal(pinned ? "Pinned" : "Pin")
-        );
+        pinButton.setMessage(Component.literal(pinned ? "Pinned" : "Pin"));
     }
 
     private void togglePinned() {
@@ -184,12 +193,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                     selectedColorSupplier.getAsInt()
             );
             nameBox.setValue(palette.name());
-            paletteScroll = Math.max(
-                    0,
-                    ColorPaletteLibrary.palettes().indexOf(palette)
-                            - VISIBLE_PALETTE_ROWS
-                            + 1
-            );
+            ensureSelectedVisible();
             notifier.accept("Created palette: " + palette.name());
         } catch (IOException | RuntimeException e) {
             notifier.accept("Could not create palette");
@@ -202,9 +206,22 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                     nameBox.getValue()
             );
             nameBox.setValue(palette.name());
-            notifier.accept("Saved palette: " + palette.name());
+            notifier.accept("Saved palette name");
         } catch (IOException | RuntimeException e) {
             notifier.accept("Could not save palette name");
+        }
+    }
+
+    private void deletePalette() {
+        try {
+            String name = ColorPaletteLibrary.selected()
+                    .map(ColorPalette::name)
+                    .orElse("palette");
+            ColorPaletteLibrary.deleteSelected();
+            syncSelectedPalette();
+            notifier.accept("Deleted palette: " + name);
+        } catch (IOException | RuntimeException e) {
+            notifier.accept("Could not delete palette");
         }
     }
 
@@ -214,10 +231,10 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                     selectedColorSupplier.getAsInt()
             );
             notifier.accept(
-                    "Palette now has " + palette.colors().size() + " colors"
+                    palette.name() + ": " + palette.colors().size() + " swatches"
             );
         } catch (IOException | RuntimeException e) {
-            notifier.accept("Could not add color to palette");
+            notifier.accept("Could not add color to selected palette");
         }
     }
 
@@ -232,17 +249,20 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                 ColorPalette palette =
                         ColorPaletteLibrary.importShareCode(clipboard);
                 nameBox.setValue(palette.name());
+                ensureSelectedVisible();
                 notifier.accept("Imported palette: " + palette.name());
                 return;
             }
 
             int imported = ColorPaletteLibrary.importInbox();
+            syncSelectedPalette();
+
             if (imported > 0) {
-                syncSelectedPalette();
+                ensureSelectedVisible();
                 notifier.accept("Imported " + imported + " palette(s)");
             } else {
                 notifier.accept(
-                        "Clipboard has no Loom palette code; import folder is empty"
+                        "No Loom palette code on clipboard and import folder is empty"
                 );
             }
         } catch (IOException | RuntimeException e) {
@@ -260,23 +280,24 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             );
 
             notifier.accept(
-                    "Palette exported; share code copied to clipboard"
+                    "Exported selected palette; share code copied"
             );
         } catch (IOException | RuntimeException e) {
-            notifier.accept("Could not export palette");
+            notifier.accept("Could not export selected palette");
         }
     }
 
     private void syncSelectedPalette() {
         Optional<ColorPalette> selected = ColorPaletteLibrary.selected();
-        this.nameBox.setValue(
+        nameBox.setValue(
                 selected.map(ColorPalette::name).orElse("New Palette")
         );
 
         boolean active = selected.isPresent();
-        this.saveButton.active = active;
-        this.addColorButton.active = active;
-        this.exportButton.active = active;
+        saveButton.active = active;
+        addColorButton.active = active;
+        exportButton.active = active;
+        deleteButton.active = active;
     }
 
     @Override
@@ -317,7 +338,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
 
         graphics.drawString(
                 Minecraft.getInstance().font,
-                Component.literal("Palettes"),
+                Component.literal("Swatches"),
                 getX() + 8,
                 getY() + 7,
                 LoomUiTheme.TEXT,
@@ -328,123 +349,178 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             child.render(graphics, mouseX, mouseY, partialTick);
         }
 
-        renderPaletteList(graphics);
-        renderSelectedColors(graphics);
+        renderSwatchGroups(graphics);
     }
 
-    private void renderPaletteList(GuiGraphics graphics) {
-        int listY = getY() + 129;
-        int listWidth = getWidth() - 16;
+    private void renderSwatchGroups(GuiGraphics graphics) {
+        int top = getY() + CONTROLS_HEIGHT + 24;
+        int bottom = getBottom() - 7;
 
         graphics.drawString(
                 Minecraft.getInstance().font,
                 Component.literal("Saved palettes"),
                 getX() + 8,
-                listY,
+                top - 13,
                 LoomUiTheme.TEXT_MUTED,
                 false
         );
-        listY += 13;
 
-        List<ColorPalette> palettes = ColorPaletteLibrary.palettes();
-        UUIDHolder selected = new UUIDHolder(
-                ColorPaletteLibrary.selected()
-                        .map(ColorPalette::id)
-                        .orElse(null)
-        );
+        graphics.enableScissor(getX() + 5, top, getRight() - 5, bottom);
 
-        for (int row = 0; row < VISIBLE_PALETTE_ROWS; row++) {
-            int index = paletteScroll + row;
-            int y = listY + row * PALETTE_ROW_HEIGHT;
+        int y = top - swatchesScroll;
+        int columns = swatchColumns();
+        Optional<ColorPalette> selected = ColorPaletteLibrary.selected();
 
-            if (index >= palettes.size()) {
+        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+            int rows = Math.max(
+                    1,
+                    (palette.colors().size() + columns - 1) / columns
+            );
+            int groupHeight = GROUP_HEADER_HEIGHT
+                    + rows * (SWATCH + SWATCH_GAP)
+                    + GROUP_GAP;
+
+            if (y + groupHeight >= top && y <= bottom) {
+                boolean isSelected = selected
+                        .map(value -> value.id().equals(palette.id()))
+                        .orElse(false);
+
                 graphics.fill(
-                        getX() + 8,
+                        getX() + 7,
                         y,
-                        getX() + 8 + listWidth,
-                        y + 16,
-                        LoomUiTheme.PANEL_INNER
+                        getRight() - 7,
+                        y + GROUP_HEADER_HEIGHT - 1,
+                        isSelected ? 0xFF213744 : 0xFF111820
                 );
-                continue;
+                graphics.drawString(
+                        Minecraft.getInstance().font,
+                        Component.literal(
+                                palette.name()
+                                        + "  •  "
+                                        + palette.colors().size()
+                        ),
+                        getX() + 12,
+                        y + 4,
+                        isSelected ? LoomUiTheme.ACCENT : LoomUiTheme.TEXT,
+                        false
+                );
+
+                int swatchesY = y + GROUP_HEADER_HEIGHT + 2;
+
+                for (int i = 0; i < palette.colors().size(); i++) {
+                    int row = i / columns;
+                    int col = i % columns;
+                    int x = getX() + 10 + col * (SWATCH + SWATCH_GAP);
+                    int sy = swatchesY + row * (SWATCH + SWATCH_GAP);
+
+                    graphics.fill(
+                            x - 1,
+                            sy - 1,
+                            x + SWATCH + 1,
+                            sy + SWATCH + 1,
+                            LoomUiTheme.BORDER
+                    );
+                    graphics.fill(
+                            x,
+                            sy,
+                            x + SWATCH,
+                            sy + SWATCH,
+                            palette.colors().get(i)
+                    );
+                }
             }
 
-            ColorPalette palette = palettes.get(index);
-            boolean isSelected = palette.id().equals(selected.value);
+            y += groupHeight;
+        }
+
+        graphics.disableScissor();
+
+        int total = totalSwatchContentHeight();
+        int viewport = Math.max(1, bottom - top);
+
+        if (total > viewport) {
+            int trackX = getRight() - 5;
+            int thumbHeight = Math.max(
+                    16,
+                    viewport * viewport / total
+            );
+            int maxScroll = total - viewport;
+            int thumbY = top
+                    + (int)((viewport - thumbHeight)
+                    * (swatchesScroll / (double)Math.max(1, maxScroll)));
 
             graphics.fill(
-                    getX() + 8,
-                    y,
-                    getX() + 8 + listWidth,
-                    y + 16,
-                    isSelected ? 0xFF213744 : LoomUiTheme.PANEL_INNER
+                    trackX - 2,
+                    top,
+                    trackX,
+                    bottom,
+                    0xFF1B252E
             );
+            graphics.fill(
+                    trackX - 3,
+                    thumbY,
+                    trackX + 1,
+                    thumbY + thumbHeight,
+                    LoomUiTheme.TEXT_MUTED
+            );
+        }
 
-            int previewX = getX() + 12;
-            int previewColors = Math.min(4, palette.colors().size());
-            for (int i = 0; i < previewColors; i++) {
-                graphics.fill(
-                        previewX + i * 8,
-                        y + 4,
-                        previewX + i * 8 + 6,
-                        y + 10,
-                        palette.colors().get(i)
-                );
-            }
-
-            graphics.drawString(
+        if (ColorPaletteLibrary.palettes().isEmpty()) {
+            graphics.drawCenteredString(
                     Minecraft.getInstance().font,
-                    Component.literal(palette.name()),
-                    getX() + 48,
-                    y + 4,
-                    isSelected ? LoomUiTheme.ACCENT : LoomUiTheme.TEXT,
-                    false
+                    Component.literal(
+                            "Create a named palette, then add your colors"
+                    ),
+                    getX() + getWidth() / 2,
+                    top + 18,
+                    LoomUiTheme.TEXT_MUTED
             );
         }
     }
 
-    private void renderSelectedColors(GuiGraphics graphics) {
-        int swatchY = getY() + 223;
-
-        graphics.drawString(
-                Minecraft.getInstance().font,
-                Component.literal("Colors  •  right-click to remove"),
-                getX() + 8,
-                swatchY - 12,
-                LoomUiTheme.TEXT_MUTED,
-                false
+    private int swatchColumns() {
+        return Math.max(
+                1,
+                (getWidth() - 24) / (SWATCH + SWATCH_GAP)
         );
+    }
 
-        ColorPaletteLibrary.selected().ifPresent(palette -> {
-            int swatch = 16;
-            int gap = 4;
-            int columns = Math.max(1, (getWidth() - 16) / (swatch + gap));
+    private int totalSwatchContentHeight() {
+        int columns = swatchColumns();
+        int height = 0;
 
-            for (int i = 0; i < palette.colors().size(); i++) {
-                int row = i / columns;
-                int col = i % columns;
-                int x = getX() + 8 + col * (swatch + gap);
-                int y = swatchY + row * (swatch + gap);
+        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+            int rows = Math.max(
+                    1,
+                    (palette.colors().size() + columns - 1) / columns
+            );
+            height += GROUP_HEADER_HEIGHT
+                    + rows * (SWATCH + SWATCH_GAP)
+                    + GROUP_GAP;
+        }
 
-                if (y + swatch > getBottom() - 6) {
-                    break;
-                }
+        return height;
+    }
 
-                graphics.fill(
-                        x - 1,
-                        y - 1,
-                        x + swatch + 1,
-                        y + swatch + 1,
-                        LoomUiTheme.BORDER
-                );
-                graphics.fill(
-                        x,
-                        y,
-                        x + swatch,
-                        y + swatch,
-                        palette.colors().get(i)
-                );
-            }
-        });
+    private int swatchViewportTop() {
+        return getY() + CONTROLS_HEIGHT + 24;
+    }
+
+    private int swatchViewportBottom() {
+        return getBottom() - 7;
+    }
+
+    private void clampScroll() {
+        int viewport = Math.max(
+                1,
+                swatchViewportBottom() - swatchViewportTop()
+        );
+        int max = Math.max(0, totalSwatchContentHeight() - viewport);
+        swatchesScroll = Math.max(0, Math.min(max, swatchesScroll));
+    }
+
+    private void ensureSelectedVisible() {
+        clampScroll();
     }
 
     @Override
@@ -460,11 +536,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             return true;
         }
 
-        if (clickPaletteList(event)) {
-            return true;
-        }
-
-        if (clickSelectedColor(event)) {
+        if (clickSwatchGroups(event)) {
             return true;
         }
 
@@ -474,6 +546,72 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                 && event.y() < getY() + TITLE_HEIGHT) {
             moving = true;
             return true;
+        }
+
+        return true;
+    }
+
+    private boolean clickSwatchGroups(MouseButtonEvent event) {
+        int top = swatchViewportTop();
+        int bottom = swatchViewportBottom();
+
+        if (event.y() < top
+                || event.y() >= bottom
+                || event.x() < getX() + 7
+                || event.x() >= getRight() - 7) {
+            return false;
+        }
+
+        int y = top - swatchesScroll;
+        int columns = swatchColumns();
+
+        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+            int rows = Math.max(
+                    1,
+                    (palette.colors().size() + columns - 1) / columns
+            );
+            int groupHeight = GROUP_HEADER_HEIGHT
+                    + rows * (SWATCH + SWATCH_GAP)
+                    + GROUP_GAP;
+
+            if (event.y() >= y
+                    && event.y() < y + GROUP_HEADER_HEIGHT) {
+                if (event.button() == 0) {
+                    ColorPaletteLibrary.select(palette.id());
+                    syncSelectedPalette();
+                }
+                return true;
+            }
+
+            int swatchesY = y + GROUP_HEADER_HEIGHT + 2;
+
+            for (int i = 0; i < palette.colors().size(); i++) {
+                int row = i / columns;
+                int col = i % columns;
+                int x = getX() + 10 + col * (SWATCH + SWATCH_GAP);
+                int sy = swatchesY + row * (SWATCH + SWATCH_GAP);
+
+                if (event.x() >= x
+                        && event.x() < x + SWATCH
+                        && event.y() >= sy
+                        && event.y() < sy + SWATCH) {
+                    ColorPaletteLibrary.select(palette.id());
+                    syncSelectedPalette();
+
+                    if (event.button() == 1) {
+                        try {
+                            ColorPaletteLibrary.removeColorFromSelected(i);
+                        } catch (IOException ignored) {
+                            notifier.accept("Could not remove swatch");
+                        }
+                    } else if (event.button() == 0) {
+                        colorSelected.accept(palette.colors().get(i));
+                    }
+                    return true;
+                }
+            }
+
+            y += groupHeight;
         }
 
         return true;
@@ -510,97 +648,13 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             double scrollX,
             double scrollY
     ) {
-        int listTop = getY() + 142;
-        int listBottom = listTop
-                + VISIBLE_PALETTE_ROWS * PALETTE_ROW_HEIGHT;
-
-        if (mouseX >= getX() + 8
-                && mouseX < getRight() - 8
-                && mouseY >= listTop
-                && mouseY < listBottom) {
-            int max = Math.max(
-                    0,
-                    ColorPaletteLibrary.palettes().size()
-                            - VISIBLE_PALETTE_ROWS
-            );
-            paletteScroll = Math.max(
-                    0,
-                    Math.min(
-                            max,
-                            paletteScroll + (scrollY < 0 ? 1 : -1)
-                    )
-            );
+        if (mouseY >= swatchViewportTop()
+                && mouseY < swatchViewportBottom()
+                && mouseX >= getX() + 5
+                && mouseX < getRight() - 5) {
+            swatchesScroll += scrollY < 0 ? 28 : -28;
+            clampScroll();
             return true;
-        }
-
-        return false;
-    }
-
-    private boolean clickPaletteList(MouseButtonEvent event) {
-        int listTop = getY() + 142;
-        int listBottom = listTop
-                + VISIBLE_PALETTE_ROWS * PALETTE_ROW_HEIGHT;
-
-        if (event.button() != 0
-                || event.x() < getX() + 8
-                || event.x() >= getRight() - 8
-                || event.y() < listTop
-                || event.y() >= listBottom) {
-            return false;
-        }
-
-        int row = (int)((event.y() - listTop) / PALETTE_ROW_HEIGHT);
-        int index = paletteScroll + row;
-        List<ColorPalette> palettes = ColorPaletteLibrary.palettes();
-
-        if (index >= palettes.size()) {
-            return true;
-        }
-
-        ColorPalette palette = palettes.get(index);
-        ColorPaletteLibrary.select(palette.id());
-        nameBox.setValue(palette.name());
-        syncSelectedPalette();
-        return true;
-    }
-
-    private boolean clickSelectedColor(MouseButtonEvent event) {
-        Optional<ColorPalette> selected = ColorPaletteLibrary.selected();
-        if (selected.isEmpty()) {
-            return false;
-        }
-
-        int swatch = 16;
-        int gap = 4;
-        int columns = Math.max(1, (getWidth() - 16) / (swatch + gap));
-        int swatchY = getY() + 223;
-        ColorPalette palette = selected.get();
-
-        for (int i = 0; i < palette.colors().size(); i++) {
-            int row = i / columns;
-            int col = i % columns;
-            int x = getX() + 8 + col * (swatch + gap);
-            int y = swatchY + row * (swatch + gap);
-
-            if (y + swatch > getBottom() - 6) {
-                break;
-            }
-
-            if (event.x() >= x
-                    && event.x() < x + swatch
-                    && event.y() >= y
-                    && event.y() < y + swatch) {
-                if (event.button() == 1) {
-                    try {
-                        ColorPaletteLibrary.removeColorFromSelected(i);
-                    } catch (IOException ignored) {
-                        notifier.accept("Could not remove palette color");
-                    }
-                } else if (event.button() == 0) {
-                    colorSelected.accept(palette.colors().get(i));
-                }
-                return true;
-            }
         }
 
         return false;
@@ -651,8 +705,5 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {
         output.add(NarratedElementType.TITLE, getMessage());
-    }
-
-    private record UUIDHolder(java.util.UUID value) {
     }
 }

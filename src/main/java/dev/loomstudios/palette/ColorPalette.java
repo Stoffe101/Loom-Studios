@@ -11,7 +11,7 @@ public record ColorPalette(
         List<Integer> colors
 ) {
     public static final int MAX_NAME_CHARS = 48;
-    public static final int MAX_COLORS = 32;
+    public static final int MAX_COLORS = 64;
 
     public ColorPalette {
         Objects.requireNonNull(id, "id");
@@ -51,7 +51,7 @@ public record ColorPalette(
         }
 
         if (colors.size() >= MAX_COLORS) {
-            throw new IllegalStateException("Palette already has 32 colors");
+            throw new IllegalStateException("Palette already has 64 colors");
         }
 
         List<Integer> next = new ArrayList<>(colors);

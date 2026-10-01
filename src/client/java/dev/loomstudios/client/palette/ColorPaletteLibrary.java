@@ -149,6 +149,16 @@ public final class ColorPaletteLibrary {
         return save(current.removeColorAt(index));
     }
 
+    public static void deleteSelected() throws IOException {
+        ColorPalette current = selected().orElseThrow(
+                () -> new IllegalStateException("No palette selected")
+        );
+
+        Files.deleteIfExists(ROOT.resolve(current.id() + ".loompalette"));
+        selectedId = null;
+        refresh();
+    }
+
     public static ExportResult exportSelected() throws IOException {
         ColorPalette palette = selected().orElseThrow(
                 () -> new IllegalStateException("No palette selected")
