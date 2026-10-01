@@ -1,5 +1,16 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Workspace refactor compile correction
+
+Initial workspace-refactor SHA `b62392d0e80acdc2afdc4a326c2320d290b10752` failed client compilation because the lifecycle callback still invoked `PlayerCosmeticRenderer.close()` with no argument after the renderer close method was changed to accept the Minecraft client.
+
+Correction:
+- register `PlayerCosmeticRenderer::close` directly with `CLIENT_STOPPING`.
+
+No runtime architecture change.
+
+---
+
 ## 2026-10-01 — Workspace retention + editor-created project foundation
 
 **Status: IMPLEMENTED / CI PENDING**

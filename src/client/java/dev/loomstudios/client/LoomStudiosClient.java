@@ -87,6 +87,6 @@ public final class LoomStudiosClient implements ClientModInitializer {
             PlayerCosmeticRenderer.tick(client);
         });
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> PlayerCosmeticRenderer.close());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(PlayerCosmeticRenderer::close);
     }
 }
