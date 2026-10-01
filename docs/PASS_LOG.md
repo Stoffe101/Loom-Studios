@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — High-resolution/color-control green build
+
+**Result: CI PASS / LOCAL VISUAL TEST REQUIRED**
+
+Exact SHA: `f8b477568628a45120c5a31dcc54c80633effe06`  
+GitHub Actions run #42: **SUCCESS**
+
+Verified by CI:
+- high-resolution canvas model/resampling;
+- large-payload networking registration;
+- scale-aware cape UV mapping;
+- dynamic-resolution runtime texture compilation;
+- brush-size logic;
+- color-picker client code;
+- automated project tests;
+- remapped artifact upload.
+
+---
+
 ## 2026-10-01 — High-resolution face UV follow-up
 
 The first high-resolution implementation compiled successfully, then static review caught two scale-path issues before local handoff:

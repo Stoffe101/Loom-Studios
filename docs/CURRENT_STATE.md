@@ -584,3 +584,22 @@ Implemented:
 - reusable LoomColorPickerWidget added with saturation/value square, hue strip, live swatch, hex readout, RGB channel sliders/values, and palette swatches.
 
 Supported high-resolution sizes are intentionally bounded to 4x for the first editor release to keep project/network/memory costs predictable.
+
+
+## High-resolution/color-control green checkpoint
+
+Exact SHA `f8b477568628a45120c5a31dcc54c80633effe06` passed GitHub Actions run #42.
+
+Green scope:
+- 1x/2x/4x cape canvas resolutions;
+- dynamic-size runtime NativeImages for cape and Elytra;
+- Fabric large-payload project transport;
+- scaled semantic cape-face UV editing;
+- brush sizing and circular multi-pixel brush;
+- HSV-style color picker;
+- RGB sliders with numeric values;
+- hex display;
+- palette swatches;
+- project-core automated tests and artifact upload.
+
+Local visual verification is now the gate.
