@@ -61,11 +61,13 @@ dependencies {
     modLocalRuntime fileTree(dir: "dev-mods", include: ["*.jar"])
 }
 
+def modVersion = project.version
+
 processResources {
-    inputs.property "version", project.version
+    inputs.property "version", modVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": modVersion
     }
 }
 

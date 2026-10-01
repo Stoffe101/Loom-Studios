@@ -1,5 +1,26 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-00 Gradle configuration-cache correction
+
+**Status: IN PROGRESS**
+
+Corrected SHA `6f442183229d9931457e4df47023751e18a32811`:
+
+- Loom 1.17.21 resolved and ran successfully on Java 21.
+- Minecraft/Fabric dependency setup reached compilation.
+- `compileJava` completed.
+- Build failed in `processResources` because the Groovy closure referenced `project.version` at execution time while Gradle configuration cache is enabled.
+
+Correction:
+
+- capture the mod version during configuration;
+- pass the captured value into `processResources`;
+- keep configuration cache enabled instead of papering over the issue.
+
+Next: rerun exact-SHA CI.
+
+---
+
 ## 2026-10-01 — SPIKE-00 toolchain correction
 
 **Status: IN PROGRESS**
