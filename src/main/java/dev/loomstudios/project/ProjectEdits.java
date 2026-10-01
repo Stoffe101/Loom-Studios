@@ -167,10 +167,40 @@ public final class ProjectEdits {
             UUID layerId,
             String name
     ) {
+        String normalized = name == null ? "" : name.trim();
+        if (normalized.isEmpty()
+                || normalized.length() > LoomProjectCodec.MAX_LAYER_NAME_CHARS) {
+            throw new IllegalArgumentException("Invalid layer name");
+        }
+
         return updateCapeLayer(
                 project,
                 layerId,
-                layer -> layer.withName(name)
+                layer -> layer.withName(normalized)
+        );
+    }
+
+    public static LoomProject setCapeLayerEmissive(
+            LoomProject project,
+            UUID layerId,
+            boolean emissive
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withEmissive(emissive)
+        );
+    }
+
+    public static LoomProject setCapeLayerBlendMode(
+            LoomProject project,
+            UUID layerId,
+            BlendMode blendMode
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withBlendMode(blendMode)
         );
     }
 

@@ -109,6 +109,18 @@ public record LoomLayer(
         );
     }
 
+    public LoomLayer withBlendMode(BlendMode nextBlendMode) {
+        return new LoomLayer(
+                id,
+                name,
+                visible,
+                opacity,
+                Objects.requireNonNull(nextBlendMode, "nextBlendMode"),
+                emissive,
+                pixels
+        );
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
