@@ -145,3 +145,18 @@ Proposed semantics:
 - setting is purely visual and never changes collision/hitboxes.
 
 Do not implement "thin Elytra" by making UV edge faces transparent. That changes visual surface coverage rather than actual geometry and produced an undesirable paper-thin result.
+
+
+## ADR-022 — Preview uses isolated extracted render state
+**Status:** Implemented for SPIKE-04, runtime verification pending
+
+The Loom Studios GUI preview renders the real local player entity through Minecraft's normal entity renderer, but modifies only the extracted RenderState used for that GUI submission.
+
+This allows preview-only changes such as:
+- cape versus Elytra mode;
+- preview equipment;
+- later preview animation/pose options;
+
+without equipping items or mutating the actual world/player entity.
+
+The preview should reuse the same Loom cosmetic texture/render integrations as gameplay rather than maintaining a separate fake model pipeline.

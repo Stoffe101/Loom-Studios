@@ -1,5 +1,25 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-04 live preview implementation
+
+**Status: IMPLEMENTED / CI + LOCAL TEST PENDING**
+
+Implemented:
+- custom in-world Screen;
+- P debug key to open;
+- real local-player render-state extraction;
+- preview-only chest equipment override;
+- Cape/Elytra preview toggle without mutating actual equipment;
+- drag rotation;
+- wheel zoom;
+- reset control;
+- same Loom runtime cosmetic textures as gameplay;
+- non-pausing in-world behavior.
+
+This screen is architectural scaffolding only. Final Loom Studios UI work will replace its visual treatment after the foundation spikes.
+
+---
+
 ## 2026-10-01 — SPIKE-03 local runtime verification
 
 **Result: PASS**

@@ -157,3 +157,18 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 - returning to 100% fully restores vanilla depth
 - non-Loom Elytras remain 100%
 - no stale zScale leaks between rendered players
+
+
+## SPIKE-04 preview checks
+
+- P opens preview without pausing the integrated world
+- real player skin/model renders
+- cape preview uses current Loom cape texture
+- Elytra preview uses current Loom Elytra texture
+- C changes preview mode without mutating actual chest equipment
+- drag rotates
+- wheel zooms
+- R resets camera
+- dynamic cape updates are visible in GUI preview
+- Elytra thickness customization is reflected in preview
+- closing preview leaves gameplay state unchanged

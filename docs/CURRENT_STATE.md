@@ -206,3 +206,27 @@ Local runtime verification confirmed:
 The Elytra Thickness feature is now approved for the future Elytra editor. The temporary V-key preset cycler remains developer-only scaffolding until the editor control replaces it.
 
 Next active milestone: **SPIKE-04 — live GUI player preview**.
+
+
+## SPIKE-04 implementation
+
+**Status: IMPLEMENTED / CI + LOCAL RUNTIME VERIFICATION PENDING**
+
+A first functional Loom Studios player-preview screen now exists.
+
+Temporary development controls:
+- P opens the preview screen;
+- left-drag rotates the player;
+- mouse wheel zooms;
+- C toggles Cape / Elytra preview;
+- R resets camera;
+- Esc closes.
+
+Architecture:
+- uses Minecraft's render-state entity submission path;
+- extracts a player render state without changing the real entity;
+- modifies only the extracted preview state to simulate no chest item or an Elytra;
+- therefore Cape/Elytra mode switching does not equip/unequip anything in the actual world;
+- the normal Loom Studios cape/Elytra render-state mixin still supplies the same runtime cosmetic textures used in-world.
+
+The screen is intentionally plain and is not a visual reference implementation yet.
