@@ -378,6 +378,44 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void layerRenameBlendAndEmissiveRoundTrip() {
+        LoomProject project = LoomProjectFactory.blank("Layer Props", 1L);
+        UUID layerId = project.cape().layers().getFirst().id();
+
+        LoomProject edited = ProjectEdits.renameCapeLayer(
+                project,
+                layerId,
+                "Glow"
+        );
+        edited = ProjectEdits.setCapeLayerBlendMode(
+                edited,
+                layerId,
+                BlendMode.SCREEN
+        );
+        edited = ProjectEdits.setCapeLayerEmissive(
+                edited,
+                layerId,
+                true
+        );
+
+        LoomProject decoded = LoomProjectCodec.decode(edited.encode());
+        LoomLayer layer = decoded.cape().layers().getFirst();
+
+        assertEquals("Glow", layer.name());
+        assertEquals(BlendMode.SCREEN, layer.blendMode());
+        assertTrue(layer.emissive());
+    }
+
+    @Test
+    void blendModeOrdinalsPreserveSchemaV1Compatibility() {
+        assertEquals(0, BlendMode.NORMAL.ordinal());
+        assertEquals(1, BlendMode.ADD.ordinal());
+        assertEquals(2, BlendMode.SCREEN.ordinal());
+        assertEquals(3, BlendMode.MULTIPLY.ordinal());
+        assertEquals(4, BlendMode.OVERLAY.ordinal());
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 
