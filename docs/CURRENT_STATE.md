@@ -295,3 +295,10 @@ The animation/emissive proof now uses:
 - base cape remains on vanilla CapeLayer;
 - G debug key toggles the emissive pass for A/B comparison;
 - remote projects use the same local animation/effect evaluation path.
+
+
+## SPIKE-05 compile correction
+
+Initial combined implementation SHA `9312856fc1449895b3b973371a1a0b566ed85a2f` failed common compilation only because `ServerPlayer#getServer()` is not exposed in the Minecraft 1.21.11 Mojang-mapped API.
+
+The implementation now obtains the server through `ServerPlayer.level().getServer()`. Networking architecture is unchanged.

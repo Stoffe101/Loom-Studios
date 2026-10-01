@@ -41,15 +41,15 @@ public final class LoomNetworking {
         PayloadTypeRegistry.playS2C().register(EquippedStateS2CPayload.ID, EquippedStateS2CPayload.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(HelloC2SPayload.ID, (payload, context) ->
-                context.player().getServer().execute(() ->
+                context.player().level().getServer().execute(() ->
                         handleHello(context.player(), payload)));
 
         ServerPlayNetworking.registerGlobalReceiver(ProjectBlobC2SPayload.ID, (payload, context) ->
-                context.player().getServer().execute(() ->
+                context.player().level().getServer().execute(() ->
                         handleProjectUpload(context.player(), payload)));
 
         ServerPlayNetworking.registerGlobalReceiver(ProjectRequestC2SPayload.ID, (payload, context) ->
-                context.player().getServer().execute(() ->
+                context.player().level().getServer().execute(() ->
                         handleProjectRequest(context.player(), payload)));
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
@@ -151,7 +151,7 @@ public final class LoomNetworking {
     private static void equip(ServerPlayer player, String hash) {
         EQUIPPED.put(player.getUUID(), hash);
         broadcast(
-                player.getServer(),
+                player.level().getServer(),
                 new EquippedStateS2CPayload(player.getUUID(), hash)
         );
     }

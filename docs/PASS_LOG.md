@@ -1,5 +1,21 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-05 Mojang-mapping server accessor correction
+
+**Status: FIX APPLIED / CI RETEST REQUIRED**
+
+Exact implementation SHA `9312856fc1449895b3b973371a1a0b566ed85a2f` reached `compileJava` and failed on four calls to `ServerPlayer#getServer()`.
+
+Minecraft 1.21.11 Mojang mappings keep the ServerPlayer server field private and expose the server through the player's ServerLevel instead.
+
+Correction:
+- `context.player().getServer()` -> `context.player().level().getServer()`
+- `player.getServer()` -> `player.level().getServer()`
+
+No protocol or architecture change was required.
+
+---
+
 ## 2026-10-01 — SPIKE-05 + SPIKE-06 implementation
 
 **Status: IMPLEMENTED / CI + RUNTIME VERIFICATION PENDING**
