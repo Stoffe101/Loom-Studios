@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -639,7 +640,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         return children;
     }
 
-    public Collection<? extends GuiEventListener> getNarratables() {
+    public Collection<? extends NarratableEntry> getNarratables() {
         return children;
     }
 

@@ -1,5 +1,13 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Palette window narration type correction
+
+Initial palette SHA `98746b076edc48bd7f4625bdd655d82802cfca1c` failed client compilation because the composite palette window exposed child narratables with the event-listener interface instead of Minecraft's NarratableEntry interface.
+
+Corrected without changing palette behavior.
+
+---
+
 ## 2026-10-01 — Custom color palettes implementation
 
 **Status: IMPLEMENTED / CI PENDING**
