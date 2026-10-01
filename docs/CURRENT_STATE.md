@@ -51,7 +51,9 @@ Decision: keep Loom Studios development on Java 21 and pin Loom to the latest 1.
 
 Exact SHA `a620de1a16334657b7e33f1606c800a673580214` produced the first fully green bootstrap build and uploaded the development JAR artifact.
 
-Exact SHA `c7386f0ed3a46bfb51c7ae8614162deb03ee4fd4` also built successfully with the SPIKE-01 static cape mixin, test texture, and client resource configuration.
+Exact SHA `c7386f0ed3a46bfb51c7ae8614162deb03ee4fd4` built successfully with the SPIKE-01 static cape mixin, test texture, and client resource configuration.
+
+Exact SHA `c321be1f4d0713d29826a4fd773b614c3b26a226` is the latest fully green implementation checkpoint. GitHub Actions run #7 passed the wrapper check, full build, and artifact upload using the official Fabric Gradle launcher scripts.
 
 ## Local verification still required
 

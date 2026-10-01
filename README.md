@@ -12,7 +12,7 @@ Loom Studios is a Minecraft Java Edition Fabric mod for creating, editing, anima
 
 ## Current status
 
-**Technical foundation complete. Implementation bootstrap is next.**
+**SPIKE-00 build foundation is green. SPIKE-01 static cape is compiled and awaiting local visual verification.**
 
 The first development phase proves the build stack, vanilla-path cape/Elytra rendering, dynamic textures, live editor preview, multiplayer synchronization, and Sodium/Iris compatibility before the full reference UI is implemented.
 

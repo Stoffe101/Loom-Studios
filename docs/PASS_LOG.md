@@ -2,7 +2,14 @@
 
 ## 2026-10-01 — Official Gradle launcher scripts
 
-**Result: DONE**
+**Result: CI PASS**
+
+Exact SHA: `c321be1f4d0713d29826a4fd773b614c3b26a226`
+
+GitHub Actions run #7:
+- wrapper info: PASS
+- full build: PASS
+- artifact upload: PASS
 
 Replaced the temporary minimal wrapper launcher scripts with the full official `gradlew` and `gradlew.bat` scripts from Fabric's 1.21.11 example project. The committed wrapper JAR remains the official Gradle wrapper binary.
 
