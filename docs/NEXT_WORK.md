@@ -1,23 +1,24 @@
 # Loom Studios — Next Work
 
-## Active: SPIKE-02 runtime verification
+## Active: SPIKE-03 local verification
 
-Pull the latest code and launch the development client.
+After CI is green, pull and launch runClient.
 
-Verify:
-- cape still renders through vanilla geometry/motion;
-- cape appearance changes roughly every two seconds;
-- no reconnect/restart is needed;
-- changes continue while walking/crouching/jumping;
-- optional Sodium/Sodium Extra/Iris/3D Skin Layers stack remains stable;
-- no texture/resource errors appear in latest.log.
+Test with an Elytra equipped:
 
-If the dynamic update is green, mark SPIKE-02 DONE and move immediately to SPIKE-03 Elytra.
+- cape keeps changing palette every ~2 seconds;
+- Elytra no longer changes with the cape;
+- Elytra uses the dedicated cyan/violet/pink test design;
+- gliding and normal vanilla wing animation still work;
+- inspect whether transparent edge-face UVs make the wings feel visually less chunky;
+- Sodium/Sodium Extra/Iris/3D Skin Layers remain stable.
 
-## SPIKE-03
+If the wings still feel too thick, document that as a vanilla-geometry limitation rather than treating it as a texture bug. Then decide later whether an optional Slim Elytra renderer belongs in the product.
 
-Prove custom Elytra texture selection while preserving vanilla equipment and gliding behavior.
+## After SPIKE-03
+
+SPIKE-04 — live GUI player preview using temporary cosmetic state.
 
 ## Documentation
 
-Record exact CI SHA and local runtime result before moving on.
+Record exact CI SHA and local runtime results.

@@ -109,3 +109,23 @@ Changes mutate the backing image and call `upload()` only when output is dirty. 
 Texture resources are released during client shutdown.
 
 This is the baseline ownership model for the future editor/compiler cache.
+
+
+## ADR-019 — Cape and Elytra are independent texture channels
+**Status:** Accepted
+
+Minecraft 1.21.11's WingsLayer selects:
+1. the player's dedicated Elytra texture when present;
+2. otherwise the visible cape texture;
+3. otherwise the equipment/default texture.
+
+Loom Studios therefore supplies independent cape and Elytra textures by default. A future editor option may explicitly link or derive Elytra artwork from the cape, but automatic vanilla fallback must not silently substitute the cape when a Loom project intends separate designs.
+
+## ADR-020 — Preserve vanilla Elytra geometry by default
+**Status:** Accepted for core path
+
+The default Loom Studios Elytra renderer keeps vanilla WingsLayer/ElytraModel geometry and animation for compatibility.
+
+The vanilla model is intentionally volumetric (10x20x2 plus CubeDeformation 1.0 per wing), which can look thick. The first low-risk visual experiment hides edge-face UV strips through transparency.
+
+A future optional "Slim Elytra" visual mode may use custom geometry if desired, but it must be opt-in and separately compatibility-tested.

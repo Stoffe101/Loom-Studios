@@ -131,3 +131,30 @@ The static resource cape has been replaced in source by an in-memory dynamic cap
 - no network traffic is involved.
 
 Expected local behavior after pulling: the cape visibly changes palette/highlight roughly every two seconds without reconnecting or restarting.
+
+
+## SPIKE-02 runtime verification
+
+**Result: PASS**
+
+User local runtime evidence confirms:
+- dynamic cape colors change while the game remains running;
+- no reconnect/resource reload is required;
+- vanilla cape movement remains intact;
+- the full optional development stack remains stable.
+
+An Elytra was also equipped during the test. Minecraft rendered the animated cape texture on the Elytra, revealing the vanilla fallback rule: when the player's dedicated Elytra texture is absent, WingsLayer uses the player's cape texture if the cape is visible.
+
+This discovery directly validates the need for separate cape/Elytra channels in Loom Studios.
+
+## SPIKE-03 implementation
+
+**Status: IMPLEMENTED / CI + LOCAL RUNTIME VERIFICATION PENDING**
+
+The render-state patch now supplies a distinct Elytra texture in addition to the dynamic cape texture.
+
+The SPIKE-03 test Elytra:
+- uses its own runtime DynamicTexture;
+- does not inherit cape animation;
+- uses the vanilla Elytra model/animation;
+- makes the edge-face UV strips transparent while leaving the major front/back wing faces opaque, as a low-risk experiment to reduce the boxy appearance without replacing vanilla geometry.

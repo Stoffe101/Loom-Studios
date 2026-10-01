@@ -1,7 +1,7 @@
 package dev.loomstudios.client;
 
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.client.render.DynamicCapeSpike;
+import dev.loomstudios.client.render.DynamicCosmeticSpike;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -12,7 +12,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
         LoomStudios.LOGGER.info("Loom Studios client initialization complete.");
         OptionalModSupport.logDetectedMods();
 
-        ClientTickEvents.END_CLIENT_TICK.register(DynamicCapeSpike::tick);
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> DynamicCapeSpike.close());
+        ClientTickEvents.END_CLIENT_TICK.register(DynamicCosmeticSpike::tick);
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> DynamicCosmeticSpike.close());
     }
 }

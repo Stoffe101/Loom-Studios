@@ -1,5 +1,37 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-02 local runtime verification
+
+**Result: PASS**
+
+User runtime screenshots confirm:
+- cape palette/highlight changes live;
+- vanilla cape movement continues to work;
+- no restart or reconnect is required;
+- optional development stack remains stable.
+
+Additional discovery:
+- equipping an Elytra caused Minecraft to use the animated cape texture for the wings;
+- source inspection confirmed vanilla `WingsLayer.getPlayerElytraTexture` prefers `skin.elytra()`, then falls back to visible `skin.cape()`.
+
+This proves both the dynamic-texture pipeline and the requirement for independent cape/Elytra texture channels.
+
+---
+
+## 2026-10-01 — SPIKE-03 dedicated Elytra implementation
+
+**Status: IMPLEMENTED / VERIFICATION PENDING**
+
+Implemented a separate runtime Elytra texture and supplied it through the Elytra field of `PlayerSkin.Patch`.
+
+The test texture also leaves Elytra edge-face UV strips transparent as an experiment to reduce visible boxiness without changing vanilla geometry.
+
+Source inspection documented that vanilla 1.21.11 Elytra geometry is a 10x20x2 box per wing with CubeDeformation(1.0F), explaining the user's observation that it looks visually thick.
+
+Next: CI + local in-world Elytra verification.
+
+---
+
 ## 2026-10-01 — SPIKE-02 dynamic cape implementation
 
 **Status: IMPLEMENTED / CI + LOCAL RUNTIME VERIFICATION PENDING**

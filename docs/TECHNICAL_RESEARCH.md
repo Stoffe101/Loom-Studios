@@ -156,3 +156,25 @@ For Mojang-mapped Minecraft 1.21.11 the validated API shape used by SPIKE-02 is:
 - `TextureManager.release(Identifier)` for cleanup
 
 The runtime design keeps a stable registered texture and uploads only dirty output rather than registering a new texture every frame.
+
+
+## Elytra fallback and geometry findings (1.21.11)
+
+Source inspection of vanilla 1.21.11 establishes:
+
+`WingsLayer.getPlayerElytraTexture`:
+1. returns the player's dedicated Elytra texture when present;
+2. otherwise returns the visible cape texture;
+3. otherwise returns null so equipment/default rendering applies.
+
+This explains why the SPIKE-02 animated cape appeared on the Elytra automatically.
+
+Vanilla `ElytraModel.createLayer` builds each wing from a box using:
+- UV origin: (22, 0)
+- width: 10
+- height: 20
+- depth: 2
+- CubeDeformation: 1.0
+- texture dimensions: 64x32
+
+The resulting geometry is deliberately thick. Texture work can reduce the visual prominence of the edge faces, but truly thinner geometry would require a custom model/render path and should remain optional for compatibility.

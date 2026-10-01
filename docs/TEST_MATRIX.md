@@ -129,3 +129,19 @@ Shader-sensitive effects should be checked with at least one representative shad
 ## Documentation gate
 
 A test pass is not complete until its result is recorded in PASS_LOG.md and relevant current-state/test documentation.
+
+
+## SPIKE-02 verified runtime checks
+
+- live cape pixel changes without restart: PASS
+- stable vanilla cape motion during updates: PASS
+- full optional dev stack initial runtime: PASS
+- Elytra fallback to cape texture observed: PASS / expected vanilla behavior
+
+## SPIKE-03 verification additions
+
+- dedicated Elytra texture takes precedence over cape fallback
+- cape animation does not alter dedicated Elytra
+- gliding pose remains vanilla
+- edge transparency renders correctly
+- inspect visual thickness from side/top/rear angles
