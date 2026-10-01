@@ -89,6 +89,61 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void capeCanResizeToFourTimesResolution() {
+        LoomProject project = LoomProjectFactory.blank("Hi Res", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject painted = ProjectEdits.setCapeRegionPixel(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                3,
+                0xFF123456
+        );
+
+        LoomProject resized = ProjectResizer.resizeCape(
+                painted,
+                CanvasResolution.ULTRA
+        );
+
+        assertEquals(256, resized.cape().width());
+        assertEquals(128, resized.cape().height());
+        assertEquals(CanvasResolution.ULTRA, CanvasResolution.fromCanvas(resized.cape()));
+
+        int scale = CanvasResolution.ULTRA.scale();
+        int atlasX = CapeUvRegion.OUTSIDE.atlasX(2 * scale, scale);
+        int atlasY = CapeUvRegion.OUTSIDE.atlasY(3 * scale, scale);
+        assertEquals(
+                0xFF123456,
+                resized.cape().layers().getFirst()
+                        .pixelAt(atlasY * resized.cape().width() + atlasX)
+        );
+    }
+
+    @Test
+    void brushPaintsMultiplePixelsInRegion() {
+        LoomProject project = LoomProjectFactory.blank("Brush", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject painted = ProjectEdits.paintCapeRegionBrush(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                5,
+                8,
+                3,
+                0xFFABCDEF
+        );
+
+        long count = java.util.Arrays.stream(
+                painted.cape().layers().getFirst().pixels()
+        ).filter(pixel -> pixel == 0xFFABCDEF).count();
+
+        assertTrue(count > 1);
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 

@@ -54,12 +54,28 @@ public enum CapeUvRegion {
         return height;
     }
 
+    public int width(int scale) {
+        return width * scale;
+    }
+
+    public int height(int scale) {
+        return height * scale;
+    }
+
     public int atlasX(int localX) {
         return textureX + localX;
     }
 
     public int atlasY(int localY) {
         return textureY + localY;
+    }
+
+    public int atlasX(int localX, int scale) {
+        return textureX * scale + localX;
+    }
+
+    public int atlasY(int localY, int scale) {
+        return textureY * scale + localY;
     }
 
     public CapeUvRegion next() {

@@ -568,3 +568,19 @@ Verified:
 - artifact upload.
 
 Second local UX verification is now the gate.
+
+
+## Phase-2 high-resolution canvas + color/brush controls
+
+Implemented:
+- cape canvas supports 1x (64x32), 2x (128x64), and 4x (256x128);
+- semantic face dimensions scale with the atlas (Outside becomes 10x16, 20x32, 40x64);
+- resolution changes resample every cape layer non-destructively through ProjectSession/undo;
+- common ProjectResizer supports Elytra canvases too, ready for the Elytra editor;
+- RuntimeCosmeticCache now creates NativeImages at each project's actual cape/Elytra dimensions, so high-resolution projects reach the live 3D/world renderer at native detail;
+- project blob transport uses Fabric 1.21.11 large-payload registration for high-resolution project bytes;
+- project serialized bound raised to 1 MiB;
+- brush size control added and brush edits affect a circular multi-pixel area;
+- reusable LoomColorPickerWidget added with saturation/value square, hue strip, live swatch, hex readout, RGB channel sliders/values, and palette swatches.
+
+Supported high-resolution sizes are intentionally bounded to 4x for the first editor release to keep project/network/memory costs predictable.

@@ -39,13 +39,14 @@ public record LoomProject(
     }
 
     private static void validateRuntimeCanvas(String label, LoomCanvas canvas) {
-        if (canvas.width() != TEXTURE_WIDTH || canvas.height() != TEXTURE_HEIGHT) {
+        try {
+            CanvasResolution.fromCanvas(canvas);
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    label + " canvas must be "
-                            + TEXTURE_WIDTH
-                            + "x"
-                            + TEXTURE_HEIGHT
-                            + " in schema v1"
+                    label
+                            + " canvas must use a supported Loom resolution: "
+                            + "64x32, 128x64, or 256x128",
+                    e
             );
         }
     }

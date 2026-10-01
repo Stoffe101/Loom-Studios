@@ -1,35 +1,46 @@
 # Loom Studios — Next Work
 
-## Immediate verification: clearer cape painting
+## Immediate verification: high-resolution canvas + color controls
 
 After CI is green:
-1. git pull;
-2. runClient;
-3. press L -> Create New Cape;
-4. confirm the canvas now says **Outside / Back • 10x16** and is much larger/clearer;
-5. hover pixels and confirm the cyan selection outline + Pixel/UV coordinate readout;
-6. paint several colors and confirm they stay **static**;
-7. open 3D Preview and confirm the Outside/Back design appears where expected;
-8. use **Face: ...** to cycle to Inside, edges, Top and Bottom;
-9. Save + Equip and check the world cape.
+1. git pull and runClient;
+2. L -> Create New Cape;
+3. use Res + to switch 64x32 -> 128x64 -> 256x128;
+4. confirm Outside/Back changes 10x16 -> 20x32 -> 40x64;
+5. paint fine details at 4x;
+6. open 3D Preview and confirm the extra detail is visible rather than being collapsed to 1x;
+7. Save + Equip and inspect the cape in-world;
+8. test Brush +/- at several sizes;
+9. drag in the color square and hue strip;
+10. drag R/G/B sliders and confirm numeric/hex values and paint color update;
+11. click palette swatches.
 
 Expected:
-- no automatic hue cycling on newly created projects;
-- the default canvas corresponds directly to the main cape face seen from behind;
-- raw 64x32 atlas knowledge is not required to paint a basic cape.
+- higher resolution produces genuinely finer texel detail in live preview/world rendering;
+- old 1x projects still load unchanged;
+- changing resolution is undoable;
+- RGB/HSV controls stay synchronized.
 
-## Next Phase-2 work after verification
+## Next Phase-2 work
 
-- stroke grouping so one drag = one undo operation;
+- group a drag stroke into one undo action;
 - Fill;
 - Eyedropper;
 - Line/Rectangle;
-- proper color picker + hex/RGB;
-- canvas zoom/pan where useful;
+- editable hex/RGB numeric fields;
+- alpha/opacity control;
 - symmetry;
-- layer selection panel;
+- layer panel;
 - keyboard shortcuts;
-- Recent Project thumbnail rendering in the home screen;
-- Cape Loom block registration/interaction.
+- Recent Project thumbnail rendering;
+- Cape Loom block interaction;
+- begin Elytra Editor using the same resolution/color/brush foundations.
 
-The raw UV-atlas view can return later as an Advanced/UV mode with labeled region outlines rather than being the default editor.
+## Resolution policy
+
+Initial supported atlas sizes:
+- 64x32 (1x)
+- 128x64 (2x)
+- 256x128 (4x)
+
+The architecture is scale-aware. Larger sizes can be considered later after performance/network testing.

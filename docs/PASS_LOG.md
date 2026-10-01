@@ -1,5 +1,27 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — High-resolution canvas + brush/color control implementation
+
+**Status: IMPLEMENTED / CI + LOCAL VISUAL TEST PENDING**
+
+Implemented:
+- 1x / 2x / 4x canvas resolution model;
+- nearest-neighbor layer resampling with undo support;
+- scaled semantic cape UV regions;
+- dynamic-resolution runtime cape/Elytra NativeImages;
+- Fabric large-payload project blob registration;
+- 1 MiB project bound;
+- brush size;
+- circular multi-pixel brush;
+- HSV-style color square + hue bar;
+- RGB sliders with numeric values;
+- hex display;
+- palette swatches.
+
+The resolution core supports both cape and Elytra; the current UI exposes it in the Cape Editor and the Elytra Editor will reuse the same control.
+
+---
+
 ## 2026-10-01 — Cape face-first/static-default green build
 
 **Result: CI PASS / LOCAL UX TEST REQUIRED**

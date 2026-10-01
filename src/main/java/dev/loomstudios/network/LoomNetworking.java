@@ -34,11 +34,19 @@ public final class LoomNetworking {
 
     public static void register() {
         PayloadTypeRegistry.playC2S().register(HelloC2SPayload.ID, HelloC2SPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ProjectBlobC2SPayload.ID, ProjectBlobC2SPayload.CODEC);
+        PayloadTypeRegistry.playC2S().registerLarge(
+                ProjectBlobC2SPayload.ID,
+                ProjectBlobC2SPayload.CODEC,
+                LoomProjectCodec.MAX_NETWORK_PAYLOAD_BYTES
+        );
         PayloadTypeRegistry.playC2S().register(ProjectRequestC2SPayload.ID, ProjectRequestC2SPayload.CODEC);
 
         PayloadTypeRegistry.playS2C().register(ProjectNeededS2CPayload.ID, ProjectNeededS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ProjectBlobS2CPayload.ID, ProjectBlobS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().registerLarge(
+                ProjectBlobS2CPayload.ID,
+                ProjectBlobS2CPayload.CODEC,
+                LoomProjectCodec.MAX_NETWORK_PAYLOAD_BYTES
+        );
         PayloadTypeRegistry.playS2C().register(EquippedStateS2CPayload.ID, EquippedStateS2CPayload.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(HelloC2SPayload.ID, (payload, context) ->

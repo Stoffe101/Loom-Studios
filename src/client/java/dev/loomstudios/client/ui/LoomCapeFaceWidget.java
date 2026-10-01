@@ -1,6 +1,7 @@
 package dev.loomstudios.client.ui;
 
 import dev.loomstudios.client.render.LoomTextureCompiler;
+import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomProject;
 import net.minecraft.client.Minecraft;
@@ -81,11 +82,17 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                 LoomUiTheme.PANEL_INNER
         );
 
+        int resolutionScale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int regionWidth = region.width(resolutionScale);
+        int regionHeight = region.height(resolutionScale);
+
         String header = region.displayName()
                 + "  •  "
-                + region.width()
+                + regionWidth
                 + "×"
-                + region.height();
+                + regionHeight
+                + "  •  "
+                + CanvasResolution.fromCanvas(project.cape()).label();
 
         graphics.drawString(
                 Minecraft.getInstance().font,
@@ -119,10 +126,10 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             );
         }
 
-        CanvasGeometry geometry = geometry(region);
+        CanvasGeometry geometry = geometry(region, resolutionScale);
 
-        for (int y = 0; y < region.height(); y++) {
-            for (int x = 0; x < region.width(); x++) {
+        for (int y = 0; y < regionHeight; y++) {
+            for (int x = 0; x < regionWidth; x++) {
                 int px = geometry.left + x * geometry.pixelScale;
                 int py = geometry.top + y * geometry.pixelScale;
 
@@ -197,15 +204,16 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
 
     private void applyAt(double mouseX, double mouseY) {
         CapeUvRegion region = regionSupplier.get();
-        CanvasGeometry geometry = geometry(region);
+        int scale = CanvasResolution.fromCanvas(projectSupplier.get().cape()).scale();
+        CanvasGeometry geometry = geometry(region, scale);
 
         int localX = (int)((mouseX - geometry.left) / geometry.pixelScale);
         int localY = (int)((mouseY - geometry.top) / geometry.pixelScale);
 
         if (localX >= 0
                 && localY >= 0
-                && localX < region.width()
-                && localY < region.height()
+                && localX < region.width(scale)
+                && localY < region.height(scale)
                 && mouseX >= geometry.left
                 && mouseY >= geometry.top) {
             pixelAction.apply(localX, localY);
@@ -214,7 +222,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
 
     private void updateHover(double mouseX, double mouseY) {
         CapeUvRegion region = regionSupplier.get();
-        CanvasGeometry geometry = geometry(region);
+        int scale = CanvasResolution.fromCanvas(projectSupplier.get().cape()).scale();
+        CanvasGeometry geometry = geometry(region, scale);
 
         if (mouseX < geometry.left
                 || mouseY < geometry.top
@@ -229,7 +238,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         hoveredY = (int)((mouseY - geometry.top) / geometry.pixelScale);
     }
 
-    private CanvasGeometry geometry(CapeUvRegion region) {
+    private CanvasGeometry geometry(CapeUvRegion region, int scale) {
         int availableWidth = Math.max(1, getWidth() - INNER_MARGIN * 2);
         int availableHeight = Math.max(
                 1,
@@ -239,13 +248,13 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         int pixelScale = Math.max(
                 1,
                 Math.min(
-                        availableWidth / region.width(),
-                        availableHeight / region.height()
+                        availableWidth / region.width(scale),
+                        availableHeight / region.height(scale)
                 )
         );
 
-        int drawWidth = region.width() * pixelScale;
-        int drawHeight = region.height() * pixelScale;
+        int drawWidth = region.width(scale) * pixelScale;
+        int drawHeight = region.height(scale) * pixelScale;
         int left = getX() + (getWidth() - drawWidth) / 2;
         int top = getY()
                 + HEADER_HEIGHT

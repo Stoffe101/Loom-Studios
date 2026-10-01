@@ -20,7 +20,9 @@ import java.util.UUID;
 public final class LoomProjectCodec {
     private static final int MAGIC = 0x4C4F4F4D; // LOOM
 
-    public static final int MAX_SERIALIZED_BYTES = 256 * 1024;
+    public static final int MAX_SERIALIZED_BYTES = 1024 * 1024;
+    public static final int MAX_NETWORK_PAYLOAD_BYTES =
+            MAX_SERIALIZED_BYTES + 512;
     public static final int MAX_CANVAS_DIMENSION = 256;
     public static final int MAX_LAYER_COUNT = 64;
     public static final int MAX_PROJECT_NAME_CHARS = 96;

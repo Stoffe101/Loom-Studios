@@ -5,10 +5,13 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.WorkspaceState;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomCapeFaceWidget;
+import dev.loomstudios.client.ui.LoomColorPickerWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.ProjectEdits;
+import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -26,11 +29,16 @@ public final class CapeEditorScreen extends Screen {
     private Tool tool = Tool.PENCIL;
     private CapeUvRegion capeRegion = CapeUvRegion.OUTSIDE;
     private int selectedColor = 0xFF22D7E8;
+    private int brushSize = 1;
     private UUID selectedLayerId;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
     private LoomButton faceButton;
+    private LoomButton resolutionDownButton;
+    private LoomButton resolutionUpButton;
+    private LoomButton brushDownButton;
+    private LoomButton brushUpButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
 
@@ -43,10 +51,10 @@ public final class CapeEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        int margin = 18;
-        int toolbarWidth = 150;
+        int margin = 14;
+        int toolbarWidth = Math.min(230, Math.max(190, this.width / 3));
         int availableWidth = this.width - margin * 3 - toolbarWidth;
-        int canvasWidth = Math.max(256, availableWidth);
+        int canvasWidth = Math.max(180, availableWidth);
         int canvasHeight = Math.min(
                 this.height - 90,
                 Math.max(160, canvasWidth / 2)
@@ -72,7 +80,21 @@ public final class CapeEditorScreen extends Screen {
                 toolsX, y, toolbarWidth, faceLabel(),
                 this::cycleFace
         );
-        y += 34;
+        y += 28;
+
+        resolutionDownButton = addLoomButton(
+                toolsX, y, 48, "Res -",
+                () -> changeResolution(-1)
+        );
+        addLoomButton(
+                toolsX + 52, y, toolbarWidth - 104, resolutionLabel(),
+                () -> { }
+        ).active = false;
+        resolutionUpButton = addLoomButton(
+                toolsX + toolbarWidth - 48, y, 48, "Res +",
+                () -> changeResolution(1)
+        );
+        y += 30;
 
         pencilButton = addLoomButton(
                 toolsX, y, toolbarWidth, "Pencil",
@@ -84,27 +106,32 @@ public final class CapeEditorScreen extends Screen {
                 toolsX, y, toolbarWidth, "Eraser",
                 () -> setTool(Tool.ERASER)
         );
-        y += 34;
+        y += 28;
 
-        addLoomButton(
-                toolsX, y, 72, "Cyan",
-                () -> this.selectedColor = 0xFF22D7E8
+        brushDownButton = addLoomButton(
+                toolsX, y, 48, "Brush -",
+                () -> changeBrushSize(-1)
         );
         addLoomButton(
-                toolsX + 78, y, 72, "Pink",
-                () -> this.selectedColor = 0xFFFF36C8
+                toolsX + 52, y, toolbarWidth - 104, brushLabel(),
+                () -> { }
+        ).active = false;
+        brushUpButton = addLoomButton(
+                toolsX + toolbarWidth - 48, y, 48, "Brush +",
+                () -> changeBrushSize(1)
         );
-        y += 26;
+        y += 30;
 
-        addLoomButton(
-                toolsX, y, 72, "Violet",
-                () -> this.selectedColor = 0xFF9B4DFF
-        );
-        addLoomButton(
-                toolsX + 78, y, 72, "White",
-                () -> this.selectedColor = 0xFFFFFFFF
-        );
-        y += 34;
+        int pickerHeight = 132;
+        addRenderableWidget(new LoomColorPickerWidget(
+                toolsX,
+                y,
+                toolbarWidth,
+                pickerHeight,
+                this.selectedColor,
+                color -> this.selectedColor = color
+        ));
+        y += pickerHeight + 8;
 
         undoButton = addLoomButton(
                 toolsX, y, 72, "Undo",
@@ -186,6 +213,47 @@ public final class CapeEditorScreen extends Screen {
         return "Face: " + this.capeRegion.displayName();
     }
 
+    private String resolutionLabel() {
+        CanvasResolution resolution =
+                CanvasResolution.fromCanvas(this.workspaceState.project().cape());
+        return resolution.label()
+                + " "
+                + resolution.width()
+                + "x"
+                + resolution.height();
+    }
+
+    private void changeResolution(int delta) {
+        CanvasResolution current =
+                CanvasResolution.fromCanvas(ClientProjectWorkspace.project().cape());
+        CanvasResolution next = delta > 0 ? current.higher() : current.lower();
+
+        if (next == current) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectResizer.resizeCape(project, next)
+        );
+
+        this.rebuildWidgets();
+    }
+
+    private String brushLabel() {
+        return "Brush " + brushSize + " px";
+    }
+
+    private void changeBrushSize(int delta) {
+        int max = Math.max(
+                1,
+                CanvasResolution.fromCanvas(
+                        ClientProjectWorkspace.project().cape()
+                ).scale() * 8
+        );
+        this.brushSize = Math.max(1, Math.min(max, this.brushSize + delta));
+        this.rebuildWidgets();
+    }
+
     private void setTool(Tool next) {
         this.tool = next;
         updateButtonStates();
@@ -211,6 +279,26 @@ public final class CapeEditorScreen extends Screen {
         if (redoButton != null) {
             redoButton.active = ClientProjectWorkspace.session().canRedo();
         }
+
+        CanvasResolution resolution =
+                CanvasResolution.fromCanvas(this.workspaceState.project().cape());
+
+        if (resolutionDownButton != null) {
+            resolutionDownButton.active = resolution != CanvasResolution.STANDARD;
+        }
+        if (resolutionUpButton != null) {
+            resolutionUpButton.active = resolution != CanvasResolution.ULTRA;
+        }
+
+        if (brushDownButton != null) {
+            brushDownButton.active = brushSize > 1;
+        }
+        if (brushUpButton != null) {
+            brushUpButton.active = brushSize
+                    < CanvasResolution.fromCanvas(
+                            this.workspaceState.project().cape()
+                    ).scale() * 8;
+        }
     }
 
     private UUID findEditableLayer() {
@@ -227,12 +315,13 @@ public final class CapeEditorScreen extends Screen {
         int color = tool == Tool.ERASER ? 0x00000000 : selectedColor;
 
         ClientProjectWorkspace.apply(project ->
-                ProjectEdits.setCapeRegionPixel(
+                ProjectEdits.paintCapeRegionBrush(
                         project,
                         selectedLayerId,
                         this.capeRegion,
                         x,
                         y,
+                        this.brushSize,
                         color
                 )
         );

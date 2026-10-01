@@ -398,3 +398,39 @@ Normal projects created through the editor start with:
 - Elytra thickness 100%.
 
 Animation is an explicit creative feature, never an accidental default.
+
+
+## ADR-043 — Higher-detail cosmetics use uniform atlas resolution scales
+**Status:** Accepted / implemented
+
+Cape/Elytra artwork may use 1x, 2x, or 4x texture atlases:
+- 64x32;
+- 128x64;
+- 256x128.
+
+UV semantics remain based on the canonical 64x32 layout and scale uniformly. This lets Minecraft's normalized model UVs sample extra texel detail without changing cape/Elytra geometry.
+
+Resolution changes resample editable layers and remain normal ProjectSession edits, so they participate in undo/redo and dirty state.
+
+The same resolution system is shared by Cape and Elytra canvases even though the current UI exposes it only in Cape Editor.
+
+## ADR-044 — High-resolution project blobs use Fabric packet splitting
+**Status:** Accepted / implemented
+
+A 4x editable project can exceed vanilla custom-payload packet limits.
+
+Loom Studios registers project blob payloads through Fabric 1.21.11 `registerLarge`, while keeping strict application-level size/hash/schema validation.
+
+Project serialized data remains bounded to 1 MiB in this phase.
+
+## ADR-045 — Color selection is one synchronized RGB/HSV value
+**Status:** Accepted / implemented foundation
+
+The editor color control exposes multiple views of one selected ARGB color:
+- saturation/value square;
+- hue strip;
+- RGB sliders + numeric values;
+- hex display;
+- palette swatches.
+
+Changing any control updates the same selected color used by paint tools.

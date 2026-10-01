@@ -15,9 +15,6 @@ import java.util.Map;
  * Owns compiled GPU-backed runtime textures keyed by immutable project hash.
  */
 public final class RuntimeCosmeticCache {
-    private static final int WIDTH = LoomProject.TEXTURE_WIDTH;
-    private static final int HEIGHT = LoomProject.TEXTURE_HEIGHT;
-
     private static final Map<String, RuntimeBundle> BUNDLES = new HashMap<>();
     private static final Map<Identifier, RuntimeBundle> BY_CAPE_TEXTURE = new HashMap<>();
     private static final Map<Identifier, RuntimeBundle> BY_ELYTRA_TEXTURE = new HashMap<>();
@@ -69,9 +66,24 @@ public final class RuntimeCosmeticCache {
                         ),
                         elytraId
                 ),
-                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false),
-                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false),
-                new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false)
+                new NativeImage(
+                        NativeImage.Format.RGBA,
+                        project.cape().width(),
+                        project.cape().height(),
+                        false
+                ),
+                new NativeImage(
+                        NativeImage.Format.RGBA,
+                        project.elytra().width(),
+                        project.elytra().height(),
+                        false
+                ),
+                new NativeImage(
+                        NativeImage.Format.RGBA,
+                        project.cape().width(),
+                        project.cape().height(),
+                        false
+                )
         );
 
         bundle.phase = 0;
@@ -215,20 +227,23 @@ public final class RuntimeCosmeticCache {
     }
 
     private static void writePixels(NativeImage target, int[] pixels) {
-        if (pixels.length != WIDTH * HEIGHT) {
+        int width = target.getWidth();
+        int height = target.getHeight();
+
+        if (pixels.length != width * height) {
             throw new IllegalArgumentException("Unexpected compiled texture dimensions");
         }
 
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                target.setPixel(x, y, pixels[y * WIDTH + x]);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                target.setPixel(x, y, pixels[y * width + x]);
             }
         }
     }
 
     private static void clear(NativeImage target) {
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
+        for (int y = 0; y < target.getHeight(); y++) {
+            for (int x = 0; x < target.getWidth(); x++) {
                 target.setPixel(x, y, 0x00000000);
             }
         }
@@ -242,8 +257,12 @@ public final class RuntimeCosmeticCache {
             int height,
             int argb
     ) {
-        for (int py = Math.max(0, y); py < Math.min(HEIGHT, y + height); py++) {
-            for (int px = Math.max(0, x); px < Math.min(WIDTH, x + width); px++) {
+        for (int py = Math.max(0, y);
+             py < Math.min(target.getHeight(), y + height);
+             py++) {
+            for (int px = Math.max(0, x);
+                 px < Math.min(target.getWidth(), x + width);
+                 px++) {
                 target.setPixel(px, py, argb);
             }
         }

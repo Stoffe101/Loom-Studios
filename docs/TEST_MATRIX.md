@@ -319,3 +319,19 @@ Deferred UX check:
 - edge/top/bottom local coordinate bounds are enforced
 - hover highlight matches edited pixel
 - pixel/UV coordinate readout matches CapeUvRegion mapping
+
+
+## High-resolution canvas automated/runtime checks
+
+- 64x32 project remains valid
+- 128x64 project remains valid
+- 256x128 project remains valid
+- unsupported dimensions rejected
+- 1x -> 4x preserves existing painted region via nearest-neighbor scale
+- Outside region dimensions scale 10x16 -> 20x32 -> 40x64
+- brush size >1 edits multiple region pixels
+- RuntimeCosmeticCache image sizes follow project canvas sizes
+- 4x project encode remains within configured 1 MiB bound for normal low-layer projects
+- C2S/S2C project blobs use large payload registration
+- high-resolution cape renders in preview/world
+- color picker HSV, RGB, hex and palette remain synchronized
