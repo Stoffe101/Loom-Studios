@@ -78,10 +78,8 @@ loom {
 // generated directory before resolving modLocalRuntime.
 def devModsDir = file("dev-mods")
 def nestedDevModsDir = file("${buildDir}/dev-mods-nested")
+def nestedDevModFiles = []
 
-if (nestedDevModsDir.exists()) {
-    nestedDevModsDir.deleteDir()
-}
 nestedDevModsDir.mkdirs()
 
 if (devModsDir.exists()) {
@@ -99,10 +97,15 @@ if (devModsDir.exists()) {
                     def sourcePrefix = sourceJar.name.replaceAll("[^A-Za-z0-9._-]", "_")
                     def nestedName = new File(entry.name).name
                     def outputJar = new File(nestedDevModsDir, "${sourcePrefix}__${nestedName}")
+                    nestedDevModFiles.add(outputJar)
 
-                    zip.getInputStream(entry).withCloseable { input ->
-                        outputJar.withOutputStream { output ->
-                            input.transferTo(output)
+                    // Avoid deleting/rewriting an embedded library that may already
+                    // be open by another development client on Windows.
+                    if (!outputJar.exists() || outputJar.length() != entry.size) {
+                        zip.getInputStream(entry).withCloseable { input ->
+                            outputJar.withOutputStream { output ->
+                                input.transferTo(output)
+                            }
                         }
                     }
                 }
@@ -125,7 +128,7 @@ dependencies {
 
     // Flattened nested Fabric libraries from local compatibility mods.
     // Generated under build/ and never published.
-    modLocalRuntime fileTree(dir: nestedDevModsDir, include: ["*.jar"])
+    modLocalRuntime files(nestedDevModFiles)
 }
 
 def modVersion = project.version
@@ -163,7 +166,7 @@ tasks.register("listDevMods") {
 
     doLast {
         def jars = fileTree(devModsDir) { include "*.jar" }.files.sort { it.name }
-        def nestedJars = fileTree(nestedDevModsDir) { include "*.jar" }.files.sort { it.name }
+        def nestedJars = nestedDevModFiles.findAll { it.exists() }.sort { it.name }
 
         if (jars.isEmpty()) {
             println "No optional development mods found in dev-mods/."

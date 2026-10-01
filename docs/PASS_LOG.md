@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Multi-client Windows dev-runtime hardening
+
+**Status: IMPLEMENTED / CI RETEST REQUIRED**
+
+Before the SPIKE-05 two-client test, the optional nested-library extraction was changed to be concurrency-friendly.
+
+Previously Gradle deleted and recreated `build/dev-mods-nested/` during every configuration. On Windows, launching Client B while Client A still had an extracted TRansition/TRender JAR open could cause a file-lock failure.
+
+Now:
+- current embedded-library outputs are tracked explicitly;
+- existing matching-size files are reused;
+- the directory is not deleted during normal configuration;
+- only outputs belonging to currently installed dev mods are added to `modLocalRuntime`;
+- stale files are therefore ignored even if they remain under build/ until the next clean.
+
+This is development-harness-only and does not affect shipped Loom Studios artifacts.
+
+---
+
 ## 2026-10-01 — SPIKE-06 vanilla cape alignment parity
 
 **Status: IMPLEMENTED / CI RETEST REQUIRED**

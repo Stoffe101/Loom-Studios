@@ -111,3 +111,21 @@ During the current Elytra geometry proof, press **V** in the development client 
 - 150%
 
 The selected value appears in the action bar. This key is temporary developer tooling; the finished editor will use a proper control/slider and default to 100%.
+
+
+## Running two development clients on Windows
+
+The optional embedded-library extractor is safe to reuse while another dev client is running. This matters for the SPIKE-05 Client A / Client B test because Windows may lock loaded JARs.
+
+Generated profiles:
+- `Loom Studios - Client A`
+- `Loom Studios - Client B`
+
+Equivalent Gradle tasks:
+
+```powershell
+.\gradlew.bat runClientA
+.\gradlew.bat runClientB
+```
+
+Run them in separate IntelliJ/terminal sessions. Each uses its own Minecraft run directory.
