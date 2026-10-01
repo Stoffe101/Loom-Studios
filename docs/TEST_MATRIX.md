@@ -305,3 +305,17 @@ Deferred UX check:
 - saved project appears in Recent Projects
 - Save + Equip changes world cape
 - multiplayer sync republishes newly equipped saved hash
+
+
+## Cape face-first editor checks
+
+- blank editor project hue cycle is false
+- blank editor project emissive is false
+- Outside local (0,0) maps to atlas (1,1)
+- Outside local (9,15) maps inside the expected 10x16 face
+- face editor defaults to Outside / Back
+- painted Outside pixels appear on the player's rear-facing cape surface
+- Inside edits do not overwrite Outside
+- edge/top/bottom local coordinate bounds are enforced
+- hover highlight matches edited pixel
+- pixel/UV coordinate readout matches CapeUvRegion mapping

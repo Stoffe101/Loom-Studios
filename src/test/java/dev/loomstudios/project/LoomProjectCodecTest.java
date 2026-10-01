@@ -32,6 +32,38 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void blankEditorProjectIsStaticByDefault() {
+        LoomProject project = LoomProjectFactory.blank("Static", 1L);
+
+        assertFalse(project.runtime().hueCycleEnabled());
+        assertFalse(project.runtime().emissiveEnabled());
+    }
+
+    @Test
+    void capeRegionEditMapsOutsideFaceToCorrectAtlasPixel() {
+        LoomProject project = LoomProjectFactory.blank("Region Test", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        LoomProject edited = ProjectEdits.setCapeRegionPixel(
+                project,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                2,
+                3,
+                0xFF556677
+        );
+
+        int atlasX = CapeUvRegion.OUTSIDE.atlasX(2);
+        int atlasY = CapeUvRegion.OUTSIDE.atlasY(3);
+        int index = atlasY * LoomProject.TEXTURE_WIDTH + atlasX;
+
+        assertEquals(
+                0xFF556677,
+                edited.cape().layers().getFirst().pixelAt(index)
+        );
+    }
+
+    @Test
     void pixelEditReplacesOnlyRequestedCapePixel() {
         LoomProject project = LoomProjectFactory.blank("Paint Test", 1L);
         LoomLayer layer = project.cape().layers().getFirst();

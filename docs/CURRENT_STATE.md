@@ -530,3 +530,25 @@ Verified by CI:
 - artifact upload.
 
 The first interactive Cape Editor now requires local runtime/UX verification.
+
+
+## Phase-2 paint-clarity correction from first runtime screenshots
+
+First local editor test passed functionally but exposed two UX/behavior issues:
+
+1. blank projects inherited the development spike hue-cycle setting, so user-painted colors animated unexpectedly;
+2. presenting the entire 64x32 texture atlas as the main canvas made it unclear which pixels represented the visible cape face.
+
+Corrections implemented:
+- normal editor-created projects now use static runtime defaults (hue cycle OFF, emissive OFF);
+- development bootstrap projects retain their animated proof behavior;
+- introduced canonical CapeUvRegion mapping;
+- editor now defaults to the real 10x16 Outside / Back face;
+- face editor scales that region to fill the workspace;
+- strong per-pixel grid;
+- hover outline;
+- local pixel + atlas UV coordinate readout;
+- Face button cycles Outside, Inside, Left Edge, Right Edge, Top and Bottom;
+- ProjectEdits can edit local face coordinates without exposing UV math to the UI.
+
+The 64x32 atlas remains the underlying source of truth; the editor now presents semantic cape faces instead of raw atlas space by default.

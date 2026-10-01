@@ -369,3 +369,32 @@ Consequences:
 Phase 2 builds reusable controls and complete editing behavior first.
 
 The approved reference images remain the visual target, but exact decorative framing/layout fidelity is deferred to the dedicated reference-fidelity phase so core editor behavior is not entangled with temporary screen scaffolding.
+
+
+## ADR-041 — Cape editor is face-first, atlas-backed
+**Status:** Accepted from first runtime editor feedback
+
+The editable source remains a standard 64x32 cape atlas, but the primary user experience must not require understanding raw UV layout.
+
+Default Cape Editor view:
+- semantic Outside / Back face;
+- local 10x16 coordinates;
+- large pixel cells;
+- explicit face name and size;
+- hover/UV diagnostics.
+
+Users may cycle to Inside, left/right edges, top and bottom.
+
+A raw-atlas mode may exist later as an advanced view with UV guides.
+
+## ADR-042 — New editor projects are static unless animation is explicitly enabled
+**Status:** Accepted from first runtime editor feedback
+
+Development proof projects may continue to hue-cycle for diagnostics.
+
+Normal projects created through the editor start with:
+- hue cycle OFF;
+- emissive effect OFF;
+- Elytra thickness 100%.
+
+Animation is an explicit creative feature, never an accidental default.

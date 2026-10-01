@@ -16,6 +16,30 @@ public final class ProjectEdits {
         return setPixel(project, true, layerId, x, y, argb);
     }
 
+    public static LoomProject setCapeRegionPixel(
+            LoomProject project,
+            UUID layerId,
+            CapeUvRegion region,
+            int localX,
+            int localY,
+            int argb
+    ) {
+        if (localX < 0
+                || localY < 0
+                || localX >= region.width()
+                || localY >= region.height()) {
+            return project;
+        }
+
+        return setCapePixel(
+                project,
+                layerId,
+                region.atlasX(localX),
+                region.atlasY(localY),
+                argb
+        );
+    }
+
     public static LoomProject setElytraPixel(
             LoomProject project,
             UUID layerId,

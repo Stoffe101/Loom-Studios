@@ -26,4 +26,12 @@ public record LoomRuntimeSettings(
     public static LoomRuntimeSettings defaults() {
         return new LoomRuntimeSettings(1.0F, 40, true, true);
     }
+
+    /**
+     * Normal editor-created projects are static unless the user explicitly
+     * adds animation/effect behavior later.
+     */
+    public static LoomRuntimeSettings editorDefaults() {
+        return new LoomRuntimeSettings(1.0F, 40, false, false);
+    }
 }

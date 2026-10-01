@@ -57,7 +57,7 @@ public final class LoomProjectFactory {
                 LoomProjectMetadata.now(nowEpochMillis),
                 cape,
                 elytra,
-                LoomRuntimeSettings.defaults()
+                LoomRuntimeSettings.editorDefaults()
         );
     }
 

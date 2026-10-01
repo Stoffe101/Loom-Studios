@@ -1,5 +1,23 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Cape paint clarity + static default correction
+
+**Runtime feedback:** functional paint/save/render path works, but raw-atlas editing was confusing and blank-project colors animated unexpectedly.
+
+Implemented:
+- editor-created projects default to no hue animation and no emissive effect;
+- conventional 64x32 cape UV regions modeled explicitly;
+- focused semantic face editor replaces raw full-atlas canvas in CapeEditorScreen;
+- default view is 10x16 Outside / Back;
+- face cycling for inside/edges/top/bottom;
+- large grid, hover highlight and coordinate/UV readout;
+- region-local edits map safely into the underlying atlas;
+- automated tests cover static editor defaults and Outside-face UV mapping.
+
+CI + second local UX check required.
+
+---
+
 ## 2026-10-01 — Phase-2 first interactive editor green build
 
 **Result: CI PASS / LOCAL RUNTIME TEST REQUIRED**

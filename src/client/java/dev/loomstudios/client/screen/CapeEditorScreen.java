@@ -4,8 +4,9 @@ import dev.loomstudios.LoomStudios;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.WorkspaceState;
 import dev.loomstudios.client.ui.LoomButton;
-import dev.loomstudios.client.ui.LoomCanvasWidget;
+import dev.loomstudios.client.ui.LoomCapeFaceWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.ProjectEdits;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,11 +24,13 @@ public final class CapeEditorScreen extends Screen {
 
     private WorkspaceState workspaceState;
     private Tool tool = Tool.PENCIL;
+    private CapeUvRegion capeRegion = CapeUvRegion.OUTSIDE;
     private int selectedColor = 0xFF22D7E8;
     private UUID selectedLayerId;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
+    private LoomButton faceButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
 
@@ -52,17 +55,24 @@ public final class CapeEditorScreen extends Screen {
         int canvasX = margin;
         int canvasY = 48;
 
-        addRenderableWidget(new LoomCanvasWidget(
+        addRenderableWidget(new LoomCapeFaceWidget(
                 canvasX,
                 canvasY,
                 canvasWidth,
                 canvasHeight,
                 () -> this.workspaceState.project(),
+                () -> this.capeRegion,
                 this::editPixel
         ));
 
         int toolsX = canvasX + canvasWidth + margin;
         int y = canvasY;
+
+        faceButton = addLoomButton(
+                toolsX, y, toolbarWidth, faceLabel(),
+                this::cycleFace
+        );
+        y += 34;
 
         pencilButton = addLoomButton(
                 toolsX, y, toolbarWidth, "Pencil",
@@ -165,6 +175,17 @@ public final class CapeEditorScreen extends Screen {
         return button;
     }
 
+    private void cycleFace() {
+        this.capeRegion = this.capeRegion.next();
+        if (faceButton != null) {
+            faceButton.setMessage(Component.literal(faceLabel()));
+        }
+    }
+
+    private String faceLabel() {
+        return "Face: " + this.capeRegion.displayName();
+    }
+
     private void setTool(Tool next) {
         this.tool = next;
         updateButtonStates();
@@ -206,9 +227,10 @@ public final class CapeEditorScreen extends Screen {
         int color = tool == Tool.ERASER ? 0x00000000 : selectedColor;
 
         ClientProjectWorkspace.apply(project ->
-                ProjectEdits.setCapePixel(
+                ProjectEdits.setCapeRegionPixel(
                         project,
                         selectedLayerId,
+                        this.capeRegion,
                         x,
                         y,
                         color
@@ -292,6 +314,17 @@ public final class CapeEditorScreen extends Screen {
                 LoomUiTheme.TEXT_MUTED,
                 false
         );
+
+        if (this.capeRegion == CapeUvRegion.OUTSIDE) {
+            graphics.drawString(
+                    this.font,
+                    Component.literal("Outside / Back = the main face other players see"),
+                    Math.max(18, this.width - 360),
+                    18,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
 
         super.render(graphics, mouseX, mouseY, partialTick);
         updateButtonStates();
