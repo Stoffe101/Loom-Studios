@@ -217,3 +217,33 @@ Deferred UX check:
 - Iris shaders OFF smoke test
 - Iris shaders ON smoke test
 - 3D Skin Layers coexistence smoke test
+
+
+## Phase-1 project-core checks
+
+- schema-v1 project encode/decode round trip
+- deterministic encoding produces stable SHA-256
+- invalid magic rejected
+- unsupported schema rejected
+- oversized project rejected
+- oversized canvas/layer counts rejected
+- pixel count mismatch rejected
+- unknown blend-mode value rejected
+- trailing bytes rejected
+- server re-hashes project blob before cache/equip
+- client re-hashes downloaded blob before cache
+- layer compiler respects visibility
+- layer compiler respects opacity
+- emissive-only compilation excludes non-emissive layers
+- local library rejects paths outside its project root
+- project save uses temporary file + replace/atomic move where available
+- undo clears redo after a new edit
+- history limit is bounded
+
+## Elytra calibrated-baseline checks
+
+- Loom 100% visually resembles normal vanilla Elytra thickness
+- V 75/50/25% become progressively thinner
+- V 150% is visibly thicker/stylized
+- non-Loom Elytra remains raw vanilla model depth
+- no gameplay/hitbox/flight behavior changes

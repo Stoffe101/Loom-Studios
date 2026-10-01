@@ -3,7 +3,7 @@ package dev.loomstudios.client.render;
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.loomstudios.LoomStudios;
 import dev.loomstudios.client.network.ClientCosmeticSync;
-import dev.loomstudios.network.ProofProject;
+import dev.loomstudios.project.LoomProject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -19,15 +19,22 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Foundation runtime for SPIKE-02 through SPIKE-06.
- *
- * <p>Saved projects eventually compile into this same long-lived texture-bundle
- * concept. Animation is evaluated locally from project parameters and world
- * time; no rendered frames are sent over the network.</p>
+ * Runtime compiler/cache bridge shared by the foundation proof and Phase-1
+ * project core.
  */
 public final class DynamicCosmeticSpike {
     private static final int WIDTH = 64;
     private static final int HEIGHT = 32;
+
+    /**
+     * Minecraft's raw Elytra box is intentionally chunky. With Loom's fully
+     * painted edge faces, raw zScale=1 looks much fatter than the normal
+     * vanilla Elytra texture. 100% Loom thickness therefore maps to this
+     * calibrated vanilla-looking visual baseline.
+     *
+     * Non-Loom Elytras remain at raw vanilla zScale=1.
+     */
+    public static final float ELYTRA_VISUAL_BASELINE_Z_SCALE = 0.5F;
 
     private static final float[] THICKNESS_PRESETS = {1.0F, 0.75F, 0.5F, 0.25F, 1.5F};
     private static int thicknessPresetIndex;
@@ -50,7 +57,10 @@ public final class DynamicCosmeticSpike {
 
         long gameTime = client.level.getGameTime();
         for (RuntimeBundle bundle : BUNDLES.values()) {
-            int phase = (int)((gameTime / bundle.project.animationPeriodTicks()) % 4L);
+            int phase = (int)(
+                    (gameTime / bundle.project.runtime().animationPeriodTicks()) % 4L
+            );
+
             if (phase != bundle.phase) {
                 bundle.phase = phase;
                 redrawCape(bundle);
@@ -72,7 +82,7 @@ public final class DynamicCosmeticSpike {
         }
 
         UUID playerId = avatar.getUUID();
-        ProofProject project = ClientCosmeticSync.projectFor(playerId);
+        LoomProject project = ClientCosmeticSync.projectFor(playerId);
         String projectHash = ClientCosmeticSync.projectHashFor(playerId);
 
         if (project == null || projectHash == null) {
@@ -103,7 +113,7 @@ public final class DynamicCosmeticSpike {
     private static RuntimeBundle ensureBundle(
             Minecraft client,
             String projectHash,
-            ProofProject project
+            LoomProject project
     ) {
         RuntimeBundle existing = BUNDLES.get(projectHash);
         if (existing != null) {
@@ -130,11 +140,17 @@ public final class DynamicCosmeticSpike {
                 elytraId,
                 emissiveId,
                 new ClientAsset.ResourceTexture(
-                        Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID, "cape_asset_" + suffix),
+                        Identifier.fromNamespaceAndPath(
+                                LoomStudios.MOD_ID,
+                                "cape_asset_" + suffix
+                        ),
                         capeId
                 ),
                 new ClientAsset.ResourceTexture(
-                        Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID, "elytra_asset_" + suffix),
+                        Identifier.fromNamespaceAndPath(
+                                LoomStudios.MOD_ID,
+                                "elytra_asset_" + suffix
+                        ),
                         elytraId
                 ),
                 new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false),
@@ -142,6 +158,7 @@ public final class DynamicCosmeticSpike {
                 new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false)
         );
 
+        bundle.phase = 0;
         redrawCape(bundle);
         redrawElytra(bundle);
         redrawEmissive(bundle);
@@ -180,107 +197,53 @@ public final class DynamicCosmeticSpike {
     }
 
     private static void redrawCape(RuntimeBundle bundle) {
-        int accent = rotateAccent(bundle.project.accentArgb(), bundle.phase);
-        int secondary = rotateAccent(bundle.project.accentArgb(), bundle.phase + 2);
-        int background = darken(accent, 105);
-
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                int checker = ((x / 4) + (y / 4) + bundle.phase) & 1;
-                bundle.capeImage.setPixel(
-                        x,
-                        y,
-                        checker == 0 ? background : darken(background, 14)
-                );
-            }
-        }
-
-        drawRect(bundle.capeImage, 8, 5, 5, 20, accent);
-        drawRect(bundle.capeImage, 8, 20, 15, 5, accent);
-        drawRect(bundle.capeImage, 27, 5, 18, 5, secondary);
-        drawRect(bundle.capeImage, 27, 5, 5, 11, secondary);
-        drawRect(bundle.capeImage, 27, 13, 18, 5, secondary);
-        drawRect(bundle.capeImage, 40, 13, 5, 11, secondary);
-        drawRect(bundle.capeImage, 27, 20, 18, 5, secondary);
-
-        int stripeX = 48 + bundle.phase * 3;
-        drawRect(bundle.capeImage, stripeX, 2, 3, 28, accent);
+        int[] pixels = LoomTextureCompiler.compile(
+                bundle.project.cape(),
+                bundle.phase,
+                bundle.project.runtime().hueCycleEnabled(),
+                false
+        );
+        writePixels(bundle.capeImage, pixels);
     }
 
     private static void redrawElytra(RuntimeBundle bundle) {
-        int accent = bundle.project.accentArgb();
-        int secondary = rotateAccent(accent, 2);
-        int base = darken(accent, 115);
-
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                int checker = ((x / 4) + (y / 4)) & 1;
-                bundle.elytraImage.setPixel(
-                        x,
-                        y,
-                        checker == 0 ? base : darken(base, 12)
-                );
-            }
-        }
-
-        drawWingFace(bundle.elytraImage, 24, 2, false, accent, secondary, base);
-        drawWingFace(bundle.elytraImage, 36, 2, true, accent, secondary, base);
-
-        drawRect(bundle.elytraImage, 22, 0, 24, 2, accent);
-        drawRect(bundle.elytraImage, 22, 22, 24, 2, accent);
-        drawRect(bundle.elytraImage, 22, 2, 2, 20, accent);
-        drawRect(bundle.elytraImage, 34, 2, 2, 20, accent);
-        drawRect(bundle.elytraImage, 46, 2, 2, 20, accent);
+        int[] pixels = LoomTextureCompiler.compile(
+                bundle.project.elytra(),
+                0,
+                false,
+                false
+        );
+        writePixels(bundle.elytraImage, pixels);
     }
 
     private static void redrawEmissive(RuntimeBundle bundle) {
-        clear(bundle.emissiveImage);
-
-        if (!bundle.project.emissiveEnabled()) {
+        if (!bundle.project.runtime().emissiveEnabled()) {
+            clear(bundle.emissiveImage);
             return;
         }
 
-        int glow = rotateAccent(bundle.project.accentArgb(), bundle.phase + 1);
-        int pulse = (bundle.phase & 1) == 0 ? glow : lighten(glow, 55);
+        int[] pixels = LoomTextureCompiler.compile(
+                bundle.project.cape(),
+                bundle.phase,
+                bundle.project.runtime().hueCycleEnabled(),
+                true
+        );
+        writePixels(bundle.emissiveImage, pixels);
 
-        // Small glowing LS strokes plus a moving vertical shimmer.
-        drawRect(bundle.emissiveImage, 8, 5, 2, 20, pulse);
-        drawRect(bundle.emissiveImage, 8, 22, 12, 2, pulse);
-        drawRect(bundle.emissiveImage, 27, 5, 15, 2, glow);
-        drawRect(bundle.emissiveImage, 27, 5, 2, 9, glow);
-        drawRect(bundle.emissiveImage, 27, 13, 15, 2, glow);
-        drawRect(bundle.emissiveImage, 40, 13, 2, 11, glow);
-        drawRect(bundle.emissiveImage, 27, 22, 15, 2, glow);
-
+        // SPIKE-06 moving shimmer remains procedural for now. Phase 6 will
+        // replace this with real animation tracks/procedural effect nodes.
         int shimmerX = 49 + bundle.phase * 3;
         drawRect(bundle.emissiveImage, shimmerX, 4, 2, 24, 0xCCFFFFFF);
     }
 
-    private static void drawWingFace(
-            NativeImage target,
-            int startX,
-            int startY,
-            boolean reverse,
-            int accent,
-            int secondary,
-            int base
-    ) {
-        for (int y = 0; y < 20; y++) {
-            for (int x = 0; x < 10; x++) {
-                int visualX = reverse ? 9 - x : x;
-                int color;
+    private static void writePixels(NativeImage target, int[] pixels) {
+        if (pixels.length != WIDTH * HEIGHT) {
+            throw new IllegalArgumentException("Unexpected compiled texture dimensions");
+        }
 
-                if (visualX <= 1) {
-                    color = accent;
-                } else if ((y / 4) % 2 == 0 && visualX >= 6) {
-                    color = secondary;
-                } else if (visualX == 5 || visualX == 6) {
-                    color = lighten(accent, 35);
-                } else {
-                    color = base;
-                }
-
-                target.setPixel(startX + x, startY + y, color);
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                target.setPixel(x, y, pixels[y * WIDTH + x]);
             }
         }
     }
@@ -308,36 +271,6 @@ public final class DynamicCosmeticSpike {
         }
     }
 
-    private static int rotateAccent(int argb, int phase) {
-        int a = (argb >>> 24) & 0xFF;
-        int r = (argb >>> 16) & 0xFF;
-        int g = (argb >>> 8) & 0xFF;
-        int b = argb & 0xFF;
-
-        return switch (Math.floorMod(phase, 4)) {
-            case 1 -> (a << 24) | (b << 16) | (r << 8) | g;
-            case 2 -> (a << 24) | (g << 16) | (b << 8) | r;
-            case 3 -> (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
-            default -> argb;
-        };
-    }
-
-    private static int darken(int argb, int amount) {
-        int a = (argb >>> 24) & 0xFF;
-        int r = Math.max(0, ((argb >>> 16) & 0xFF) - amount);
-        int g = Math.max(0, ((argb >>> 8) & 0xFF) - amount);
-        int b = Math.max(0, (argb & 0xFF) - amount);
-        return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
-    private static int lighten(int argb, int amount) {
-        int a = (argb >>> 24) & 0xFF;
-        int r = Math.min(255, ((argb >>> 16) & 0xFF) + amount);
-        int g = Math.min(255, ((argb >>> 8) & 0xFF) + amount);
-        int b = Math.min(255, (argb & 0xFF) + amount);
-        return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
     public static float getElytraThicknessScale(AvatarRenderState state) {
         if (state.skin == null || state.skin.elytra() == null) {
             return 1.0F;
@@ -349,11 +282,15 @@ public final class DynamicCosmeticSpike {
         }
 
         Minecraft client = Minecraft.getInstance();
+        float userScale;
+
         if (client.player != null && state.id == client.player.getId()) {
-            return THICKNESS_PRESETS[thicknessPresetIndex];
+            userScale = THICKNESS_PRESETS[thicknessPresetIndex];
+        } else {
+            userScale = bundle.project.runtime().elytraThickness();
         }
 
-        return bundle.project.elytraThickness();
+        return ELYTRA_VISUAL_BASELINE_Z_SCALE * userScale;
     }
 
     public static Identifier getCapeEmissiveTexture(AvatarRenderState state) {
@@ -364,7 +301,7 @@ public final class DynamicCosmeticSpike {
         }
 
         RuntimeBundle bundle = BY_CAPE_TEXTURE.get(state.skin.cape().texturePath());
-        if (bundle == null || !bundle.project.emissiveEnabled()) {
+        if (bundle == null || !bundle.project.runtime().emissiveEnabled()) {
             return null;
         }
 
@@ -372,11 +309,20 @@ public final class DynamicCosmeticSpike {
     }
 
     public static void cycleElytraThickness(Minecraft client) {
-        thicknessPresetIndex = (thicknessPresetIndex + 1) % THICKNESS_PRESETS.length;
+        thicknessPresetIndex =
+                (thicknessPresetIndex + 1) % THICKNESS_PRESETS.length;
+
         if (client.player != null) {
-            int percent = Math.round(THICKNESS_PRESETS[thicknessPresetIndex] * 100.0F);
+            int percent = Math.round(
+                    THICKNESS_PRESETS[thicknessPresetIndex] * 100.0F
+            );
             client.player.displayClientMessage(
-                    Component.literal("Loom Studios Elytra thickness: " + percent + "%"),
+                    Component.literal(
+                            "Loom Studios Elytra thickness: "
+                                    + percent
+                                    + "%"
+                                    + (percent == 100 ? " (vanilla-like)" : "")
+                    ),
                     true
             );
         }
@@ -420,7 +366,7 @@ public final class DynamicCosmeticSpike {
     }
 
     private static final class RuntimeBundle {
-        private final ProofProject project;
+        private final LoomProject project;
         private final Identifier capeTextureId;
         private final Identifier elytraTextureId;
         private final Identifier emissiveTextureId;
@@ -436,7 +382,7 @@ public final class DynamicCosmeticSpike {
         private int phase = -1;
 
         private RuntimeBundle(
-                ProofProject project,
+                LoomProject project,
                 Identifier capeTextureId,
                 Identifier elytraTextureId,
                 Identifier emissiveTextureId,

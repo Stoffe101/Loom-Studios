@@ -103,3 +103,39 @@ Portable codes require strict maximum sizes and decoding limits.
 ## Migration
 
 Every saved project declares a schema version. Loading an old project runs explicit migrations rather than silently interpreting old fields as new semantics.
+
+
+## Implemented schema v1 foundation
+
+The first real project model is now implemented.
+
+Current binary v1 contents:
+- magic header `LOOM`;
+- schema version;
+- project UUID;
+- project name;
+- runtime settings proven by the spikes;
+- cape canvas;
+- Elytra canvas;
+- ordered paint layers.
+
+Current paint-layer fields:
+- stable UUID;
+- name;
+- visible;
+- opacity;
+- blend mode;
+- emissive flag;
+- ARGB pixel data.
+
+Current limits are deliberately bounded:
+- 256 KiB serialized project;
+- 256 x 256 maximum canvas dimension;
+- 64 layers per canvas;
+- bounded project/layer names.
+
+Only `NORMAL` blend is implemented in the compiler today. The enum is already serialized so later blend modes can be added through explicit schema/version handling.
+
+The local library uses `<gameDir>/loom-studios/projects/<project UUID>.loom`.
+
+The development cosmetics used by the runtime/network proof are now generated as real schema-v1 projects, encoded through this codec, SHA-256 addressed, transferred, decoded and compiled locally.

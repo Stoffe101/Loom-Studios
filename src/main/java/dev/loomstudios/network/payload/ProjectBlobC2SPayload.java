@@ -1,7 +1,7 @@
 package dev.loomstudios.network.payload;
 
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.network.ProofProject;
+import dev.loomstudios.project.LoomProjectCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -17,14 +17,14 @@ public record ProjectBlobC2SPayload(String projectHash, byte[] data)
             StreamCodec.of(
                     (buf, payload) -> {
                         buf.writeUtf(payload.projectHash(), 64);
-                        if (payload.data().length > ProofProject.MAX_BYTES) {
+                        if (payload.data().length > LoomProjectCodec.MAX_SERIALIZED_BYTES) {
                             throw new IllegalArgumentException("Project blob too large");
                         }
                         buf.writeByteArray(payload.data());
                     },
                     buf -> new ProjectBlobC2SPayload(
                             buf.readUtf(64),
-                            buf.readByteArray(ProofProject.MAX_BYTES)
+                            buf.readByteArray(LoomProjectCodec.MAX_SERIALIZED_BYTES)
                     )
             );
 

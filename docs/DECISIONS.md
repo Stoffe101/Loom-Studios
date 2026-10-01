@@ -182,3 +182,43 @@ Animation definitions/parameters belong to project data. Clients derive animatio
 The base cape remains Minecraft's normal CapeLayer. Loom Studios registers an additional player feature layer that submits a second PlayerCapeModel using the project's generated emissive mask and Minecraft's translucent-emissive render type.
 
 If this optional layer has a compatibility problem, disabling it must leave the base cape intact.
+
+
+## ADR-026 — User-facing Elytra 100% is a calibrated visual baseline
+**Status:** Accepted from runtime feedback
+
+Minecraft's raw 1.21.11 Elytra model uses a visibly volumetric wing box. With Loom Studios' fully opaque custom edge UVs, raw model `zScale=1.0` appears substantially fatter than the normal vanilla Elytra appearance.
+
+For Loom-owned Elytra rendering:
+- user-facing 100% thickness maps to raw model Z scale 0.5;
+- thinner/thicker controls are relative to that baseline;
+- non-Loom Elytras remain raw vanilla Z scale 1.0;
+- custom edge-face artwork remains opaque but uses a recessed/darker treatment by default;
+- this affects rendering only.
+
+This supersedes the earlier assumption that raw model Z scale 1.0 should necessarily be the user-visible 100% baseline.
+
+## ADR-027 — Schema-v1 project core is deterministic bounded binary data
+**Status:** Accepted / implemented
+
+The first real .loom project representation uses a deterministic bounded binary codec rather than Java object serialization.
+
+Reasons:
+- stable SHA-256 content identity;
+- strict size/count validation before allocation;
+- explicit schema versioning;
+- straightforward server/client parity;
+- no arbitrary-class deserialization surface.
+
+Schema v1 currently contains project identity/name, runtime settings, cape/Elytra canvases and ordered paint layers.
+
+Future structural changes require explicit schema migration.
+
+## ADR-028 — Phase-1 undo/redo starts with immutable project snapshots
+**Status:** Accepted / implemented foundation
+
+Editor changes are expressed as project transformations through ProjectHistory.
+
+The first implementation stores bounded immutable project snapshots because it keeps correctness simple while tools are still being designed.
+
+High-volume paint operations may later store specialized deltas internally without changing the editor/session-facing undo/redo contract.

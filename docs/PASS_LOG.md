@@ -1,5 +1,31 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-05 runtime PASS + Phase-1 project-core bootstrap
+
+**Runtime result from two-client test: PASS for the primary synchronization path**
+
+Observed:
+- two different development players/projects visible together;
+- per-player project colors differ;
+- both remote/local cosmetics continue cycling color;
+- no main-path synchronization issue reported.
+
+**Implementation now staged:**
+- Elytra 100% visual baseline calibrated to 0.5 raw model Z scale for Loom cosmetics;
+- darker edge UV treatment to reduce the boxy/fat appearance;
+- real schema-v1 LoomProject model;
+- cape/Elytra canvases and immutable paint layers;
+- bounded deterministic .loom binary codec;
+- SHA-256 hashing/validation on real project bytes;
+- multiplayer proof migrated from ProofProject to LoomProject;
+- layer-to-texture compiler;
+- local project library file plumbing;
+- undo/redo project history foundation.
+
+CI and local visual/runtime verification are required before this pass is marked fully green.
+
+---
+
 ## 2026-10-01 — SPIKE-05/06 latest green implementation checkpoint
 
 **Result: CI PASS / MANUAL RUNTIME PASS REQUIRED**

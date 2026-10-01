@@ -1,6 +1,7 @@
 package dev.loomstudios.network;
 
 import dev.loomstudios.LoomStudios;
+import dev.loomstudios.project.LoomProjectCodec;
 import dev.loomstudios.network.payload.EquippedStateS2CPayload;
 import dev.loomstudios.network.payload.HelloC2SPayload;
 import dev.loomstudios.network.payload.ProjectBlobC2SPayload;
@@ -69,7 +70,7 @@ public final class LoomNetworking {
 
     private static void handleHello(ServerPlayer player, HelloC2SPayload payload) {
         if (payload.protocolVersion() != PROTOCOL_VERSION
-                || !ProofProject.isValidHash(payload.projectHash())) {
+                || !LoomProjectCodec.isValidHash(payload.projectHash())) {
             LoomStudios.LOGGER.warn(
                     "Rejected Loom hello from {}: protocol/hash invalid",
                     player.getGameProfile().name()
@@ -116,7 +117,7 @@ public final class LoomNetworking {
             ServerPlayer player,
             ProjectRequestC2SPayload payload
     ) {
-        if (!ProofProject.isValidHash(payload.projectHash())) {
+        if (!LoomProjectCodec.isValidHash(payload.projectHash())) {
             return;
         }
 
@@ -133,15 +134,15 @@ public final class LoomNetworking {
     }
 
     private static boolean validateProjectBlob(String hash, byte[] data) {
-        if (!ProofProject.isValidHash(hash)
+        if (!LoomProjectCodec.isValidHash(hash)
                 || data.length == 0
-                || data.length > ProofProject.MAX_BYTES
-                || !hash.equals(ProofProject.sha256(data))) {
+                || data.length > LoomProjectCodec.MAX_SERIALIZED_BYTES
+                || !hash.equals(LoomProjectCodec.sha256(data))) {
             return false;
         }
 
         try {
-            ProofProject.decode(data);
+            LoomProjectCodec.decode(data);
             return true;
         } catch (IllegalArgumentException ignored) {
             return false;

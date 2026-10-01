@@ -1,51 +1,57 @@
 # Loom Studios — Next Work
 
-## Verify SPIKE-05 and SPIKE-06
+## Immediate verification
 
-After the exact implementation commit is CI-green, perform one combined runtime pass.
+Pull the latest implementation after CI is green.
 
-### Single-client emissive check
+### Elytra visual baseline
 
-- run normal Loom Studios - Client;
-- enter a world;
-- verify the cape still animates;
-- press G and confirm the glow/emissive details visibly toggle;
-- open P preview and confirm the same base cosmetic still renders.
+- equip the Loom Elytra;
+- verify default 100% now looks close to a normal vanilla Elytra instead of thick/boxy;
+- press V through 75/50/25/150%;
+- confirm 100% is the sensible reset/default;
+- confirm non-Loom Elytras are unaffected.
 
-### Two-client multiplayer check
+### Project-core runtime regression
 
-Use the generated IntelliJ profiles:
-- Loom Studios - Client A
-- Loom Studios - Client B
+The visible development cape should look essentially the same, but it is now compiled from a real schema-v1 LoomProject instead of ProofProject.
 
-Recommended easy topology:
-1. Client A creates/opens a world.
-2. Open the world to LAN.
-3. Note the LAN port.
-4. Client B joins `localhost:<port>`.
-5. Put both players in third person / observe each other.
+Verify:
+- single-player cape still renders and cycles;
+- two-client LAN projects still differ and sync;
+- Elytra still uses its independent project canvas;
+- G emissive toggle still works;
+- P preview still works.
 
-Expected:
-- A sees B's Loom cape;
-- B sees A's Loom cape;
-- the two deterministic UUIDs produce different project accent colors;
-- remote animation runs without streamed frames;
-- emissive pass appears on remote players;
-- disconnecting one player removes their equipped Loom state cleanly.
+## Phase 1 — Project Core active focus
 
-### Optional rendering compatibility
+Implemented foundation:
+- versioned project model;
+- cape/Elytra canvases;
+- immutable paint layers;
+- schema-v1 deterministic serialization;
+- content hashing;
+- texture compiler;
+- local .loom library filesystem plumbing;
+- undo/redo history foundation.
 
-With the current optional dev stack:
-- Sodium/Sodium Extra remain stable;
+Next Phase-1 slices:
+1. project metadata and explicit migrations;
+2. editor/session state that owns ProjectHistory;
+3. dirty-state/save/load lifecycle;
+4. runtime cache ownership separated from the old spike class;
+5. project-library index + thumbnails;
+6. remove/decompose remaining SPIKE-named runtime scaffolding.
+
+## Foundation-spike cleanup still pending
+
+SPIKE-06 emissive/shader compatibility should still get a final visual smoke pass:
+- G off/on;
 - Iris shaders OFF;
-- Iris shaders ON with one installed shader pack;
-- G toggle should never make the base cape disappear;
-- 3D Skin Layers should remain unaffected.
+- Iris shaders ON with one shader pack.
 
-## If green
-
-Mark SPIKE-05 and SPIKE-06 DONE. The foundation-spike gate is then complete and full editor/core implementation can begin.
+This does not block project-core work, but it remains a release gate before the foundation phase is declared entirely closed.
 
 ## Known deferred preview refinements
 
-Keep head lock, Facing, Orbit/Pivot, snap angles, and final camera controls bundled into later UI refinement rather than opening a dedicated foundation pass.
+Keep head lock, Facing, Orbit/Pivot, snap angles, and final camera controls bundled into the later UI refinement pass.

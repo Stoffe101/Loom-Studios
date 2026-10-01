@@ -337,3 +337,49 @@ This checkpoint includes:
 - Windows-safe concurrent optional-dev-mod handling.
 
 SPIKE-05 and SPIKE-06 remain **runtime verification pending**, not DONE.
+
+
+## 2026-10-01 multiplayer runtime feedback
+
+**SPIKE-05 primary path: PASS**
+
+Two-client LAN runtime evidence confirms:
+- distinct Client A / Client B Loom projects render simultaneously;
+- remote project transfer/cache succeeds;
+- both projects animate/color-cycle correctly;
+- no visible multiplayer failure was observed in the main path.
+
+Negative-path/disconnect checks remain useful release-hardening coverage but no longer block the project-core transition.
+
+## Elytra visual-thickness correction
+
+Runtime feedback showed that the raw vanilla Elytra model depth looks noticeably too chunky when Loom Studios paints all edge UV faces opaquely.
+
+Correction implemented:
+- non-Loom Elytras stay at Minecraft raw zScale 1.0;
+- Loom user-facing 100% thickness now maps to a calibrated 0.5 raw Z-depth scale;
+- user-facing presets remain relative (100/75/50/25/150%);
+- Elytra edge UVs are darkened instead of neon-bright, reducing the exaggerated boxed edge;
+- texture and geometry controls remain independent.
+
+This is a visual-baseline correction, not a gameplay/hitbox change.
+
+## Phase 1 — Project Core bootstrap
+
+The disposable tiny ProofProject is no longer the active multiplayer/runtime model.
+
+Implemented first real project-core slice:
+- versioned LoomProject schema v1;
+- separate cape and Elytra canvases;
+- immutable paint layers;
+- visibility, opacity, emissive flag and blend-mode field;
+- deterministic bounded binary .loom codec;
+- SHA-256 content identity;
+- server/client validation uses the real project codec;
+- runtime texture compiler flattens project layers;
+- multiplayer cache transfers real LoomProject bytes;
+- local .loom project library filesystem foundation;
+- undo/redo ProjectHistory foundation;
+- development project factory now produces real schema-v1 projects.
+
+The old ProofProject source remains temporarily in-tree only as dead spike history and can be removed after the new runtime path is locally reverified.

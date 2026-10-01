@@ -2,13 +2,15 @@ package dev.loomstudios.client.network;
 
 import dev.loomstudios.LoomStudios;
 import dev.loomstudios.network.LoomNetworking;
-import dev.loomstudios.network.ProofProject;
 import dev.loomstudios.network.payload.EquippedStateS2CPayload;
 import dev.loomstudios.network.payload.HelloC2SPayload;
 import dev.loomstudios.network.payload.ProjectBlobC2SPayload;
 import dev.loomstudios.network.payload.ProjectBlobS2CPayload;
 import dev.loomstudios.network.payload.ProjectNeededS2CPayload;
 import dev.loomstudios.network.payload.ProjectRequestC2SPayload;
+import dev.loomstudios.project.LoomProject;
+import dev.loomstudios.project.LoomProjectCodec;
+import dev.loomstudios.project.LoomProjectFactory;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -18,11 +20,11 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ClientCosmeticSync {
-    private static final Map<String, ProofProject> PROJECTS = new HashMap<>();
+    private static final Map<String, LoomProject> PROJECTS = new HashMap<>();
     private static final Map<UUID, String> EQUIPPED = new HashMap<>();
 
     private static UUID localPlayerId;
-    private static ProofProject localProject;
+    private static LoomProject localProject;
     private static String localProjectHash;
     private static boolean serverSupportsLoom;
     private static boolean helloPending;
@@ -71,7 +73,7 @@ public final class ClientCosmeticSync {
                     )
             );
             LoomStudios.LOGGER.info(
-                    "SPIKE-05 hello sent with project {}",
+                    "Loom project hello sent: {}",
                     shortHash(localProjectHash)
             );
         } else {
@@ -87,13 +89,14 @@ public final class ClientCosmeticSync {
         }
 
         localPlayerId = playerId;
-        localProject = ProofProject.forPlayer(playerId);
+        localProject = LoomProjectFactory.forPlayer(playerId);
         localProjectHash = localProject.hash();
+
         PROJECTS.put(localProjectHash, localProject);
         EQUIPPED.put(playerId, localProjectHash);
     }
 
-    public static ProofProject projectFor(UUID playerId) {
+    public static LoomProject projectFor(UUID playerId) {
         if (playerId != null && playerId.equals(localPlayerId) && localProject != null) {
             return localProject;
         }
@@ -128,16 +131,16 @@ public final class ClientCosmeticSync {
     }
 
     private static void acceptProjectBlob(String hash, byte[] data) {
-        if (!ProofProject.isValidHash(hash)
+        if (!LoomProjectCodec.isValidHash(hash)
                 || data.length == 0
-                || data.length > ProofProject.MAX_BYTES
-                || !hash.equals(ProofProject.sha256(data))) {
+                || data.length > LoomProjectCodec.MAX_SERIALIZED_BYTES
+                || !hash.equals(LoomProjectCodec.sha256(data))) {
             LoomStudios.LOGGER.warn("Rejected invalid Loom project blob from server.");
             return;
         }
 
         try {
-            PROJECTS.put(hash, ProofProject.decode(data));
+            PROJECTS.put(hash, LoomProjectCodec.decode(data));
             LoomStudios.LOGGER.info(
                     "Cached remote Loom project {}",
                     shortHash(hash)
@@ -153,7 +156,7 @@ public final class ClientCosmeticSync {
             return;
         }
 
-        if (!ProofProject.isValidHash(payload.projectHash())) {
+        if (!LoomProjectCodec.isValidHash(payload.projectHash())) {
             return;
         }
 
