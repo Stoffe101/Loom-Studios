@@ -1,5 +1,26 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-00 JAR configuration-cache correction
+
+**Status: IN PROGRESS**
+
+Exact SHA `680876b000cd6f50c079d6bb6abc9a83b48cc2d4`:
+
+- Gradle wrapper: PASS
+- Loom 1.17.21 on Java 21: PASS
+- Minecraft/Fabric dependency setup: PASS
+- `compileJava`: PASS
+- `processResources`: PASS after prior correction
+- `jar`: FAIL configuration-cache validation
+
+Cause: the LICENSE rename closure read `project.base.archivesName` at task execution time.
+
+Correction: capture the archive name during configuration and use only that captured value in the JAR task closure.
+
+Next: rerun exact-SHA CI.
+
+---
+
 ## 2026-10-01 — SPIKE-00 Gradle configuration-cache correction
 
 **Status: IN PROGRESS**
