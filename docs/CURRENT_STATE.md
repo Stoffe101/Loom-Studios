@@ -86,3 +86,12 @@ Verify corrected CI and then launch the IntelliJ development client/server local
 The first Windows `runClient` attempt started the Java client process but exited with status `0xFFFFFFFF`. This is a runtime/client failure rather than a compile failure. The actual cause must be read from `run/logs/latest.log` or the newest crash report before changing rendering code.
 
 The `listDevMods` helper exposed a separate Gradle configuration-cache incompatibility. Configuration cache is now intentionally disabled for the IntelliJ/Loom development workflow.
+
+
+## Optional-stack crash diagnosis
+
+The first local full-stack runtime did not fail in Loom Studios rendering code. 3D Skin Layers crashed during its client entrypoint because its embedded TRansition library was not present as a remapped top-level development mod.
+
+The supplied SkinLayers3D JAR includes both TRansition and TRender in `META-INF/jars/`. The Gradle development harness now flattens embedded dev libraries into `build/dev-mods-nested/` and feeds them through `modLocalRuntime` so Loom can remap them for the named development namespace.
+
+Local retest is required before marking the optional stack compatible.

@@ -1,5 +1,31 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — 3D Skin Layers dev-runtime crash diagnosis
+
+**Result: FIX IMPLEMENTED / LOCAL RETEST REQUIRED**
+
+The first full optional-mod `runClient` reached Fabric Loader and loaded Loom Studios, Sodium, Sodium Extra, Iris, and 3D Skin Layers.
+
+Crash cause:
+- 3D Skin Layers failed during its client entrypoint;
+- missing class: `dev.tr7zw.transition.loader.ModLoaderUtil`;
+- the supplied 3D Skin Layers JAR contains TRansition and TRender under `META-INF/jars/`;
+- Loom's remapped local-runtime copy did not expose those embedded libraries as separate runtime mods in the development namespace.
+
+This is a **development harness issue**, not evidence that Loom Studios' cape mixin conflicts with 3D Skin Layers.
+
+Fix:
+- inspect optional dev-mod JARs during Gradle configuration;
+- extract embedded `META-INF/jars/*.jar` libraries into `build/dev-mods-nested/`;
+- add both top-level and extracted JARs to `modLocalRuntime` so Loom remaps every library into the named dev namespace;
+- keep all generated/external JARs out of the shipped Loom Studios artifact.
+
+Sodium Extra also reported that Reese's Sodium Options is recommended but missing. That warning is non-fatal and unrelated to this crash.
+
+Next: local `runClient` retest with the same four optional compatibility mods.
+
+---
+
 ## 2026-10-01 — Local IntelliJ test feedback
 
 **Status: FIX APPLIED / CLIENT CRASH UNDER INVESTIGATION**

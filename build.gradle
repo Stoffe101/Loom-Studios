@@ -50,6 +50,48 @@ loom {
     }
 }
 
+// Loom remaps local mod JARs into the named development namespace.
+// Some mods (notably 3D Skin Layers) bundle required Fabric libraries as
+// META-INF/jars/*.jar. Loom's local-remap path does not reliably expose those
+// nested libraries as separate dev-runtime mods, so flatten them into a
+// generated directory before resolving modLocalRuntime.
+def devModsDir = file("dev-mods")
+def nestedDevModsDir = file("${buildDir}/dev-mods-nested")
+
+if (nestedDevModsDir.exists()) {
+    nestedDevModsDir.deleteDir()
+}
+nestedDevModsDir.mkdirs()
+
+if (devModsDir.exists()) {
+    fileTree(devModsDir) {
+        include "*.jar"
+    }.files.sort { it.name }.each { sourceJar ->
+        def zip = new java.util.zip.ZipFile(sourceJar)
+        try {
+            def entries = zip.entries()
+            while (entries.hasMoreElements()) {
+                def entry = entries.nextElement()
+                if (!entry.isDirectory()
+                        && entry.name.startsWith("META-INF/jars/")
+                        && entry.name.endsWith(".jar")) {
+                    def sourcePrefix = sourceJar.name.replaceAll("[^A-Za-z0-9._-]", "_")
+                    def nestedName = new File(entry.name).name
+                    def outputJar = new File(nestedDevModsDir, "${sourcePrefix}__${nestedName}")
+
+                    zip.getInputStream(entry).withCloseable { input ->
+                        outputJar.withOutputStream { output ->
+                            input.transferTo(output)
+                        }
+                    }
+                }
+            }
+        } finally {
+            zip.close()
+        }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
@@ -58,7 +100,11 @@ dependencies {
 
     // Optional local compatibility mods for runClient.
     // JARs in dev-mods/ are not published or bundled with Loom Studios.
-    modLocalRuntime fileTree(dir: "dev-mods", include: ["*.jar"])
+    modLocalRuntime fileTree(dir: devModsDir, include: ["*.jar"])
+
+    // Flattened nested Fabric libraries from local compatibility mods.
+    // Generated under build/ and never published.
+    modLocalRuntime fileTree(dir: nestedDevModsDir, include: ["*.jar"])
 }
 
 def modVersion = project.version
@@ -92,15 +138,22 @@ jar {
 
 tasks.register("listDevMods") {
     group = "loom studios"
-    description = "Lists optional compatibility mods loaded by the development runtime."
+    description = "Lists optional compatibility mods and flattened embedded libraries loaded by the development runtime."
 
     doLast {
-        def jars = fileTree("dev-mods") { include "*.jar" }.files.sort { it.name }
+        def jars = fileTree(devModsDir) { include "*.jar" }.files.sort { it.name }
+        def nestedJars = fileTree(nestedDevModsDir) { include "*.jar" }.files.sort { it.name }
+
         if (jars.isEmpty()) {
             println "No optional development mods found in dev-mods/."
         } else {
             println "Optional development mods:"
             jars.each { println " - ${it.name}" }
+        }
+
+        if (!nestedJars.isEmpty()) {
+            println "Embedded development libraries extracted for Loom remapping:"
+            nestedJars.each { println " - ${it.name}" }
         }
     }
 }

@@ -85,3 +85,16 @@ Get-Content $crash.FullName -Tail 300
 ```
 
 For isolation, temporarily moving JARs out of `dev-mods/` gives a plain-Fabric client without changing the project dependencies.
+
+
+## 3D Skin Layers in the development client
+
+3D Skin Layers 1.11.3 bundles TRansition and TRender inside its JAR. Loom Studios automatically flattens those embedded libraries into `build/dev-mods-nested/` for the development runtime so Fabric Loom can remap them correctly.
+
+After changing optional JARs in `dev-mods/`, run:
+
+```powershell
+.\gradlew.bat listDevMods
+```
+
+The output should show the four top-level test mods plus extracted TRansition/TRender library JARs when 3D Skin Layers is present.

@@ -47,3 +47,16 @@ Because both mods touch player rendering, keep it as a smoke-test target for cap
 - cache compiled output;
 - shader-sensitive optional effects fail gracefully;
 - preserve the base cape/Elytra if an optional effect must be disabled.
+
+
+## Embedded-library handling in the dev runtime
+
+Some third-party Fabric mods bundle libraries under `META-INF/jars/`. Normal distribution launchers/Fabric installations can load these as nested JARs, but Loom's remapped local development path may not expose them correctly after remapping a raw local JAR.
+
+Loom Studios' Gradle setup therefore:
+- scans only local `dev-mods/*.jar` files;
+- extracts embedded `META-INF/jars/*.jar` entries to `build/dev-mods-nested/`;
+- adds the extracted libraries separately to `modLocalRuntime`;
+- never publishes or commits those third-party binaries.
+
+This is currently required for 3D Skin Layers 1.11.3's embedded TRansition/TRender libraries.
