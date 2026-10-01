@@ -165,6 +165,34 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void paletteShareCodePreservesAlphaAndLegacyOpaqueColors() {
+        ColorPalette palette = new ColorPalette(
+                UUID.fromString("55555555-5555-4555-8555-555555555555"),
+                "Alpha",
+                java.util.List.of(
+                        0x80112233,
+                        0xFF445566
+                )
+        );
+
+        String json = ColorPaletteCodec.encode(palette, false);
+        assertTrue(json.contains("#80112233"));
+        assertTrue(json.contains("#445566"));
+
+        ColorPalette decoded = ColorPaletteCodec.decode(json);
+        assertEquals(palette, decoded);
+
+        ColorPalette legacy = ColorPaletteCodec.decode(
+                "{\"format\":\"loom-studios-palette\","
+                        + "\"version\":1,"
+                        + "\"id\":\"66666666-6666-4666-8666-666666666666\","
+                        + "\"name\":\"Legacy\","
+                        + "\"colors\":[\"#ABCDEF\"]}"
+        );
+        assertEquals(0xFFABCDEF, legacy.colors().getFirst());
+    }
+
+    @Test
     void floodFillStaysInsideConnectedCapeRegion() {
         LoomProject project = LoomProjectFactory.blank("Fill", 1L);
         LoomLayer layer = project.cape().layers().getFirst();
