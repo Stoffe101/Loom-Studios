@@ -111,9 +111,9 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                     + ", "
                     + hoveredY
                     + "  •  UV "
-                    + region.atlasX(hoveredX)
+                    + region.atlasX(hoveredX, resolutionScale)
                     + ", "
-                    + region.atlasY(hoveredY);
+                    + region.atlasY(hoveredY, resolutionScale);
 
             int width = Minecraft.getInstance().font.width(coords);
             graphics.drawString(
@@ -145,8 +145,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                         checker
                 );
 
-                int atlasX = region.atlasX(x);
-                int atlasY = region.atlasY(y);
+                int atlasX = region.atlasX(x, resolutionScale);
+                int atlasY = region.atlasY(y, resolutionScale);
                 int color = pixels[
                         atlasY * project.cape().width() + atlasX
                 ];

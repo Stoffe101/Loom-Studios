@@ -1,5 +1,15 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — High-resolution face UV follow-up
+
+The first high-resolution implementation compiled successfully, then static review caught two scale-path issues before local handoff:
+- face rendering/readout still used 1x atlas coordinates in a few places;
+- `setCapeRegionPixel` retained an old 1x bounds guard before its scale-aware check.
+
+Both are corrected so 2x/4x face editing and display use the same scaled UV mapping.
+
+---
+
 ## 2026-10-01 — High-resolution canvas + brush/color control implementation
 
 **Status: IMPLEMENTED / CI + LOCAL VISUAL TEST PENDING**

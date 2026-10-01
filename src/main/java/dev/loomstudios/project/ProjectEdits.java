@@ -24,16 +24,12 @@ public final class ProjectEdits {
             int localY,
             int argb
     ) {
-        if (localX < 0
-                || localY < 0
-                || localX >= region.width()
-                || localY >= region.height()) {
-            return project;
-        }
-
         int scale = CanvasResolution.fromCanvas(project.cape()).scale();
 
-        if (localX >= region.width(scale) || localY >= region.height(scale)) {
+        if (localX < 0
+                || localY < 0
+                || localX >= region.width(scale)
+                || localY >= region.height(scale)) {
             return project;
         }
 
