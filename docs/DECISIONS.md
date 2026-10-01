@@ -434,3 +434,34 @@ The editor color control exposes multiple views of one selected ARGB color:
 - palette swatches.
 
 Changing any control updates the same selected color used by paint tools.
+
+
+## ADR-046 — User palettes are first-class local assets
+**Status:** Accepted / implemented
+
+Custom color palettes are persisted independently from cape/Elytra projects.
+
+A palette contains:
+- UUID;
+- user-visible name;
+- ordered list of up to 32 opaque RGB colors.
+
+Palette files use the shareable `.loompalette` JSON format under the Loom Studios game folder.
+
+## ADR-047 — Palette sharing supports files and clipboard codes
+**Status:** Accepted / implemented
+
+Export performs both:
+- write a human-readable `.loompalette` file to the exports folder;
+- copy a compact versioned `LOOMPAL1:` share code to the clipboard.
+
+Import first accepts a share code from the clipboard. If none is present, it scans the imports folder.
+
+Imported palettes receive a new UUID so importing another person's palette cannot overwrite an existing local palette with the same source identity.
+
+## ADR-048 — Palettes window is movable, pinnable editor chrome
+**Status:** Accepted / implemented foundation
+
+The Palettes window is an editor overlay rather than part of the vertical tool rail.
+
+It may be moved by its title bar. Pin locks its position. This keeps palette switching reachable on compact GUI layouts without permanently consuming the canvas/tool-rail width.

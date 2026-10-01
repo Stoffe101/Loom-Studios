@@ -1,5 +1,7 @@
 package dev.loomstudios.project;
 
+import dev.loomstudios.palette.ColorPalette;
+import dev.loomstudios.palette.ColorPaletteCodec;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -141,6 +143,25 @@ class LoomProjectCodecTest {
         ).filter(pixel -> pixel == 0xFFABCDEF).count();
 
         assertTrue(count > 1);
+    }
+
+    @Test
+    void paletteShareCodeRoundTrips() {
+        ColorPalette palette = new ColorPalette(
+                UUID.fromString("44444444-4444-4444-8444-444444444444"),
+                "Sunset",
+                java.util.List.of(
+                        0xFFFF5368,
+                        0xFFFFBE2E,
+                        0xFF8E5CFF
+                )
+        );
+
+        String code = ColorPaletteCodec.encodeShareCode(palette);
+        ColorPalette decoded = ColorPaletteCodec.decodeShareCode(code);
+
+        assertEquals(palette, decoded);
+        assertTrue(code.startsWith(ColorPaletteCodec.SHARE_PREFIX));
     }
 
     @Test

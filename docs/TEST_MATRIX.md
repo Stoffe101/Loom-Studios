@@ -335,3 +335,17 @@ Deferred UX check:
 - C2S/S2C project blobs use large payload registration
 - high-resolution cape renders in preview/world
 - color picker HSV, RGB, hex and palette remain synchronized
+
+
+## Palette checks
+
+- palette share-code round trip
+- palette JSON validates format/version/name/color count
+- new palette persists under game folder
+- palette import receives new UUID
+- exported file is readable after restart
+- palette swatch applies selected editor color
+- right-click color removes it unless it is the final remaining color
+- palette window can move while unpinned
+- pinned palette window cannot move
+- tool-rail scrollbar and floating palette window coexist at 1920x1080 GUI scale 3

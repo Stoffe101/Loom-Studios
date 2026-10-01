@@ -1,0 +1,79 @@
+package dev.loomstudios.palette;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+public record ColorPalette(
+        UUID id,
+        String name,
+        List<Integer> colors
+) {
+    public static final int MAX_NAME_CHARS = 48;
+    public static final int MAX_COLORS = 32;
+
+    public ColorPalette {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(colors, "colors");
+
+        String trimmed = name.trim();
+        if (trimmed.isEmpty() || trimmed.length() > MAX_NAME_CHARS) {
+            throw new IllegalArgumentException("Invalid palette name");
+        }
+
+        if (colors.isEmpty() || colors.size() > MAX_COLORS) {
+            throw new IllegalArgumentException("Palette color count out of range");
+        }
+
+        name = trimmed;
+
+        List<Integer> normalized = new ArrayList<>(colors.size());
+        for (Integer color : colors) {
+            if (color == null) {
+                throw new IllegalArgumentException("Palette color cannot be null");
+            }
+            normalized.add(0xFF000000 | (color & 0x00FFFFFF));
+        }
+        colors = List.copyOf(normalized);
+    }
+
+    public ColorPalette withName(String nextName) {
+        return new ColorPalette(id, nextName, colors);
+    }
+
+    public ColorPalette addColor(int argb) {
+        int normalized = 0xFF000000 | (argb & 0x00FFFFFF);
+
+        if (colors.contains(normalized)) {
+            return this;
+        }
+
+        if (colors.size() >= MAX_COLORS) {
+            throw new IllegalStateException("Palette already has 32 colors");
+        }
+
+        List<Integer> next = new ArrayList<>(colors);
+        next.add(normalized);
+        return new ColorPalette(id, name, next);
+    }
+
+    public ColorPalette removeColorAt(int index) {
+        if (index < 0 || index >= colors.size()) {
+            return this;
+        }
+
+        if (colors.size() == 1) {
+            return this;
+        }
+
+        List<Integer> next = new ArrayList<>(colors);
+        next.remove(index);
+        return new ColorPalette(id, name, next);
+    }
+
+    public ColorPalette copyWithNewId() {
+        return new ColorPalette(UUID.randomUUID(), name, colors);
+    }
+}

@@ -6,6 +6,8 @@ import dev.loomstudios.client.project.WorkspaceState;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomCapeFaceWidget;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
+import dev.loomstudios.client.ui.LoomPaletteButton;
+import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
@@ -48,6 +50,14 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton redoButton;
 
     private LoomCapeFaceWidget canvasWidget;
+    private LoomColorPickerWidget colorPicker;
+    private LoomPaletteWindow paletteWindow;
+
+    private boolean paletteWindowVisible;
+    private boolean paletteWindowPinned;
+    private int paletteWindowX = Integer.MIN_VALUE;
+    private int paletteWindowY = Integer.MIN_VALUE;
+
     private int toolPanelX;
     private int toolPanelY;
     private int toolPanelWidth;
@@ -170,7 +180,7 @@ public final class CapeEditorScreen extends Screen {
         brushRow.addChild(brushUpButton);
         tools.addChild(brushRow);
 
-        LoomColorPickerWidget picker = new LoomColorPickerWidget(
+        this.colorPicker = new LoomColorPickerWidget(
                 0,
                 0,
                 contentWidth,
@@ -178,7 +188,15 @@ public final class CapeEditorScreen extends Screen {
                 this.selectedColor,
                 color -> this.selectedColor = color
         );
-        tools.addChild(picker);
+        tools.addChild(this.colorPicker);
+
+        tools.addChild(new LoomPaletteButton(
+                0,
+                0,
+                contentWidth,
+                22,
+                this::togglePaletteWindow
+        ));
 
         LinearLayout historyRow = LinearLayout.horizontal().spacing(4);
         undoButton = createLoomButton(
@@ -235,6 +253,7 @@ public final class CapeEditorScreen extends Screen {
                 addRenderableWidget((AbstractWidget) widget)
         );
 
+        restoreOrCreatePaletteWindow();
         updateButtonStates();
     }
 
@@ -250,6 +269,12 @@ public final class CapeEditorScreen extends Screen {
 
         if (canvasWidget != null) {
             canvasWidget.close();
+        }
+
+        if (paletteWindow != null) {
+            this.paletteWindowX = paletteWindow.getX();
+            this.paletteWindowY = paletteWindow.getY();
+            this.paletteWindowPinned = paletteWindow.pinned();
         }
 
         ClientProjectWorkspace.endCompoundEdit();
@@ -280,6 +305,62 @@ public final class CapeEditorScreen extends Screen {
 
     private String faceLabel() {
         return "Face: " + this.capeRegion.displayName();
+    }
+
+    private void togglePaletteWindow() {
+        this.paletteWindowVisible = !this.paletteWindowVisible;
+
+        if (this.paletteWindow != null) {
+            this.paletteWindow.visible = this.paletteWindowVisible;
+        }
+    }
+
+    private void restoreOrCreatePaletteWindow() {
+        if (this.paletteWindow != null) {
+            this.paletteWindowX = this.paletteWindow.getX();
+            this.paletteWindowY = this.paletteWindow.getY();
+            this.paletteWindowPinned = this.paletteWindow.pinned();
+        }
+
+        int width = 230;
+        int height = Math.min(302, Math.max(260, this.height - 28));
+
+        int defaultX = Math.max(
+                8,
+                this.toolPanelX - width - 10
+        );
+        int defaultY = Math.max(8, this.toolPanelY);
+
+        int x = this.paletteWindowX == Integer.MIN_VALUE
+                ? defaultX
+                : this.paletteWindowX;
+        int y = this.paletteWindowY == Integer.MIN_VALUE
+                ? defaultY
+                : this.paletteWindowY;
+
+        this.paletteWindow = new LoomPaletteWindow(
+                x,
+                y,
+                width,
+                height,
+                this.paletteWindowPinned,
+                () -> this.selectedColor,
+                this::setSelectedColor,
+                this::notifyPlayer,
+                () -> this.width,
+                () -> this.height
+        );
+        this.paletteWindow.visible = this.paletteWindowVisible;
+        addRenderableWidget(this.paletteWindow);
+        this.paletteWindow.moveTo(x, y);
+    }
+
+    private void setSelectedColor(int color) {
+        this.selectedColor = color;
+
+        if (this.colorPicker != null) {
+            this.colorPicker.setColor(color);
+        }
     }
 
     private String resolutionLabel() {

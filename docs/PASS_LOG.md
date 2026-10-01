@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Custom color palettes implementation
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Implemented:
+- persistent named custom palettes;
+- movable/pinnable floating palette side window;
+- palette switching and color application;
+- Add Current Color;
+- right-click color removal;
+- rename/save;
+- `.loompalette` export;
+- clipboard share codes (`LOOMPAL1:`);
+- clipboard/inbox import;
+- palette icon button in the scrollable right tool rail;
+- palette share-code automated round-trip test.
+
+---
+
 ## 2026-10-01 — High-resolution editor performance + responsive tool rail
 
 **Status: IMPLEMENTED / CI PENDING**

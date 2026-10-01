@@ -615,3 +615,26 @@ After local 2x/4x testing, the editor hot path was reworked:
 - dirty/equipped UI checks avoid repeated full-project hashing.
 
 The right-side tool rail is now a ScrollableLayout. This specifically addresses 1920x1080 at GUI scale 3 while preserving the already-good 3440x1440 scale 2/3 layouts.
+
+
+## Phase-2 custom palette library/window
+
+Implemented:
+- persistent user-created ColorPalette model;
+- named palettes with up to 32 colors;
+- local palette library under `loom-studios/palettes/`;
+- movable floating Palettes window;
+- Pin state locks window position;
+- palette selection list;
+- click palette color to make it the active paint color;
+- right-click palette color to remove it;
+- Add Current Color;
+- create/rename/save palette;
+- export to `.loompalette` file;
+- export also copies a compact `LOOMPAL1:` share code;
+- Import accepts a share code from clipboard;
+- Import fallback scans `loom-studios/palettes/imports/`;
+- palette export files land in `loom-studios/palettes/exports/`;
+- Palettes button includes a four-swatch palette icon and sits inside the scrollable tool rail.
+
+Palette changes synchronize back into the main HSV/RGB color picker.
