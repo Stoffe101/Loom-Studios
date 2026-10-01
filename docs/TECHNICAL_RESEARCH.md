@@ -141,3 +141,18 @@ Design rule:
 7. animation performance with multiple remote players.
 
 These risks are intentionally front-loaded into SPIKE-00 through SPIKE-06.
+
+
+## DynamicTexture 1.21.11 implementation note
+
+For Mojang-mapped Minecraft 1.21.11 the validated API shape used by SPIKE-02 is:
+
+- `com.mojang.blaze3d.platform.NativeImage`
+- `net.minecraft.client.renderer.texture.DynamicTexture`
+- constructor with a debug-name supplier plus NativeImage
+- `TextureManager.register(Identifier, texture)`
+- mutate NativeImage pixels
+- `DynamicTexture.upload()` to send changed pixels to the GPU
+- `TextureManager.release(Identifier)` for cleanup
+
+The runtime design keeps a stable registered texture and uploads only dirty output rather than registering a new texture every frame.

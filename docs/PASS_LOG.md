@@ -1,5 +1,22 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-02 dynamic cape implementation
+
+**Status: IMPLEMENTED / CI + LOCAL RUNTIME VERIFICATION PENDING**
+
+Implemented:
+- runtime-created 64x32 NativeImage;
+- registered DynamicTexture under a stable Loom Studios Identifier;
+- cape render-state now points at the dynamic texture;
+- in-place redraw + `DynamicTexture.upload()` every 40 client ticks;
+- no texture re-registration per update;
+- shutdown cleanup via texture-manager release;
+- obvious four-phase palette/highlight animation for visual proof.
+
+The full editor will later replace this procedural generator with project/layer compositing.
+
+---
+
 ## 2026-10-01 — SPIKE-01 local runtime verification
 
 **Result: PASS**

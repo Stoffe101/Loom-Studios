@@ -1,6 +1,6 @@
 package dev.loomstudios.client.mixin;
 
-import dev.loomstudios.client.render.StaticCapeSpike;
+import dev.loomstudios.client.render.DynamicCapeSpike;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.world.entity.Avatar;
@@ -15,12 +15,12 @@ public abstract class AvatarRendererMixin {
             method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
             at = @At("TAIL")
     )
-    private void loomStudios$applyStaticCape(
+    private void loomStudios$applyDynamicCape(
             Avatar avatar,
             AvatarRenderState state,
             float partialTick,
             CallbackInfo ci
     ) {
-        StaticCapeSpike.apply(avatar, state);
+        DynamicCapeSpike.apply(avatar, state);
     }
 }

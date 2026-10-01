@@ -97,3 +97,15 @@ This deliberately keeps vanilla `CapeLayer` responsible for geometry and movemen
 Loom Studios prioritizes a predictable IntelliJ + Fabric Loom development workflow over configuration-cache reuse.
 
 Gradle configuration cache is disabled because Loom/custom development tasks and generated run configurations still have rough edges around cache-safe script closures. This avoids repeated false failures in helper tasks such as `listDevMods` and reduces friction during rapid client testing.
+
+
+## ADR-018 — One registered DynamicTexture per active compiled cape
+**Status:** Implemented for SPIKE-02, runtime verification pending
+
+The dynamic-cape proof uses one long-lived `NativeImage` and one registered `DynamicTexture`.
+
+Changes mutate the backing image and call `upload()` only when output is dirty. The texture identifier remains stable, so the player render-state patch does not churn resources or allocate a new skin record every update.
+
+Texture resources are released during client shutdown.
+
+This is the baseline ownership model for the future editor/compiler cache.

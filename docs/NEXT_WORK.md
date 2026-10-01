@@ -1,26 +1,23 @@
 # Loom Studios — Next Work
 
-## Active: SPIKE-02 — Dynamic runtime cape
+## Active: SPIKE-02 runtime verification
 
-Replace the static resource cape with an in-memory generated runtime texture.
+Pull the latest code and launch the development client.
 
-Goals:
+Verify:
+- cape still renders through vanilla geometry/motion;
+- cape appearance changes roughly every two seconds;
+- no reconnect/restart is needed;
+- changes continue while walking/crouching/jumping;
+- optional Sodium/Sodium Extra/Iris/3D Skin Layers stack remains stable;
+- no texture/resource errors appear in latest.log.
 
-- create a cape image at runtime;
-- register it with Minecraft's texture manager;
-- patch the local player's cape state to the dynamic texture;
-- update visible pixels without restarting/reconnecting;
-- avoid recreating/uploading textures unnecessarily;
-- safely close/replace GPU-backed texture resources;
-- keep vanilla cape motion/geometry unchanged;
-- preserve optional-mod compatibility.
+If the dynamic update is green, mark SPIKE-02 DONE and move immediately to SPIKE-03 Elytra.
 
-Initial proof should make the cape visibly change on a timer or debug trigger so success is unmistakable.
+## SPIKE-03
 
-## After SPIKE-02
-
-SPIKE-03 — custom Elytra texture through the narrowest vanilla-compatible path.
+Prove custom Elytra texture selection while preserving vanilla equipment and gliding behavior.
 
 ## Documentation
 
-Update CURRENT_STATE, PASS_LOG, NEXT_WORK, DECISIONS, TEST_MATRIX, and relevant technical docs with exact results.
+Record exact CI SHA and local runtime result before moving on.

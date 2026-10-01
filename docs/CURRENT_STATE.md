@@ -113,3 +113,21 @@ Local Windows IntelliJ/Gradle test confirmed:
 SPIKE-01 is now considered DONE for the initial runtime proof.
 
 Next active milestone: **SPIKE-02 — dynamic runtime cape texture**.
+
+
+## SPIKE-02 implementation
+
+**Status: COMPILE VERIFICATION PENDING**
+
+The static resource cape has been replaced in source by an in-memory dynamic cape proof:
+
+- one 64x32 NativeImage;
+- one registered DynamicTexture;
+- stable texture Identifier;
+- vanilla cape renderer still owns geometry/motion;
+- procedural LS/checker design changes every 40 client ticks;
+- GPU upload occurs only when the image changes;
+- resource release is registered for client shutdown;
+- no network traffic is involved.
+
+Expected local behavior after pulling: the cape visibly changes palette/highlight roughly every two seconds without reconnecting or restarting.
