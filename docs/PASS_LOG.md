@@ -1,5 +1,35 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-04 local runtime verification
+
+**Result: PASS**
+
+Exact implementation SHA: `faca3953ef07c9a2755bd0619963a59712cae548`  
+GitHub Actions run #17: **SUCCESS**
+
+User screenshots verified:
+- local player renders correctly inside the custom GUI;
+- Cape mode works;
+- Elytra mode works;
+- preview-only switching does not require changing actual world equipment;
+- drag rotation works;
+- zoom works;
+- Loom cape/Elytra cosmetics use the same gameplay render path.
+
+Deferred minor issue:
+- head orientation follows the preview rotation and feels too "look-at-camera" for a design inspection tool.
+
+Planned bundled refinement:
+- separate body-facing control from camera/orbit control;
+- optionally lock head orientation or expose an explicit head/facing control;
+- preserve full 360-degree model inspection.
+
+This is polish, not an architectural failure. SPIKE-04 is DONE.
+
+Next: SPIKE-05 multiplayer synchronization.
+
+---
+
 ## 2026-10-01 — SPIKE-04 live preview implementation
 
 **Status: IMPLEMENTED / CI + LOCAL TEST PENDING**

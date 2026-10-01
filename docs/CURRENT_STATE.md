@@ -230,3 +230,28 @@ Architecture:
 - the normal Loom Studios cape/Elytra render-state mixin still supplies the same runtime cosmetic textures used in-world.
 
 The screen is intentionally plain and is not a visual reference implementation yet.
+
+
+## SPIKE-04 runtime verification
+
+**Result: PASS**
+
+Exact implementation SHA: `faca3953ef07c9a2755bd0619963a59712cae548`  
+GitHub Actions run #17: **SUCCESS**
+
+Local runtime screenshots confirm:
+- preview screen opens correctly;
+- real player skin/model renders;
+- Cape mode shows the Loom cape;
+- Elytra mode shows the dedicated Loom Elytra;
+- preview-only Cape/Elytra switching works;
+- rotation and zoom controls work;
+- actual world equipment is not changed.
+
+Observed UX refinement:
+- the player head follows the preview rotation more than desired;
+- this is not a blocker for the render-state architecture and is deferred to the next bundled preview/UI refinement pass.
+
+SPIKE-04 is DONE.
+
+Next active milestone: **SPIKE-05 — multiplayer synchronization**.

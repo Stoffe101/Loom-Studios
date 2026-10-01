@@ -172,3 +172,20 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 - dynamic cape updates are visible in GUI preview
 - Elytra thickness customization is reflected in preview
 - closing preview leaves gameplay state unchanged
+
+
+## SPIKE-04 verified runtime checks
+
+- preview screen opens: PASS
+- local player model/skin visible: PASS
+- Cape mode: PASS
+- Elytra mode: PASS
+- preview-only mode switching: PASS
+- drag rotation: PASS
+- zoom: PASS
+- real equipment remains unchanged: PASS
+- optional stack remains operational: PASS
+
+Deferred UX check:
+- neutral/locked head orientation during orbit
+- independent Player Facing and 3D Orbit/Pivot controls

@@ -602,3 +602,43 @@ The final slider range should be chosen from runtime usability testing rather th
 ### Development note
 
 The temporary V-key thickness cycler is only a technical-spike tool and must not be part of the finished user experience.
+
+
+## 29. Player preview camera and facing controls
+
+The final live 3D preview should separate **character orientation** from **viewer/orbit orientation**.
+
+### Player Facing
+
+Provide a simple facing/body-orientation control:
+- horizontal angle control or slider;
+- 0–360 degree range;
+- snap/reset to back-facing default;
+- optional front/back/left/right quick presets.
+
+This changes how the character body is facing inside the preview.
+
+### 3D Orbit / Pivot
+
+Provide a separate free inspection control:
+- full 360-degree horizontal orbit;
+- limited or comfortable vertical orbit/pitch;
+- mouse drag remains supported;
+- visual trackball/orbit-style control is preferred over forcing users to type angles.
+
+This changes the viewer's inspection angle rather than the character's intended facing.
+
+### Head behavior
+
+The preview should not make the head conspicuously chase the orbit camera by default.
+
+Preferred behavior:
+- head stays naturally aligned with the body during ordinary design inspection;
+- an optional head-facing control may be added later if useful;
+- a reset action restores neutral body/head orientation.
+
+### Zoom
+
+Keep mouse-wheel zoom and later add a visible zoom control in the final editor.
+
+These controls belong to the final preview/editor UI and should be implemented as part of a bundled preview polish pass rather than treated as separate foundation spikes.

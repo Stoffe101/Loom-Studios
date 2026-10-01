@@ -1,31 +1,44 @@
 # Loom Studios — Next Work
 
-## Active: SPIKE-04 runtime verification
+## Active: SPIKE-05 — multiplayer synchronization
 
-After CI is green:
+Prove that Loom Studios cosmetics can be synchronized between two clients through a dedicated/integrated server without streaming texture frames.
 
-1. git pull
-2. runClient
-3. enter a world
-4. press P to open the Loom preview spike
+Initial goals:
+- define/register versioned Fabric payloads;
+- advertise Loom Studios capability on join;
+- synchronize each player's equipped Loom cosmetic identity/state;
+- transfer project/compiled proof data only on cache miss;
+- render another player's Loom cape/Elytra;
+- preserve vanilla behavior for players without Loom Studios;
+- reject malformed/oversized payloads cleanly;
+- document exact server/client state ownership.
 
-Verify:
-- actual player skin/model appears;
-- cape mode displays the dynamic Loom cape;
-- C switches to Elytra without changing real equipped chest item;
-- C switches back to cape;
-- left-drag rotates smoothly;
-- mouse wheel zooms;
-- R resets the camera;
-- closing the screen returns to the unchanged world/equipment state;
-- dynamic cape continues updating inside the preview;
-- Elytra thickness setting is reflected in preview rendering;
-- optional mod stack remains stable.
+The first network proof can use the current technical-spike cosmetic rather than the full future .loom project format.
 
-## After SPIKE-04
+## Deferred preview refinement bundle
 
-SPIKE-05 — multiplayer synchronization.
+Do not spend a dedicated pass on these yet. Fold them into the next appropriate UI/editor refinement pass:
 
-## UI reminder
+- stop the head from automatically following model rotation;
+- add a **Facing** control for body/player orientation;
+- add a separate **3D Orbit / Pivot** control for full 360-degree inspection;
+- keep mouse drag as a fast direct-manipulation option;
+- later expose front/back/left/right snap buttons;
+- evaluate whether head orientation should be locked by default with an optional head-facing control.
 
-Do not judge this spike against the approved Loom Studios reference images. It exists only to validate the reusable preview/render-state architecture.
+The final editor should distinguish:
+
+```
+Player Facing     [ horizontal control / angle ]
+3D Orbit/Pivot    [ free 360° inspection control ]
+Zoom              [ slider + wheel ]
+```
+
+## After SPIKE-05
+
+SPIKE-06 — animation/emissive compatibility proof.
+
+## Documentation
+
+Record exact CI SHA, multi-client topology, packet behavior, validation results, and runtime screenshots/results.
