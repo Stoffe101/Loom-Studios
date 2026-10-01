@@ -507,3 +507,50 @@ Fill compares pixels on the active editable layer and performs four-connected fl
 It never crosses from the selected semantic cape face into another UV face.
 
 Eyedropper differs intentionally: it samples the final composited visible face color so the selected color matches what the user sees.
+
+
+## ADR-053 — Custom palettes use a grouped Swatches-dock model
+**Status:** Accepted from runtime UX feedback / implemented
+
+The palette UI should resemble professional graphics-editor swatch panels rather than a single selected-record form.
+
+One floating Swatches window shows multiple named palettes at once.
+
+Each palette:
+- has a visible name/header;
+- owns an ordered swatch grid;
+- may contain up to 64 colors;
+- can be selected for rename, Add Current, export, or delete;
+- can be imported/exported independently.
+
+Clicking any swatch immediately selects both the source palette and that paint color.
+
+This keeps rapid color switching frictionless when editing.
+
+## ADR-054 — Brush radius preview is transient
+**Status:** Accepted from runtime UX feedback / implemented
+
+The large circular Pencil/Eraser footprint indicator is a size-change aid, not a permanent cursor.
+
+Normal editing:
+- shows the simple target-pixel outline.
+
+After Brush size changes:
+- show the radius circle briefly;
+- if the pointer is outside the canvas because the user clicked Brush +/- controls, show the radius preview at the center of the active semantic face;
+- automatically return to the normal target outline.
+
+## ADR-055 — Line and Rectangle commit once on mouse release
+**Status:** Accepted / implemented
+
+Line and Rectangle are drag-defined shape tools.
+
+During drag:
+- the canvas draws a cyan preview only;
+- project data is not mutated continuously.
+
+On mouse release:
+- one immutable project edit is committed;
+- the edit participates in normal ProjectSession history as one undo step.
+
+Rectangle supports outline and filled modes. Outline uses the current Brush size.

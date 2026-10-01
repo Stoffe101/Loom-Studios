@@ -1,5 +1,30 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Swatches dock + temporary brush preview + Line/Rectangle
+
+**Status: IMPLEMENTED / CI FINALIZATION PENDING**
+
+Local feedback entering the pass:
+- custom palette persistence/import/export works;
+- requested palette UX is Photoshop/Illustrator-style grouped swatches;
+- permanent brush-radius halo is too visually noisy;
+- 1920x1080 GUI scale 3 and 4x performance remain locally good.
+
+Implemented:
+- all named palettes shown as stacked swatch groups;
+- multiple palette groups visible simultaneously;
+- palette group header selection;
+- up to 64 swatches per palette;
+- selected palette deletion;
+- temporary brush-radius preview only after Brush size changes;
+- normal hover reverts to a single-pixel target outline;
+- Line tool with live preview;
+- Rectangle tool with live preview;
+- outline/filled Rectangle mode;
+- automated Line/Rectangle paint tests.
+
+---
+
 ## 2026-10-02 — Zoom, brush-radius preview, palette-input fix, Fill/Eyedropper
 
 **Result: CI PASS / LOCAL UX TEST REQUIRED**

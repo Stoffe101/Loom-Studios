@@ -2,63 +2,55 @@
 
 ## Immediate local verification
 
-Use the current head after pulling.
+### Swatches dock
 
-### Palette interaction regression
+1. open Swatches/Palettes;
+2. create at least three named palettes, for example Pastels, Nether, Cyberpunk;
+3. add several colors to each;
+4. confirm all palette names and swatch grids are visible in the same window;
+5. click colors across different palette groups without manually opening/selecting each palette first;
+6. click a palette header, rename it, Add Current Color, Export, and Delete;
+7. verify the Swatches area scrolls with many palettes/colors;
+8. verify import/export/share codes still work per selected palette;
+9. verify movable + Pin behavior still works.
 
-1. open Palettes;
-2. click the name field and type;
-3. New must create a palette;
-4. Add Current Color must update it;
-5. saved palette rows must be clickable;
-6. palette swatches must switch the active editor color;
-7. right-click a saved swatch must remove it;
-8. Pin/unpin + window dragging must work;
-9. Export must copy a `LOOMPAL1:` share code;
-10. Import must accept that clipboard code.
+### Brush-size preview
 
-This pass specifically fixes the overlay input-routing bug from the previous local test.
+1. hover the canvas normally with Pencil/Eraser;
+2. confirm only the normal single-pixel hover outline is shown;
+3. change Brush size;
+4. confirm the cyan radius circle appears temporarily;
+5. wait briefly and confirm it disappears automatically;
+6. change Brush size while the pointer is on the right-side control and confirm the temporary preview still appears in the canvas.
 
-### Canvas zoom / pan / cursor
+### Shape tools
 
-1. hover Pencil/Eraser at brush size 1 and several larger sizes;
-2. confirm the cyan circle reflects brush radius;
-3. use Zoom + / Zoom -;
-4. click the percentage to reset to 100%;
-5. mouse-wheel over the canvas to zoom;
-6. at >100%, middle-drag to pan;
-7. verify drawing coordinates remain correct after panning/zooming;
-8. verify 4x remains smooth at high zoom.
+Line:
+- select Line;
+- drag start -> end;
+- confirm a cyan live preview;
+- release and verify one undo entry.
 
-### New paint tools
-
-- Fill: connected-color flood fill must stay inside the active semantic cape face;
-- Eyedropper: clicking a visible pixel must update the HSV/RGB picker and active paint color.
-
-Keyboard:
-- B Pencil
-- E Eraser
-- G Fill
-- I Eyedropper
-- [ / ] brush size
-- 0 reset zoom
-- Ctrl+Z / Ctrl+Y
-- Ctrl+S
-- Ctrl+Shift+S
+Rectangle:
+- select Rectangle;
+- drag a box;
+- verify live outline preview;
+- switch Rectangle Outline/Filled;
+- verify both modes;
+- verify outline mode follows Brush size.
 
 ## Next Phase-2 milestone
 
-After this local verification:
-1. Line tool with live drag preview;
-2. Rectangle tool with outline/filled mode;
-3. editable hex and RGB numeric text fields;
-4. alpha/opacity control;
-5. symmetry;
-6. layer panel;
-7. keyboard-shortcut help/tooltip surface;
-8. Recent Project thumbnail rendering;
-9. Cape Loom block interaction;
-10. Elytra Editor.
+After this verification:
+1. editable Hex field;
+2. editable R/G/B numeric fields;
+3. alpha/opacity control;
+4. symmetry;
+5. layer panel;
+6. shortcut/tooltips help surface;
+7. Recent Project thumbnail rendering;
+8. Cape Loom block interaction;
+9. Elytra Editor.
 
 ## Required UI profiles
 

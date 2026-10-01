@@ -398,3 +398,35 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - Fill is one undo entry
 - Eyedropper reads composited visible color
 - transparent Eyedropper target leaves selected paint color unchanged
+
+
+## Swatches-style palette dock
+
+- multiple named palette groups visible simultaneously
+- each group shows its own ordered swatch grid
+- group-header click selects palette for management actions
+- swatch click selects both palette and active editor color
+- up to 64 swatches persist/round-trip
+- multiple groups scroll without overlapping window controls
+- Delete affects only selected palette
+- import/export/share-code remains palette-specific
+- moving/pinning still works after grouped redesign
+
+## Temporary brush-size preview
+
+- normal Pencil/Eraser hover shows single-pixel target only
+- Brush +/- triggers temporary radius circle
+- radius circle disappears automatically
+- changing size from tool rail still shows preview at canvas center
+- preview does not alter project data
+
+## Line / Rectangle
+
+- line preview follows drag endpoint
+- line commit paints both endpoints
+- line commit is one undo entry
+- rectangle preview follows drag bounds
+- outline rectangle leaves interior untouched
+- filled rectangle colors interior
+- outline rectangle respects Brush size
+- shape tools stay inside active semantic face

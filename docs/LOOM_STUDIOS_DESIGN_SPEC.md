@@ -642,3 +642,21 @@ Preferred behavior:
 Keep mouse-wheel zoom and later add a visible zoom control in the final editor.
 
 These controls belong to the final preview/editor UI and should be implemented as part of a bundled preview polish pass rather than treated as separate foundation spikes.
+
+
+## Swatches dock interaction reference
+
+The custom palette surface should follow the interaction model of professional graphics-editor Swatches panels.
+
+Visual/UX direction:
+- one compact floating dock titled Swatches;
+- multiple saved palette groups shown together;
+- each group has a name/header followed immediately by its swatch grid;
+- dense square color chips rather than large full-width palette cards;
+- scrolling applies to the grouped swatch area;
+- palette-management controls remain compact and secondary to the swatches themselves;
+- Pin/move behavior remains available for editor workflow customization.
+
+The goal is fast cross-palette color picking: a user should be able to see Pastels, Nether, and Cyberpunk simultaneously and click any color directly.
+
+Brush-radius visualization is intentionally temporary. The canvas should remain visually clean during ordinary drawing.

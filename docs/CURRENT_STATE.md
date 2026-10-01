@@ -698,3 +698,29 @@ Implemented in this checkpoint:
 - automated flood-fill containment test.
 
 Line and Rectangle remain the next paint-tool milestone.
+
+
+## Swatches-style palette redesign + temporary brush-size preview + shape tools
+
+Latest local feedback:
+- palette mechanics work, but the first UX was not the intended Photoshop/Illustrator-style swatches workflow;
+- the large brush-radius circle should not remain visible during ordinary painting;
+- 1920x1080 GUI scale 3 remains good;
+- 4x painting remains smooth.
+
+Implemented:
+- Palettes window is now a Swatches-style dock;
+- every named custom palette is shown as its own group with its own swatch grid;
+- multiple named palettes are visible in the same scrolling window;
+- clicking any swatch selects both its palette and paint color;
+- clicking a palette header selects that palette for Add Current / rename / export / delete;
+- custom palettes now support up to 64 swatches;
+- selected palette can be deleted;
+- import/export/share-code behavior remains per palette;
+- brush/eraser radius circle is now temporary and shown only after changing brush size;
+- outside that temporary size-preview period, the canvas returns to the normal single-pixel hover outline;
+- when brush size is changed from the right tool rail, the temporary radius preview appears at the canvas center even though the pointer is on the control;
+- Line tool with live drag preview;
+- Rectangle tool with live drag preview;
+- Rectangle supports outline and filled modes;
+- Line/Rectangle respect the current selected color and brush size for outlines.
