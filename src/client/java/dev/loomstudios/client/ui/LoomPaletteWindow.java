@@ -24,15 +24,14 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /**
- * Illustrator/Photoshop-style swatches dock.
+ * Compact Illustrator/Photoshop-style swatches dock.
  *
- * <p>All named custom palettes are shown as stacked swatch groups. Clicking a
- * group header selects it for rename/add/export/delete. Clicking any swatch
- * immediately selects that color and its parent palette.</p>
+ * <p>The swatch groups are always the primary surface. Palette-management
+ * controls can collapse away, which keeps the floating window useful on
+ * 1920x1080 GUI scale 3 instead of covering most of the editor.</p>
  */
 public final class LoomPaletteWindow extends AbstractContainerWidget {
     private static final int TITLE_HEIGHT = 22;
-    private static final int CONTROLS_HEIGHT = 104;
     private static final int GROUP_HEADER_HEIGHT = 17;
     private static final int SWATCH = 15;
     private static final int SWATCH_GAP = 3;
@@ -45,6 +44,8 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     private final IntSupplier screenWidth;
     private final IntSupplier screenHeight;
 
+    private final boolean compactMode;
+
     private final EditBox nameBox;
     private final LoomButton newButton;
     private final LoomButton saveButton;
@@ -52,9 +53,11 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     private final LoomButton importButton;
     private final LoomButton exportButton;
     private final LoomButton deleteButton;
+    private final LoomButton manageButton;
     private final LoomButton pinButton;
 
     private boolean pinned;
+    private boolean managementExpanded;
     private boolean moving;
     private int swatchesScroll;
 
@@ -77,8 +80,30 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         this.notifier = notifier;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this.compactMode = screenWidth.getAsInt() <= 700
+                || screenHeight.getAsInt() <= 420;
+        this.managementExpanded = !compactMode;
 
         ColorPaletteLibrary.refresh();
+
+        int pinWidth = 44;
+        int manageWidth = compactMode ? 42 : 52;
+
+        this.pinButton = button(
+                x + width - pinWidth - 6,
+                y + 2,
+                pinWidth,
+                pinned ? "Pinned" : "Pin",
+                this::togglePinned
+        );
+
+        this.manageButton = button(
+                x + width - pinWidth - manageWidth - 10,
+                y + 2,
+                manageWidth,
+                managementExpanded ? "Done" : "Edit",
+                this::toggleManagement
+        );
 
         this.nameBox = new EditBox(
                 Minecraft.getInstance().font,
@@ -91,26 +116,26 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         this.nameBox.setMaxLength(ColorPalette.MAX_NAME_CHARS);
         this.children.add(nameBox);
 
-        int third = Math.max(48, (width - 24) / 3);
+        int third = Math.max(38, (width - 24) / 3);
 
         this.newButton = button(
                 x + 8,
                 y + 51,
                 third,
-                "New Palette",
+                "New",
                 this::createPalette
         );
         this.saveButton = button(
                 x + 12 + third,
                 y + 51,
                 third,
-                "Save Name",
+                "Rename",
                 this::saveName
         );
         this.deleteButton = button(
                 x + 16 + third * 2,
                 y + 51,
-                width - 24 - third * 2,
+                Math.max(38, width - 24 - third * 2),
                 "Delete",
                 this::deletePalette
         );
@@ -135,18 +160,11 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                 x + 12 + half,
                 y + 101,
                 half,
-                "Export Selected",
+                compactMode ? "Export" : "Export Selected",
                 this::exportPalette
         );
 
-        this.pinButton = button(
-                x + width - 54,
-                y + 3,
-                46,
-                pinned ? "Pinned" : "Pin",
-                this::togglePinned
-        );
-
+        applyManagementVisibility();
         syncSelectedPalette();
     }
 
@@ -174,7 +192,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     }
 
     public boolean isEditingName() {
-        return nameBox.isFocused();
+        return managementExpanded && nameBox.isFocused();
     }
 
     public void setPinned(boolean pinned) {
@@ -184,6 +202,30 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
 
     private void togglePinned() {
         setPinned(!pinned);
+    }
+
+    private void toggleManagement() {
+        this.managementExpanded = !this.managementExpanded;
+        applyManagementVisibility();
+        clampScroll();
+    }
+
+    private void applyManagementVisibility() {
+        manageButton.setMessage(
+                Component.literal(managementExpanded ? "Done" : "Edit")
+        );
+
+        nameBox.setVisible(managementExpanded);
+        newButton.visible = managementExpanded;
+        saveButton.visible = managementExpanded;
+        deleteButton.visible = managementExpanded;
+        addColorButton.visible = managementExpanded;
+        importButton.visible = managementExpanded;
+        exportButton.visible = managementExpanded;
+
+        if (!managementExpanded) {
+            nameBox.setFocused(false);
+        }
     }
 
     private void createPalette() {
@@ -353,17 +395,22 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     }
 
     private void renderSwatchGroups(GuiGraphics graphics) {
-        int top = getY() + CONTROLS_HEIGHT + 24;
+        int labelY = managementBottom() + 7;
+        int top = labelY + 13;
         int bottom = getBottom() - 7;
 
         graphics.drawString(
                 Minecraft.getInstance().font,
                 Component.literal("Saved palettes"),
                 getX() + 8,
-                top - 13,
+                labelY,
                 LoomUiTheme.TEXT_MUTED,
                 false
         );
+
+        if (bottom <= top) {
+            return;
+        }
 
         graphics.enableScissor(getX() + 5, top, getRight() - 5, bottom);
 
@@ -413,18 +460,10 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                     int x = getX() + 10 + col * (SWATCH + SWATCH_GAP);
                     int sy = swatchesY + row * (SWATCH + SWATCH_GAP);
 
-                    graphics.fill(
-                            x - 1,
-                            sy - 1,
-                            x + SWATCH + 1,
-                            sy + SWATCH + 1,
-                            LoomUiTheme.BORDER
-                    );
-                    graphics.fill(
+                    renderSwatch(
+                            graphics,
                             x,
                             sy,
-                            x + SWATCH,
-                            sy + SWATCH,
                             palette.colors().get(i)
                     );
                 }
@@ -469,13 +508,52 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
                     Component.literal(
-                            "Create a named palette, then add your colors"
+                            compactMode
+                                    ? "Edit → create a palette"
+                                    : "Create a named palette, then add colors"
                     ),
                     getX() + getWidth() / 2,
                     top + 18,
                     LoomUiTheme.TEXT_MUTED
             );
         }
+    }
+
+    private static void renderSwatch(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int color
+    ) {
+        graphics.fill(
+                x - 1,
+                y - 1,
+                x + SWATCH + 1,
+                y + SWATCH + 1,
+                LoomUiTheme.BORDER
+        );
+
+        int cell = 4;
+        for (int py = 0; py < SWATCH; py += cell) {
+            for (int px = 0; px < SWATCH; px += cell) {
+                int checker = (((px / cell) + (py / cell)) & 1) == 0
+                        ? 0xFF3B444C
+                        : 0xFF252C32;
+                graphics.fill(
+                        x + px,
+                        y + py,
+                        Math.min(x + SWATCH, x + px + cell),
+                        Math.min(y + SWATCH, y + py + cell),
+                        checker
+                );
+            }
+        }
+
+        graphics.fill(x, y, x + SWATCH, y + SWATCH, color);
+    }
+
+    private int managementBottom() {
+        return managementExpanded ? getY() + 121 : getY() + TITLE_HEIGHT;
     }
 
     private int swatchColumns() {
@@ -503,7 +581,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     }
 
     private int swatchViewportTop() {
-        return getY() + CONTROLS_HEIGHT + 24;
+        return managementBottom() + 20;
     }
 
     private int swatchViewportBottom() {
