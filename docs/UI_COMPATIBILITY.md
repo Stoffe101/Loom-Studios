@@ -94,3 +94,16 @@ Zoom is explicitly supported at every required display/GUI-scale profile.
 - middle-mouse panning must remain reachable;
 - zoom must not force the right tool rail off-screen;
 - floating palette overlay must continue receiving topmost interaction even when it overlaps the zoomed canvas.
+
+
+## Compact floating-tool rule
+
+At logical widths/heights equivalent to 1920x1080 GUI scale 3, floating tools must not open as near-full-screen modal slabs.
+
+Swatches specifically:
+- uses a reduced compact width/height;
+- defaults palette-management controls to collapsed;
+- preserves a large scrolling swatch viewport;
+- must not overlap its own labels/buttons.
+
+Future floating tools should use the same principle: the frequently-used content stays visible, while infrequent management controls collapse behind an explicit Edit/Manage affordance.

@@ -430,3 +430,45 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - filled rectangle colors interior
 - outline rectangle respects Brush size
 - shape tools stay inside active semantic face
+
+
+## Compact Swatches screenshot regression
+
+- 1920x1080 GUI 3 Swatches window no longer dominates the editor viewport
+- compact Swatches defaults to management collapsed
+- Edit/Done toggles management controls
+- Saved palettes label never overlaps management buttons
+- swatch viewport grows when management collapses
+- title, Edit and Pin remain usable at compact width
+
+## Alpha / numeric color
+
+- #RRGGBB field updates selected RGB while preserving alpha
+- R/G/B numeric fields accept 0..255
+- A numeric field accepts 0..255
+- alpha slider updates the same selected ARGB color
+- semi-transparent paint survives save/load
+- custom palette export/import preserves alpha
+- old #RRGGBB palette files still decode as alpha 255
+
+## Symmetry
+
+- Horizontal mirrors x within active semantic face
+- Vertical mirrors y within active semantic face
+- Both produces all four mirrored transforms
+- center-axis duplicate transforms remain harmless/no-op
+- Fill symmetry cannot cross semantic face bounds
+- Line/Rectangle mirror both drag endpoints
+- Eyedropper ignores symmetry
+
+## Layers foundation
+
+- add layer creates transparent top layer
+- duplicate copies pixels/properties with a fresh UUID
+- delete cannot remove final layer
+- selected layer receives paint edits
+- visibility immediately affects compiled editor/preview output
+- move up/down changes compositing order
+- opacity changes compiled result
+- layer actions participate in undo/redo
+- Layers list displays top-most first

@@ -554,3 +554,56 @@ On mouse release:
 - the edit participates in normal ProjectSession history as one undo step.
 
 Rectangle supports outline and filled modes. Outline uses the current Brush size.
+
+
+## ADR-056 — Swatches management collapses on compact editor viewports
+**Status:** Accepted from runtime screenshots / implemented
+
+On compact logical viewports, especially 1920x1080 at Minecraft GUI scale 3, the Swatches tool must prioritize color selection over palette administration.
+
+Compact mode:
+- uses a smaller floating window;
+- starts with management collapsed;
+- keeps all named swatch groups visible/scrollable;
+- exposes Edit/Done to reveal or hide management controls.
+
+The swatch section position is derived from the current management state. Hard-coded text positions that can overlap the management rows are prohibited.
+
+## ADR-057 — Selected paint color is ARGB, not RGB-only
+**Status:** Accepted / implemented
+
+The editor selected color now retains 8-bit alpha.
+
+All color entry surfaces represent one synchronized ARGB value:
+- HSV/SV + hue;
+- R/G/B sliders;
+- A slider;
+- editable #RRGGBB field;
+- editable R/G/B/A numeric fields;
+- custom Swatches.
+
+Opaque legacy palette colors remain valid. Non-opaque palette colors serialize as #AARRGGBB.
+
+## ADR-058 — Symmetry is evaluated within the active semantic face
+**Status:** Accepted / implemented
+
+Symmetry never mirrors across unrelated cape UV faces.
+
+Available modes:
+- Off;
+- Horizontal;
+- Vertical;
+- Both.
+
+Pencil, Eraser, Fill, Line and Rectangle apply mirrored edits inside the current face dimensions at the active 1x/2x/4x resolution.
+
+## ADR-059 — Layer stack order is source-order bottom to top
+**Status:** Accepted / implemented UI foundation
+
+LoomCanvas layer order remains render order:
+- index 0 = bottom;
+- last index = top.
+
+The Layers UI displays this in graphics-editor convention with the top-most layer first.
+
+Layer create/duplicate/delete/reorder/visibility/opacity are ProjectSession edits and therefore participate in undo/redo and dirty-state tracking.

@@ -2,59 +2,73 @@
 
 ## Immediate local verification
 
-### Swatches dock
+### Compact Swatches regression
 
-1. open Swatches/Palettes;
-2. create at least three named palettes, for example Pastels, Nether, Cyberpunk;
-3. add several colors to each;
-4. confirm all palette names and swatch grids are visible in the same window;
-5. click colors across different palette groups without manually opening/selecting each palette first;
-6. click a palette header, rename it, Add Current Color, Export, and Delete;
-7. verify the Swatches area scrolls with many palettes/colors;
-8. verify import/export/share codes still work per selected palette;
-9. verify movable + Pin behavior still works.
+At **1920x1080 GUI scale 3**:
+1. open Swatches;
+2. confirm the window is substantially smaller than the previous screenshot;
+3. confirm Saved palettes no longer overlaps Import/Export;
+4. confirm compact mode opens with management controls collapsed;
+5. click Edit -> controls appear;
+6. click Done -> controls collapse and the swatch area expands;
+7. verify several named palettes remain directly clickable;
+8. test move + Pin.
 
-### Brush-size preview
+Also recheck:
+- 1920x1080 GUI x2;
+- 3440x1440 GUI x2;
+- 3440x1440 GUI x3.
 
-1. hover the canvas normally with Pencil/Eraser;
-2. confirm only the normal single-pixel hover outline is shown;
-3. change Brush size;
-4. confirm the cyan radius circle appears temporarily;
-5. wait briefly and confirm it disappears automatically;
-6. change Brush size while the pointer is on the right-side control and confirm the temporary preview still appears in the canvas.
+### Numeric color / alpha
 
-### Shape tools
+- type a Hex color and verify picker/sliders update;
+- type R/G/B values and verify Hex/picker update;
+- change A from 255 to a lower value;
+- paint semi-transparent pixels;
+- add a transparent/semi-transparent color to a custom palette;
+- export/import it and verify alpha survives.
 
-Line:
-- select Line;
-- drag start -> end;
-- confirm a cyan live preview;
-- release and verify one undo entry.
+### Symmetry
 
-Rectangle:
-- select Rectangle;
-- drag a box;
-- verify live outline preview;
-- switch Rectangle Outline/Filled;
-- verify both modes;
-- verify outline mode follows Brush size.
+Test Pencil, Eraser, Fill, Line and Rectangle with:
+- Off;
+- Horizontal;
+- Vertical;
+- Both.
 
-## Next Phase-2 milestone
+Confirm symmetry always stays inside the active semantic face.
+
+### Layers
+
+- New layer;
+- select rows;
+- paint different artwork on each layer;
+- toggle visibility with the left visibility square;
+- Duplicate;
+- Layer Up / Layer Down;
+- change opacity;
+- Delete;
+- Undo / Redo each operation;
+- verify the last remaining layer cannot be deleted;
+- verify 3D Preview reflects the composed layer stack.
+
+## Next Phase-2 work
 
 After this verification:
-1. editable Hex field;
-2. editable R/G/B numeric fields;
-3. alpha/opacity control;
-4. symmetry;
-5. layer panel;
+1. layer rename;
+2. layer lock;
+3. emissive-layer/effect controls;
+4. blend-mode UI once more blend implementations exist;
+5. transform/selection tools;
 6. shortcut/tooltips help surface;
-7. Recent Project thumbnail rendering;
+7. Recent Project thumbnail cards;
 8. Cape Loom block interaction;
-9. Elytra Editor.
+9. Elytra Editor;
+10. smart PNG/image import after layer/transform foundations are stable.
 
 ## Required UI profiles
 
-Continue checking:
+Every editor layout change continues to target:
 - 1920x1080 GUI x2;
 - 1920x1080 GUI x3;
 - 3440x1440 GUI x2;

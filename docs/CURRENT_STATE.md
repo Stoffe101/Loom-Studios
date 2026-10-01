@@ -724,3 +724,40 @@ Implemented:
 - Rectangle tool with live drag preview;
 - Rectangle supports outline and filled modes;
 - Line/Rectangle respect the current selected color and brush size for outlines.
+
+
+## Compact Swatches / alpha-color / symmetry / Layers expansion
+
+Runtime screenshots at 1920x1080 GUI scale 3 exposed two concrete Swatches issues:
+- the floating Swatches window occupied too much of the compact logical viewport;
+- the "Saved palettes" section label overlapped the Import/Export control row.
+
+Corrections and follow-on editor work:
+- compact-display Swatches windows now use a smaller footprint;
+- compact mode starts with palette management collapsed so the swatch groups remain the primary surface;
+- Edit/Done toggles palette-management controls without closing the window;
+- Pin remains available in both modes;
+- the Saved palettes label/viewport is calculated below the actual management controls, eliminating the overlap;
+- high-resolution displays retain the larger expanded management presentation.
+
+Color milestone:
+- selected paint colors now preserve alpha;
+- HSV/RGB picker has an A/alpha slider and checker-backed swatch preview;
+- editable #RRGGBB, R, G, B and A fields are now in the scrollable tool rail;
+- palette files/share codes preserve semi-transparent colors while remaining compatible with existing #RRGGBB palette files.
+
+Symmetry milestone:
+- Off / Horizontal / Vertical / Both symmetry modes;
+- Pencil, Eraser, Fill, Line and Rectangle use the selected symmetry mode;
+- Eyedropper remains a direct sample tool.
+
+Layers milestone foundation:
+- real active-layer list in the scrollable tool rail;
+- top-most layer is displayed first;
+- click row to select;
+- click visibility square to show/hide;
+- create, duplicate, delete;
+- move layer up/down;
+- per-layer opacity controls;
+- last remaining layer cannot be deleted;
+- layer stack operations remain immutable ProjectSession edits and participate in undo/redo.

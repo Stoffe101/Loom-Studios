@@ -1,5 +1,26 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Compact Swatches + alpha/numeric color + symmetry + Layers foundation
+
+**Status: IMPLEMENTED / FINAL CI + LOCAL UX VERIFICATION PENDING**
+
+Screenshot-driven Swatches corrections:
+- compact footprint for 1920x1080 GUI scale 3;
+- compact mode defaults to collapsed management controls;
+- Edit/Done reveals or hides New/Rename/Delete/Add/Import/Export;
+- fixed Saved palettes text overlap by deriving the swatch viewport from the true controls bottom.
+
+Additional milestones completed in the same pass:
+- alpha slider and transparent-color painting;
+- editable Hex/R/G/B/A fields;
+- alpha-aware palette persistence/share codes with legacy compatibility;
+- Horizontal / Vertical / Both symmetry;
+- first functional Layers panel;
+- layer visibility, add, duplicate, delete, reorder and opacity;
+- automated palette-alpha and layer-stack coverage.
+
+---
+
 ## 2026-10-02 — Swatches dock + temporary brush preview + Line/Rectangle
 
 **Status: IMPLEMENTED / CI FINALIZATION PENDING**
