@@ -1,38 +1,26 @@
 # Loom Studios — Next Work
 
-## 1. Complete CI verification
+## Active: SPIKE-02 — Dynamic runtime cape
 
-- confirm the Gradle bootstrap is green on the newest exact SHA;
-- if the SPIKE-01 mixin fails compilation, fix only the mapped 1.21.11 seam and document it.
+Replace the static resource cape with an in-memory generated runtime texture.
 
-## 2. Local IntelliJ verification
+Goals:
 
-Pull/clone the repository, place optional compatibility JARs in `dev-mods/`, sync Gradle, then launch **Loom Studios - Client**.
+- create a cape image at runtime;
+- register it with Minecraft's texture manager;
+- patch the local player's cape state to the dynamic texture;
+- update visible pixels without restarting/reconnecting;
+- avoid recreating/uploading textures unnecessarily;
+- safely close/replace GPU-backed texture resources;
+- keep vanilla cape motion/geometry unchanged;
+- preserve optional-mod compatibility.
 
-Verify:
+Initial proof should make the cape visibly change on a timer or debug trigger so success is unmistakable.
 
-- Minecraft 1.21.11 launches;
-- Loom Studios logs both common/client initialization;
-- optional mods present in `dev-mods/` are detected;
-- F5/third-person shows the cyan/magenta LS test cape on the local player;
-- the cape moves with vanilla cape physics.
+## After SPIKE-02
 
-Then launch **Loom Studios - Server** / `runServer` and verify clean dedicated-server startup.
+SPIKE-03 — custom Elytra texture through the narrowest vanilla-compatible path.
 
-## 3. SPIKE-01 compatibility smoke tests
+## Documentation
 
-After plain Fabric works:
-
-- Sodium
-- Sodium + Sodium Extra
-- Sodium + Iris, shaders off
-- Sodium + Iris, shaders on
-- 3D Skin Layers
-
-These are optional compatibility targets, not required dependencies.
-
-## 4. Then SPIKE-02
-
-Replace the static resource cape with a runtime-generated dynamic texture and prove live texture changes without restart/reconnect.
-
-Update documentation with every result.
+Update CURRENT_STATE, PASS_LOG, NEXT_WORK, DECISIONS, TEST_MATRIX, and relevant technical docs with exact results.

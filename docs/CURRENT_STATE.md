@@ -95,3 +95,21 @@ The first local full-stack runtime did not fail in Loom Studios rendering code. 
 The supplied SkinLayers3D JAR includes both TRansition and TRender in `META-INF/jars/`. The Gradle development harness now flattens embedded dev libraries into `build/dev-mods-nested/` and feeds them through `modLocalRuntime` so Loom can remap them for the named development namespace.
 
 Local retest is required before marking the optional stack compatible.
+
+
+## SPIKE-01 runtime verification
+
+**Result: PASS**
+
+Local Windows IntelliJ/Gradle test confirmed:
+
+- Minecraft 1.21.11 development client launches successfully;
+- Loom Studios static test cape renders on the local player;
+- vanilla cape geometry and movement are preserved;
+- the cape is visibly correct in third person;
+- Sodium, Sodium Extra, Iris, and 3D Skin Layers were present in the development runtime;
+- no visible conflict was observed during the initial test.
+
+SPIKE-01 is now considered DONE for the initial runtime proof.
+
+Next active milestone: **SPIKE-02 — dynamic runtime cape texture**.

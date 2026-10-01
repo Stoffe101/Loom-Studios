@@ -1,5 +1,24 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-01 local runtime verification
+
+**Result: PASS**
+
+The local Windows IntelliJ/Gradle development client was launched successfully with the optional test stack present.
+
+Verified in-world:
+- LS test cape appears on the local player;
+- vanilla cape movement/geometry works correctly;
+- no obvious clipping or rendering failure;
+- Sodium, Sodium Extra, Iris, and 3D Skin Layers coexist in the test client;
+- screenshot evidence captured by the user.
+
+SPIKE-01 static cape rendering is complete.
+
+Next: SPIKE-02 dynamic runtime texture updates.
+
+---
+
 ## 2026-10-01 — 3D Skin Layers dev-runtime crash diagnosis
 
 **Result: FIX IMPLEMENTED / LOCAL RETEST REQUIRED**
