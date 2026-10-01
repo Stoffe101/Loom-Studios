@@ -34,7 +34,12 @@ public final class ColorPaletteCodec {
 
         JsonArray colors = new JsonArray();
         for (int color : palette.colors()) {
-            colors.add(String.format("#%06X", color & 0x00FFFFFF));
+            int alpha = (color >>> 24) & 0xFF;
+            colors.add(
+                    alpha == 0xFF
+                            ? String.format("#%06X", color & 0x00FFFFFF)
+                            : String.format("#%08X", color)
+            );
         }
         root.add("colors", colors);
 
@@ -67,15 +72,24 @@ public final class ColorPaletteCodec {
 
         for (JsonElement element : colorsJson) {
             String value = element.getAsString().trim();
-            if (!value.matches("#[0-9A-Fa-f]{6}")) {
-                throw new IllegalArgumentException(
-                        "Invalid palette color " + value
+
+            if (value.matches("#[0-9A-Fa-f]{6}")) {
+                colors.add(
+                        0xFF000000
+                                | Integer.parseInt(value.substring(1), 16)
                 );
+                continue;
             }
 
-            colors.add(
-                    0xFF000000
-                            | Integer.parseInt(value.substring(1), 16)
+            if (value.matches("#[0-9A-Fa-f]{8}")) {
+                colors.add(
+                        (int)Long.parseLong(value.substring(1), 16)
+                );
+                continue;
+            }
+
+            throw new IllegalArgumentException(
+                    "Invalid palette color " + value
             );
         }
 

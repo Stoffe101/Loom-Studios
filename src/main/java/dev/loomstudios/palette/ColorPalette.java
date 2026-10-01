@@ -34,7 +34,7 @@ public record ColorPalette(
             if (color == null) {
                 throw new IllegalArgumentException("Palette color cannot be null");
             }
-            normalized.add(0xFF000000 | (color & 0x00FFFFFF));
+            normalized.add(color);
         }
         colors = List.copyOf(normalized);
     }
@@ -44,9 +44,7 @@ public record ColorPalette(
     }
 
     public ColorPalette addColor(int argb) {
-        int normalized = 0xFF000000 | (argb & 0x00FFFFFF);
-
-        if (colors.contains(normalized)) {
+        if (colors.contains(argb)) {
             return this;
         }
 
@@ -55,7 +53,7 @@ public record ColorPalette(
         }
 
         List<Integer> next = new ArrayList<>(colors);
-        next.add(normalized);
+        next.add(argb);
         return new ColorPalette(id, name, next);
     }
 
