@@ -1,5 +1,17 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Phase-1 project-core CI + invariant hardening
+
+Exact SHA `fe734caa608bf1e3524222dd467f606d8a5dd6cc` passed GitHub Actions run #25.
+
+Follow-up correctness hardening:
+- LoomLayer now has deep pixel-array equality/hash semantics;
+- schema-v1 runtime cape/Elytra canvases are explicitly constrained to 64x32;
+- JUnit 5 project-core tests added to the normal Gradle `build` lifecycle;
+- tests cover deterministic encode/decode/hash, defensive pixel ownership, trailing-byte rejection, runtime canvas dimensions, and undo/redo branching.
+
+---
+
 ## 2026-10-01 — SPIKE-05 runtime PASS + Phase-1 project-core bootstrap
 
 **Runtime result from two-client test: PASS for the primary synchronization path**

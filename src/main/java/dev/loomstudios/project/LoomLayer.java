@@ -1,5 +1,6 @@
 package dev.loomstudios.project;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -46,5 +47,37 @@ public record LoomLayer(
 
     public int pixelCount() {
         return pixels.length;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof LoomLayer that)) {
+            return false;
+        }
+
+        return visible == that.visible
+                && Float.compare(opacity, that.opacity) == 0
+                && emissive == that.emissive
+                && id.equals(that.id)
+                && name.equals(that.name)
+                && blendMode == that.blendMode
+                && Arrays.equals(pixels, that.pixels);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(
+                id,
+                name,
+                visible,
+                opacity,
+                blendMode,
+                emissive
+        );
+        return 31 * result + Arrays.hashCode(pixels);
     }
 }

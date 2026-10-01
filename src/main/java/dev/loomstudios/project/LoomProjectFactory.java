@@ -9,8 +9,6 @@ import java.util.UUID;
  * projects interactively. The output already uses the real schema/codec.
  */
 public final class LoomProjectFactory {
-    public static final int TEXTURE_WIDTH = 64;
-    public static final int TEXTURE_HEIGHT = 32;
 
     private LoomProjectFactory() {
     }
@@ -51,11 +49,11 @@ public final class LoomProjectFactory {
             int accent,
             int secondary
     ) {
-        int[] base = new int[TEXTURE_WIDTH * TEXTURE_HEIGHT];
+        int[] base = new int[LoomProject.TEXTURE_WIDTH * LoomProject.TEXTURE_HEIGHT];
         int background = darken(accent, 105);
 
-        for (int y = 0; y < TEXTURE_HEIGHT; y++) {
-            for (int x = 0; x < TEXTURE_WIDTH; x++) {
+        for (int y = 0; y < LoomProject.TEXTURE_HEIGHT; y++) {
+            for (int x = 0; x < LoomProject.TEXTURE_WIDTH; x++) {
                 int checker = ((x / 4) + (y / 4)) & 1;
                 base[index(x, y)] =
                         checker == 0 ? background : darken(background, 14);
@@ -70,7 +68,7 @@ public final class LoomProjectFactory {
         drawRect(base, 40, 13, 5, 11, secondary);
         drawRect(base, 27, 20, 18, 5, secondary);
 
-        int[] glow = new int[TEXTURE_WIDTH * TEXTURE_HEIGHT];
+        int[] glow = new int[LoomProject.TEXTURE_WIDTH * LoomProject.TEXTURE_HEIGHT];
         drawRect(glow, 8, 5, 2, 20, accent);
         drawRect(glow, 8, 22, 12, 2, accent);
         drawRect(glow, 27, 5, 15, 2, secondary);
@@ -100,8 +98,8 @@ public final class LoomProjectFactory {
         );
 
         return new LoomCanvas(
-                TEXTURE_WIDTH,
-                TEXTURE_HEIGHT,
+                LoomProject.TEXTURE_WIDTH,
+                LoomProject.TEXTURE_HEIGHT,
                 List.of(baseLayer, glowLayer)
         );
     }
@@ -111,12 +109,12 @@ public final class LoomProjectFactory {
             int accent,
             int secondary
     ) {
-        int[] pixels = new int[TEXTURE_WIDTH * TEXTURE_HEIGHT];
+        int[] pixels = new int[LoomProject.TEXTURE_WIDTH * LoomProject.TEXTURE_HEIGHT];
         int base = darken(accent, 115);
         int edge = darken(accent, 82);
 
-        for (int y = 0; y < TEXTURE_HEIGHT; y++) {
-            for (int x = 0; x < TEXTURE_WIDTH; x++) {
+        for (int y = 0; y < LoomProject.TEXTURE_HEIGHT; y++) {
+            for (int x = 0; x < LoomProject.TEXTURE_WIDTH; x++) {
                 int checker = ((x / 4) + (y / 4)) & 1;
                 pixels[index(x, y)] =
                         checker == 0 ? base : darken(base, 12);
@@ -145,8 +143,8 @@ public final class LoomProjectFactory {
         );
 
         return new LoomCanvas(
-                TEXTURE_WIDTH,
-                TEXTURE_HEIGHT,
+                LoomProject.TEXTURE_WIDTH,
+                LoomProject.TEXTURE_HEIGHT,
                 List.of(baseLayer)
         );
     }
@@ -195,10 +193,10 @@ public final class LoomProjectFactory {
             int argb
     ) {
         for (int py = Math.max(0, y);
-             py < Math.min(TEXTURE_HEIGHT, y + height);
+             py < Math.min(LoomProject.TEXTURE_HEIGHT, y + height);
              py++) {
             for (int px = Math.max(0, x);
-                 px < Math.min(TEXTURE_WIDTH, x + width);
+                 px < Math.min(LoomProject.TEXTURE_WIDTH, x + width);
                  px++) {
                 target[index(px, py)] = argb;
             }
@@ -206,7 +204,7 @@ public final class LoomProjectFactory {
     }
 
     private static int index(int x, int y) {
-        return y * TEXTURE_WIDTH + x;
+        return y * LoomProject.TEXTURE_WIDTH + x;
     }
 
     private static int rotateAccent(int argb, int phase) {

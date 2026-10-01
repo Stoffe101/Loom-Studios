@@ -122,6 +122,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+
     // Optional local compatibility mods for runClient.
     // JARs in dev-mods/ are not published or bundled with Loom Studios.
     modLocalRuntime fileTree(dir: devModsDir, include: ["*.jar"])
@@ -144,6 +146,10 @@ processResources {
 tasks.withType(JavaCompile).configureEach {
     options.release = 21
     options.encoding = "UTF-8"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 java {

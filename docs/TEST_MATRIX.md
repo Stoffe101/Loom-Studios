@@ -247,3 +247,15 @@ Deferred UX check:
 - V 150% is visibly thicker/stylized
 - non-Loom Elytra remains raw vanilla model depth
 - no gameplay/hitbox/flight behavior changes
+
+
+### Automated Phase-1 checks now in CI
+
+`LoomProjectCodecTest` covers:
+- schema-v1 encode/decode equality;
+- byte-for-byte deterministic re-encoding;
+- stable SHA-256 after round trip;
+- layer pixel defensive copies;
+- trailing-byte rejection;
+- 64x32 runtime canvas invariant;
+- undo/redo and redo invalidation after branching edits.
