@@ -1,5 +1,33 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — SPIKE-03 local runtime verification
+
+**Result: PASS**
+
+Exact implementation SHA: `5d8fce628228fc570750c60734a7bedf1497701a`  
+GitHub Actions run #15: **SUCCESS**
+
+User verified in-world:
+- dedicated Elytra texture works;
+- cape animation remains independent;
+- vanilla gliding/wing animation works;
+- V-key thickness presets function correctly;
+- 100% restores vanilla thickness;
+- thinner/thicker render-only geometry values work;
+- no observed conflict with the optional development mod stack.
+
+Product decision confirmed:
+- Elytra editor will later expose Thickness as a real control;
+- 100% is the default;
+- Reset to Vanilla is required;
+- debug V-key cycling is temporary development tooling.
+
+SPIKE-03 is DONE.
+
+Next: SPIKE-04 live GUI player preview.
+
+---
+
 ## 2026-10-01 — SPIKE-03 geometry-thickness proof implementation
 
 **Status: IMPLEMENTED / CI + LOCAL TEST PENDING**

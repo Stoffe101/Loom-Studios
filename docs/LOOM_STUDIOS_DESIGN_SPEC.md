@@ -581,3 +581,24 @@ Potential future advanced geometry controls, only if stable:
 - resting spread/angle
 
 These advanced options are not required for the first editor release and must remain compatible with vanilla gliding animation and optional rendering mods.
+
+
+## 28. Elytra editor — geometry controls
+
+The Elytra editor must include a geometry section separate from artwork/layers.
+
+### Required v1 control
+
+**Thickness**
+- default: 100% vanilla
+- thinner values reduce visible wing depth
+- thicker values increase visible wing depth
+- render-only cosmetic setting
+- no hitbox, collision, flight, durability, or gameplay effects
+- **Reset to Vanilla** action
+
+The final slider range should be chosen from runtime usability testing rather than copied blindly from the temporary debug presets.
+
+### Development note
+
+The temporary V-key thickness cycler is only a technical-spike tool and must not be part of the finished user experience.

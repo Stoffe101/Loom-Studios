@@ -189,3 +189,20 @@ Temporary development key:
 - V cycles 100%, 75%, 50%, 25%, 150% thickness.
 
 Non-Loom Elytras are reset to 100% every setup call to avoid state leaking through reused model instances.
+
+
+## SPIKE-03 runtime verification
+
+**Result: PASS**
+
+Local runtime verification confirmed:
+- dedicated Loom Elytra texture renders correctly;
+- cape and Elytra textures are independent;
+- vanilla Elytra animation/gliding remains intact;
+- geometry-depth scaling works at the debug presets;
+- returning to 100% restores vanilla thickness;
+- the optional development stack remains stable.
+
+The Elytra Thickness feature is now approved for the future Elytra editor. The temporary V-key preset cycler remains developer-only scaffolding until the editor control replaces it.
+
+Next active milestone: **SPIKE-04 — live GUI player preview**.
