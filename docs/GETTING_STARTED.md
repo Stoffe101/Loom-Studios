@@ -1,83 +1,56 @@
 # Loom Studios — Getting Started
 
-**Status:** Initial implementation startup plan  
-**Updated:** 2026-10-01
-
-## Goal
-
-Begin implementation without committing prematurely to fragile rendering hooks. The first phase proves the toolchain, player cosmetic rendering path, dynamic textures, Elytra behavior, editor preview, networking, and shader compatibility before the full editor is built.
-
-## Local prerequisites
-
-- Git
-- Java 21
-- an IDE such as IntelliJ IDEA
-- enough disk space for Gradle/Minecraft dependencies
-
-Gradle itself should not need a machine-wide installation. The repository will use the Gradle Wrapper.
-
-## SPIKE-00 — Project bootstrap
-
-Create a clean Fabric project targeting:
+## Development baseline
 
 - Minecraft 1.21.11
 - Java 21
-- Fabric Loader 0.18.4 compatibility baseline
-- compatible 1.21.11 Fabric API
-- Mojang official mappings
-- compatible Fabric Loom generation
+- Fabric Loader 0.18.4
+- Fabric API 0.141.1+1.21.11 initial pin
+- Mojang mappings
+- Fabric Loom 1.18-SNAPSHOT
+- Gradle 9.7.1 wrapper
 
-Prove:
+## IntelliJ IDEA
 
-- ./gradlew build
-- dev client launch
-- dedicated server launch
-- no accidental client-only class references on the server
+1. Clone `Stoffe101/Loom-Studios`.
+2. Open the repository folder in IntelliJ IDEA.
+3. Let IntelliJ import/sync Gradle.
+4. Run **Loom Studios - Client** from the generated run profiles, or run the Gradle task `runClient`.
+5. The development instance uses `run/`.
 
-## SPIKE-01 — Static cape
+The run profile prefers the Gradle task so command-line and IntelliJ testing use the same setup.
 
-Render one Loom Studios cape on the local player while retaining vanilla cape movement and visibility behavior.
+## Optional compatibility mods
 
-Validate in:
+Copy optional test JARs into `dev-mods/`:
 
-- Fabric only
-- Sodium
-- Sodium + Iris with shaders off
-- Sodium + Iris with shaders on
+- sodium-fabric-0.8.7+mc1.21.11.jar
+- sodium-extra-fabric-0.8.3+mc1.21.11.jar
+- iris-fabric-1.10.7+mc1.21.11.jar
+- skinlayers3d-fabric-1.11.3-mc1.21.11.jar
 
-## SPIKE-02 — Dynamic texture
+Then run **Loom Studios - Client** / `runClient`. All JARs in `dev-mods/` are added only to the local development runtime.
 
-Generate/update the cape texture at runtime without restarting the client. Prove safe replacement, caching, dirty-state handling, and cleanup.
+Use `gradlew listDevMods` to see what Gradle finds.
 
-## SPIKE-03 — Elytra
+## Commands
 
-Override/use a custom Elytra texture while preserving vanilla flight behavior and precedence rules.
+Windows:
 
-## SPIKE-04 — Editor preview
+```powershell
+.\gradlew.bat build
+.\gradlew.bat listDevMods
+.\gradlew.bat runClient
+```
 
-Render the player's skin plus Loom cape/Elytra in a GUI preview that can rotate, zoom, and switch preview modes without changing the real equipped cosmetic until committed.
+Linux/macOS:
 
-## SPIKE-05 — Multiplayer
+```bash
+./gradlew build
+./gradlew listDevMods
+./gradlew runClient
+```
 
-Two clients plus dedicated server. Equip a Loom design on Player A and verify Player B receives, caches, and renders it. Joining/rejoining and cache-miss behavior must be tested.
+## Spike order
 
-## SPIKE-06 — Emissive/animated compatibility
-
-Add one minimal animated layer and one emissive/additive overlay and test the complete Fabric/Sodium/Iris matrix.
-
-## Gate before full UI work
-
-Do not begin the full reference-image editor implementation until SPIKE-00 through SPIKE-06 are green or a documented replacement architecture has been accepted.
-
-## Documentation rule
-
-Every spike updates canonical documentation before it is DONE:
-
-- current state
-- implementation decision
-- files/classes changed
-- tests run and results
-- Sodium/Iris matrix result when rendering-related
-- known issues
-- next work
-- exact commit SHA
+SPIKE-00 toolchain → SPIKE-01 static cape → SPIKE-02 dynamic texture → SPIKE-03 Elytra → SPIKE-04 preview → SPIKE-05 multiplayer → SPIKE-06 animation/emissive.

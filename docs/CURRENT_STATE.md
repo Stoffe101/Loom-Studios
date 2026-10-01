@@ -1,65 +1,54 @@
 # Loom Studios — Current State
 
-**Checkpoint:** 2026-10-01 repository/documentation bootstrap
+**Checkpoint:** 2026-10-01 implementation bootstrap
 
 ## Overall
 
-**Status: REPOSITORY CREATED / TECHNICAL FOUNDATION DONE / MOD IMPLEMENTATION NOT STARTED**
+**Status: SPIKE-00 IN PROGRESS**
 
-Repository: Stoffe101/Loom-Studios
+The real Fabric project skeleton is now present.
 
-The product/design specification, visual references, compatibility requirements, and technical feasibility research exist. The GitHub repository now exists and the canonical docs/ structure has been established.
-
-## Confirmed direction
+## Baseline
 
 - Minecraft 1.21.11
 - Java 21
-- Fabric Loader 0.18.4 exact compatibility baseline
-- compatible Fabric API 1.21.11 build to be pinned by SPIKE-00
-- compatible Fabric Loom version to be pinned by SPIKE-00
+- Fabric Loader 0.18.4 development baseline
+- Fabric API 0.141.1+1.21.11 initial pin
+- Fabric Loom 1.18-SNAPSHOT
+- Gradle 9.7.1 wrapper
 - Mojang mappings
 - split common/client source sets
-- vanilla-first cape texture override
-- vanilla-first Elytra texture override to be proven
-- dynamic runtime textures through NativeImage / NativeImageBackedTexture
-- custom feature layer for emissive overlays
-- local editing with server-authoritative saved/equipped project synchronization
-- hash-addressed project cache
-- editable .loom project format
-- short and portable Loom Codes
-- Sodium compatibility mandatory
-- Iris + shaders compatibility mandatory
-- proprietary / All Rights Reserved licensing
-- documentation is a mandatory completion gate
+- generated IntelliJ/Loom client and server runs
+- optional local dev mods through dev-mods/
+- proprietary license
+- documentation hard gate
 
-## Proven by research, not yet by Loom Studios code
+## Optional compatibility targets
 
-- Minecraft 1.21.11 custom cape render-state override is viable.
-- dynamic textures are available through vanilla client APIs.
-- Fabric supports custom payload networking and large-payload splitting.
-- Fabric custom screens/widgets are sufficient for the planned editor.
-- player skin data provides separate cape and Elytra texture slots.
-- additional living-entity feature rendering is available for optional passes.
+Not dependencies:
 
-## Must be proven by Loom Studios spikes
+- Sodium
+- Sodium Extra
+- Iris
+- shader packs
+- 3D Skin Layers
 
-- exact Gradle/Loom/Fabric API tuple with Loader 0.18.4
-- exact cape hook/mixin target using Mojang mappings
-- Elytra texture precedence with equipped Elytra
-- preview override scoping
-- emissive geometry alignment
-- Sodium compatibility
-- Iris compatibility with shaders off/on
-- real multi-client project cache/synchronization
-- image import/file-dialog portability
-- animation performance budget
+## Implemented
 
-## Immediate next action
+- common Fabric entrypoint
+- client Fabric entrypoint
+- optional-mod detection/logging
+- Gradle/IntelliJ run setup
+- CI build workflow
 
-Execute **SPIKE-00 — Toolchain bootstrap**.
+## SPIKE-00 still needs verification
 
-Once build, dev client, and dedicated server are green, immediately begin **SPIKE-01 — Static custom cape through the vanilla renderer**.
+- exact bootstrap commit GitHub Actions result
+- local runClient
+- local runServer
+- Loader 0.18.4 runtime
+- optional-mod runtime detection
 
-## Documentation checkpoint
+## Next
 
-The repository now uses docs/ as the canonical documentation home. All meaningful future passes must update documentation before being called complete.
+Finish SPIKE-00 verification, then implement SPIKE-01 static cape rendering.

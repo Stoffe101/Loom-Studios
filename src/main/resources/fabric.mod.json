@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "loom-studios",
+  "version": "${version}",
+  "name": "Loom Studios",
+  "description": "In-game cape and Elytra creation, animation, import, preview, and sharing studio.",
+  "authors": [
+    "Christoffer Lööf"
+  ],
+  "contact": {
+    "sources": "https://github.com/Stoffe101/Loom-Studios"
+  },
+  "license": "LicenseRef-LoomStudios-Proprietary",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.loomstudios.LoomStudios"
+    ],
+    "client": [
+      "dev.loomstudios.client.LoomStudiosClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": ">=0.141.1"
+  }
+}

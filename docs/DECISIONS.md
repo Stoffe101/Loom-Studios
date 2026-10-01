@@ -1,99 +1,76 @@
 # Loom Studios — Architectural Decisions
 
-This file is append-only in spirit. Decisions can be superseded, but old reasoning should remain visible.
-
-## ADR-001 — Target Minecraft 1.21.11 and Loader 0.18.4 baseline
-
+## ADR-001 — Minecraft 1.21.11 / Loader 0.18.4 baseline
 **Status:** Accepted
 
-Develop for Minecraft 1.21.11. Compatibility testing must include Fabric Loader 0.18.4 exactly.
+Develop for Minecraft 1.21.11 and actively verify Fabric Loader 0.18.4.
 
 ## ADR-002 — Java 21
-
 **Status:** Accepted
 
-Use Java toolchain 21.
+Use Java 21.
 
 ## ADR-003 — Mojang mappings
+**Status:** Accepted
 
-**Status:** Accepted provisionally until SPIKE-00
-
-Prefer official Mojang mappings for the 1.21.11 project.
+Use official Mojang mappings.
 
 ## ADR-004 — Split common/client source sets
-
 **Status:** Accepted
 
-Use split source sets so renderer/UI classes never leak into dedicated-server execution paths.
+Keep client rendering/UI code out of dedicated-server execution paths.
 
-## ADR-005 — Vanilla-first base cape rendering
+## ADR-005 — Vanilla-first cape rendering
+**Status:** Accepted pending SPIKE-01
 
-**Status:** Accepted pending spike validation
+Substitute Loom cape texture/state while Minecraft retains geometry and movement.
 
-Substitute Loom Studios cape texture state while allowing Minecraft to retain cape geometry, motion, crouch behavior, and Elytra visibility logic.
+## ADR-006 — Vanilla-first Elytra path
+**Status:** Proposed pending SPIKE-03
 
-## ADR-006 — Vanilla-first Elytra override
+Use the dedicated Elytra texture path first; add a narrow hook only if required.
 
-**Status:** Proposed / SPIKE-03 required
+## ADR-007 — Separate optional emissive pass
+**Status:** Proposed pending SPIKE-06
 
-First attempt the dedicated player-skin Elytra texture path. Fall back to a narrow equipment/feature hook only if necessary.
-
-## ADR-007 — Separate emissive feature pass
-
-**Status:** Proposed / SPIKE-06 required
-
-Base texture stays on the vanilla renderer. Emissive/additive effects render through a Loom Studios feature pass aligned with vanilla geometry.
+Base cosmetics must not depend on shader-sensitive glow rendering.
 
 ## ADR-008 — No live edit-stream networking
-
 **Status:** Accepted
 
-Editing is client-local. Network traffic occurs on save/equip/share rather than for every brush stroke or animation frame.
+Synchronize saved/equipped projects, not brush strokes or rendered animation frames.
 
 ## ADR-009 — Content-addressed project distribution
-
 **Status:** Accepted
 
-Use SHA-256 project identity and cache-miss transfer for saved/equipped multiplayer designs.
+Use SHA-256 project identity/cache-miss transfer.
 
-## ADR-010 — Full projects are not player attachments
-
+## ADR-010 — .loom is editable source of truth
 **Status:** Accepted
 
-Only small state such as equipped project hashes belongs directly on player synchronization state. Large project blobs use dedicated storage/cache transfer.
+Flattened textures are compiled/export products.
 
-## ADR-011 — .loom is editable source of truth
-
+## ADR-011 — Reusable Loom UI kit
 **Status:** Accepted
 
-Flattened PNGs are runtime/export products, not the only project representation.
+Build reusable UI controls, not screenshot-backed screens.
 
-## ADR-012 — Custom reusable Loom UI kit
+## ADR-012 — Documentation hard gate
+**Status:** Mandatory
 
+No meaningful pass is complete without documentation updates.
+
+## ADR-013 — Optional compatibility mods
 **Status:** Accepted
 
-Build reusable panels, buttons, tabs, sliders, timelines, color pickers, canvas widgets, and player previews instead of using screenshot backgrounds or vanilla-only buttons.
+Sodium, Sodium Extra, Iris, shader packs, and 3D Skin Layers are not dependencies. Plain Fabric is the core runtime. Optional compatibility is actively supported and smoke-tested.
 
-## ADR-013 — Documentation is a hard gate
-
-**Status:** Accepted / mandatory
-
-No meaningful development or research pass is complete until canonical documentation is updated.
-
-## ADR-014 — Sodium + Iris are first-class compatibility targets
-
-**Status:** Accepted / mandatory
-
-Rendering milestones must pass the Fabric-only, Sodium, Sodium+Iris shaders-off, and Sodium+Iris shaders-on matrix.
-
-## ADR-015 — Proprietary licensing
-
+## ADR-014 — Proprietary licensing
 **Status:** Accepted
 
-Loom Studios source, assets, UI artwork, branding, and original project materials remain proprietary / All Rights Reserved. Official compiled releases may be used under the repository LICENSE. No permissive open-source license such as MIT is granted.
+Loom Studios remains proprietary / All Rights Reserved. Third-party test JARs are not bundled or committed.
 
-## ADR-016 — Respect third-party licenses
-
+## ADR-015 — dev-mods/ + modLocalRuntime
 **Status:** Accepted
 
-Record external licenses before reusing implementation code or assets. Researching behavior and compatibility patterns is allowed; copying incompatible licensed code is not.
+Optional compatibility JARs live in gitignored `dev-mods/` and are loaded only by the Loom development runtime.
