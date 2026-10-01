@@ -16,7 +16,11 @@ public final class ProjectSession {
     private ProjectHistory history;
     private Path sourcePath;
     private String savedHash;
+    private LoomProject savedProject;
     private long revision;
+
+    private long cachedHashRevision = Long.MIN_VALUE;
+    private String cachedHash;
 
     public ProjectSession(
             LoomProject project,
@@ -45,6 +49,9 @@ public final class ProjectSession {
         ProjectSession session = new ProjectSession(project, store);
         session.sourcePath = path.toAbsolutePath().normalize();
         session.savedHash = project.hash();
+        session.savedProject = project;
+        session.cachedHashRevision = session.revision;
+        session.cachedHash = session.savedHash;
         return session;
     }
 
@@ -61,7 +68,16 @@ public final class ProjectSession {
     }
 
     public boolean isDirty() {
-        return savedHash == null || !savedHash.equals(project().hash());
+        return savedProject != project();
+    }
+
+    public String currentHash() {
+        if (cachedHash == null || cachedHashRevision != revision) {
+            cachedHash = project().hash();
+            cachedHashRevision = revision;
+        }
+
+        return cachedHash;
     }
 
     public boolean canUndo() {
@@ -70,6 +86,18 @@ public final class ProjectSession {
 
     public boolean canRedo() {
         return history.canRedo();
+    }
+
+    public void beginCompoundEdit() {
+        history.beginCompoundEdit();
+    }
+
+    public void endCompoundEdit() {
+        history.endCompoundEdit();
+    }
+
+    public boolean isCompoundEditActive() {
+        return history.isCompoundEditActive();
     }
 
     public LoomProject apply(UnaryOperator<LoomProject> edit) {
@@ -90,6 +118,7 @@ public final class ProjectSession {
 
         LoomProject result = history.apply(ignored -> touched);
         revision++;
+        cachedHash = null;
         return result;
     }
 
@@ -99,6 +128,7 @@ public final class ProjectSession {
 
         if (!result.equals(before)) {
             revision++;
+            cachedHash = null;
         }
 
         return result;
@@ -110,6 +140,7 @@ public final class ProjectSession {
 
         if (!result.equals(before)) {
             revision++;
+            cachedHash = null;
         }
 
         return result;
@@ -118,7 +149,8 @@ public final class ProjectSession {
     public Path save() throws IOException {
         Path saved = store.save(project());
         this.sourcePath = saved;
-        this.savedHash = project().hash();
+        this.savedHash = currentHash();
+        this.savedProject = project();
         return saved;
     }
 }

@@ -1,5 +1,28 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — High-resolution editor performance + responsive tool rail
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Runtime feedback showed severe lag at 2x/4x and vertical overflow at 1920x1080 GUI scale 3.
+
+Performance corrections:
+- editor face rendering now uses one revision-cached DynamicTexture instead of thousands of per-pixel GUI rectangles every frame;
+- only the active semantic face is compiled for the editor preview;
+- grid rendering is reduced to row/column lines;
+- ProjectSession dirty checks use immutable snapshot identity instead of serializing/hash-checking the whole project each frame;
+- current project hashes are revision-cached;
+- 3D preview reuses the workspace's cached hash;
+- brush drags are grouped as one history/undo entry instead of one retained snapshot per pixel event.
+
+Responsive layout:
+- right editor rail now uses Minecraft's ScrollableLayout;
+- tool content receives a real scrollbar when vertical space is insufficient;
+- 1920x1080 GUI scale 2/3 and 3440x1440 GUI scale 2/3 are explicit layout targets;
+- resolution/brush changes no longer rebuild the whole screen.
+
+---
+
 ## 2026-10-01 — High-resolution/color-control green build
 
 **Result: CI PASS / LOCAL VISUAL TEST REQUIRED**

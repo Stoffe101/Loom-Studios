@@ -603,3 +603,15 @@ Green scope:
 - project-core automated tests and artifact upload.
 
 Local visual verification is now the gate.
+
+
+## High-resolution performance + GUI-scale layout correction
+
+After local 2x/4x testing, the editor hot path was reworked:
+- semantic face preview is GPU-texture cached per ProjectSession revision;
+- active-face compilation avoids compiling the unused atlas area;
+- high-res canvas rendering no longer emits one checker/color/grid rectangle per texel every frame;
+- drag strokes are compound history edits;
+- dirty/equipped UI checks avoid repeated full-project hashing.
+
+The right-side tool rail is now a ScrollableLayout. This specifically addresses 1920x1080 at GUI scale 3 while preserving the already-good 3440x1440 scale 2/3 layouts.

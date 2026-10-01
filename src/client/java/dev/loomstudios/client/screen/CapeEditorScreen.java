@@ -13,6 +13,9 @@ import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.ScrollableLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -39,8 +42,16 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton resolutionUpButton;
     private LoomButton brushDownButton;
     private LoomButton brushUpButton;
+    private LoomButton resolutionLabelButton;
+    private LoomButton brushLabelButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
+
+    private LoomCapeFaceWidget canvasWidget;
+    private int toolPanelX;
+    private int toolPanelY;
+    private int toolPanelWidth;
+    private int toolPanelHeight;
 
     public CapeEditorScreen(Screen parent) {
         super(Component.literal("Loom Studios - Cape Editor"));
@@ -51,121 +62,177 @@ public final class CapeEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        int margin = 14;
-        int toolbarWidth = Math.min(230, Math.max(190, this.width / 3));
-        int availableWidth = this.width - margin * 3 - toolbarWidth;
-        int canvasWidth = Math.max(180, availableWidth);
-        int canvasHeight = Math.min(
-                this.height - 90,
-                Math.max(160, canvasWidth / 2)
+        int margin = 12;
+        int canvasY = 48;
+
+        this.toolPanelWidth = Math.min(
+                230,
+                Math.max(190, this.width / 3)
+        );
+        this.toolPanelHeight = Math.max(
+                120,
+                this.height - canvasY - margin
+        );
+
+        int canvasWidth = Math.max(
+                170,
+                this.width - margin * 3 - this.toolPanelWidth
+        );
+        int canvasHeight = Math.max(
+                140,
+                this.height - canvasY - margin
         );
 
         int canvasX = margin;
-        int canvasY = 48;
+        this.toolPanelX = canvasX + canvasWidth + margin;
+        this.toolPanelY = canvasY;
 
-        addRenderableWidget(new LoomCapeFaceWidget(
+        this.canvasWidget = addRenderableWidget(new LoomCapeFaceWidget(
                 canvasX,
                 canvasY,
                 canvasWidth,
                 canvasHeight,
                 () -> this.workspaceState.project(),
+                () -> this.workspaceState.revision(),
                 () -> this.capeRegion,
-                this::editPixel
+                this::editPixel,
+                new LoomCapeFaceWidget.StrokeLifecycle() {
+                    @Override
+                    public void begin() {
+                        ClientProjectWorkspace.beginCompoundEdit();
+                    }
+
+                    @Override
+                    public void end() {
+                        ClientProjectWorkspace.endCompoundEdit();
+                        updateButtonStates();
+                    }
+                }
         ));
 
-        int toolsX = canvasX + canvasWidth + margin;
-        int y = canvasY;
+        int contentWidth = Math.max(150, this.toolPanelWidth - 20);
+        LinearLayout tools = LinearLayout.vertical().spacing(6);
 
-        faceButton = addLoomButton(
-                toolsX, y, toolbarWidth, faceLabel(),
+        faceButton = createLoomButton(
+                contentWidth,
+                "Face: " + this.capeRegion.displayName(),
                 this::cycleFace
         );
-        y += 28;
+        tools.addChild(faceButton);
 
-        resolutionDownButton = addLoomButton(
-                toolsX, y, 48, "Res -",
-                () -> changeResolution(-1)
+        LinearLayout resolutionRow = LinearLayout.horizontal().spacing(4);
+        resolutionDownButton = createLoomButton(
+                48, "Res -", () -> changeResolution(-1)
         );
-        addLoomButton(
-                toolsX + 52, y, toolbarWidth - 104, resolutionLabel(),
+        resolutionLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                resolutionLabel(),
                 () -> { }
-        ).active = false;
-        resolutionUpButton = addLoomButton(
-                toolsX + toolbarWidth - 48, y, 48, "Res +",
-                () -> changeResolution(1)
         );
-        y += 30;
+        resolutionLabelButton.active = false;
+        resolutionUpButton = createLoomButton(
+                48, "Res +", () -> changeResolution(1)
+        );
+        resolutionRow.addChild(resolutionDownButton);
+        resolutionRow.addChild(resolutionLabelButton);
+        resolutionRow.addChild(resolutionUpButton);
+        tools.addChild(resolutionRow);
 
-        pencilButton = addLoomButton(
-                toolsX, y, toolbarWidth, "Pencil",
+        pencilButton = createLoomButton(
+                contentWidth,
+                "Pencil",
                 () -> setTool(Tool.PENCIL)
         );
-        y += 26;
+        tools.addChild(pencilButton);
 
-        eraserButton = addLoomButton(
-                toolsX, y, toolbarWidth, "Eraser",
+        eraserButton = createLoomButton(
+                contentWidth,
+                "Eraser",
                 () -> setTool(Tool.ERASER)
         );
-        y += 28;
+        tools.addChild(eraserButton);
 
-        brushDownButton = addLoomButton(
-                toolsX, y, 48, "Brush -",
-                () -> changeBrushSize(-1)
+        LinearLayout brushRow = LinearLayout.horizontal().spacing(4);
+        brushDownButton = createLoomButton(
+                48, "Brush -", () -> changeBrushSize(-1)
         );
-        addLoomButton(
-                toolsX + 52, y, toolbarWidth - 104, brushLabel(),
+        brushLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                brushLabel(),
                 () -> { }
-        ).active = false;
-        brushUpButton = addLoomButton(
-                toolsX + toolbarWidth - 48, y, 48, "Brush +",
-                () -> changeBrushSize(1)
         );
-        y += 30;
+        brushLabelButton.active = false;
+        brushUpButton = createLoomButton(
+                48, "Brush +", () -> changeBrushSize(1)
+        );
+        brushRow.addChild(brushDownButton);
+        brushRow.addChild(brushLabelButton);
+        brushRow.addChild(brushUpButton);
+        tools.addChild(brushRow);
 
-        int pickerHeight = 132;
-        addRenderableWidget(new LoomColorPickerWidget(
-                toolsX,
-                y,
-                toolbarWidth,
-                pickerHeight,
+        LoomColorPickerWidget picker = new LoomColorPickerWidget(
+                0,
+                0,
+                contentWidth,
+                132,
                 this.selectedColor,
                 color -> this.selectedColor = color
-        ));
-        y += pickerHeight + 8;
+        );
+        tools.addChild(picker);
 
-        undoButton = addLoomButton(
-                toolsX, y, 72, "Undo",
+        LinearLayout historyRow = LinearLayout.horizontal().spacing(4);
+        undoButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Undo",
                 ClientProjectWorkspace::undo
         );
-        redoButton = addLoomButton(
-                toolsX + 78, y, 72, "Redo",
+        redoButton = createLoomButton(
+                contentWidth - 4 - undoButton.getWidth(),
+                "Redo",
                 ClientProjectWorkspace::redo
         );
-        y += 34;
+        historyRow.addChild(undoButton);
+        historyRow.addChild(redoButton);
+        tools.addChild(historyRow);
 
-        addLoomButton(
-                toolsX, y, toolbarWidth, "3D Preview",
+        tools.addChild(createLoomButton(
+                contentWidth,
+                "3D Preview",
                 () -> this.minecraft.setScreen(
                         new LoomPlayerPreviewScreen(this)
                 )
-        );
-        y += 26;
+        ));
 
-        addLoomButton(
-                toolsX, y, toolbarWidth, "Save",
+        tools.addChild(createLoomButton(
+                contentWidth,
+                "Save",
                 this::save
-        );
-        y += 26;
+        ));
 
-        addLoomButton(
-                toolsX, y, toolbarWidth, "Save + Equip",
+        tools.addChild(createLoomButton(
+                contentWidth,
+                "Save + Equip",
                 this::saveAndEquip
-        );
-        y += 34;
+        ));
 
-        addLoomButton(
-                toolsX, y, toolbarWidth, "Back",
+        tools.addChild(createLoomButton(
+                contentWidth,
+                "Back",
                 () -> this.minecraft.setScreen(parent)
+        ));
+
+        ScrollableLayout scrollableTools = new ScrollableLayout(
+                this.minecraft,
+                tools,
+                this.toolPanelHeight
+        );
+        scrollableTools.setMinWidth(this.toolPanelWidth);
+        scrollableTools.setMaxHeight(this.toolPanelHeight);
+        scrollableTools.arrangeElements();
+        scrollableTools.setX(this.toolPanelX);
+        scrollableTools.setY(this.toolPanelY);
+        scrollableTools.visitWidgets(widget ->
+                addRenderableWidget((AbstractWidget) widget)
         );
 
         updateButtonStates();
@@ -180,26 +247,28 @@ public final class CapeEditorScreen extends Screen {
     @Override
     public void removed() {
         ClientProjectWorkspace.removeListener(workspaceListener);
+
+        if (canvasWidget != null) {
+            canvasWidget.close();
+        }
+
+        ClientProjectWorkspace.endCompoundEdit();
         super.removed();
     }
 
-    private LoomButton addLoomButton(
-            int x,
-            int y,
+    private LoomButton createLoomButton(
             int width,
             String label,
             Runnable action
     ) {
-        LoomButton button = new LoomButton(
-                x,
-                y,
+        return new LoomButton(
+                0,
+                0,
                 width,
                 22,
                 Component.literal(label),
                 action
         );
-        addRenderableWidget(button);
-        return button;
     }
 
     private void cycleFace() {
@@ -236,7 +305,9 @@ public final class CapeEditorScreen extends Screen {
                 ProjectResizer.resizeCape(project, next)
         );
 
-        this.rebuildWidgets();
+        int maxBrush = next.scale() * 8;
+        this.brushSize = Math.min(this.brushSize, maxBrush);
+        updateButtonStates();
     }
 
     private String brushLabel() {
@@ -251,7 +322,7 @@ public final class CapeEditorScreen extends Screen {
                 ).scale() * 8
         );
         this.brushSize = Math.max(1, Math.min(max, this.brushSize + delta));
-        this.rebuildWidgets();
+        updateButtonStates();
     }
 
     private void setTool(Tool next) {
@@ -278,6 +349,13 @@ public final class CapeEditorScreen extends Screen {
 
         if (redoButton != null) {
             redoButton.active = ClientProjectWorkspace.session().canRedo();
+        }
+
+        if (resolutionLabelButton != null) {
+            resolutionLabelButton.setMessage(Component.literal(resolutionLabel()));
+        }
+        if (brushLabelButton != null) {
+            brushLabelButton.setMessage(Component.literal(brushLabel()));
         }
 
         CanvasResolution resolution =
@@ -414,6 +492,14 @@ public final class CapeEditorScreen extends Screen {
                     false
             );
         }
+
+        graphics.fill(
+                this.toolPanelX - 4,
+                this.toolPanelY - 4,
+                this.toolPanelX + this.toolPanelWidth,
+                this.toolPanelY + this.toolPanelHeight + 4,
+                LoomUiTheme.PANEL
+        );
 
         super.render(graphics, mouseX, mouseY, partialTick);
         updateButtonStates();

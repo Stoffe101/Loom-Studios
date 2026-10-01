@@ -81,7 +81,7 @@ public final class ClientProjectWorkspace {
     }
 
     public static String projectHash() {
-        return project().hash();
+        return session().currentHash();
     }
 
     public static long revision() {
@@ -107,7 +107,16 @@ public final class ClientProjectWorkspace {
     }
 
     public static boolean isCurrentProjectEquipped() {
-        return equippedHash != null && equippedHash.equals(projectHash());
+        return equippedProject != null && equippedProject == project();
+    }
+
+    public static void beginCompoundEdit() {
+        session().beginCompoundEdit();
+    }
+
+    public static void endCompoundEdit() {
+        session().endCompoundEdit();
+        notifyListeners();
     }
 
     public static LoomProject apply(UnaryOperator<LoomProject> edit) {

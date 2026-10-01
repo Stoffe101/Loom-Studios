@@ -20,6 +20,10 @@ public final class ProjectHistory {
     private final Deque<LoomProject> redo = new ArrayDeque<>();
     private LoomProject current;
 
+    private boolean compoundActive;
+    private boolean compoundChanged;
+    private LoomProject compoundBase;
+
     public ProjectHistory(LoomProject initial) {
         this(initial, DEFAULT_LIMIT);
     }
@@ -46,14 +50,52 @@ public final class ProjectHistory {
             return current;
         }
 
-        undo.addLast(current);
-        while (undo.size() > limit) {
-            undo.removeFirst();
+        if (compoundActive) {
+            current = next;
+            compoundChanged = true;
+            redo.clear();
+            return current;
         }
 
+        pushUndo(current);
         current = next;
         redo.clear();
         return current;
+    }
+
+    public void beginCompoundEdit() {
+        if (compoundActive) {
+            return;
+        }
+
+        compoundActive = true;
+        compoundChanged = false;
+        compoundBase = current;
+    }
+
+    public void endCompoundEdit() {
+        if (!compoundActive) {
+            return;
+        }
+
+        if (compoundChanged && compoundBase != null) {
+            pushUndo(compoundBase);
+        }
+
+        compoundActive = false;
+        compoundChanged = false;
+        compoundBase = null;
+    }
+
+    public boolean isCompoundEditActive() {
+        return compoundActive;
+    }
+
+    private void pushUndo(LoomProject project) {
+        undo.addLast(project);
+        while (undo.size() > limit) {
+            undo.removeFirst();
+        }
     }
 
     public boolean canUndo() {
@@ -65,6 +107,8 @@ public final class ProjectHistory {
     }
 
     public LoomProject undo() {
+        endCompoundEdit();
+
         if (!canUndo()) {
             return current;
         }
@@ -75,6 +119,8 @@ public final class ProjectHistory {
     }
 
     public LoomProject redo() {
+        endCompoundEdit();
+
         if (!canRedo()) {
             return current;
         }

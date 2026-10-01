@@ -1,6 +1,8 @@
 package dev.loomstudios.client.render;
 
 import dev.loomstudios.project.BlendMode;
+import dev.loomstudios.project.CanvasResolution;
+import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomCanvas;
 import dev.loomstudios.project.LoomLayer;
 
@@ -39,6 +41,52 @@ public final class LoomTextureCompiler {
 
                 source = multiplyAlpha(source, layer.opacity());
                 output[i] = blendNormal(output[i], source);
+            }
+        }
+
+        return output;
+    }
+
+    public static int[] compileCapeRegion(
+            LoomCanvas canvas,
+            CapeUvRegion region,
+            int animationPhase,
+            boolean animateHue,
+            boolean emissiveOnly
+    ) {
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int regionWidth = region.width(scale);
+        int regionHeight = region.height(scale);
+        int[] output = new int[regionWidth * regionHeight];
+
+        for (LoomLayer layer : canvas.layers()) {
+            if (!layer.visible() || (emissiveOnly && !layer.emissive())) {
+                continue;
+            }
+
+            if (layer.blendMode() != BlendMode.NORMAL) {
+                throw new IllegalArgumentException(
+                        "Unsupported blend mode " + layer.blendMode()
+                );
+            }
+
+            for (int y = 0; y < regionHeight; y++) {
+                int atlasY = region.atlasY(y, scale);
+
+                for (int x = 0; x < regionWidth; x++) {
+                    int atlasX = region.atlasX(x, scale);
+                    int source = layer.pixelAt(
+                            atlasY * canvas.width() + atlasX
+                    );
+
+                    if (animateHue && ((source >>> 24) & 0xFF) != 0) {
+                        source = rotateChannels(source, animationPhase);
+                    }
+
+                    source = multiplyAlpha(source, layer.opacity());
+                    int index = y * regionWidth + x;
+                    output[index] = blendNormal(output[index], source);
+                }
             }
         }
 

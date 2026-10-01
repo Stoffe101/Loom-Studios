@@ -159,7 +159,10 @@ public final class PlayerCosmeticRenderer {
             LoomProject project,
             Supplier<T> action
     ) {
-        String hash = project.hash();
+        String hash = ClientProjectWorkspace.isInitialized()
+                && ClientProjectWorkspace.project() == project
+                ? ClientProjectWorkspace.projectHash()
+                : project.hash();
 
         if (previewProjectHash != null
                 && !previewProjectHash.equals(hash)
