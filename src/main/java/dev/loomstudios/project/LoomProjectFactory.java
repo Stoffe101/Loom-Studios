@@ -13,6 +13,54 @@ public final class LoomProjectFactory {
     private LoomProjectFactory() {
     }
 
+    public static LoomProject blank(String name, long nowEpochMillis) {
+        UUID projectId = UUID.randomUUID();
+        int[] transparentCape = new int[
+                LoomProject.TEXTURE_WIDTH * LoomProject.TEXTURE_HEIGHT
+        ];
+        int[] transparentElytra = new int[
+                LoomProject.TEXTURE_WIDTH * LoomProject.TEXTURE_HEIGHT
+        ];
+
+        LoomCanvas cape = new LoomCanvas(
+                LoomProject.TEXTURE_WIDTH,
+                LoomProject.TEXTURE_HEIGHT,
+                List.of(new LoomLayer(
+                        stableLayerId(projectId, "cape-base"),
+                        "Base",
+                        true,
+                        1.0F,
+                        BlendMode.NORMAL,
+                        false,
+                        transparentCape
+                ))
+        );
+
+        LoomCanvas elytra = new LoomCanvas(
+                LoomProject.TEXTURE_WIDTH,
+                LoomProject.TEXTURE_HEIGHT,
+                List.of(new LoomLayer(
+                        stableLayerId(projectId, "elytra-base"),
+                        "Elytra Base",
+                        true,
+                        1.0F,
+                        BlendMode.NORMAL,
+                        false,
+                        transparentElytra
+                ))
+        );
+
+        return new LoomProject(
+                LoomProject.CURRENT_SCHEMA_VERSION,
+                projectId,
+                name,
+                LoomProjectMetadata.now(nowEpochMillis),
+                cape,
+                elytra,
+                LoomRuntimeSettings.defaults()
+        );
+    }
+
     public static LoomProject forPlayer(UUID playerId) {
         int[] accents = {
                 0xFF00DCE8,

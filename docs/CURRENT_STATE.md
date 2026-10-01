@@ -453,3 +453,13 @@ Implemented:
 - project save refreshes the Recent Projects index.
 
 This removes the largest remaining duplicate local-project state before the editor starts mutating projects.
+
+
+## Workspace/edit-runtime hardening
+
+Before Phase 2, two editor-critical ownership issues were addressed:
+
+- a loaded project remains the active workspace when a player identity is bound;
+- changing the live project hash releases the previous local GPU runtime bundle and invalidates the local patched skin.
+
+LoomProjectFactory can now create true blank editable projects with transparent cape/Elytra base layers and real timestamps.

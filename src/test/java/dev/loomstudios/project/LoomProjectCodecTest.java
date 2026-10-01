@@ -12,6 +12,26 @@ class LoomProjectCodecTest {
             UUID.fromString("11111111-1111-4111-8111-111111111111");
 
     @Test
+    void blankProjectHasRealMetadataAndTransparentBaseLayers() {
+        LoomProject project = LoomProjectFactory.blank("Blank Cape", 1234L);
+
+        assertEquals("Blank Cape", project.name());
+        assertEquals(1234L, project.metadata().createdAtEpochMillis());
+        assertEquals(1234L, project.metadata().modifiedAtEpochMillis());
+        assertEquals(1, project.cape().layers().size());
+        assertEquals(1, project.elytra().layers().size());
+
+        assertTrue(
+                Arrays.stream(project.cape().layers().getFirst().pixels())
+                        .allMatch(pixel -> pixel == 0)
+        );
+        assertTrue(
+                Arrays.stream(project.elytra().layers().getFirst().pixels())
+                        .allMatch(pixel -> pixel == 0)
+        );
+    }
+
+    @Test
     void projectRoundTripIsDeterministic() {
         LoomProject original = LoomProjectFactory.forPlayer(PLAYER_ID);
 

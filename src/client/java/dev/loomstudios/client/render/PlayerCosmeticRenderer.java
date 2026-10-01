@@ -29,6 +29,7 @@ public final class PlayerCosmeticRenderer {
 
     private static int thicknessPresetIndex;
     private static boolean emissivePassEnabled = true;
+    private static String lastLocalProjectHash;
 
     private PlayerCosmeticRenderer() {
     }
@@ -39,6 +40,15 @@ public final class PlayerCosmeticRenderer {
         }
 
         ClientProjectWorkspace.ensure(client.player.getUUID());
+
+        String currentLocalHash = ClientProjectWorkspace.projectHash();
+        if (lastLocalProjectHash != null
+                && !lastLocalProjectHash.equals(currentLocalHash)) {
+            RuntimeCosmeticCache.release(client, lastLocalProjectHash);
+            SKINS.remove(client.player.getUUID());
+        }
+        lastLocalProjectHash = currentLocalHash;
+
         RuntimeCosmeticCache.tick(client);
     }
 
@@ -172,6 +182,7 @@ public final class PlayerCosmeticRenderer {
         thicknessPresetIndex = 0;
         emissivePassEnabled = true;
         RuntimeCosmeticCache.close(client);
+        lastLocalProjectHash = null;
     }
 
     private record CachedSkin(

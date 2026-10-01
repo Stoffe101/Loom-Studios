@@ -143,6 +143,20 @@ public final class RuntimeCosmeticCache {
         return BY_ELYTRA_TEXTURE.get(texture);
     }
 
+    public static void release(Minecraft client, String projectHash) {
+        RuntimeBundle bundle = BUNDLES.remove(projectHash);
+        if (bundle == null) {
+            return;
+        }
+
+        BY_CAPE_TEXTURE.remove(bundle.capeTextureId);
+        BY_ELYTRA_TEXTURE.remove(bundle.elytraTextureId);
+
+        client.getTextureManager().release(bundle.capeTextureId);
+        client.getTextureManager().release(bundle.elytraTextureId);
+        client.getTextureManager().release(bundle.emissiveTextureId);
+    }
+
     public static void close(Minecraft client) {
         for (RuntimeBundle bundle : BUNDLES.values()) {
             client.getTextureManager().release(bundle.capeTextureId);

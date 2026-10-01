@@ -1,5 +1,20 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Workspace retention + editor-created project foundation
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Follow-up hardening before Phase 2:
+- opening a saved project now survives the next player-bind tick instead of being replaced by the development factory project;
+- blank editable projects can now be created with real metadata and transparent cape/Elytra base layers;
+- local runtime GPU bundles are explicitly released when the live project content hash changes;
+- local patched-skin cache is invalidated at the same time;
+- automated test covers blank-project metadata/base-layer construction.
+
+This prevents a future paint stroke from leaking one GPU texture bundle per project revision.
+
+---
+
 ## 2026-10-01 — Phase-1 live workspace/runtime cache/library implementation
 
 **Status: IMPLEMENTED / CI PENDING**

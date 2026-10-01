@@ -25,7 +25,8 @@ public final class ClientProjectWorkspace {
     public static ProjectSession ensure(UUID localPlayerId) {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
 
-        if (session != null && localPlayerId.equals(playerId)) {
+        if (session != null) {
+            playerId = localPlayerId;
             return session;
         }
 
@@ -87,21 +88,36 @@ public final class ClientProjectWorkspace {
         return saved;
     }
 
-    public static void open(Path path) throws IOException {
+    public static void createBlank(
+            String name,
+            long nowEpochMillis,
+            UUID localPlayerId
+    ) {
+        Objects.requireNonNull(localPlayerId, "localPlayerId");
+        playerId = localPlayerId;
+        session = new ProjectSession(
+                LoomProjectFactory.blank(name, nowEpochMillis),
+                LocalProjectLibrary.store()
+        );
+    }
+
+    public static void open(Path path, UUID localPlayerId) throws IOException {
+        Objects.requireNonNull(localPlayerId, "localPlayerId");
         session = ProjectSession.load(path, LocalProjectLibrary.store());
-        playerId = null;
+        playerId = localPlayerId;
         ProjectLibraryIndex.refresh();
     }
 
     public static void bindPlayer(UUID localPlayerId) {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
+        playerId = localPlayerId;
 
         if (session == null) {
-            ensure(localPlayerId);
-            return;
+            session = new ProjectSession(
+                    LoomProjectFactory.forPlayer(localPlayerId),
+                    LocalProjectLibrary.store()
+            );
         }
-
-        playerId = localPlayerId;
     }
 
     public static void resetForTestsAndShutdown() {
