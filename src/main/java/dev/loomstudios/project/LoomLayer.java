@@ -61,6 +61,54 @@ public record LoomLayer(
         );
     }
 
+    public LoomLayer withName(String nextName) {
+        return new LoomLayer(
+                id,
+                nextName,
+                visible,
+                opacity,
+                blendMode,
+                emissive,
+                pixels
+        );
+    }
+
+    public LoomLayer withVisible(boolean nextVisible) {
+        return new LoomLayer(
+                id,
+                name,
+                nextVisible,
+                opacity,
+                blendMode,
+                emissive,
+                pixels
+        );
+    }
+
+    public LoomLayer withOpacity(float nextOpacity) {
+        return new LoomLayer(
+                id,
+                name,
+                visible,
+                nextOpacity,
+                blendMode,
+                emissive,
+                pixels
+        );
+    }
+
+    public LoomLayer withEmissive(boolean nextEmissive) {
+        return new LoomLayer(
+                id,
+                name,
+                visible,
+                opacity,
+                blendMode,
+                nextEmissive,
+                pixels
+        );
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

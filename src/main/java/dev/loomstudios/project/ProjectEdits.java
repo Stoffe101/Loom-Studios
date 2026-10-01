@@ -1,10 +1,239 @@
 package dev.loomstudios.project;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class ProjectEdits {
     private ProjectEdits() {
+    }
+
+    public static LoomProject addCapeLayer(
+            LoomProject project,
+            String name
+    ) {
+        LoomCanvas canvas = project.cape();
+
+        if (canvas.layers().size() >= LoomProjectCodec.MAX_LAYER_COUNT) {
+            throw new IllegalStateException("Cape already has the maximum layer count");
+        }
+
+        int[] transparent = new int[canvas.width() * canvas.height()];
+        LoomLayer layer = new LoomLayer(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                transparent
+        );
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(layer);
+
+        return project.withCape(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject duplicateCapeLayer(
+            LoomProject project,
+            UUID layerId
+    ) {
+        LoomCanvas canvas = project.cape();
+
+        if (canvas.layers().size() >= LoomProjectCodec.MAX_LAYER_COUNT) {
+            throw new IllegalStateException("Cape already has the maximum layer count");
+        }
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+
+        for (int i = 0; i < next.size(); i++) {
+            LoomLayer source = next.get(i);
+            if (!source.id().equals(layerId)) {
+                continue;
+            }
+
+            LoomLayer copy = new LoomLayer(
+                    UUID.randomUUID(),
+                    uniqueLayerName(
+                            next,
+                            source.name() + " Copy"
+                    ),
+                    source.visible(),
+                    source.opacity(),
+                    source.blendMode(),
+                    source.emissive(),
+                    source.pixels()
+            );
+            next.add(i + 1, copy);
+
+            return project.withCape(
+                    new LoomCanvas(canvas.width(), canvas.height(), next)
+            );
+        }
+
+        throw new IllegalArgumentException("Unknown layer " + layerId);
+    }
+
+    public static LoomProject removeCapeLayer(
+            LoomProject project,
+            UUID layerId
+    ) {
+        LoomCanvas canvas = project.cape();
+
+        if (canvas.layers().size() <= 1) {
+            return project;
+        }
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        boolean removed = next.removeIf(layer -> layer.id().equals(layerId));
+
+        if (!removed) {
+            throw new IllegalArgumentException("Unknown layer " + layerId);
+        }
+
+        return project.withCape(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject moveCapeLayer(
+            LoomProject project,
+            UUID layerId,
+            int delta
+    ) {
+        if (delta == 0) {
+            return project;
+        }
+
+        LoomCanvas canvas = project.cape();
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+
+        for (int i = 0; i < next.size(); i++) {
+            if (!next.get(i).id().equals(layerId)) {
+                continue;
+            }
+
+            int target = Math.max(
+                    0,
+                    Math.min(next.size() - 1, i + delta)
+            );
+
+            if (target == i) {
+                return project;
+            }
+
+            LoomLayer layer = next.remove(i);
+            next.add(target, layer);
+
+            return project.withCape(
+                    new LoomCanvas(canvas.width(), canvas.height(), next)
+            );
+        }
+
+        throw new IllegalArgumentException("Unknown layer " + layerId);
+    }
+
+    public static LoomProject setCapeLayerVisible(
+            LoomProject project,
+            UUID layerId,
+            boolean visible
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withVisible(visible)
+        );
+    }
+
+    public static LoomProject setCapeLayerOpacity(
+            LoomProject project,
+            UUID layerId,
+            float opacity
+    ) {
+        float clamped = Math.max(0.0F, Math.min(1.0F, opacity));
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withOpacity(clamped)
+        );
+    }
+
+    public static LoomProject renameCapeLayer(
+            LoomProject project,
+            UUID layerId,
+            String name
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withName(name)
+        );
+    }
+
+    private static LoomProject updateCapeLayer(
+            LoomProject project,
+            UUID layerId,
+            java.util.function.UnaryOperator<LoomLayer> edit
+    ) {
+        LoomCanvas canvas = project.cape();
+        LoomLayer current = canvas.layers().stream()
+                .filter(layer -> layer.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown layer " + layerId
+                ));
+
+        LoomLayer replacement = edit.apply(current);
+        if (replacement.equals(current)) {
+            return project;
+        }
+
+        return project.withCape(
+                canvas.replaceLayer(layerId, replacement)
+        );
+    }
+
+    private static String uniqueLayerName(
+            List<LoomLayer> layers,
+            String requested
+    ) {
+        String base = requested == null || requested.isBlank()
+                ? "Layer"
+                : requested.trim();
+
+        if (base.length() > LoomProjectCodec.MAX_LAYER_NAME_CHARS) {
+            base = base.substring(0, LoomProjectCodec.MAX_LAYER_NAME_CHARS);
+        }
+
+        String candidate = base;
+        int suffix = 2;
+
+        while (containsLayerName(layers, candidate)) {
+            String suffixText = " " + suffix++;
+            int maxBase = Math.max(
+                    1,
+                    LoomProjectCodec.MAX_LAYER_NAME_CHARS
+                            - suffixText.length()
+            );
+            String shortened = base.length() > maxBase
+                    ? base.substring(0, maxBase)
+                    : base;
+            candidate = shortened + suffixText;
+        }
+
+        return candidate;
+    }
+
+    private static boolean containsLayerName(
+            List<LoomLayer> layers,
+            String name
+    ) {
+        return layers.stream()
+                .anyMatch(layer -> layer.name().equalsIgnoreCase(name));
     }
 
     public static LoomProject setCapePixel(
