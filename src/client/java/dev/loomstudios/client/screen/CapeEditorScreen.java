@@ -11,6 +11,7 @@ import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPaletteButton;
 import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
@@ -70,6 +71,10 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton layerDeleteButton;
     private LoomButton layerUpButton;
     private LoomButton layerDownButton;
+    private EditBox layerNameField;
+    private LoomButton layerRenameButton;
+    private LoomButton layerBlendButton;
+    private LoomButton layerEmissiveButton;
     private LoomButton layerOpacityDownButton;
     private LoomButton layerOpacityLabelButton;
     private LoomButton layerOpacityUpButton;
@@ -376,6 +381,44 @@ public final class CapeEditorScreen extends Screen {
         layerMoveRow.addChild(layerDownButton);
         tools.addChild(layerMoveRow);
 
+        LinearLayout layerNameRow = LinearLayout.horizontal().spacing(4);
+        this.layerNameField = new EditBox(
+                this.font,
+                0,
+                0,
+                Math.max(72, contentWidth - 74),
+                18,
+                Component.literal("Layer name")
+        );
+        this.layerNameField.setMaxLength(
+                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
+        );
+        this.layerNameField.setHint(Component.literal("Layer name"));
+
+        this.layerRenameButton = createLoomButton(
+                Math.max(70, contentWidth - this.layerNameField.getWidth() - 4),
+                "Rename",
+                this::renameLayer
+        );
+
+        layerNameRow.addChild(this.layerNameField);
+        layerNameRow.addChild(this.layerRenameButton);
+        tools.addChild(layerNameRow);
+
+        this.layerBlendButton = createLoomButton(
+                contentWidth,
+                "Blend: Normal",
+                this::cycleLayerBlendMode
+        );
+        tools.addChild(this.layerBlendButton);
+
+        this.layerEmissiveButton = createLoomButton(
+                contentWidth,
+                "Emissive: Off",
+                this::toggleLayerEmissive
+        );
+        tools.addChild(this.layerEmissiveButton);
+
         LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
         layerOpacityDownButton = createLoomButton(
                 48,
@@ -455,6 +498,7 @@ public final class CapeEditorScreen extends Screen {
 
         restoreOrCreatePaletteWindow();
         syncColorFields();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -938,6 +982,26 @@ public final class CapeEditorScreen extends Screen {
                         )
                 );
             }
+            if (layerBlendButton != null) {
+                layerBlendButton.setMessage(
+                        Component.literal(
+                                "Blend: " + layer.blendMode().displayName()
+                        )
+                );
+            }
+            if (layerEmissiveButton != null) {
+                layerEmissiveButton.setMessage(
+                        Component.literal(
+                                layer.emissive()
+                                        ? "Emissive: On"
+                                        : "Emissive: Off"
+                        )
+                );
+            }
+            if (layerRenameButton != null) {
+                layerRenameButton.active = layerNameField != null
+                        && !layerNameField.getValue().trim().isEmpty();
+            }
         }
     }
 
@@ -983,6 +1047,7 @@ public final class CapeEditorScreen extends Screen {
 
     private void selectLayer(UUID layerId) {
         this.selectedLayerId = layerId;
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -1011,6 +1076,7 @@ public final class CapeEditorScreen extends Screen {
                 ProjectEdits.addCapeLayer(project, "Layer")
         );
         selectedLayerId = result.cape().layers().getLast().id();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -1043,6 +1109,7 @@ public final class CapeEditorScreen extends Screen {
                 .layers()
                 .get(originalIndex + 1)
                 .id();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -1078,6 +1145,7 @@ public final class CapeEditorScreen extends Screen {
                 .layers()
                 .get(nextIndex)
                 .id();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -1092,6 +1160,74 @@ public final class CapeEditorScreen extends Screen {
                 )
         );
         updateButtonStates();
+    }
+
+    private void renameLayer() {
+        if (layerNameField == null) {
+            return;
+        }
+
+        String name = layerNameField.getValue().trim();
+        if (name.isEmpty()) {
+            syncLayerFields();
+            return;
+        }
+
+        try {
+            ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.renameCapeLayer(
+                            project,
+                            selectedLayerId,
+                            name
+                    )
+            );
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        syncLayerFields();
+        updateButtonStates();
+    }
+
+    private void cycleLayerBlendMode() {
+        LoomLayer layer = selectedLayer();
+        BlendMode next = layer.blendMode().next();
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerBlendMode(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void toggleLayerEmissive() {
+        LoomLayer layer = selectedLayer();
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerEmissive(
+                        project,
+                        selectedLayerId,
+                        !layer.emissive()
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void syncLayerFields() {
+        if (layerNameField == null
+                || workspaceState == null
+                || workspaceState.project().cape().layers().isEmpty()) {
+            return;
+        }
+
+        ensureSelectedLayerExists();
+        LoomLayer layer = selectedLayer();
+
+        if (!layerNameField.isFocused()) {
+            layerNameField.setValue(layer.name());
+        }
     }
 
     private void changeLayerOpacity(float delta) {
@@ -1587,7 +1723,8 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
-        return (hexColorField != null && hexColorField.isFocused())
+        return (layerNameField != null && layerNameField.isFocused())
+                || (hexColorField != null && hexColorField.isFocused())
                 || (redColorField != null && redColorField.isFocused())
                 || (greenColorField != null && greenColorField.isFocused())
                 || (blueColorField != null && blueColorField.isFocused())
