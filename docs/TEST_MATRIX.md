@@ -349,3 +349,17 @@ Deferred UX check:
 - palette window can move while unpinned
 - pinned palette window cannot move
 - tool-rail scrollbar and floating palette window coexist at 1920x1080 GUI scale 3
+
+
+## Mandatory desktop UI profile matrix
+
+Every meaningful editor-layout change must be visually checked at:
+
+| Physical | GUI scale | Status for current slice |
+| --- | ---: | --- |
+| 1920×1080 | 2 | LOCAL TEST REQUIRED |
+| 1920×1080 | 3 | LOCAL TEST REQUIRED |
+| 3440×1440 | 2 | LOCAL TEST REQUIRED |
+| 3440×1440 | 3 | LOCAL TEST REQUIRED |
+
+Pass criteria are defined in `UI_COMPATIBILITY.md`.

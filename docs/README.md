@@ -26,6 +26,7 @@ Every meaningful pass must record:
 - `DOCUMENTATION_RULES.md` — mandatory documentation policy
 - `GETTING_STARTED.md` — development bootstrap and first-spike flow
 - `COMPATIBILITY.md` — Sodium, Iris, shader, and mod compatibility requirements
+- `UI_COMPATIBILITY.md` — mandatory display-resolution / GUI-scale layout contract
 - `ARCHITECTURE.md` — implementation architecture
 - `TECHNICAL_RESEARCH.md` — researched APIs, hooks, constraints, and findings
 - `SPIKE_PLAN.md` — ordered technical validation spikes

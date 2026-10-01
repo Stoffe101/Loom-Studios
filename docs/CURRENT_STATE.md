@@ -638,3 +638,26 @@ Implemented:
 - Palettes button includes a four-swatch palette icon and sits inside the scrollable tool rail.
 
 Palette changes synchronize back into the main HSV/RGB color picker.
+
+
+## Performance/layout + custom palettes green checkpoint
+
+Two exact-SHA CI checkpoints are now green:
+
+- `8e7ece34ba23b457d7f8761f37c47149aa79e483` — GitHub Actions #44 SUCCESS
+  - revision-cached GPU editor face texture;
+  - face-only compile path;
+  - compound brush history;
+  - hash/dirty hot-path removal;
+  - scrollable responsive right tool rail.
+
+- `4d29faeb0766cc5f97a4c486ae66026d87c2fb1f` — GitHub Actions #46 SUCCESS
+  - persistent named custom palettes;
+  - movable/pinnable palette window;
+  - palette swatch switching/removal;
+  - create/rename/Add Current;
+  - file export + clipboard LOOMPAL1 share code;
+  - clipboard/import-folder import;
+  - palette share-code automated test.
+
+The remaining gate for this slice is local runtime/UX verification at the required resolution/GUI-scale matrix.

@@ -1,5 +1,21 @@
 # Loom Studios — Pass Log
 
+## 2026-10-01 — Performance/layout + custom palettes CI checkpoint
+
+**Result: CI PASS / LOCAL UX TEST REQUIRED**
+
+Performance/responsive exact SHA:
+`8e7ece34ba23b457d7f8761f37c47149aa79e483`  
+GitHub Actions #44: **SUCCESS**
+
+Palette exact SHA:
+`4d29faeb0766cc5f97a4c486ae66026d87c2fb1f`  
+GitHub Actions #46: **SUCCESS**
+
+The 1920×1080 GUI scale 2/3 and 3440×1440 GUI scale 2/3 profiles are now a permanent documented UI compatibility contract.
+
+---
+
 ## 2026-10-01 — Palette window narration type correction
 
 Initial palette SHA `98746b076edc48bd7f4625bdd655d82802cfca1c` failed client compilation because the composite palette window exposed child narratables with the event-listener interface instead of Minecraft's NarratableEntry interface.
