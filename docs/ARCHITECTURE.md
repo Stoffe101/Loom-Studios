@@ -1,0 +1,124 @@
+# Loom Studios — Architecture
+
+## Principles
+
+- keep common/server code independent from client rendering classes
+- use vanilla rendering paths whenever possible
+- treat editable projects and compiled runtime textures as separate layers
+- keep editing local and synchronize saved/equipped state
+- content-address remote projects by hash
+- design for Sodium/Iris compatibility from the first render spike
+- keep UI components reusable
+
+## High-level modules
+
+### Common
+
+Responsibilities:
+- project model
+- validation rules
+- serialization schema
+- hashes/identifiers
+- networking payload definitions
+- server-side equipped state
+- project metadata
+- permissions and limits
+
+### Client
+
+Responsibilities:
+- editor screens/widgets
+- cape/Elytra rendering integration
+- dynamic texture compilation/cache
+- animation evaluation
+- image import processing
+- player preview
+- client project library
+- file import/export
+- Loom Code clipboard/UI
+
+### Server
+
+Responsibilities:
+- validate saved/equipped project references
+- distribute project blobs on cache miss
+- persist equipped state
+- enforce project/asset/animation size limits
+- protect against malformed or abusive transfers
+
+## Project pipeline
+
+Editable project:
+layers + gradients + imported assets + transforms + animations
+
+→ validate
+
+→ compile/composite
+
+→ runtime cape/Elytra textures + optional effect masks
+
+→ cache by project/content hash
+
+→ render through vanilla-first cape/Elytra paths
+
+## Rendering strategy
+
+### Base cape
+
+Patch/substitute the cape texture data used by the player's render state and allow Minecraft to render normal cape geometry and motion.
+
+### Base Elytra
+
+First attempt the dedicated Elytra texture slot exposed by player skin data. If this is insufficient, use the narrowest possible equipment/feature hook.
+
+### Emissive/additive effects
+
+Use a separate Loom Studios feature pass aligned with the corresponding cape/Elytra geometry. If shader compatibility fails, the optional effect may be disabled while preserving the base cosmetic.
+
+## Editor preview
+
+The preview renders a synthetic/isolated player state inside the GUI and points it at temporary project output. Unsaved preview state must not alter real equipped multiplayer state.
+
+## Multiplayer flow
+
+1. player saves/equips project locally
+2. client computes project hash
+3. client sends validated equip/save request
+4. server stores authoritative equipped hash/metadata
+5. remote client learns equipped hash
+6. remote client checks local cache
+7. cache miss requests project blob
+8. blob is validated and cached
+9. remote client compiles/renders locally
+
+Animation frames are never streamed continuously.
+
+## Persistence
+
+- client library stores editable local projects
+- server stores equipped references and server-shared project blobs/metadata as required
+- caches use content hashes
+- schema is versioned and migratable
+
+## UI architecture
+
+Build reusable Loom widgets:
+- LoomPanel
+- LoomButton
+- LoomTab
+- LoomSlider
+- LoomDropdown
+- LoomTooltip
+- LoomIconButton
+- LoomScrollPanel
+- LoomLayerRow
+- LoomTimeline
+- LoomColorPicker
+- LoomCanvas
+- LoomPlayerPreview
+
+Reference images define visual targets, not screenshot backgrounds.
+
+## Compatibility philosophy
+
+Loom Studios should integrate with Minecraft/Fabric rendering rather than replace large rendering systems. Sodium and Iris must work without being dependencies.
