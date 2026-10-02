@@ -1,5 +1,51 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Reference UI architecture refactor
+
+**Status: IMPLEMENTATION CI PASS / LOCAL RE-VERIFICATION PENDING**
+
+Trigger:
+- local testing confirmed the feature set broadly worked;
+- UI/reference fidelity and usability did not pass;
+- screenshots showed button walls, excessive scrolling, overlapping/dense text, unclear animation authoring, buried Export, and a particularly poor 1920x1080 GUI-scale-3 layout.
+
+Merged-main baseline entering the pass:
+- `e3e417ff21f231e8513186e499026682d4cfb785` — GitHub Actions #158 **SUCCESS**.
+
+Important refactor checkpoints:
+- `2900a0c4ec709ba50123dbf494a7f9ab72817855` — responsive UI primitives;
+- `a79680c01157c226dd19c3a0bb3c53ed1f1bf811` — responsive Home;
+- `482d43ff4e44690e4dd5d685ce9f42bd9fa2ab39` — compact color picker;
+- `1615b683ec9bdc4bbc1fd15aac333d4ffe199e64` / `9dbcd21e466a4164f9c96f90395c31af68f83abf` — Cape contextual workspace;
+- `0a3c579c5f4809518454dbb31c209d569985935a` — simplified timeline foundation;
+- `38b0efada9ebb85e6140e8bad1e325be6c757163` — Elytra layout + Animation inspector — Actions #166 **SUCCESS**;
+- `ff1670f138bedf13f05e4ea199981b73834dfdc0` — explicit Export / Import workspace — Actions #167 **SUCCESS**;
+- `007ae2121d835b85aee8ed01259257c735d46288` — Smart Import tabs — Actions #168 **SUCCESS**;
+- `8b338dfd530f41e4b283058b2d078e9beb6b41fb` — compact timeline geometry — Actions #169 **SUCCESS**;
+- `db90568ad8e47b342e3be36419381f4e2c37af66` — corrected combined UI head — Actions #172 **SUCCESS**.
+- `d6407fd5125836969d6dd5c40ecbb65c4069c1b6` — final pre-merge UI/docs cleanup validation — Actions #175 **SUCCESS**.
+
+Implemented:
+- shared `LoomScreenChrome`;
+- expanded reusable icon button language;
+- compact breakpoint for <=700x420;
+- responsive Home with dead Settings removed;
+- explicit Share / Export naming;
+- Cape icon rail + canvas toolbar + context bar;
+- Cape Layers / Color / Properties inspector;
+- Elytra icon rail + Layers / Color / Animation inspector;
+- simplified animation workflow and compact timeline;
+- Smart Import Placement / Processing tabs;
+- persistent Apply / Preview actions;
+- explicit Export / Import sharing workspaces.
+
+Expected red runs:
+- #164 was caused by accidentally pruning Elytra helper methods during the first layout rewrite; methods were restored and subsequent heads are green;
+- #170/#171 were caused only by an incompatible direct-tooltip API experiment; it was removed and #172 is green.
+
+The new shell still requires local visual/runtime re-verification, especially at 1920x1080 GUI scale 3.
+
+---
 ## 2026-10-02 — Loom Codes local/offline sharing MVP
 
 **Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**

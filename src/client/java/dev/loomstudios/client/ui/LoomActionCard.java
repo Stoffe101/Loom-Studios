@@ -94,37 +94,60 @@ public final class LoomActionCard extends AbstractButton {
             );
         }
 
-        int iconX = getX() + 10;
-        int iconY = getY() + Math.max(5, (getHeight() - 18) / 2);
-        drawIcon(graphics, iconX, iconY, icon, active);
+        boolean compact = getHeight() < 34 || getWidth() < 145;
+        int iconSize = compact ? 13 : 18;
+        int iconX = getX() + (compact ? 7 : 10);
+        int iconY = getY() + (getHeight() - iconSize) / 2;
+        drawIcon(graphics, iconX, iconY, icon, active, iconSize);
 
-        int textX = getX() + 38;
-        int titleY = getY() + Math.max(5, getHeight() / 2 - 10);
-        int subtitleY = titleY + 11;
+        int textX = getX() + (compact ? 26 : 38);
+        int arrowReserve = 14;
+        int available = Math.max(
+                8,
+                getRight() - arrowReserve - textX
+        );
+
+        String title = Minecraft.getInstance().font.plainSubstrByWidth(
+                getMessage().getString(),
+                available
+        );
+
+        int titleY = compact
+                ? getY() + (getHeight() - 8) / 2
+                : getY() + Math.max(5, getHeight() / 2 - 10);
 
         graphics.drawString(
                 Minecraft.getInstance().font,
-                getMessage(),
+                Component.literal(title),
                 textX,
                 titleY,
                 active ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED,
                 false
         );
-        graphics.drawString(
-                Minecraft.getInstance().font,
-                subtitle,
-                textX,
-                subtitleY,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
 
-        int arrowX = getRight() - 10;
+        if (!compact && getHeight() >= 30) {
+            String subtitleText = Minecraft.getInstance()
+                    .font
+                    .plainSubstrByWidth(
+                            subtitle.getString(),
+                            available
+                    );
+            graphics.drawString(
+                    Minecraft.getInstance().font,
+                    Component.literal(subtitleText),
+                    textX,
+                    titleY + 11,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
+
+        int arrowX = getRight() - 8;
         int arrowY = getY() + getHeight() / 2;
         int arrowColor = hot ? LoomUiTheme.ACCENT : LoomUiTheme.TEXT_MUTED;
-        graphics.fill(arrowX - 4, arrowY - 3, arrowX - 3, arrowY + 4, arrowColor);
-        graphics.fill(arrowX - 3, arrowY - 2, arrowX - 2, arrowY + 3, arrowColor);
-        graphics.fill(arrowX - 2, arrowY - 1, arrowX - 1, arrowY + 2, arrowColor);
+        graphics.fill(arrowX - 3, arrowY - 3, arrowX - 2, arrowY + 4, arrowColor);
+        graphics.fill(arrowX - 2, arrowY - 2, arrowX - 1, arrowY + 3, arrowColor);
+        graphics.fill(arrowX - 1, arrowY - 1, arrowX, arrowY + 2, arrowColor);
     }
 
     private static void drawIcon(
@@ -132,80 +155,21 @@ public final class LoomActionCard extends AbstractButton {
             int x,
             int y,
             Icon icon,
-            boolean enabled
+            boolean enabled,
+            int size
     ) {
         int main = enabled ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED;
-        int accent = enabled ? LoomUiTheme.ACCENT : 0xFF4B5961;
-        int alt = enabled ? LoomUiTheme.ACCENT_ALT : 0xFF3F4850;
-
-        switch (icon) {
-            case CAPE -> {
-                graphics.fill(x + 6, y, x + 12, y + 3, main);
-                graphics.fill(x + 4, y + 3, x + 14, y + 14, accent);
-                graphics.fill(x + 6, y + 14, x + 12, y + 18, alt);
-            }
-            case ELYTRA -> {
-                graphics.fill(x + 8, y + 2, x + 10, y + 17, main);
-                graphics.fill(x, y + 3, x + 8, y + 13, accent);
-                graphics.fill(x + 10, y + 3, x + 18, y + 13, alt);
-                graphics.fill(x + 2, y + 13, x + 7, y + 17, accent);
-                graphics.fill(x + 11, y + 13, x + 16, y + 17, alt);
-            }
-            case FOLDER -> {
-                graphics.fill(x + 1, y + 5, x + 17, y + 16, main);
-                graphics.fill(x + 3, y + 2, x + 9, y + 6, main);
-                graphics.fill(x + 2, y + 8, x + 16, y + 15, 0xFFB99655);
-            }
-            case IMAGE -> {
-                graphics.fill(x + 1, y + 1, x + 17, y + 17, main);
-                graphics.fill(x + 3, y + 3, x + 15, y + 15, LoomUiTheme.PANEL_INNER);
-                graphics.fill(x + 4, y + 11, x + 9, y + 15, accent);
-                graphics.fill(x + 8, y + 8, x + 14, y + 15, alt);
-                graphics.fill(x + 11, y + 5, x + 13, y + 7, main);
-            }
-            case CODE -> {
-                graphics.fill(x + 1, y + 8, x + 6, y + 10, accent);
-                graphics.fill(x + 3, y + 5, x + 5, y + 13, accent);
-                graphics.fill(x + 12, y + 8, x + 17, y + 10, alt);
-                graphics.fill(x + 13, y + 5, x + 15, y + 13, alt);
-                graphics.fill(x + 8, y + 3, x + 10, y + 15, main);
-            }
-            case SETTINGS -> {
-                graphics.fill(x + 7, y + 1, x + 11, y + 17, main);
-                graphics.fill(x + 1, y + 7, x + 17, y + 11, main);
-                graphics.fill(x + 4, y + 4, x + 14, y + 14, main);
-                graphics.fill(x + 7, y + 7, x + 11, y + 11, LoomUiTheme.PANEL_INNER);
-            }
-            case BLANK -> {
-                graphics.fill(x + 4, y + 1, x + 14, y + 17, main);
-                graphics.fill(x + 6, y + 3, x + 12, y + 15, 0xFFE2E8EC);
-            }
-            case GRADIENT -> {
-                graphics.fill(x + 2, y + 2, x + 9, y + 16, accent);
-                graphics.fill(x + 9, y + 2, x + 16, y + 16, alt);
-            }
-            case NATURE -> {
-                graphics.fill(x + 8, y + 2, x + 10, y + 17, main);
-                graphics.fill(x + 2, y + 5, x + 9, y + 11, 0xFF55C878);
-                graphics.fill(x + 10, y + 4, x + 16, y + 10, 0xFF55C878);
-            }
-            case SPACE -> {
-                graphics.fill(x + 7, y + 4, x + 13, y + 10, accent);
-                graphics.fill(x + 9, y + 2, x + 11, y + 12, accent);
-                graphics.fill(x + 2, y + 12, x + 4, y + 14, main);
-                graphics.fill(x + 14, y + 3, x + 16, y + 5, alt);
-            }
-            case FANTASY -> {
-                graphics.fill(x + 8, y + 1, x + 10, y + 17, alt);
-                graphics.fill(x + 2, y + 8, x + 16, y + 10, alt);
-                graphics.fill(x + 5, y + 5, x + 13, y + 13, accent);
-            }
-            case EMBLEM -> {
-                graphics.fill(x + 4, y + 2, x + 14, y + 15, main);
-                graphics.fill(x + 6, y + 4, x + 12, y + 12, accent);
-                graphics.fill(x + 8, y + 6, x + 10, y + 16, alt);
-            }
-        }
+        LoomButton.Icon mapped = switch (icon) {
+            case CAPE, BLANK -> LoomButton.Icon.CAPE;
+            case ELYTRA -> LoomButton.Icon.ELYTRA;
+            case IMAGE -> LoomButton.Icon.IMAGE;
+            case CODE -> LoomButton.Icon.SHARE;
+            case SETTINGS -> LoomButton.Icon.SETTINGS;
+            case GRADIENT -> LoomButton.Icon.GRADIENT;
+            case FOLDER -> LoomButton.Icon.SAVE;
+            case NATURE, SPACE, FANTASY, EMBLEM -> LoomButton.Icon.GRADIENT;
+        };
+        LoomButton.drawIcon(graphics, x, y, size, mapped, main);
     }
 
     @Override

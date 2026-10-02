@@ -10,6 +10,8 @@ import dev.loomstudios.client.ui.LoomColorPickerWidget;
 import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPaletteButton;
 import dev.loomstudios.client.ui.LoomPaletteWindow;
+import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
+import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
@@ -131,6 +133,11 @@ public final class CapeEditorScreen extends Screen {
     private LoomCapeFaceWidget canvasWidget;
     private LoomColorPickerWidget colorPicker;
     private LoomLayerListWidget layerListWidget;
+    private LoomPlayerPreviewWidget previewWidget;
+    private LoomPaletteButton paletteButton;
+    private LoomButton inspectorLayersButton;
+    private LoomButton inspectorColorButton;
+    private LoomButton inspectorPropertiesButton;
     private EditBox hexColorField;
     private EditBox redColorField;
     private EditBox greenColorField;
@@ -149,6 +156,23 @@ public final class CapeEditorScreen extends Screen {
     private int toolPanelWidth;
     private int toolPanelHeight;
 
+    private boolean compactMode;
+    private InspectorTab inspectorTab = InspectorTab.LAYERS;
+    private int contentTop;
+    private int contentBottom;
+    private int toolRailLeft;
+    private int toolRailRight;
+    private int canvasLeft;
+    private int canvasRight;
+    private int canvasTop;
+    private int canvasBottom;
+    private int contextTop;
+    private int rightPanelLeft;
+    private int rightPanelRight;
+    private int previewBottom;
+    private int inspectorTop;
+    private int inspectorBottom;
+
     public CapeEditorScreen(Screen parent) {
         super(Component.literal("Loom Studios - Cape Editor"));
         this.parent = parent;
@@ -158,252 +182,875 @@ public final class CapeEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        int margin = 12;
-        int canvasY = 48;
+        this.compactMode = LoomUiTheme.compact(width, height);
 
-        this.toolPanelWidth = Math.min(
-                230,
-                Math.max(190, this.width / 3)
+        int margin = compactMode ? 4 : 8;
+        int gap = compactMode ? 4 : 6;
+        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
+        int navHeight = LoomScreenChrome.navHeight(compactMode);
+        int footerHeight = 18;
+
+        this.contentTop = headerHeight + navHeight + 4;
+        this.contentBottom = height - footerHeight - 4;
+
+        int toolRailWidth = compactMode ? 30 : 38;
+        int rightPanelWidth = compactMode
+                ? Math.max(166, Math.min(182, width / 3))
+                : Math.max(205, Math.min(232, width / 4));
+
+        this.toolRailLeft = margin;
+        this.toolRailRight = toolRailLeft + toolRailWidth;
+        this.rightPanelRight = width - margin;
+        this.rightPanelLeft = rightPanelRight - rightPanelWidth;
+
+        this.canvasLeft = toolRailRight + gap;
+        this.canvasRight = rightPanelLeft - gap;
+
+        int canvasToolbarHeight = compactMode ? 19 : 22;
+        int contextHeight = compactMode ? 43 : 50;
+
+        this.canvasTop = contentTop + canvasToolbarHeight + 3;
+        this.contextTop = contentBottom - contextHeight;
+        this.canvasBottom = contextTop - 4;
+
+        int previewHeight = compactMode
+                ? 72
+                : Math.max(
+                        100,
+                        Math.min(
+                                130,
+                                (contentBottom - contentTop) / 3
+                        )
+                );
+        this.previewBottom = contentTop + previewHeight;
+        int inspectorTabHeight = compactMode ? 18 : 20;
+        this.inspectorTop = previewBottom + inspectorTabHeight + 5;
+        this.inspectorBottom = contentBottom;
+
+        this.toolPanelX = rightPanelLeft;
+        this.toolPanelY = inspectorTop;
+        this.toolPanelWidth = rightPanelWidth;
+        this.toolPanelHeight = inspectorBottom - inspectorTop;
+
+        buildTopNavigation(
+                headerHeight,
+                navHeight,
+                margin
         );
-        this.toolPanelHeight = Math.max(
-                120,
-                this.height - canvasY - margin
+        buildToolRail();
+        buildCanvasToolbar(canvasToolbarHeight);
+        buildCanvas();
+        buildContextBar();
+        buildRightPanel(previewHeight, inspectorTabHeight);
+
+        restoreOrCreatePaletteWindow();
+        syncColorFields();
+        syncLayerFields();
+        updateButtonStates();
+        updateInspectorVisibility();
+    }
+
+    private void buildTopNavigation(
+            int headerHeight,
+            int navHeight,
+            int margin
+    ) {
+        int y = headerHeight;
+        int buttonHeight = navHeight - 2;
+        int compactWidth = 26;
+        int normalWidth = 72;
+        int x = margin;
+
+        addRenderableWidget(navButton(
+                x,
+                y,
+                compactMode ? compactWidth : normalWidth,
+                buttonHeight,
+                "Home",
+                LoomButton.Icon.HOME,
+                false,
+                () -> minecraft.setScreen(parent)
+        ));
+        x += (compactMode ? compactWidth : normalWidth) + 3;
+
+        LoomButton cape = navButton(
+                x,
+                y,
+                compactMode ? compactWidth : normalWidth,
+                buttonHeight,
+                "Cape",
+                LoomButton.Icon.CAPE,
+                true,
+                () -> { }
         );
+        cape.active = false;
+        addRenderableWidget(cape);
+        x += (compactMode ? compactWidth : normalWidth) + 3;
 
-        int canvasWidth = Math.max(
-                170,
-                this.width - margin * 3 - this.toolPanelWidth
-        );
-        int canvasHeight = Math.max(
-                140,
-                this.height - canvasY - margin
-        );
+        addRenderableWidget(navButton(
+                x,
+                y,
+                compactMode ? compactWidth : normalWidth,
+                buttonHeight,
+                "Elytra",
+                LoomButton.Icon.ELYTRA,
+                false,
+                () -> minecraft.setScreen(
+                        new ElytraEditorScreen(this)
+                )
+        ));
+        x += (compactMode ? compactWidth : normalWidth) + 3;
 
-        int canvasX = margin;
-        this.toolPanelX = canvasX + canvasWidth + margin;
-        this.toolPanelY = canvasY;
+        addRenderableWidget(navButton(
+                x,
+                y,
+                compactMode ? compactWidth : normalWidth,
+                buttonHeight,
+                "Import",
+                LoomButton.Icon.IMAGE,
+                false,
+                this::openSmartImport
+        ));
+        x += (compactMode ? compactWidth : normalWidth) + 3;
 
-        this.canvasWidget = addRenderableWidget(new LoomCapeFaceWidget(
-                canvasX,
-                canvasY,
-                canvasWidth,
-                canvasHeight,
-                () -> this.workspaceState.project(),
-                () -> this.workspaceState.revision(),
-                () -> this.capeRegion,
-                this::editPixel,
-                this::commitShape,
-                () -> this.selection,
-                this::setSelection,
-                new LoomCapeFaceWidget.StrokeLifecycle() {
-                    @Override
-                    public void begin() {
-                        ClientProjectWorkspace.beginCompoundEdit();
-                    }
-
-                    @Override
-                    public void end() {
-                        ClientProjectWorkspace.endCompoundEdit();
-                        updateButtonStates();
-                    }
-                },
-                () -> this.brushSize,
-                this::gestureMode
+        addRenderableWidget(navButton(
+                x,
+                y,
+                compactMode ? compactWidth : normalWidth + 10,
+                buttonHeight,
+                compactMode ? "Share" : "Share / Export",
+                LoomButton.Icon.EXPORT,
+                false,
+                () -> minecraft.setScreen(
+                        new LoomCodesScreen(
+                                this,
+                                ClientProjectWorkspace.project()
+                        )
+                )
         ));
 
-        int contentWidth = Math.max(150, this.toolPanelWidth - 20);
-        LinearLayout tools = LinearLayout.vertical().spacing(6);
+        int actionWidth = compactMode ? 26 : 62;
+        int right = width - margin;
 
-        faceButton = createLoomButton(
-                contentWidth,
-                "Face: " + this.capeRegion.displayName(),
+        addRenderableWidget(navButton(
+                right - actionWidth,
+                y,
+                actionWidth,
+                buttonHeight,
+                compactMode ? "Equip" : "Save + Equip",
+                LoomButton.Icon.EQUIP,
+                false,
+                this::saveAndEquip
+        ));
+        right -= actionWidth + 3;
+
+        addRenderableWidget(navButton(
+                right - actionWidth,
+                y,
+                actionWidth,
+                buttonHeight,
+                "Save",
+                LoomButton.Icon.SAVE,
+                false,
+                this::save
+        ));
+        right -= actionWidth + 3;
+
+        int historyWidth = compactMode ? 24 : 42;
+        redoButton = navButton(
+                right - historyWidth,
+                y,
+                historyWidth,
+                buttonHeight,
+                "Redo",
+                LoomButton.Icon.REDO,
+                false,
+                this::redo
+        );
+        addRenderableWidget(redoButton);
+        right -= historyWidth + 3;
+
+        undoButton = navButton(
+                right - historyWidth,
+                y,
+                historyWidth,
+                buttonHeight,
+                "Undo",
+                LoomButton.Icon.UNDO,
+                false,
+                this::undo
+        );
+        addRenderableWidget(undoButton);
+    }
+
+    private LoomButton navButton(
+            int x,
+            int y,
+            int width,
+            int height,
+            String label,
+            LoomButton.Icon icon,
+            boolean selected,
+            Runnable action
+    ) {
+        return new LoomButton(
+                x,
+                y,
+                width,
+                height,
+                Component.literal(label),
+                icon,
+                compactMode,
+                action
+        ).setSelected(selected);
+    }
+
+    private LoomButton iconButton(
+            int x,
+            int y,
+            int width,
+            int height,
+            String label,
+            LoomButton.Icon icon,
+            Runnable action
+    ) {
+        LoomButton button = new LoomButton(
+                x,
+                y,
+                width,
+                height,
+                Component.literal(label),
+                icon,
+                compactMode,
+                action
+        );
+        addRenderableWidget(button);
+        return button;
+    }
+
+    private void buildToolRail() {
+        int x = toolRailLeft + 2;
+        int buttonWidth = toolRailRight - toolRailLeft - 4;
+        int buttonHeight = compactMode ? 26 : 30;
+        int gap = compactMode ? 3 : 4;
+        int y = contentTop + 22;
+
+        pencilButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Pencil", LoomButton.Icon.PENCIL,
+                () -> setTool(Tool.PENCIL)
+        );
+        pencilButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        eraserButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Eraser", LoomButton.Icon.ERASER,
+                () -> setTool(Tool.ERASER)
+        );
+        eraserButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        fillButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Fill", LoomButton.Icon.FILL,
+                () -> setTool(Tool.FILL)
+        );
+        fillButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        eyedropperButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Eyedropper", LoomButton.Icon.EYEDROPPER,
+                () -> setTool(Tool.EYEDROPPER)
+        );
+        eyedropperButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        selectButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Select", LoomButton.Icon.SELECT,
+                () -> setTool(Tool.SELECT)
+        );
+        selectButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        lineButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Line", LoomButton.Icon.LINE,
+                () -> setTool(Tool.LINE)
+        );
+        lineButton.setIconOnly(true);
+        y += buttonHeight + gap;
+
+        rectangleButton = iconButton(
+                x, y, buttonWidth, buttonHeight,
+                "Rectangle", LoomButton.Icon.RECTANGLE,
+                () -> setTool(Tool.RECTANGLE)
+        );
+        rectangleButton.setIconOnly(true);
+    }
+
+    private void buildCanvasToolbar(int toolbarHeight) {
+        int y = contentTop;
+        int h = toolbarHeight;
+        int x = canvasLeft;
+        int gap = 3;
+
+        int faceWidth = compactMode ? 92 : 128;
+        faceButton = iconButton(
+                x,
+                y,
+                faceWidth,
+                h,
+                faceLabel(),
+                LoomButton.Icon.CAPE,
                 this::cycleFace
         );
-        tools.addChild(faceButton);
+        faceButton.setIconOnly(false);
+        x += faceWidth + gap;
 
-        LinearLayout resolutionRow = LinearLayout.horizontal().spacing(4);
-        resolutionDownButton = createLoomButton(
-                48, "Res -", () -> changeResolution(-1)
+        int small = compactMode ? 22 : 28;
+        resolutionDownButton = iconButton(
+                x,
+                y,
+                small,
+                h,
+                "Resolution -",
+                LoomButton.Icon.DOWN,
+                () -> changeResolution(-1)
         );
-        resolutionLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                resolutionLabel(),
+        resolutionDownButton.setIconOnly(true);
+        x += small + gap;
+
+        int resolutionWidth = compactMode ? 70 : 92;
+        resolutionLabelButton = new LoomButton(
+                x,
+                y,
+                resolutionWidth,
+                h,
+                Component.literal(resolutionLabel()),
                 () -> { }
         );
         resolutionLabelButton.active = false;
-        resolutionUpButton = createLoomButton(
-                48, "Res +", () -> changeResolution(1)
-        );
-        resolutionRow.addChild(resolutionDownButton);
-        resolutionRow.addChild(resolutionLabelButton);
-        resolutionRow.addChild(resolutionUpButton);
-        tools.addChild(resolutionRow);
+        addRenderableWidget(resolutionLabelButton);
+        x += resolutionWidth + gap;
 
-        pencilButton = createLoomButton(
-                contentWidth,
-                "Pencil",
-                () -> setTool(Tool.PENCIL)
+        resolutionUpButton = iconButton(
+                x,
+                y,
+                small,
+                h,
+                "Resolution +",
+                LoomButton.Icon.UP,
+                () -> changeResolution(1)
         );
-        tools.addChild(pencilButton);
+        resolutionUpButton.setIconOnly(true);
 
-        eraserButton = createLoomButton(
-                contentWidth,
-                "Eraser",
-                () -> setTool(Tool.ERASER)
+        int right = canvasRight;
+        zoomInButton = iconButton(
+                right - small,
+                y,
+                small,
+                h,
+                "Zoom +",
+                LoomButton.Icon.ZOOM_IN,
+                () -> canvasWidget.zoomIn()
         );
-        tools.addChild(eraserButton);
+        zoomInButton.setIconOnly(true);
+        right -= small + gap;
 
-        fillButton = createLoomButton(
-                contentWidth,
-                "Fill",
-                () -> setTool(Tool.FILL)
+        int zoomWidth = compactMode ? 42 : 52;
+        zoomLabelButton = new LoomButton(
+                right - zoomWidth,
+                y,
+                zoomWidth,
+                h,
+                Component.literal("100%"),
+                () -> canvasWidget.resetZoom()
         );
-        tools.addChild(fillButton);
+        addRenderableWidget(zoomLabelButton);
+        right -= zoomWidth + gap;
 
-        eyedropperButton = createLoomButton(
-                contentWidth,
-                "Eyedropper",
-                () -> setTool(Tool.EYEDROPPER)
+        zoomOutButton = iconButton(
+                right - small,
+                y,
+                small,
+                h,
+                "Zoom -",
+                LoomButton.Icon.ZOOM_OUT,
+                () -> canvasWidget.zoomOut()
         );
-        tools.addChild(eyedropperButton);
+        zoomOutButton.setIconOnly(true);
+    }
 
-        selectButton = createLoomButton(
-                contentWidth,
-                "Select",
-                () -> setTool(Tool.SELECT)
-        );
-        tools.addChild(selectButton);
+    private void buildCanvas() {
+        this.canvasWidget = addRenderableWidget(
+                new LoomCapeFaceWidget(
+                        canvasLeft,
+                        canvasTop,
+                        Math.max(120, canvasRight - canvasLeft),
+                        Math.max(90, canvasBottom - canvasTop),
+                        () -> this.workspaceState.project(),
+                        () -> this.workspaceState.revision(),
+                        () -> this.capeRegion,
+                        this::editPixel,
+                        this::commitShape,
+                        () -> this.selection,
+                        this::setSelection,
+                        new LoomCapeFaceWidget.StrokeLifecycle() {
+                            @Override
+                            public void begin() {
+                                ClientProjectWorkspace.beginCompoundEdit();
+                            }
 
-        lineButton = createLoomButton(
-                contentWidth,
-                "Line",
-                () -> setTool(Tool.LINE)
+                            @Override
+                            public void end() {
+                                ClientProjectWorkspace.endCompoundEdit();
+                                updateButtonStates();
+                            }
+                        },
+                        () -> this.brushSize,
+                        this::gestureMode
+                )
         );
-        tools.addChild(lineButton);
+    }
 
-        rectangleButton = createLoomButton(
-                contentWidth,
-                "Rectangle",
-                () -> setTool(Tool.RECTANGLE)
-        );
-        tools.addChild(rectangleButton);
+    private void buildContextBar() {
+        int x = canvasLeft + 5;
+        int y = contextTop + 4;
+        int h = compactMode ? 17 : 20;
+        int gap = 3;
+        int small = compactMode ? 22 : 28;
 
-        rectangleModeButton = createLoomButton(
-                contentWidth,
-                "Rectangle: Outline",
-                this::toggleRectangleMode
+        brushDownButton = iconButton(
+                x, y, small, h,
+                "Brush -", LoomButton.Icon.DOWN,
+                () -> changeBrushSize(-1)
         );
-        tools.addChild(rectangleModeButton);
+        brushDownButton.setIconOnly(true);
+        x += small + gap;
 
-        LinearLayout brushRow = LinearLayout.horizontal().spacing(4);
-        brushDownButton = createLoomButton(
-                48, "Brush -", () -> changeBrushSize(-1)
-        );
-        brushLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                brushLabel(),
+        int brushLabelWidth = compactMode ? 54 : 72;
+        brushLabelButton = new LoomButton(
+                x,
+                y,
+                brushLabelWidth,
+                h,
+                Component.literal(brushLabel()),
                 () -> { }
         );
         brushLabelButton.active = false;
-        brushUpButton = createLoomButton(
-                48, "Brush +", () -> changeBrushSize(1)
-        );
-        brushRow.addChild(brushDownButton);
-        brushRow.addChild(brushLabelButton);
-        brushRow.addChild(brushUpButton);
-        tools.addChild(brushRow);
+        addRenderableWidget(brushLabelButton);
+        x += brushLabelWidth + gap;
 
-        symmetryButton = createLoomButton(
-                contentWidth,
+        brushUpButton = iconButton(
+                x, y, small, h,
+                "Brush +", LoomButton.Icon.UP,
+                () -> changeBrushSize(1)
+        );
+        brushUpButton.setIconOnly(true);
+        x += small + gap;
+
+        symmetryButton = iconButton(
+                x,
+                y,
+                compactMode ? 74 : 112,
+                h,
                 symmetryLabel(),
+                LoomButton.Icon.FLIP_H,
                 this::cycleSymmetry
         );
-        tools.addChild(symmetryButton);
+        symmetryButton.setIconOnly(false);
 
-        selectionClearButton = createLoomButton(
-                contentWidth,
-                "Clear Selection",
+        rectangleModeButton = iconButton(
+                x + (compactMode ? 78 : 116),
+                y,
+                compactMode ? 72 : 112,
+                h,
+                "Rectangle: Outline",
+                LoomButton.Icon.RECTANGLE,
+                this::toggleRectangleMode
+        );
+        rectangleModeButton.setIconOnly(false);
+
+        int secondY = y + h + 3;
+        int control = compactMode ? 24 : 31;
+
+        selectionClearButton = iconButton(
+                canvasLeft + 5,
+                secondY,
+                compactMode ? 58 : 82,
+                h,
+                "Clear",
+                LoomButton.Icon.DELETE,
                 this::clearSelection
         );
-        tools.addChild(selectionClearButton);
+        selectionClearButton.setIconOnly(false);
 
-        LinearLayout selectionHorizontalRow = LinearLayout.horizontal().spacing(4);
-        selectionLeftButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Move Left",
+        int sx = canvasLeft
+                + 5
+                + selectionClearButton.getWidth()
+                + 3;
+
+        selectionLeftButton = iconButton(
+                sx, secondY, control, h,
+                "Left", LoomButton.Icon.MOVE,
                 () -> nudgeSelection(-1, 0)
         );
-        selectionRightButton = createLoomButton(
-                contentWidth - 4 - selectionLeftButton.getWidth(),
-                "Move Right",
+        selectionLeftButton.setIconOnly(true);
+        sx += control + 3;
+
+        selectionRightButton = iconButton(
+                sx, secondY, control, h,
+                "Right", LoomButton.Icon.MOVE,
                 () -> nudgeSelection(1, 0)
         );
-        selectionHorizontalRow.addChild(selectionLeftButton);
-        selectionHorizontalRow.addChild(selectionRightButton);
-        tools.addChild(selectionHorizontalRow);
+        selectionRightButton.setIconOnly(true);
+        sx += control + 3;
 
-        LinearLayout selectionVerticalRow = LinearLayout.horizontal().spacing(4);
-        selectionUpButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Move Up",
+        selectionUpButton = iconButton(
+                sx, secondY, control, h,
+                "Up", LoomButton.Icon.UP,
                 () -> nudgeSelection(0, -1)
         );
-        selectionDownButton = createLoomButton(
-                contentWidth - 4 - selectionUpButton.getWidth(),
-                "Move Down",
+        selectionUpButton.setIconOnly(true);
+        sx += control + 3;
+
+        selectionDownButton = iconButton(
+                sx, secondY, control, h,
+                "Down", LoomButton.Icon.DOWN,
                 () -> nudgeSelection(0, 1)
         );
-        selectionVerticalRow.addChild(selectionUpButton);
-        selectionVerticalRow.addChild(selectionDownButton);
-        tools.addChild(selectionVerticalRow);
+        selectionDownButton.setIconOnly(true);
+        sx += control + 3;
 
-        LinearLayout selectionFlipRow = LinearLayout.horizontal().spacing(4);
-        selectionFlipHorizontalButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Flip H",
+        selectionFlipHorizontalButton = iconButton(
+                sx, secondY, control, h,
+                "Flip H", LoomButton.Icon.FLIP_H,
                 () -> flipSelection(true, false)
         );
-        selectionFlipVerticalButton = createLoomButton(
-                contentWidth - 4 - selectionFlipHorizontalButton.getWidth(),
-                "Flip V",
+        selectionFlipHorizontalButton.setIconOnly(true);
+        sx += control + 3;
+
+        selectionFlipVerticalButton = iconButton(
+                sx, secondY, control, h,
+                "Flip V", LoomButton.Icon.FLIP_V,
                 () -> flipSelection(false, true)
         );
-        selectionFlipRow.addChild(selectionFlipHorizontalButton);
-        selectionFlipRow.addChild(selectionFlipVerticalButton);
-        tools.addChild(selectionFlipRow);
+        selectionFlipVerticalButton.setIconOnly(true);
+    }
 
-        LinearLayout zoomRow = LinearLayout.horizontal().spacing(4);
-        zoomOutButton = createLoomButton(
-                48, "Zoom -", () -> canvasWidget.zoomOut()
+    private void buildRightPanel(
+            int previewHeight,
+            int inspectorTabHeight
+    ) {
+        this.previewWidget = new LoomPlayerPreviewWidget(
+                rightPanelLeft + 2,
+                contentTop + 20,
+                rightPanelRight - rightPanelLeft - 4,
+                Math.max(42, previewHeight - 22),
+                () -> workspaceState.project(),
+                LoomPlayerPreviewWidget.Mode.CAPE
         );
-        zoomLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                "100%",
-                () -> canvasWidget.resetZoom()
-        );
-        zoomInButton = createLoomButton(
-                48, "Zoom +", () -> canvasWidget.zoomIn()
-        );
-        zoomRow.addChild(zoomOutButton);
-        zoomRow.addChild(zoomLabelButton);
-        zoomRow.addChild(zoomInButton);
-        tools.addChild(zoomRow);
+        addRenderableWidget(previewWidget);
 
+        int tabsY = previewBottom + 3;
+        int tabGap = 3;
+        int tabWidth = Math.max(
+                42,
+                (rightPanelRight - rightPanelLeft - tabGap * 2) / 3
+        );
+
+        inspectorLayersButton = navButton(
+                rightPanelLeft,
+                tabsY,
+                tabWidth,
+                inspectorTabHeight,
+                "Layers",
+                LoomButton.Icon.LAYERS,
+                true,
+                () -> setInspectorTab(InspectorTab.LAYERS)
+        );
+        addRenderableWidget(inspectorLayersButton);
+
+        inspectorColorButton = navButton(
+                rightPanelLeft + tabWidth + tabGap,
+                tabsY,
+                tabWidth,
+                inspectorTabHeight,
+                "Color",
+                LoomButton.Icon.PALETTE,
+                false,
+                () -> setInspectorTab(InspectorTab.COLOR)
+        );
+        addRenderableWidget(inspectorColorButton);
+
+        inspectorPropertiesButton = navButton(
+                rightPanelLeft + (tabWidth + tabGap) * 2,
+                tabsY,
+                rightPanelRight
+                        - (rightPanelLeft + (tabWidth + tabGap) * 2),
+                inspectorTabHeight,
+                "Props",
+                LoomButton.Icon.SETTINGS,
+                false,
+                () -> setInspectorTab(InspectorTab.PROPERTIES)
+        );
+        addRenderableWidget(inspectorPropertiesButton);
+
+        buildLayerInspector();
+        buildColorInspector();
+        buildPropertyInspector();
+    }
+
+    private void buildLayerInspector() {
+        int left = rightPanelLeft + 4;
+        int panelWidth = rightPanelRight - rightPanelLeft - 8;
+        int y = inspectorTop + 3;
+        int h = compactMode ? 17 : 20;
+        int gap = compactMode ? 2 : 3;
+
+        int listHeight = compactMode ? 62 : 92;
+        this.layerListWidget = new LoomLayerListWidget(
+                left,
+                y,
+                panelWidth,
+                listHeight,
+                () -> this.workspaceState.project().cape(),
+                () -> this.selectedLayerId,
+                this::selectLayer,
+                this::toggleLayerVisibility,
+                this::toggleLayerLock
+        );
+        addRenderableWidget(layerListWidget);
+        y += listHeight + gap;
+
+        int third = Math.max(
+                32,
+                (panelWidth - gap * 2) / 3
+        );
+
+        layerAddButton = iconButton(
+                left,
+                y,
+                third,
+                h,
+                "+ Paint",
+                LoomButton.Icon.PLUS,
+                this::addLayer
+        );
+        layerAddButton.setIconOnly(compactMode);
+
+        layerGradientAddButton = iconButton(
+                left + third + gap,
+                y,
+                third,
+                h,
+                "Gradient",
+                LoomButton.Icon.GRADIENT,
+                this::addGradientLayer
+        );
+        layerGradientAddButton.setIconOnly(compactMode);
+
+        layerImportButton = iconButton(
+                left + (third + gap) * 2,
+                y,
+                panelWidth - third * 2 - gap * 2,
+                h,
+                "Import",
+                LoomButton.Icon.IMAGE,
+                this::openSmartImport
+        );
+        layerImportButton.setIconOnly(compactMode);
+        y += h + gap;
+
+        int quarter = Math.max(
+                25,
+                (panelWidth - gap * 3) / 4
+        );
+
+        layerDuplicateButton = iconButton(
+                left, y, quarter, h,
+                "Copy", LoomButton.Icon.COPY,
+                this::duplicateLayer
+        );
+        layerDuplicateButton.setIconOnly(true);
+
+        layerDeleteButton = iconButton(
+                left + quarter + gap,
+                y,
+                quarter,
+                h,
+                "Delete",
+                LoomButton.Icon.DELETE,
+                this::deleteLayer
+        );
+        layerDeleteButton
+                .setIconOnly(true)
+                .setDanger(true);
+
+        layerUpButton = iconButton(
+                left + (quarter + gap) * 2,
+                y,
+                quarter,
+                h,
+                "Up",
+                LoomButton.Icon.UP,
+                () -> moveLayer(1)
+        );
+        layerUpButton.setIconOnly(true);
+
+        layerDownButton = iconButton(
+                left + (quarter + gap) * 3,
+                y,
+                panelWidth - quarter * 3 - gap * 3,
+                h,
+                "Down",
+                LoomButton.Icon.DOWN,
+                () -> moveLayer(-1)
+        );
+        layerDownButton.setIconOnly(true);
+        y += h + gap;
+
+        int renameWidth = compactMode ? 44 : 52;
+        this.layerNameField = new EditBox(
+                this.font,
+                left,
+                y,
+                Math.max(
+                        48,
+                        panelWidth - renameWidth - gap
+                ),
+                h,
+                Component.literal("Layer name")
+        );
+        this.layerNameField.setMaxLength(
+                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
+        );
+        this.layerNameField.setHint(
+                Component.literal("Layer name")
+        );
+        addRenderableWidget(layerNameField);
+
+        layerRenameButton = iconButton(
+                left + panelWidth - renameWidth,
+                y,
+                renameWidth,
+                h,
+                "Rename",
+                LoomButton.Icon.SETTINGS,
+                this::renameLayer
+        );
+        layerRenameButton.setIconOnly(compactMode);
+        y += h + gap;
+
+        int small = compactMode ? 22 : 28;
+        layerOpacityDownButton = iconButton(
+                left,
+                y,
+                small,
+                h,
+                "Opacity -",
+                LoomButton.Icon.DOWN,
+                () -> changeLayerOpacity(-0.1F)
+        );
+        layerOpacityDownButton.setIconOnly(true);
+
+        int opacityLabelWidth =
+                panelWidth - small * 2 - gap * 2;
+        layerOpacityLabelButton = new LoomButton(
+                left + small + gap,
+                y,
+                opacityLabelWidth,
+                h,
+                Component.literal("Opacity 100%"),
+                () -> { }
+        );
+        layerOpacityLabelButton.active = false;
+        addRenderableWidget(layerOpacityLabelButton);
+
+        layerOpacityUpButton = iconButton(
+                left
+                        + small
+                        + gap
+                        + opacityLabelWidth
+                        + gap,
+                y,
+                small,
+                h,
+                "Opacity +",
+                LoomButton.Icon.UP,
+                () -> changeLayerOpacity(0.1F)
+        );
+        layerOpacityUpButton.setIconOnly(true);
+        y += h + gap;
+
+        layerBlendButton = iconButton(
+                left,
+                y,
+                panelWidth,
+                h,
+                "Blend: Normal",
+                LoomButton.Icon.LAYERS,
+                this::cycleLayerBlendMode
+        );
+        layerBlendButton.setIconOnly(false);
+        y += h + gap;
+
+        int half = (panelWidth - gap) / 2;
+        layerEmissiveButton = iconButton(
+                left,
+                y,
+                half,
+                h,
+                "Emissive",
+                LoomButton.Icon.EMISSIVE,
+                this::toggleLayerEmissive
+        );
+        layerEmissiveButton.setIconOnly(compactMode);
+
+        layerLockButton = iconButton(
+                left + half + gap,
+                y,
+                panelWidth - half - gap,
+                h,
+                "Lock",
+                LoomButton.Icon.LOCK,
+                this::toggleLayerLock
+        );
+        layerLockButton.setIconOnly(compactMode);
+    }
+
+    private void buildColorInspector() {
+        int left = rightPanelLeft + 4;
+        int panelWidth = rightPanelRight - rightPanelLeft - 8;
+        int y = inspectorTop + 3;
+        int gap = 3;
+
+        int pickerHeight = compactMode ? 118 : 150;
         this.colorPicker = new LoomColorPickerWidget(
-                0,
-                0,
-                contentWidth,
-                150,
+                left,
+                y,
+                panelWidth,
+                pickerHeight,
                 this.selectedColor,
                 this::setSelectedColor
         );
-        tools.addChild(this.colorPicker);
+        addRenderableWidget(colorPicker);
+        y += pickerHeight + gap;
 
-        this.hexColorField = createHexColorField(contentWidth);
-        tools.addChild(this.hexColorField);
+        this.hexColorField = createHexColorField(panelWidth);
+        this.hexColorField.setX(left);
+        this.hexColorField.setY(y);
+        addRenderableWidget(hexColorField);
+        y += 18 + gap;
 
-        LinearLayout rgbaRow = LinearLayout.horizontal().spacing(4);
-        int channelWidth = Math.max(30, (contentWidth - 12) / 4);
+        int channelGap = 3;
+        int channelWidth = Math.max(
+                26,
+                (panelWidth - channelGap * 3) / 4
+        );
 
         this.redColorField = createChannelField(
                 channelWidth,
@@ -421,425 +1068,429 @@ public final class CapeEditorScreen extends Screen {
                 0
         );
         this.alphaColorField = createAlphaField(
-                contentWidth - channelWidth * 3 - 12
+                panelWidth
+                        - channelWidth * 3
+                        - channelGap * 3
         );
 
-        rgbaRow.addChild(this.redColorField);
-        rgbaRow.addChild(this.greenColorField);
-        rgbaRow.addChild(this.blueColorField);
-        rgbaRow.addChild(this.alphaColorField);
-        tools.addChild(rgbaRow);
+        EditBox[] fields = {
+                redColorField,
+                greenColorField,
+                blueColorField,
+                alphaColorField
+        };
+        int fx = left;
+        for (EditBox field : fields) {
+            field.setX(fx);
+            field.setY(y);
+            addRenderableWidget(field);
+            fx += field.getWidth() + channelGap;
+        }
+        y += 18 + gap;
 
-        tools.addChild(new LoomPaletteButton(
-                0,
-                0,
-                contentWidth,
-                22,
+        this.paletteButton = new LoomPaletteButton(
+                left,
+                y,
+                panelWidth,
+                compactMode ? 18 : 20,
                 this::togglePaletteWindow
-        ));
+        );
+        addRenderableWidget(paletteButton);
+    }
 
-        this.layerListWidget = new LoomLayerListWidget(
-                0,
-                0,
-                contentWidth,
-                92,
-                () -> this.workspaceState.project().cape(),
-                () -> this.selectedLayerId,
-                this::selectLayer,
-                this::toggleLayerVisibility,
-                this::toggleLayerLock
-        );
-        tools.addChild(this.layerListWidget);
+    private void buildPropertyInspector() {
+        int left = rightPanelLeft + 4;
+        int panelWidth = rightPanelRight - rightPanelLeft - 8;
+        int y = inspectorTop + 3;
+        int h = compactMode ? 16 : 18;
+        int gap = compactMode ? 2 : 3;
+        int small = compactMode ? 22 : 28;
+        int centerWidth = panelWidth - small * 2 - gap * 2;
 
-        LinearLayout layerCreateRow = LinearLayout.horizontal().spacing(4);
-        int layerThird = Math.max(38, (contentWidth - 8) / 3);
-
-        layerAddButton = createLoomButton(
-                layerThird,
-                "+ Paint",
-                this::addLayer
-        );
-        layerDuplicateButton = createLoomButton(
-                layerThird,
-                "Copy",
-                this::duplicateLayer
-        );
-        layerDeleteButton = createLoomButton(
-                contentWidth - layerThird * 2 - 8,
-                "Delete",
-                this::deleteLayer
-        );
-
-        layerCreateRow.addChild(layerAddButton);
-        layerCreateRow.addChild(layerDuplicateButton);
-        layerCreateRow.addChild(layerDeleteButton);
-        tools.addChild(layerCreateRow);
-
-        LinearLayout typedCreateRow = LinearLayout.horizontal().spacing(4);
-        layerGradientAddButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "New Gradient",
-                this::addGradientLayer
-        );
-        layerImportButton = createLoomButton(
-                contentWidth - 4 - layerGradientAddButton.getWidth(),
-                "Import PNG",
-                this::openSmartImport
-        );
-        typedCreateRow.addChild(layerGradientAddButton);
-        typedCreateRow.addChild(layerImportButton);
-        tools.addChild(typedCreateRow);
-
-        LinearLayout layerMoveRow = LinearLayout.horizontal().spacing(4);
-        layerUpButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Layer Up",
-                () -> moveLayer(1)
-        );
-        layerDownButton = createLoomButton(
-                contentWidth - 4 - layerUpButton.getWidth(),
-                "Layer Down",
-                () -> moveLayer(-1)
-        );
-        layerMoveRow.addChild(layerUpButton);
-        layerMoveRow.addChild(layerDownButton);
-        tools.addChild(layerMoveRow);
-
-        LinearLayout layerNameRow = LinearLayout.horizontal().spacing(4);
-        this.layerNameField = new EditBox(
-                this.font,
-                0,
-                0,
-                Math.max(72, contentWidth - 74),
-                18,
-                Component.literal("Layer name")
-        );
-        this.layerNameField.setMaxLength(
-                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
-        );
-        this.layerNameField.setHint(Component.literal("Layer name"));
-
-        this.layerRenameButton = createLoomButton(
-                Math.max(70, contentWidth - this.layerNameField.getWidth() - 4),
-                "Rename",
-                this::renameLayer
-        );
-
-        layerNameRow.addChild(this.layerNameField);
-        layerNameRow.addChild(this.layerRenameButton);
-        tools.addChild(layerNameRow);
-
-        this.layerBlendButton = createLoomButton(
-                contentWidth,
-                "Blend: Normal",
-                this::cycleLayerBlendMode
-        );
-        tools.addChild(this.layerBlendButton);
-
-        this.layerEmissiveButton = createLoomButton(
-                contentWidth,
-                "Emissive: Off",
-                this::toggleLayerEmissive
-        );
-        tools.addChild(this.layerEmissiveButton);
-
-        this.layerLockButton = createLoomButton(
-                contentWidth,
-                "Lock: Off",
-                this::toggleLayerLock
-        );
-        tools.addChild(this.layerLockButton);
-
-        this.gradientTypeButton = createLoomButton(
-                contentWidth,
-                "Gradient Type",
+        gradientTypeButton = iconButton(
+                left,
+                y,
+                panelWidth,
+                h,
+                "Gradient: Linear",
+                LoomButton.Icon.GRADIENT,
                 this::cycleGradientType
         );
-        tools.addChild(this.gradientTypeButton);
+        gradientTypeButton.setIconOnly(false);
+        y += h + gap;
 
-        LinearLayout gradientAngleRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientAngleDownButton = createLoomButton(
-                48,
+        gradientAngleDownButton = iconButton(
+                left,
+                y,
+                small,
+                h,
                 "Angle -",
+                LoomButton.Icon.DOWN,
                 () -> rotateGradient(-15.0)
         );
-        gradientAngleRow.addChild(this.gradientAngleDownButton);
-        this.gradientAngleButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                "0°",
+        gradientAngleDownButton.setIconOnly(true);
+
+        gradientAngleButton = new LoomButton(
+                left + small + gap,
+                y,
+                centerWidth,
+                h,
+                Component.literal("0°"),
                 () -> { }
         );
-        this.gradientAngleButton.active = false;
-        gradientAngleRow.addChild(this.gradientAngleButton);
-        this.gradientAngleUpButton = createLoomButton(
-                48,
+        gradientAngleButton.active = false;
+        addRenderableWidget(gradientAngleButton);
+
+        gradientAngleUpButton = iconButton(
+                left + small + gap + centerWidth + gap,
+                y,
+                small,
+                h,
                 "Angle +",
+                LoomButton.Icon.UP,
                 () -> rotateGradient(15.0)
         );
-        gradientAngleRow.addChild(this.gradientAngleUpButton);
-        tools.addChild(gradientAngleRow);
+        gradientAngleUpButton.setIconOnly(true);
+        y += h + gap;
 
-        LinearLayout gradientMoveRow =
-                LinearLayout.horizontal().spacing(4);
-        int gradientQuarter = Math.max(28, (contentWidth - 12) / 4);
-        this.gradientMoveLeftButton = createLoomButton(
-                gradientQuarter,
-                "Move <",
+        int quarter = Math.max(
+                22,
+                (panelWidth - gap * 3) / 4
+        );
+        gradientMoveLeftButton = iconButton(
+                left, y, quarter, h,
+                "Left", LoomButton.Icon.MOVE,
                 () -> moveGradient(-1, 0)
         );
-        this.gradientMoveUpButton = createLoomButton(
-                gradientQuarter,
-                "Move ^",
+        gradientMoveLeftButton.setIconOnly(true);
+        gradientMoveUpButton = iconButton(
+                left + quarter + gap,
+                y,
+                quarter,
+                h,
+                "Up",
+                LoomButton.Icon.UP,
                 () -> moveGradient(0, -1)
         );
-        this.gradientMoveDownButton = createLoomButton(
-                gradientQuarter,
-                "Move v",
+        gradientMoveUpButton.setIconOnly(true);
+        gradientMoveDownButton = iconButton(
+                left + (quarter + gap) * 2,
+                y,
+                quarter,
+                h,
+                "Down",
+                LoomButton.Icon.DOWN,
                 () -> moveGradient(0, 1)
         );
-        this.gradientMoveRightButton = createLoomButton(
-                Math.max(
-                        28,
-                        contentWidth - gradientQuarter * 3 - 12
-                ),
-                "Move >",
+        gradientMoveDownButton.setIconOnly(true);
+        gradientMoveRightButton = iconButton(
+                left + (quarter + gap) * 3,
+                y,
+                panelWidth - quarter * 3 - gap * 3,
+                h,
+                "Right",
+                LoomButton.Icon.MOVE,
                 () -> moveGradient(1, 0)
         );
-        gradientMoveRow.addChild(this.gradientMoveLeftButton);
-        gradientMoveRow.addChild(this.gradientMoveUpButton);
-        gradientMoveRow.addChild(this.gradientMoveDownButton);
-        gradientMoveRow.addChild(this.gradientMoveRightButton);
-        tools.addChild(gradientMoveRow);
+        gradientMoveRightButton.setIconOnly(true);
+        y += h + gap;
 
-        LinearLayout gradientScaleRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientScaleDownButton = createLoomButton(
-                48,
+        gradientScaleDownButton = iconButton(
+                left,
+                y,
+                small,
+                h,
                 "Scale -",
+                LoomButton.Icon.DOWN,
                 () -> scaleGradient(0.9)
         );
-        this.gradientScaleLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                "100%",
+        gradientScaleDownButton.setIconOnly(true);
+
+        gradientScaleLabelButton = new LoomButton(
+                left + small + gap,
+                y,
+                centerWidth,
+                h,
+                Component.literal("100%"),
                 () -> { }
         );
-        this.gradientScaleLabelButton.active = false;
-        this.gradientScaleUpButton = createLoomButton(
-                48,
+        gradientScaleLabelButton.active = false;
+        addRenderableWidget(gradientScaleLabelButton);
+
+        gradientScaleUpButton = iconButton(
+                left + small + gap + centerWidth + gap,
+                y,
+                small,
+                h,
                 "Scale +",
+                LoomButton.Icon.UP,
                 () -> scaleGradient(1.1)
         );
-        gradientScaleRow.addChild(this.gradientScaleDownButton);
-        gradientScaleRow.addChild(this.gradientScaleLabelButton);
-        gradientScaleRow.addChild(this.gradientScaleUpButton);
-        tools.addChild(gradientScaleRow);
+        gradientScaleUpButton.setIconOnly(true);
+        y += h + gap;
 
-        LinearLayout gradientMirrorRow =
-                LinearLayout.horizontal().spacing(4);
-        int gradientThird = Math.max(38, (contentWidth - 8) / 3);
-        this.gradientMirrorHorizontalButton = createLoomButton(
-                gradientThird,
-                "Mirror H",
+        int third = Math.max(
+                28,
+                (panelWidth - gap * 2) / 3
+        );
+        gradientMirrorHorizontalButton = iconButton(
+                left, y, third, h,
+                "Mirror H", LoomButton.Icon.FLIP_H,
                 () -> toggleGradientMirror(true)
         );
-        this.gradientMirrorVerticalButton = createLoomButton(
-                gradientThird,
-                "Mirror V",
+        gradientMirrorHorizontalButton.setIconOnly(compactMode);
+
+        gradientMirrorVerticalButton = iconButton(
+                left + third + gap,
+                y,
+                third,
+                h,
+                "Mirror V", LoomButton.Icon.FLIP_V,
                 () -> toggleGradientMirror(false)
         );
-        this.gradientResetTransformButton = createLoomButton(
-                Math.max(
-                        38,
-                        contentWidth - gradientThird * 2 - 8
-                ),
+        gradientMirrorVerticalButton.setIconOnly(compactMode);
+
+        gradientResetTransformButton = iconButton(
+                left + (third + gap) * 2,
+                y,
+                panelWidth - third * 2 - gap * 2,
+                h,
                 "Reset",
+                LoomButton.Icon.RESET,
                 this::resetGradientTransform
         );
-        gradientMirrorRow.addChild(this.gradientMirrorHorizontalButton);
-        gradientMirrorRow.addChild(this.gradientMirrorVerticalButton);
-        gradientMirrorRow.addChild(this.gradientResetTransformButton);
-        tools.addChild(gradientMirrorRow);
+        gradientResetTransformButton.setIconOnly(compactMode);
+        y += h + gap;
 
-        LinearLayout gradientColorRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientStartButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Set Start",
-                () -> setGradientEndpoint(true)
-        );
-        this.gradientEndButton = createLoomButton(
-                contentWidth - 4 - gradientStartButton.getWidth(),
-                "Set End",
-                () -> setGradientEndpoint(false)
-        );
-        gradientColorRow.addChild(this.gradientStartButton);
-        gradientColorRow.addChild(this.gradientEndButton);
-        tools.addChild(gradientColorRow);
-
-        LinearLayout gradientEffectRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientRepeatButton = createLoomButton(
-                (contentWidth - 4) / 2,
+        int half = (panelWidth - gap) / 2;
+        gradientRepeatButton = iconButton(
+                left,
+                y,
+                half,
+                h,
                 "Repeat: Off",
+                LoomButton.Icon.LOOP,
                 this::toggleGradientRepeat
         );
-        this.gradientDitherButton = createLoomButton(
-                contentWidth - 4 - gradientRepeatButton.getWidth(),
+        gradientRepeatButton.setIconOnly(compactMode);
+
+        gradientDitherButton = iconButton(
+                left + half + gap,
+                y,
+                panelWidth - half - gap,
+                h,
                 "Dither: Off",
+                LoomButton.Icon.GRADIENT,
                 this::toggleGradientDither
         );
-        gradientEffectRow.addChild(this.gradientRepeatButton);
-        gradientEffectRow.addChild(this.gradientDitherButton);
-        tools.addChild(gradientEffectRow);
+        gradientDitherButton.setIconOnly(compactMode);
+        y += h + gap;
 
-        LinearLayout gradientStopNavRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientStopPreviousButton = createLoomButton(
-                48,
+        gradientStopPreviousButton = iconButton(
+                left,
+                y,
+                small,
+                h,
                 "Stop <",
+                LoomButton.Icon.BACK,
                 () -> selectGradientStop(-1)
         );
-        this.gradientStopLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                "Stop",
+        gradientStopPreviousButton.setIconOnly(true);
+
+        gradientStopLabelButton = new LoomButton(
+                left + small + gap,
+                y,
+                centerWidth,
+                h,
+                Component.literal("Stop"),
                 () -> { }
         );
-        this.gradientStopLabelButton.active = false;
-        this.gradientStopNextButton = createLoomButton(
-                48,
+        gradientStopLabelButton.active = false;
+        addRenderableWidget(gradientStopLabelButton);
+
+        gradientStopNextButton = iconButton(
+                left + small + gap + centerWidth + gap,
+                y,
+                small,
+                h,
                 "Stop >",
+                LoomButton.Icon.PLAY,
                 () -> selectGradientStop(1)
         );
-        gradientStopNavRow.addChild(this.gradientStopPreviousButton);
-        gradientStopNavRow.addChild(this.gradientStopLabelButton);
-        gradientStopNavRow.addChild(this.gradientStopNextButton);
-        tools.addChild(gradientStopNavRow);
+        gradientStopNextButton.setIconOnly(true);
+        y += h + gap;
 
-        LinearLayout gradientStopEditRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientStopAddButton = createLoomButton(
-                (contentWidth - 4) / 2,
+        gradientStopAddButton = iconButton(
+                left,
+                y,
+                half,
+                h,
                 "Add Stop",
+                LoomButton.Icon.PLUS,
                 this::addGradientStop
         );
-        this.gradientStopRemoveButton = createLoomButton(
-                contentWidth - 4 - gradientStopAddButton.getWidth(),
+        gradientStopAddButton.setIconOnly(compactMode);
+
+        gradientStopRemoveButton = iconButton(
+                left + half + gap,
+                y,
+                panelWidth - half - gap,
+                h,
                 "Remove Stop",
+                LoomButton.Icon.DELETE,
                 this::removeGradientStop
         );
-        gradientStopEditRow.addChild(this.gradientStopAddButton);
-        gradientStopEditRow.addChild(this.gradientStopRemoveButton);
-        tools.addChild(gradientStopEditRow);
+        gradientStopRemoveButton.setIconOnly(compactMode);
+        y += h + gap;
 
-        LinearLayout gradientStopPositionRow =
-                LinearLayout.horizontal().spacing(4);
-        this.gradientStopPositionDownButton = createLoomButton(
-                (contentWidth - 4) / 2,
+        gradientStopPositionDownButton = iconButton(
+                left,
+                y,
+                half,
+                h,
                 "Position -",
+                LoomButton.Icon.DOWN,
                 () -> moveGradientStop(-0.05)
         );
-        this.gradientStopPositionUpButton = createLoomButton(
-                contentWidth - 4 - gradientStopPositionDownButton.getWidth(),
+        gradientStopPositionDownButton.setIconOnly(compactMode);
+
+        gradientStopPositionUpButton = iconButton(
+                left + half + gap,
+                y,
+                panelWidth - half - gap,
+                h,
                 "Position +",
+                LoomButton.Icon.UP,
                 () -> moveGradientStop(0.05)
         );
-        gradientStopPositionRow.addChild(
-                this.gradientStopPositionDownButton
-        );
-        gradientStopPositionRow.addChild(
-                this.gradientStopPositionUpButton
-        );
-        tools.addChild(gradientStopPositionRow);
+        gradientStopPositionUpButton.setIconOnly(compactMode);
+        y += h + gap;
 
-        this.gradientStopColorButton = createLoomButton(
-                contentWidth,
-                "Set Selected Stop = Current Color",
+        gradientStopColorButton = iconButton(
+                left,
+                y,
+                panelWidth,
+                h,
+                compactMode
+                        ? "Set Color"
+                        : "Set Stop = Current Color",
+                LoomButton.Icon.PALETTE,
                 this::setSelectedGradientStopColor
         );
-        tools.addChild(this.gradientStopColorButton);
+        gradientStopColorButton.setIconOnly(false);
+    }
 
-        LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
-        layerOpacityDownButton = createLoomButton(
-                48,
-                "Op -",
-                () -> changeLayerOpacity(-0.1F)
-        );
-        layerOpacityLabelButton = createLoomButton(
-                Math.max(42, contentWidth - 104),
-                "Opacity 100%",
-                () -> { }
-        );
-        layerOpacityLabelButton.active = false;
-        layerOpacityUpButton = createLoomButton(
-                48,
-                "Op +",
-                () -> changeLayerOpacity(0.1F)
-        );
-        layerOpacityRow.addChild(layerOpacityDownButton);
-        layerOpacityRow.addChild(layerOpacityLabelButton);
-        layerOpacityRow.addChild(layerOpacityUpButton);
-        tools.addChild(layerOpacityRow);
+    private void setInspectorTab(InspectorTab tab) {
+        this.inspectorTab = tab;
+        updateInspectorVisibility();
+    }
 
-        LinearLayout historyRow = LinearLayout.horizontal().spacing(4);
-        undoButton = createLoomButton(
-                (contentWidth - 4) / 2,
-                "Undo",
-                this::undo
-        );
-        redoButton = createLoomButton(
-                contentWidth - 4 - undoButton.getWidth(),
-                "Redo",
-                this::redo
-        );
-        historyRow.addChild(undoButton);
-        historyRow.addChild(redoButton);
-        tools.addChild(historyRow);
+    private void updateInspectorVisibility() {
+        boolean layers = inspectorTab == InspectorTab.LAYERS;
+        boolean color = inspectorTab == InspectorTab.COLOR;
+        boolean properties =
+                inspectorTab == InspectorTab.PROPERTIES;
 
-        tools.addChild(createLoomButton(
-                contentWidth,
-                "3D Preview",
-                () -> this.minecraft.setScreen(
-                        new LoomPlayerPreviewScreen(this)
-                )
-        ));
+        LoomLayer layer = workspaceState == null
+                || workspaceState.project().cape().layers().isEmpty()
+                ? null
+                : selectedLayer();
 
-        tools.addChild(createLoomButton(
-                contentWidth,
-                "Save",
-                this::save
-        ));
+        boolean gradient = properties
+                && layer != null
+                && layer.kind() == LayerKind.GRADIENT;
 
-        tools.addChild(createLoomButton(
-                contentWidth,
-                "Save + Equip",
-                this::saveAndEquip
-        ));
+        if (inspectorLayersButton != null) {
+            inspectorLayersButton.setSelected(layers);
+        }
+        if (inspectorColorButton != null) {
+            inspectorColorButton.setSelected(color);
+        }
+        if (inspectorPropertiesButton != null) {
+            inspectorPropertiesButton.setSelected(properties);
+        }
 
-        tools.addChild(createLoomButton(
-                contentWidth,
-                "Back",
-                () -> this.minecraft.setScreen(parent)
-        ));
+        if (layerListWidget != null) layerListWidget.visible = layers;
+        if (layerAddButton != null) layerAddButton.visible = layers;
+        if (layerGradientAddButton != null) layerGradientAddButton.visible = layers;
+        if (layerImportButton != null) layerImportButton.visible = layers;
+        if (layerDuplicateButton != null) layerDuplicateButton.visible = layers;
+        if (layerDeleteButton != null) layerDeleteButton.visible = layers;
+        if (layerUpButton != null) layerUpButton.visible = layers;
+        if (layerDownButton != null) layerDownButton.visible = layers;
+        if (layerNameField != null) layerNameField.setVisible(layers);
+        if (layerRenameButton != null) layerRenameButton.visible = layers;
+        if (layerOpacityDownButton != null) layerOpacityDownButton.visible = layers;
+        if (layerOpacityLabelButton != null) layerOpacityLabelButton.visible = layers;
+        if (layerOpacityUpButton != null) layerOpacityUpButton.visible = layers;
+        if (layerBlendButton != null) layerBlendButton.visible = layers;
+        if (layerEmissiveButton != null) layerEmissiveButton.visible = layers;
+        if (layerLockButton != null) layerLockButton.visible = layers;
 
-        ScrollableLayout scrollableTools = new ScrollableLayout(
-                this.minecraft,
-                tools,
-                this.toolPanelHeight
-        );
-        scrollableTools.setMinWidth(this.toolPanelWidth);
-        scrollableTools.setMaxHeight(this.toolPanelHeight);
-        scrollableTools.arrangeElements();
-        scrollableTools.setX(this.toolPanelX);
-        scrollableTools.setY(this.toolPanelY);
-        scrollableTools.visitWidgets(widget ->
-                addRenderableWidget((AbstractWidget) widget)
-        );
+        if (colorPicker != null) colorPicker.visible = color;
+        if (hexColorField != null) hexColorField.setVisible(color);
+        if (redColorField != null) redColorField.setVisible(color);
+        if (greenColorField != null) greenColorField.setVisible(color);
+        if (blueColorField != null) blueColorField.setVisible(color);
+        if (alphaColorField != null) alphaColorField.setVisible(color);
+        if (paletteButton != null) paletteButton.visible = color;
 
-        restoreOrCreatePaletteWindow();
-        syncColorFields();
-        syncLayerFields();
-        updateButtonStates();
+        LoomButton[] gradientButtons = {
+                gradientTypeButton,
+                gradientAngleDownButton,
+                gradientAngleButton,
+                gradientAngleUpButton,
+                gradientMoveLeftButton,
+                gradientMoveUpButton,
+                gradientMoveDownButton,
+                gradientMoveRightButton,
+                gradientScaleDownButton,
+                gradientScaleLabelButton,
+                gradientScaleUpButton,
+                gradientMirrorHorizontalButton,
+                gradientMirrorVerticalButton,
+                gradientResetTransformButton,
+                gradientRepeatButton,
+                gradientDitherButton,
+                gradientStopPreviousButton,
+                gradientStopLabelButton,
+                gradientStopNextButton,
+                gradientStopAddButton,
+                gradientStopRemoveButton,
+                gradientStopPositionDownButton,
+                gradientStopPositionUpButton,
+                gradientStopColorButton
+        };
+        for (LoomButton button : gradientButtons) {
+            if (button != null) {
+                button.visible = gradient;
+            }
+        }
+
+        updateContextVisibility();
+    }
+
+    private void updateContextVisibility() {
+        boolean selectionTool = tool == Tool.SELECT;
+        boolean rectangleTool = tool == Tool.RECTANGLE;
+        boolean brushTool = tool == Tool.PENCIL
+                || tool == Tool.ERASER
+                || tool == Tool.LINE
+                || tool == Tool.RECTANGLE;
+
+        if (brushDownButton != null) brushDownButton.visible = brushTool;
+        if (brushLabelButton != null) brushLabelButton.visible = brushTool;
+        if (brushUpButton != null) brushUpButton.visible = brushTool;
+        if (symmetryButton != null) symmetryButton.visible = brushTool;
+        if (rectangleModeButton != null) rectangleModeButton.visible = rectangleTool;
+
+        if (selectionClearButton != null) selectionClearButton.visible = selectionTool;
+        if (selectionLeftButton != null) selectionLeftButton.visible = selectionTool;
+        if (selectionRightButton != null) selectionRightButton.visible = selectionTool;
+        if (selectionUpButton != null) selectionUpButton.visible = selectionTool;
+        if (selectionDownButton != null) selectionDownButton.visible = selectionTool;
+        if (selectionFlipHorizontalButton != null) selectionFlipHorizontalButton.visible = selectionTool;
+        if (selectionFlipVerticalButton != null) selectionFlipVerticalButton.visible = selectionTool;
     }
 
     @Override
@@ -1177,49 +1828,43 @@ public final class CapeEditorScreen extends Screen {
     private void setTool(Tool next) {
         this.tool = next;
         updateButtonStates();
+        updateContextVisibility();
     }
 
     private void updateButtonStates() {
         if (pencilButton != null) {
-            pencilButton.setMessage(Component.literal(
-                    tool == Tool.PENCIL ? "Pencil ●" : "Pencil"
-            ));
+            pencilButton.setMessage(Component.literal("Pencil"));
+            pencilButton.setSelected(tool == Tool.PENCIL);
         }
 
         if (eraserButton != null) {
-            eraserButton.setMessage(Component.literal(
-                    tool == Tool.ERASER ? "Eraser ●" : "Eraser"
-            ));
+            eraserButton.setMessage(Component.literal("Eraser"));
+            eraserButton.setSelected(tool == Tool.ERASER);
         }
 
         if (fillButton != null) {
-            fillButton.setMessage(Component.literal(
-                    tool == Tool.FILL ? "Fill ●" : "Fill"
-            ));
+            fillButton.setMessage(Component.literal("Fill"));
+            fillButton.setSelected(tool == Tool.FILL);
         }
 
         if (eyedropperButton != null) {
-            eyedropperButton.setMessage(Component.literal(
-                    tool == Tool.EYEDROPPER ? "Eyedropper ●" : "Eyedropper"
-            ));
+            eyedropperButton.setMessage(Component.literal("Eyedropper"));
+            eyedropperButton.setSelected(tool == Tool.EYEDROPPER);
         }
 
         if (lineButton != null) {
-            lineButton.setMessage(Component.literal(
-                    tool == Tool.LINE ? "Line ●" : "Line"
-            ));
+            lineButton.setMessage(Component.literal("Line"));
+            lineButton.setSelected(tool == Tool.LINE);
         }
 
         if (rectangleButton != null) {
-            rectangleButton.setMessage(Component.literal(
-                    tool == Tool.RECTANGLE ? "Rectangle ●" : "Rectangle"
-            ));
+            rectangleButton.setMessage(Component.literal("Rectangle"));
+            rectangleButton.setSelected(tool == Tool.RECTANGLE);
         }
 
         if (selectButton != null) {
-            selectButton.setMessage(Component.literal(
-                    tool == Tool.SELECT ? "Select ●" : "Select"
-            ));
+            selectButton.setMessage(Component.literal("Select"));
+            selectButton.setSelected(tool == Tool.SELECT);
         }
 
         boolean editablePaintSelection = workspaceState != null
@@ -1629,6 +2274,8 @@ public final class CapeEditorScreen extends Screen {
                         && !layerNameField.getValue().trim().isEmpty();
             }
         }
+
+        updateInspectorVisibility();
     }
 
     private UUID findEditableLayer() {
@@ -1735,6 +2382,7 @@ public final class CapeEditorScreen extends Screen {
         selectedLayerId = result.cape().layers().getLast().id();
         this.selectedGradientStopIndex = 0;
         this.selection = null;
+        this.inspectorTab = InspectorTab.PROPERTIES;
         syncLayerFields();
         updateButtonStates();
     }
@@ -2773,61 +3421,142 @@ public final class CapeEditorScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                0,
-                0,
-                this.width,
-                this.height,
-                LoomUiTheme.BACKDROP
+        LoomScreenChrome.renderBackdrop(
+                graphics,
+                width,
+                height
+        );
+        LoomScreenChrome.renderBrandHeader(
+                graphics,
+                width,
+                compactMode
+                        ? "Cape Editor"
+                        : "Cape Editor • "
+                                + workspaceState.project().name()
+                                + (workspaceState.dirty() ? " *" : ""),
+                compactMode
         );
 
-        String title = workspaceState.project().name()
-                + (workspaceState.dirty() ? " *" : "");
+        LoomScreenChrome.panel(
+                graphics,
+                toolRailLeft,
+                contentTop,
+                toolRailRight,
+                contentBottom
+        );
+        if (!compactMode) {
+            LoomScreenChrome.panelHeader(
+                    graphics,
+                    toolRailLeft,
+                    contentTop,
+                    toolRailRight,
+                    "Tools"
+            );
+        }
 
-        graphics.drawString(
-                this.font,
-                Component.literal(title),
-                18,
-                18,
-                LoomUiTheme.TEXT,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                canvasLeft,
+                canvasTop,
+                canvasRight,
+                canvasBottom
+        );
+        LoomScreenChrome.panel(
+                graphics,
+                canvasLeft,
+                contextTop,
+                canvasRight,
+                contentBottom
         );
 
-        graphics.drawString(
-                this.font,
-                Component.literal(
-                        ClientProjectWorkspace.isCurrentProjectEquipped()
-                                ? "Saved / Equipped"
-                                : (workspaceState.dirty()
-                                        ? "Unsaved edits"
-                                        : "Saved, not equipped")
-                ),
-                18,
-                30,
-                LoomUiTheme.TEXT_MUTED,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                previewBottom
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                "3D Preview"
         );
 
-        if (this.capeRegion == CapeUvRegion.OUTSIDE) {
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                inspectorTop - 2,
+                rightPanelRight,
+                inspectorBottom
+        );
+
+        if (!compactMode) {
+            String inspectorTitle = switch (inspectorTab) {
+                case LAYERS -> "Layers";
+                case COLOR -> "Color";
+                case PROPERTIES -> {
+                    LoomLayer layer = selectedLayer();
+                    yield layer.kind() == LayerKind.GRADIENT
+                            ? "Gradient Properties"
+                            : layer.kind() == LayerKind.IMAGE
+                                    ? "Image Properties"
+                                    : "Layer Properties";
+                }
+            };
             graphics.drawString(
-                    this.font,
-                    Component.literal("Outside / Back = the main face other players see"),
-                    Math.max(18, this.width - 360),
-                    18,
+                    font,
+                    Component.literal(inspectorTitle),
+                    rightPanelLeft + 7,
+                    inspectorTop + 2,
                     LoomUiTheme.TEXT_MUTED,
                     false
             );
         }
 
-        graphics.fill(
-                this.toolPanelX - 4,
-                this.toolPanelY - 4,
-                this.toolPanelX + this.toolPanelWidth,
-                this.toolPanelY + this.toolPanelHeight + 4,
-                LoomUiTheme.PANEL
+        if (inspectorTab == InspectorTab.PROPERTIES
+                && selectedLayer().kind() != LayerKind.GRADIENT) {
+            String hint = selectedLayer().kind() == LayerKind.IMAGE
+                    ? "Use Edit Image in Layers to reopen Smart Import."
+                    : "Paint layers use the tool rail and context bar.";
+            graphics.drawString(
+                    font,
+                    Component.literal(
+                            font.plainSubstrByWidth(
+                                    hint,
+                                    rightPanelRight - rightPanelLeft - 12
+                            )
+                    ),
+                    rightPanelLeft + 6,
+                    inspectorTop + 18,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
+
+        String status = ClientProjectWorkspace.isCurrentProjectEquipped()
+                ? "Saved / Equipped"
+                : workspaceState.dirty()
+                        ? "Unsaved edits"
+                        : "Saved, not equipped";
+
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                status,
+                capeRegion.displayName()
+                        + " • "
+                        + resolutionLabel()
         );
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.render(
+                graphics,
+                mouseX,
+                mouseY,
+                partialTick
+        );
         updateButtonStates();
     }
 
@@ -3030,6 +3759,12 @@ public final class CapeEditorScreen extends Screen {
         SELECT,
         LINE,
         RECTANGLE
+    }
+
+    private enum InspectorTab {
+        LAYERS,
+        COLOR,
+        PROPERTIES
     }
 
     private enum SymmetryMode {

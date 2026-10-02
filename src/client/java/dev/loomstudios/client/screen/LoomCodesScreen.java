@@ -7,6 +7,7 @@ import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.sharing.LoomShareExportAdapter;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
+import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.LoomProjectCode;
@@ -17,11 +18,18 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class LoomCodesScreen extends Screen {
     private static final Component TITLE =
-            Component.literal("Loom Studios - Loom Codes");
+            Component.literal("Loom Studios - Share / Export");
+
+    private enum Workspace {
+        EXPORT,
+        IMPORT
+    }
 
     private final Screen parent;
     private final LoomProject sourceProject;
@@ -43,6 +51,12 @@ public final class LoomCodesScreen extends Screen {
     private LoomButton incomingPreviewButton;
     private LoomButton capePreviewButton;
     private LoomButton elytraPreviewButton;
+    private LoomButton exportTabButton;
+    private LoomButton importTabButton;
+    private final List<LoomButton> exportControls = new ArrayList<>();
+    private final List<LoomButton> importControls = new ArrayList<>();
+    private Workspace workspace = Workspace.EXPORT;
+    private boolean compactMode;
 
     private int shellLeft;
     private int shellTop;
@@ -73,240 +87,303 @@ public final class LoomCodesScreen extends Screen {
 
     @Override
     protected void init() {
-        int margin = Math.max(8, Math.min(14, width / 72));
+        exportControls.clear();
+        importControls.clear();
+        compactMode = LoomUiTheme.compact(width, height);
+
+        int margin = compactMode ? 5 : 9;
+        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
+        int footerHeight = 18;
+        int gap = compactMode ? 5 : 8;
+
         shellLeft = margin;
         shellRight = width - margin;
-        shellTop = Math.max(6, margin / 2);
-        shellBottom = height - margin;
+        shellTop = 0;
+        shellBottom = height;
+        contentTop = headerHeight + 5;
+        contentBottom = height - footerHeight - 4;
 
-        int headerHeight = 42;
-        int footerHeight = 22;
-        contentTop = shellTop + headerHeight + 7;
-        contentBottom = shellBottom - footerHeight - 7;
+        int previewWidth = compactMode
+                ? Math.max(152, Math.min(178, width / 3))
+                : Math.max(200, Math.min(250, width / 4));
 
-        int totalWidth = shellRight - shellLeft - 16;
-        int gap = 8;
+        leftLeft = shellLeft;
+        leftRight = shellLeft;
+        centerLeft = shellLeft;
+        centerRight = shellRight - previewWidth - gap;
+        rightLeft = centerRight + gap;
+        rightRight = shellRight;
 
-        int leftWidth = Math.max(
-                145,
-                Math.min(205, (int)Math.round(totalWidth * 0.25))
-        );
-        int rightWidth = Math.max(
-                165,
-                Math.min(235, (int)Math.round(totalWidth * 0.26))
-        );
-
-        leftLeft = shellLeft + 8;
-        leftRight = leftLeft + leftWidth;
-        rightRight = shellRight - 8;
-        rightLeft = rightRight - rightWidth;
-        centerLeft = leftRight + gap;
-        centerRight = rightLeft - gap;
-
-        if (centerRight - centerLeft < 220) {
-            int shortage = 220 - (centerRight - centerLeft);
-            int shaveLeft = Math.min(
-                    shortage / 2,
-                    Math.max(0, leftWidth - 130)
-            );
-            leftRight -= shaveLeft;
-            centerLeft -= shaveLeft;
-
-            int remaining = shortage - shaveLeft;
-            int shaveRight = Math.min(
-                    remaining,
-                    Math.max(0, rightWidth - 150)
-            );
-            rightLeft += shaveRight;
-            centerRight += shaveRight;
-        }
-
-        buildLeftActions();
-        buildCenterActions();
+        buildWorkspaceTabs();
+        buildExportControls();
+        buildImportControls();
         buildPreview();
+        updateWorkspaceVisibility();
         updateButtons();
     }
 
-    private void buildLeftActions() {
-        int width = leftRight - leftLeft;
-        int y = contentTop;
-
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+    private LoomButton actionButton(
+            int x,
+            int y,
+            int width,
+            int height,
+            String label,
+            LoomButton.Icon icon,
+            Runnable action
+    ) {
+        LoomButton button = new LoomButton(
+                x,
                 y,
                 width,
-                20,
-                Component.literal("Back to Home"),
+                height,
+                Component.literal(label),
+                icon,
+                false,
+                action
+        );
+        addRenderableWidget(button);
+        return button;
+    }
+
+    private void buildWorkspaceTabs() {
+        int top = contentTop;
+        int tabHeight = compactMode ? 20 : 23;
+        int mainWidth = centerRight - centerLeft;
+        int backWidth = compactMode ? 28 : 72;
+        int gap = 4;
+        int tabWidth = Math.max(
+                64,
+                (mainWidth - backWidth - gap * 3) / 2
+        );
+
+        LoomButton back = new LoomButton(
+                centerLeft,
+                top,
+                backWidth,
+                tabHeight,
+                Component.literal("Back"),
+                LoomButton.Icon.BACK,
+                compactMode,
                 this::goBack
-        ));
-        y += 26;
+        );
+        addRenderableWidget(back);
 
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+        exportTabButton = new LoomButton(
+                centerLeft + backWidth + gap,
+                top,
+                tabWidth,
+                tabHeight,
+                Component.literal("Export"),
+                LoomButton.Icon.EXPORT,
+                compactMode,
+                () -> setWorkspace(Workspace.EXPORT)
+        );
+        addRenderableWidget(exportTabButton);
+
+        importTabButton = new LoomButton(
+                centerLeft + backWidth + gap + tabWidth + gap,
+                top,
+                centerRight
+                        - (centerLeft + backWidth + gap + tabWidth + gap),
+                tabHeight,
+                Component.literal("Import"),
+                LoomButton.Icon.IMAGE,
+                compactMode,
+                () -> setWorkspace(Workspace.IMPORT)
+        );
+        addRenderableWidget(importTabButton);
+    }
+
+    private void buildExportControls() {
+        int panelTop = contentTop + (compactMode ? 27 : 31);
+        int left = centerLeft + 7;
+        int right = centerRight - 7;
+        int gap = compactMode ? 4 : 6;
+        int buttonHeight = compactMode ? 25 : 30;
+        int half = Math.max(80, (right - left - gap) / 2);
+        int y = panelTop + (compactMode ? 35 : 46);
+
+        exportControls.add(actionButton(
+                left,
                 y,
-                width,
-                20,
-                Component.literal("Copy Design ID"),
+                half,
+                buttonHeight,
+                "Copy Design ID",
+                LoomButton.Icon.COPY,
                 this::copyDesignId
         ));
-        y += 24;
-
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+        exportControls.add(actionButton(
+                left + half + gap,
                 y,
-                width,
-                20,
-                Component.literal("Copy Portable Code"),
+                right - (left + half + gap),
+                buttonHeight,
+                "Copy Portable Code",
+                LoomButton.Icon.SHARE,
                 this::copyPortableCode
         ));
-        y += 24;
+        y += buttonHeight + gap;
 
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+        exportControls.add(actionButton(
+                left,
                 y,
-                width,
-                20,
-                Component.literal("Save Portable Code"),
-                this::savePortableCode
-        ));
-        y += 30;
-
-        addRenderableWidget(new LoomButton(
-                leftLeft,
-                y,
-                width,
-                20,
-                Component.literal("Export Project (.loom)"),
+                half,
+                buttonHeight,
+                "Export Project (.loom)",
+                LoomButton.Icon.SAVE,
                 this::exportProject
         ));
-        y += 24;
-
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+        exportControls.add(actionButton(
+                left + half + gap,
                 y,
-                width,
-                20,
-                Component.literal("Export Cape PNG"),
+                right - (left + half + gap),
+                buttonHeight,
+                "Save Portable Code",
+                LoomButton.Icon.EXPORT,
+                this::savePortableCode
+        ));
+        y += buttonHeight + gap;
+
+        exportControls.add(actionButton(
+                left,
+                y,
+                half,
+                buttonHeight,
+                "Export Cape PNG",
+                LoomButton.Icon.CAPE,
                 this::exportCape
         ));
-        y += 24;
-
-        addRenderableWidget(new LoomButton(
-                leftLeft,
+        exportControls.add(actionButton(
+                left + half + gap,
                 y,
-                width,
-                20,
-                Component.literal("Export Elytra PNG"),
+                right - (left + half + gap),
+                buttonHeight,
+                "Export Elytra PNG",
+                LoomButton.Icon.ELYTRA,
                 this::exportElytra
         ));
     }
 
-    private void buildCenterActions() {
-        int width = centerRight - centerLeft;
-        int y = contentTop + 34;
+    private void buildImportControls() {
+        int panelTop = contentTop + (compactMode ? 27 : 31);
+        int left = centerLeft + 7;
+        int right = centerRight - 7;
+        int gap = compactMode ? 4 : 6;
+        int buttonHeight = compactMode ? 25 : 30;
+        int half = Math.max(80, (right - left - gap) / 2);
+        int y = panelTop + (compactMode ? 35 : 46);
 
-        addRenderableWidget(new LoomButton(
-                centerLeft + 8,
+        importControls.add(actionButton(
+                left,
                 y,
-                width - 16,
-                22,
-                Component.literal("Paste Portable Code from Clipboard"),
+                right - left,
+                buttonHeight,
+                "Paste Portable Code",
+                LoomButton.Icon.SHARE,
                 this::pastePortableCode
         ));
-        y += 27;
+        y += buttonHeight + gap;
 
-        addRenderableWidget(new LoomButton(
-                centerLeft + 8,
+        importControls.add(actionButton(
+                left,
                 y,
-                width - 16,
-                20,
-                Component.literal("Import .loom Project File"),
+                right - left,
+                buttonHeight,
+                "Open .loom Project File",
+                LoomButton.Icon.SAVE,
                 this::importProjectFile
         ));
-        y += 27;
+        y += buttonHeight + gap;
 
-        int half = Math.max(70, (width - 20) / 2);
-
-        this.sourcePreviewButton = new LoomButton(
-                centerLeft + 8,
+        sourcePreviewButton = actionButton(
+                left,
                 y,
                 half,
-                20,
-                Component.literal("Preview Mine"),
+                buttonHeight,
+                "Preview Mine",
+                LoomButton.Icon.CAPE,
                 () -> selectPreview(sourceProject)
         );
-        this.incomingPreviewButton = new LoomButton(
-                centerLeft + 12 + half,
+        incomingPreviewButton = actionButton(
+                left + half + gap,
                 y,
-                width - half - 20,
-                20,
-                Component.literal("Preview Import"),
+                right - (left + half + gap),
+                buttonHeight,
+                "Preview Import",
+                LoomButton.Icon.IMAGE,
                 () -> {
                     if (incomingProject != null) {
                         selectPreview(incomingProject);
                     }
                 }
         );
-        addRenderableWidget(sourcePreviewButton);
-        addRenderableWidget(incomingPreviewButton);
-        y += 28;
+        importControls.add(sourcePreviewButton);
+        importControls.add(incomingPreviewButton);
+        y += buttonHeight + gap;
 
-        this.importButton = new LoomButton(
-                centerLeft + 8,
+        importButton = actionButton(
+                left,
                 y,
                 half,
-                22,
-                Component.literal("Import to Library"),
+                buttonHeight,
+                "Import to Library",
+                LoomButton.Icon.PLUS,
                 () -> importIncoming(false)
         );
-        this.importOpenButton = new LoomButton(
-                centerLeft + 12 + half,
+        importOpenButton = actionButton(
+                left + half + gap,
                 y,
-                width - half - 20,
-                22,
-                Component.literal("Import + Open"),
+                right - (left + half + gap),
+                buttonHeight,
+                "Import + Open",
+                LoomButton.Icon.IMAGE,
                 () -> importIncoming(true)
         );
-        addRenderableWidget(importButton);
-        addRenderableWidget(importOpenButton);
+        importControls.add(importButton);
+        importControls.add(importOpenButton);
     }
 
     private void buildPreview() {
         int width = rightRight - rightLeft;
         int previewHeight = Math.max(
-                100,
-                contentBottom - contentTop - 58
+                compactMode ? 96 : 130,
+                contentBottom - contentTop - (compactMode ? 48 : 56)
         );
 
-        this.previewWidget = new LoomPlayerPreviewWidget(
+        previewWidget = new LoomPlayerPreviewWidget(
                 rightLeft,
-                contentTop,
+                contentTop + 20,
                 width,
-                previewHeight,
+                previewHeight - 20,
                 () -> previewProject,
                 previewMode
         );
         addRenderableWidget(previewWidget);
 
-        int half = Math.max(60, (width - 4) / 2);
-        int y = contentTop + previewHeight + 5;
+        int gap = 4;
+        int half = Math.max(54, (width - gap) / 2);
+        int y = contentTop + previewHeight + 3;
+        int h = compactMode ? 18 : 20;
 
-        this.capePreviewButton = new LoomButton(
+        capePreviewButton = new LoomButton(
                 rightLeft,
                 y,
                 half,
-                20,
+                h,
                 Component.literal("Cape"),
+                LoomButton.Icon.CAPE,
+                compactMode,
                 () -> setPreviewMode(
                         LoomPlayerPreviewWidget.Mode.CAPE
                 )
         );
-        this.elytraPreviewButton = new LoomButton(
-                rightLeft + half + 4,
+        elytraPreviewButton = new LoomButton(
+                rightLeft + half + gap,
                 y,
-                width - half - 4,
-                20,
+                width - half - gap,
+                h,
                 Component.literal("Elytra"),
+                LoomButton.Icon.ELYTRA,
+                compactMode,
                 () -> setPreviewMode(
                         LoomPlayerPreviewWidget.Mode.ELYTRA
                 )
@@ -316,12 +393,35 @@ public final class LoomCodesScreen extends Screen {
 
         addRenderableWidget(new LoomButton(
                 rightLeft,
-                y + 25,
+                y + h + 3,
                 width,
-                20,
+                h,
                 Component.literal("Reset 3D View"),
+                LoomButton.Icon.RESET,
+                compactMode,
                 previewWidget::resetView
         ));
+    }
+
+    private void setWorkspace(Workspace next) {
+        workspace = next;
+        updateWorkspaceVisibility();
+    }
+
+    private void updateWorkspaceVisibility() {
+        boolean exporting = workspace == Workspace.EXPORT;
+        if (exportTabButton != null) {
+            exportTabButton.setSelected(exporting);
+        }
+        if (importTabButton != null) {
+            importTabButton.setSelected(!exporting);
+        }
+        for (LoomButton button : exportControls) {
+            button.visible = exporting;
+        }
+        for (LoomButton button : importControls) {
+            button.visible = !exporting;
+        }
     }
 
     private void copyDesignId() {
@@ -575,75 +675,66 @@ public final class LoomCodesScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                shellLeft,
-                shellTop,
-                shellRight,
-                shellBottom,
-                LoomUiTheme.BACKDROP
-        );
-        graphics.fill(
-                shellLeft + 1,
-                shellTop + 1,
-                shellRight - 1,
-                shellBottom - 1,
-                LoomUiTheme.PANEL
-        );
-
-        renderHeader(graphics);
-        renderLeftPanel(graphics);
-        renderCenterPanel(graphics);
-        renderFooter(graphics);
-
-        super.render(graphics, mouseX, mouseY, partialTick);
-    }
-
-    private void renderHeader(GuiGraphics graphics) {
-        graphics.fill(
-                shellLeft + 8,
-                shellTop + 5,
-                shellRight - 8,
-                contentTop - 7,
-                LoomUiTheme.PANEL_INNER
-        );
-        graphics.fill(
-                shellLeft + 8,
-                contentTop - 9,
-                shellRight - 8,
-                contentTop - 7,
-                LoomUiTheme.ACCENT
-        );
-
-        graphics.drawCenteredString(
-                font,
-                Component.literal("Loom Studios"),
-                width / 2,
-                shellTop + 10,
-                LoomUiTheme.TEXT
-        );
-        graphics.drawCenteredString(
-                font,
-                Component.literal("Share • Import • Export"),
-                width / 2,
-                shellTop + 23,
-                LoomUiTheme.TEXT_MUTED
-        );
-    }
-
-    private void renderLeftPanel(GuiGraphics graphics) {
-        fillPanel(
+        LoomScreenChrome.renderBackdrop(graphics, width, height);
+        LoomScreenChrome.renderBrandHeader(
                 graphics,
-                leftLeft - 4,
-                contentTop - 4,
-                leftRight + 4,
+                width,
+                compactMode
+                        ? "Share / Export"
+                        : "Share • Import • Export",
+                compactMode
+        );
+
+        LoomScreenChrome.panel(
+                graphics,
+                centerLeft,
+                contentTop + (compactMode ? 27 : 31),
+                centerRight,
                 contentBottom
         );
+        LoomScreenChrome.panel(
+                graphics,
+                rightLeft,
+                contentTop,
+                rightRight,
+                contentBottom
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                rightLeft,
+                contentTop,
+                rightRight,
+                "3D Preview"
+        );
+
+        if (workspace == Workspace.EXPORT) {
+            renderExportIntro(graphics);
+        } else {
+            renderImportIntro(graphics);
+        }
+
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                status,
+                ProjectLibraryIndex.entries().size() + " Designs"
+        );
+
+        super.render(graphics, mouseX, mouseY, partialTick);
+        updateButtons();
+    }
+
+    private void renderExportIntro(GuiGraphics graphics) {
+        int left = centerLeft + 8;
+        int top = contentTop + (compactMode ? 34 : 39);
+        int max = centerRight - centerLeft - 16;
 
         graphics.drawString(
                 font,
-                Component.literal("Share Your Design"),
-                leftLeft,
-                contentTop + 2,
+                Component.literal("Export current design"),
+                left,
+                top,
                 LoomUiTheme.TEXT,
                 false
         );
@@ -652,174 +743,70 @@ public final class LoomCodesScreen extends Screen {
         graphics.drawString(
                 font,
                 Component.literal(id),
-                leftLeft,
-                contentTop + 14,
+                left,
+                top + 13,
                 LoomUiTheme.ACCENT,
                 false
         );
 
-        String meta = sourceProject.name()
-                + " • schema v"
-                + sourceProject.schemaVersion();
-        graphics.drawString(
-                font,
-                Component.literal(
-                        font.plainSubstrByWidth(
-                                meta,
-                                leftRight - leftLeft
-                        )
-                ),
-                leftLeft,
-                contentBottom - 27,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-
-        graphics.drawString(
-                font,
-                Component.literal(
-                        "Exports: .minecraft/loom-studios/exports"
-                ),
-                leftLeft,
-                contentBottom - 14,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
+        if (!compactMode) {
+            String hint =
+                    "PNG = ready texture • .loom = editable project • Portable = copy/share";
+            graphics.drawString(
+                    font,
+                    Component.literal(
+                            font.plainSubstrByWidth(hint, max)
+                    ),
+                    left,
+                    top + 27,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
     }
 
-    private void renderCenterPanel(GuiGraphics graphics) {
-        fillPanel(
-                graphics,
-                centerLeft,
-                contentTop,
-                centerRight,
-                contentBottom
-        );
+    private void renderImportIntro(GuiGraphics graphics) {
+        int left = centerLeft + 8;
+        int top = contentTop + (compactMode ? 34 : 39);
+        int max = centerRight - centerLeft - 16;
 
         graphics.drawString(
                 font,
-                Component.literal("Import / Redeem"),
-                centerLeft + 8,
-                contentTop + 8,
+                Component.literal("Import a shared design"),
+                left,
+                top,
                 LoomUiTheme.TEXT,
                 false
         );
 
+        String message = incomingProject == null
+                ? "Paste LSP1 code or open a .loom file"
+                : incomingStatus;
         graphics.drawString(
                 font,
                 Component.literal(
-                        "Portable codes are self-contained and work offline."
+                        font.plainSubstrByWidth(message, max)
                 ),
-                centerLeft + 8,
-                contentTop + 20,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-
-        String clipped = font.plainSubstrByWidth(
-                incomingStatus,
-                Math.max(40, centerRight - centerLeft - 16)
-        );
-        graphics.drawString(
-                font,
-                Component.literal(clipped),
-                centerLeft + 8,
-                contentTop + 154,
+                left,
+                top + 14,
                 incomingProject == null
                         ? LoomUiTheme.TEXT_MUTED
                         : LoomUiTheme.ACCENT,
                 false
         );
 
-        int infoTop = contentTop + 178;
-        graphics.drawString(
-                font,
-                Component.literal("Visibility & Permissions"),
-                centerLeft + 8,
-                infoTop,
-                LoomUiTheme.TEXT,
-                false
-        );
-        graphics.drawString(
-                font,
-                Component.literal(
-                        "Local/private portable sharing is active."
-                ),
-                centerLeft + 8,
-                infoTop + 14,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-        graphics.drawString(
-                font,
-                Component.literal(
-                        "Hosted gallery/friends/public codes are not connected yet."
-                ),
-                centerLeft + 8,
-                infoTop + 26,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-
-        graphics.drawString(
-                font,
-                Component.literal(
-                        "Imported designs are forked to a new project UUID."
-                ),
-                centerLeft + 8,
-                infoTop + 44,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-    }
-
-    private void renderFooter(GuiGraphics graphics) {
-        int y = shellBottom - 21;
-        graphics.fill(
-                shellLeft + 1,
-                y,
-                shellRight - 1,
-                shellBottom - 1,
-                LoomUiTheme.PANEL_INNER
-        );
-
-        graphics.drawString(
-                font,
-                Component.literal(status),
-                shellLeft + 10,
-                y + 6,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-
-        String designCount =
-                ProjectLibraryIndex.entries().size() + " Designs";
-        int countWidth = font.width(designCount);
-        graphics.drawString(
-                font,
-                Component.literal(designCount),
-                shellRight - countWidth - 10,
-                y + 6,
-                LoomUiTheme.ACCENT_ALT,
-                false
-        );
-    }
-
-    private static void fillPanel(
-            GuiGraphics graphics,
-            int left,
-            int top,
-            int right,
-            int bottom
-    ) {
-        graphics.fill(left, top, right, bottom, LoomUiTheme.BORDER);
-        graphics.fill(
-                left + 1,
-                top + 1,
-                right - 1,
-                bottom - 1,
-                LoomUiTheme.PANEL_INNER
-        );
+        if (!compactMode) {
+            graphics.drawString(
+                    font,
+                    Component.literal(
+                            "Imports create a new local project and never overwrite the sender."
+                    ),
+                    left,
+                    top + 28,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
     }
 
     private void goBack() {

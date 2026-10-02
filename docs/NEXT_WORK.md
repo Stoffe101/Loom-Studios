@@ -2,25 +2,67 @@
 
 ## Current gate
 
-Home/Elytra workflow completion is merged. The schema-v3 animation timeline milestone is CI green on the current branch.
+The 2026-10-02 local test established a new UI gate.
 
-Latest merged-main baseline entering animation:
-- `2eca773a0358344491fd3280f535feb3515268a0`
-- GitHub Actions #139: **SUCCESS**
+Feature functionality was broadly working, but the old shell failed on:
+- reference fidelity;
+- button/control density;
+- excessive scrolling;
+- text overlap;
+- animation discoverability;
+- Export discoverability;
+- 1920x1080 GUI scale 3.
 
-Current animation milestone exact implementation head:
-- `c3e5ca49e4ecccbeaca7ad064a828c63c7720692`
-- GitHub Actions #147: **SUCCESS**
+This is now a dedicated reference-UI refactor, not a spacing patch.
 
-Current pass source checkpoints:
-- `0cc3b219fcda2c8b4fb619db900545890e40764e` — Home shell — Actions #127 **SUCCESS**;
-- `fb21521181dae6139122b8e0e4891e4083627203` — semantic Elytra Editor — Actions #128 **SUCCESS**;
-- `af767ce8c12a55c725d5b14fc2602872515b5564` — Elytra layer stack — Actions #129 **SUCCESS**;
-- `e46960484bd4d8ef7ef308805a0ad449ba67c643` — project-authored thickness — Actions #130 **SUCCESS**.
+Merged-main baseline entering the refactor:
+- `e3e417ff21f231e8513186e499026682d4cfb785`
+- GitHub Actions #158: **SUCCESS**
 
-The remaining gate for visual DONE status is local runtime verification because the user is away from the development PC.
+Current refactor implementation checkpoint:
+- `db90568ad8e47b342e3be36419381f4e2c37af66`
+- GitHub Actions #172: **SUCCESS**
+
+Implemented in the refactor:
+- responsive shared screen chrome;
+- compact-mode breakpoint treating <=700x420 as a first-class layout;
+- simplified Home with five real primary actions and no dead Settings card;
+- Share / Export named explicitly on Home;
+- Cape icon tool rail;
+- Cape canvas toolbar + contextual lower control bar;
+- Cape Layers / Color / Properties inspector tabs;
+- Gradient controls shown only in the Properties context;
+- Elytra icon tool rail;
+- Elytra canvas toolbar;
+- Elytra Layers / Color / Animation inspector tabs;
+- animation effect/keyframe controls moved out of the timeline row footer;
+- compact timeline geometry;
+- Smart Import Placement / Processing tabs;
+- fixed Smart Import Apply / Preview / Cancel actions;
+- Share screen split into explicit Export / Import workspaces;
+- direct Share / Export access from Cape and Elytra editors.
+
+The next gate is **local visual/runtime re-verification of this new shell**.
 
 ## Runtime verification queue
+
+### Reference UI refactor smoke pass
+Run this before the deeper feature checklist:
+- 1920x1080 / GUI scale 3 first;
+- Home has no text overlap and primary actions are readable;
+- Cape Editor shows canvas + tool rail + one inspector context without a giant vertical control scroll;
+- Color tab is reachable without covering Layers;
+- Gradient Properties only appears when relevant;
+- Elytra Editor keeps canvas, timeline and 3D preview simultaneously understandable;
+- Animation tab explains the flow: select layer -> + Track -> scrub -> Add Key -> Value/Effect;
+- compact timeline rows do not overlap header/footer;
+- Smart Import switches Placement / Processing without scrolling through both at once;
+- Smart Import Apply remains visible regardless of tab;
+- Share / Export is reachable from both editors;
+- Export Project / Cape PNG / Elytra PNG are immediately visible in Export;
+- Import controls are hidden while Export is active and vice versa;
+- no inactive Settings placeholder on Home;
+- no primary UI text overlap at any required GUI profile.
 
 ### Select / transforms
 - drag selection at 1x / 2x / 4x;
@@ -110,7 +152,7 @@ The remaining gate for visual DONE status is local runtime verification because 
 - Edit Elytra routing;
 - empty-library state;
 - unreadable-project warning;
-- disabled placeholder cards remain visibly secondary.
+- no dead Settings card occupies primary navigation; future template packs remain secondary.
 
 ### Elytra Editor
 - Left/Right wing orientation matches rendered Elytra;
@@ -160,8 +202,8 @@ The remaining gate for visual DONE status is local runtime verification because 
 - Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow visually;
 - Elytra animation output at 1x / 2x / 4x;
 - compact timeline at all four mandatory GUI profiles.
-### Loom Codes / Sharing
-- Home Loom Codes card opens the sharing screen;
+### Share / Export / Loom Codes
+- Home Share / Export card opens the sharing screen;
 - short `LS-XXXX-XXXX-XXXX` fingerprint is stable for unchanged content;
 - Copy Design ID;
 - Copy Portable Code;
@@ -183,17 +225,17 @@ The remaining gate for visual DONE status is local runtime verification because 
 - layout remains usable at all four mandatory GUI profiles.
 ## Next CI-safe product work
 
-Home reference shell and the semantic Elytra Editor MVP are implemented in this pass; local visual verification remains pending.
+Do **not** start another broad feature milestone before the new shell passes local UI verification.
 
 Priority order:
 
-1. Elytra preview-state polish:
+1. local reference-UI re-test and defect fixes;
+2. Elytra preview-state polish:
    - standing;
    - open;
    - gliding;
-2. Cape animation exposure/refinement where useful;
-3. Settings/product-preferences decision and implementation if retained;
-4. final Cape/Home/Smart Import/Elytra/Animation/Loom Codes reference-fidelity hardening;
+3. Cape animation exposure/refinement only if the contextual UX remains clean;
+4. Settings/product-preferences decision and implementation if retained;
 5. final compatibility/performance matrix.
 
 Loom Codes local/offline sharing is implemented. A hosted short-code/gallery/friends/public service remains optional future work and must not be represented as active until a real backend exists.

@@ -349,3 +349,90 @@ The approved optimized WebP references are committed under `docs/references/ui/`
 Full-resolution PNG masters are also kept in the ChatGPT Project Library under `/Loom Studios/UI References/`.
 
 These refreshed references supersede the earlier rough visual concept set while preserving the same product identity.
+
+## 2026-10-02 local UI feedback and refactor
+
+The first local test after the large feature pass was important: the **features broadly worked, but the UI did not pass**.
+
+Observed problems in the pre-refactor build:
+- Home and work screens were structurally far from the approved references;
+- the editor exposed too many buttons at once;
+- Cape/Gradient controls formed long scrolling button columns;
+- controls/text overlapped or became hard to scan;
+- animation controls lacked a clear authoring path;
+- Export existed but was buried inside Loom Codes and was not discoverable from the editors;
+- 1920x1080 at GUI scale 3 was especially poor.
+
+This feedback supersedes any earlier wording that treated those screens as visually close merely because their functionality existed.
+
+### Refactor target
+
+The current refactor keeps the refreshed reference images as the visual contract, but interprets them as a **hierarchy and workflow system**, not as literal pixel-for-pixel screenshots.
+
+Across all five references:
+- canvas/preview/task surfaces stay visually dominant;
+- common navigation is consistent;
+- cyan/violet accents identify active state;
+- iconography replaces repeated verbose tool text;
+- only the current task's controls are visible;
+- workshop decoration remains secondary to usable work area;
+- compact mode is designed intentionally rather than produced by shrinking desktop UI.
+
+### Reference 01 — Home
+
+Refactor status:
+- responsive shared brand header;
+- five real primary actions;
+- Share / Export is explicit;
+- dead Settings placeholder removed;
+- compact mode reduces recent/template density;
+- action-card subtitles collapse before clipping.
+
+Local re-verification pending.
+
+### Reference 02 — Cape Editor
+
+Refactor status:
+- icon tool rail replaces the long tool/settings column;
+- face/resolution/zoom live in a compact canvas toolbar;
+- brush/selection controls live in a contextual bar;
+- right side is 3D Preview + Layers / Color / Properties tabs;
+- Gradient controls appear only in Properties for a Gradient layer;
+- Save / Save + Equip / Share-Export live in persistent top navigation;
+- the normal editor no longer depends on a giant vertical control scroll.
+
+Local re-verification pending.
+
+### Reference 03 — Smart Import
+
+Refactor status:
+- Original / Processed / final texture previews remain dominant;
+- right controls are split into Placement and Processing tabs;
+- transform and image-processing controls are no longer stacked simultaneously;
+- 3D Preview / Apply / Cancel remain fixed and reachable.
+
+Local re-verification pending.
+
+### Reference 04 — Elytra + Animation Editor
+
+Refactor status:
+- icon tool rail + compact canvas toolbar;
+- canvas and timeline remain visible together;
+- Layers / Color / Animation inspector tabs;
+- timeline is responsible for time/tracks/keyframes;
+- Animation inspector is responsible for Effect / Keyframe Value / Track Speed / Delete;
+- compact timeline removes secondary geometry before track rows can overlap;
+- explicit workflow hint: select layer -> + Track -> scrub -> Add Key -> adjust Value/Effect.
+
+Local re-verification pending.
+
+### Reference 05 — Share / Export
+
+Refactor status:
+- Share / Export is directly reachable from Home and both editors;
+- sharing screen is split into explicit Export and Import workspaces;
+- Export immediately exposes editable .loom, portable code, Cape PNG and Elytra PNG;
+- Import contains clipboard/file/preview/library actions;
+- unimplemented hosted permission/gallery concepts no longer dominate the work area.
+
+Local re-verification pending.

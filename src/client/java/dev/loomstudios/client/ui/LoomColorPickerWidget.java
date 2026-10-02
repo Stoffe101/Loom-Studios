@@ -136,34 +136,90 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int hueY = svY + Math.round(hue * (svH - 1));
         graphics.fill(hueX - 2, hueY, hueX + hueW + 2, hueY + 2, 0xFFFFFFFF);
 
+        boolean compact = getHeight() < 135;
         int rightX = hueX + hueW + 8;
-        int rightW = Math.max(56, getRight() - rightX - 8);
+        int rightW = Math.max(42, getRight() - rightX - 8);
 
-        renderChecker(graphics, rightX, svY, 26, 18);
-        graphics.fill(rightX, svY, rightX + 26, svY + 18, color);
-
-        graphics.fill(
-                rightX + 28,
+        renderChecker(
+                graphics,
+                rightX,
                 svY,
-                rightX + rightW,
+                Math.min(26, rightW),
+                18
+        );
+        graphics.fill(
+                rightX,
+                svY,
+                rightX + Math.min(26, rightW),
                 svY + 18,
-                LoomUiTheme.PANEL_INNER
-        );
-        graphics.drawString(
-                Minecraft.getInstance().font,
-                Component.literal(String.format("#%06X", color & 0xFFFFFF)),
-                rightX + 31,
-                svY + 5,
-                LoomUiTheme.TEXT,
-                false
+                color
         );
 
-        renderRgbSlider(graphics, rightX, svY + 24, rightW, 'R', 16);
-        renderRgbSlider(graphics, rightX, svY + 39, rightW, 'G', 8);
-        renderRgbSlider(graphics, rightX, svY + 54, rightW, 'B', 0);
-        renderAlphaSlider(graphics, rightX, svY + 69, rightW);
+        if (!compact) {
+            graphics.fill(
+                    rightX + 28,
+                    svY,
+                    rightX + rightW,
+                    svY + 18,
+                    LoomUiTheme.PANEL_INNER
+            );
+            graphics.drawString(
+                    Minecraft.getInstance().font,
+                    Component.literal(
+                            String.format("#%06X", color & 0xFFFFFF)
+                    ),
+                    rightX + 31,
+                    svY + 5,
+                    LoomUiTheme.TEXT,
+                    false
+            );
 
-        int paletteY = svY + svH + 24;
+            renderRgbSlider(
+                    graphics,
+                    rightX,
+                    svY + 24,
+                    rightW,
+                    'R',
+                    16
+            );
+            renderRgbSlider(
+                    graphics,
+                    rightX,
+                    svY + 39,
+                    rightW,
+                    'G',
+                    8
+            );
+            renderRgbSlider(
+                    graphics,
+                    rightX,
+                    svY + 54,
+                    rightW,
+                    'B',
+                    0
+            );
+            renderAlphaSlider(
+                    graphics,
+                    rightX,
+                    svY + 69,
+                    rightW
+            );
+        } else {
+            String hex = String.format(
+                    "#%06X",
+                    color & 0xFFFFFF
+            );
+            graphics.drawString(
+                    Minecraft.getInstance().font,
+                    Component.literal(hex),
+                    rightX,
+                    svY + 24,
+                    LoomUiTheme.TEXT,
+                    false
+            );
+        }
+
+        int paletteY = svY + svH + (compact ? 6 : 24);
         int swatch = 16;
         int gap = 3;
         int columns = Math.max(1, Math.min(7, (getWidth() - 16) / (swatch + gap)));
@@ -318,23 +374,61 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int svH = 64;
         int hueX = svX + svW + 5;
         int hueW = 9;
+        boolean compact = getHeight() < 135;
         int rightX = hueX + hueW + 8;
-        int rightW = Math.max(56, getRight() - rightX - 8);
+        int rightW = Math.max(42, getRight() - rightX - 8);
+        int paletteY = svY + svH + (compact ? 6 : 24);
 
         if (chooseTarget) {
             if (inside(mouseX, mouseY, svX, svY, svW, svH)) {
                 dragTarget = DragTarget.SV;
             } else if (inside(mouseX, mouseY, hueX, svY, hueW, svH)) {
                 dragTarget = DragTarget.HUE;
-            } else if (inside(mouseX, mouseY, rightX + 12, svY + 24, rightW - 38, 13)) {
+            } else if (!compact
+                    && inside(
+                            mouseX,
+                            mouseY,
+                            rightX + 12,
+                            svY + 24,
+                            rightW - 38,
+                            13
+                    )) {
                 dragTarget = DragTarget.RED;
-            } else if (inside(mouseX, mouseY, rightX + 12, svY + 39, rightW - 38, 13)) {
+            } else if (!compact
+                    && inside(
+                            mouseX,
+                            mouseY,
+                            rightX + 12,
+                            svY + 39,
+                            rightW - 38,
+                            13
+                    )) {
                 dragTarget = DragTarget.GREEN;
-            } else if (inside(mouseX, mouseY, rightX + 12, svY + 54, rightW - 38, 13)) {
+            } else if (!compact
+                    && inside(
+                            mouseX,
+                            mouseY,
+                            rightX + 12,
+                            svY + 54,
+                            rightW - 38,
+                            13
+                    )) {
                 dragTarget = DragTarget.BLUE;
-            } else if (inside(mouseX, mouseY, rightX + 12, svY + 69, rightW - 38, 13)) {
+            } else if (!compact
+                    && inside(
+                            mouseX,
+                            mouseY,
+                            rightX + 12,
+                            svY + 69,
+                            rightW - 38,
+                            13
+                    )) {
                 dragTarget = DragTarget.ALPHA;
-            } else if (selectPalette(mouseX, mouseY, svY + svH + 24)) {
+            } else if (selectPalette(
+                    mouseX,
+                    mouseY,
+                    paletteY
+            )) {
                 return;
             } else {
                 dragTarget = DragTarget.NONE;

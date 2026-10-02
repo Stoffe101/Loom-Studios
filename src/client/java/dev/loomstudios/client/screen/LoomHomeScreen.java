@@ -9,6 +9,7 @@ import dev.loomstudios.client.ui.LoomActionCard;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomProjectCard;
+import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.GradientLayerData;
@@ -50,6 +51,7 @@ public final class LoomHomeScreen extends Screen {
     private int contentBottom;
     private int recentBottom;
     private int templatesTop;
+    private boolean compactMode;
 
     public LoomHomeScreen() {
         super(TITLE);
@@ -61,47 +63,63 @@ public final class LoomHomeScreen extends Screen {
         ProjectLibraryIndex.refresh();
         refreshSelectedPreview();
 
-        int margin = Math.max(8, Math.min(16, this.width / 64));
-        shellLeft = margin;
-        shellRight = this.width - margin;
-        shellTop = Math.max(8, margin / 2);
-        shellBottom = this.height - Math.max(10, margin);
+        this.compactMode = LoomUiTheme.compact(width, height);
 
-        int headerHeight = 46;
-        int statusHeight = 18;
-        contentTop = shellTop + headerHeight + 7;
-        contentBottom = shellBottom - statusHeight - 7;
+        int margin = compactMode ? 5 : Math.max(8, Math.min(14, width / 72));
+        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
+        int footerHeight = 18;
+
+        shellLeft = margin;
+        shellRight = width - margin;
+        shellTop = 0;
+        shellBottom = height;
+
+        contentTop = headerHeight + (compactMode ? 5 : 8);
+        contentBottom = height - footerHeight - (compactMode ? 4 : 7);
 
         int totalWidth = shellRight - shellLeft;
-        int gap = 8;
-        int leftWidth = Math.max(
-                142,
-                Math.min(190, (int)Math.round(totalWidth * 0.20))
-        );
-        int previewWidth = Math.max(
-                170,
-                Math.min(250, (int)Math.round(totalWidth * 0.25))
-        );
+        int gap = compactMode ? 5 : 8;
 
-        leftPanelLeft = shellLeft + 8;
+        int leftWidth = compactMode
+                ? Math.max(102, Math.min(118, totalWidth / 5))
+                : Math.max(
+                        150,
+                        Math.min(190, (int)Math.round(totalWidth * 0.20))
+                );
+        int previewWidth = compactMode
+                ? Math.max(128, Math.min(148, totalWidth / 4))
+                : Math.max(
+                        176,
+                        Math.min(250, (int)Math.round(totalWidth * 0.25))
+                );
+
+        leftPanelLeft = shellLeft;
         leftPanelRight = leftPanelLeft + leftWidth;
 
-        previewRight = shellRight - 8;
+        previewRight = shellRight;
         previewLeft = previewRight - previewWidth;
 
         centerLeft = leftPanelRight + gap;
         centerRight = previewLeft - gap;
 
-        if (centerRight - centerLeft < 220) {
-            int shortage = 220 - (centerRight - centerLeft);
-            int shaveLeft = Math.min(shortage / 2, Math.max(0, leftWidth - 132));
+        if (centerRight - centerLeft < (compactMode ? 235 : 260)) {
+            int shortage = (compactMode ? 235 : 260)
+                    - (centerRight - centerLeft);
+
+            int leftMinimum = compactMode ? 96 : 138;
+            int rightMinimum = compactMode ? 118 : 158;
+
+            int shaveLeft = Math.min(
+                    shortage / 2,
+                    Math.max(0, leftPanelRight - leftPanelLeft - leftMinimum)
+            );
             leftPanelRight -= shaveLeft;
             centerLeft -= shaveLeft;
 
             int remaining = shortage - shaveLeft;
             int shaveRight = Math.min(
                     remaining,
-                    Math.max(0, previewWidth - 154)
+                    Math.max(0, previewRight - previewLeft - rightMinimum)
             );
             previewLeft += shaveRight;
             centerRight += shaveRight;
@@ -115,11 +133,13 @@ public final class LoomHomeScreen extends Screen {
     private void buildLeftActions() {
         int width = leftPanelRight - leftPanelLeft;
         int available = contentBottom - contentTop;
-        int gap = 5;
-        int cardHeight = Math.max(
-                32,
-                Math.min(40, (available - gap * 5) / 6)
-        );
+        int gap = compactMode ? 4 : 5;
+        int cardHeight = compactMode
+                ? Math.max(28, Math.min(34, (available - gap * 4) / 5))
+                : Math.max(
+                        34,
+                        Math.min(42, (available - gap * 4) / 5)
+                );
         int y = contentTop;
 
         addRenderableWidget(new LoomActionCard(
@@ -191,37 +211,27 @@ public final class LoomHomeScreen extends Screen {
                 y,
                 width,
                 cardHeight,
-                Component.literal("Loom Codes"),
-                Component.literal("Share & redeem designs"),
+                Component.literal("Share / Export"),
+                Component.literal("PNG, .loom & portable codes"),
                 LoomActionCard.Icon.CODE,
                 false,
                 this::openLoomCodes
         );
         addRenderableWidget(codes);
-        y += cardHeight + gap;
-
-        LoomActionCard settings = new LoomActionCard(
-                leftPanelLeft,
-                y,
-                width,
-                cardHeight,
-                Component.literal("Settings"),
-                Component.literal("Editor preferences"),
-                LoomActionCard.Icon.SETTINGS,
-                false,
-                () -> { }
-        );
-        settings.active = false;
-        addRenderableWidget(settings);
     }
 
     private void buildCenterContent() {
         int centerWidth = centerRight - centerLeft;
         int centerHeight = contentBottom - contentTop;
-        int recentHeight = Math.max(
-                108,
-                Math.min(154, (int)Math.round(centerHeight * 0.58))
-        );
+        int recentHeight = compactMode
+                ? Math.max(
+                        92,
+                        Math.min(116, (int)Math.round(centerHeight * 0.54))
+                )
+                : Math.max(
+                        108,
+                        Math.min(154, (int)Math.round(centerHeight * 0.58))
+                );
 
         recentBottom = contentTop + recentHeight;
         templatesTop = recentBottom + 7;
@@ -239,7 +249,15 @@ public final class LoomHomeScreen extends Screen {
         if (!recent.isEmpty()) {
             int cards = Math.min(
                     recent.size(),
-                    Math.max(1, Math.min(4, (innerRight - innerLeft) / 94))
+                    compactMode
+                            ? Math.max(
+                                    1,
+                                    Math.min(2, (innerRight - innerLeft) / 108)
+                            )
+                            : Math.max(
+                                    1,
+                                    Math.min(4, (innerRight - innerLeft) / 94)
+                            )
             );
             int cardGap = 5;
             int cardWidth = Math.max(
@@ -271,7 +289,13 @@ public final class LoomHomeScreen extends Screen {
 
         int templateHeight = Math.max(34, contentBottom - templatesTop - 27);
         int templateGap = 4;
-        int templateCount = centerWidth >= 430 ? 6 : centerWidth >= 300 ? 4 : 3;
+        int templateCount = compactMode
+                ? 2
+                : centerWidth >= 430
+                        ? 6
+                        : centerWidth >= 300
+                                ? 4
+                                : 3;
         int templateWidth = Math.max(
                 58,
                 (innerRight - innerLeft - templateGap * (templateCount - 1))
@@ -357,8 +381,8 @@ public final class LoomHomeScreen extends Screen {
     private void buildPreviewPanel() {
         int width = previewRight - previewLeft;
         int previewHeight = Math.max(
-                90,
-                contentBottom - contentTop - 27
+                compactMode ? 80 : 90,
+                contentBottom - contentTop - (compactMode ? 23 : 27)
         );
 
         this.previewWidget = new LoomPlayerPreviewWidget(
@@ -374,16 +398,22 @@ public final class LoomHomeScreen extends Screen {
         int buttonWidth = Math.max(72, (width - buttonGap) / 2);
 
         this.openSelectedButton.setX(previewLeft);
-        this.openSelectedButton.setY(contentTop + previewHeight + 5);
+        this.openSelectedButton.setY(contentTop + previewHeight + 4);
         this.openSelectedButton.setWidth(buttonWidth);
+        this.openSelectedButton.setHeight(compactMode ? 18 : 20);
+        this.openSelectedButton
+                .setIcon(LoomButton.Icon.CAPE)
+                .setIconOnly(compactMode);
         addRenderableWidget(this.openSelectedButton);
 
         addRenderableWidget(new LoomButton(
                 previewLeft + buttonWidth + buttonGap,
-                contentTop + previewHeight + 5,
+                contentTop + previewHeight + 4,
                 width - buttonWidth - buttonGap,
-                20,
+                compactMode ? 18 : 20,
                 Component.literal("Reset View"),
+                LoomButton.Icon.RESET,
+                compactMode,
                 () -> {
                     if (previewWidget != null) {
                         previewWidget.resetView();
@@ -601,103 +631,78 @@ public final class LoomHomeScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                shellLeft,
-                shellTop,
-                shellRight,
-                shellBottom,
-                LoomUiTheme.BACKDROP
-        );
-        graphics.fill(
-                shellLeft + 1,
-                shellTop + 1,
-                shellRight - 1,
-                shellBottom - 1,
-                LoomUiTheme.PANEL
+        LoomScreenChrome.renderBackdrop(graphics, width, height);
+        LoomScreenChrome.renderBrandHeader(
+                graphics,
+                width,
+                compactMode ? "Cape & Elytra Studio" : SUBTITLE.getString(),
+                compactMode
         );
 
-        renderHeader(graphics);
         renderSectionPanels(graphics);
-        renderStatusBar(graphics);
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                compactMode
+                        ? "Ready"
+                        : "Minecraft 1.21.11  •  Ready",
+                ProjectLibraryIndex.entries().size() + " Designs"
+        );
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderHeader(GuiGraphics graphics) {
-        graphics.fill(
-                shellLeft + 8,
-                shellTop + 6,
-                shellRight - 8,
-                contentTop - 7,
-                LoomUiTheme.PANEL_INNER
-        );
-        graphics.fill(
-                shellLeft + 8,
-                contentTop - 9,
-                shellRight - 8,
-                contentTop - 7,
-                LoomUiTheme.ACCENT
-        );
-
-        graphics.drawCenteredString(
-                this.font,
-                TITLE,
-                this.width / 2,
-                shellTop + 12,
-                LoomUiTheme.TEXT
-        );
-        graphics.drawCenteredString(
-                this.font,
-                SUBTITLE,
-                this.width / 2,
-                shellTop + 26,
-                LoomUiTheme.TEXT_MUTED
-        );
-
-        int markX = this.width / 2 - this.font.width("Loom Studios") / 2 - 18;
-        int markY = shellTop + 14;
-        graphics.fill(markX, markY, markX + 6, markY + 6, LoomUiTheme.ACCENT);
-        graphics.fill(markX + 3, markY - 3, markX + 4, markY + 9, LoomUiTheme.ACCENT_ALT);
-    }
-
     private void renderSectionPanels(GuiGraphics graphics) {
-        fillPanel(
+        LoomScreenChrome.panel(
                 graphics,
-                leftPanelLeft - 5,
-                contentTop - 5,
-                leftPanelRight + 5,
-                contentBottom + 5
+                leftPanelLeft,
+                contentTop,
+                leftPanelRight,
+                contentBottom
         );
-        fillPanel(
+        LoomScreenChrome.panel(
                 graphics,
                 centerLeft,
                 contentTop,
                 centerRight,
                 recentBottom
         );
-        fillPanel(
+        LoomScreenChrome.panel(
                 graphics,
                 centerLeft,
                 templatesTop,
                 centerRight,
                 contentBottom
         );
-
-        graphics.drawString(
-                this.font,
-                Component.literal("Recent Projects"),
-                centerLeft + 7,
-                contentTop + 7,
-                LoomUiTheme.TEXT,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                previewLeft,
+                contentTop,
+                previewRight,
+                contentBottom
         );
-        graphics.drawString(
-                this.font,
-                Component.literal("Templates"),
-                centerLeft + 7,
-                templatesTop + 7,
-                LoomUiTheme.TEXT,
-                false
+
+        LoomScreenChrome.panelHeader(
+                graphics,
+                centerLeft,
+                contentTop,
+                centerRight,
+                "Recent Projects"
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                centerLeft,
+                templatesTop,
+                centerRight,
+                "Templates"
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                previewLeft,
+                contentTop,
+                previewRight,
+                "3D Preview"
         );
 
         if (ProjectLibraryIndex.entries().isEmpty()) {
@@ -705,12 +710,12 @@ public final class LoomHomeScreen extends Screen {
                     this.font,
                     Component.literal("No saved projects yet"),
                     (centerLeft + centerRight) / 2,
-                    contentTop + 50,
+                    contentTop + 48,
                     LoomUiTheme.TEXT_MUTED
             );
         }
 
-        if (ProjectLibraryIndex.rejectedFiles() > 0) {
+        if (ProjectLibraryIndex.rejectedFiles() > 0 && !compactMode) {
             graphics.drawString(
                     this.font,
                     Component.literal(
@@ -723,70 +728,6 @@ public final class LoomHomeScreen extends Screen {
                     false
             );
         }
-    }
-
-    private void renderStatusBar(GuiGraphics graphics) {
-        int y = shellBottom - 20;
-        graphics.fill(
-                shellLeft + 1,
-                y,
-                shellRight - 1,
-                shellBottom - 1,
-                LoomUiTheme.PANEL_INNER
-        );
-
-        graphics.drawString(
-                this.font,
-                Component.literal("✦ Loom Studios"),
-                shellLeft + 10,
-                y + 6,
-                LoomUiTheme.TEXT,
-                false
-        );
-        graphics.drawString(
-                this.font,
-                Component.literal("Minecraft 1.21.11"),
-                shellLeft + 104,
-                y + 6,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-        graphics.drawString(
-                this.font,
-                Component.literal("• Ready"),
-                shellLeft + 206,
-                y + 6,
-                0xFF58D47D,
-                false
-        );
-
-        String count = ProjectLibraryIndex.entries().size() + " Designs";
-        int countWidth = this.font.width(count);
-        graphics.drawString(
-                this.font,
-                Component.literal(count),
-                shellRight - countWidth - 10,
-                y + 6,
-                LoomUiTheme.ACCENT_ALT,
-                false
-        );
-    }
-
-    private static void fillPanel(
-            GuiGraphics graphics,
-            int left,
-            int top,
-            int right,
-            int bottom
-    ) {
-        graphics.fill(left, top, right, bottom, LoomUiTheme.BORDER);
-        graphics.fill(
-                left + 1,
-                top + 1,
-                right - 1,
-                bottom - 1,
-                LoomUiTheme.PANEL_INNER
-        );
     }
 
     private static String formatAge(long modifiedAt) {
