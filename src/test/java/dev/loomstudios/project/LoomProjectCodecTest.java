@@ -431,6 +431,36 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void emissiveRuntimeMirrorStaysEnabledUntilFinalLayerIsDisabled() {
+        LoomProject project = LoomProjectFactory.blank("Multi Emissive", 1L);
+        UUID baseId = project.cape().layers().getFirst().id();
+
+        LoomProject withSecond = ProjectEdits.addCapeLayer(project, "Second");
+        UUID secondId = withSecond.cape().layers().getLast().id();
+
+        LoomProject bothEnabled = ProjectEdits.setCapeLayerEmissive(
+                ProjectEdits.setCapeLayerEmissive(withSecond, baseId, true),
+                secondId,
+                true
+        );
+        assertTrue(bothEnabled.runtime().emissiveEnabled());
+
+        LoomProject oneRemaining = ProjectEdits.setCapeLayerEmissive(
+                bothEnabled,
+                baseId,
+                false
+        );
+        assertTrue(oneRemaining.runtime().emissiveEnabled());
+
+        LoomProject noneRemaining = ProjectEdits.setCapeLayerEmissive(
+                oneRemaining,
+                secondId,
+                false
+        );
+        assertFalse(noneRemaining.runtime().emissiveEnabled());
+    }
+
+    @Test
     void blendModeOrdinalsPreserveSchemaV1Compatibility() {
         assertEquals(0, BlendMode.NORMAL.ordinal());
         assertEquals(1, BlendMode.ADD.ordinal());
