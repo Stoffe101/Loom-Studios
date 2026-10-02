@@ -983,6 +983,185 @@ public final class ProjectEdits {
         return project.withCape(nextCanvas);
     }
 
+    public static LoomProject setElytraLayerLocked(
+            LoomProject project,
+            UUID layerId,
+            boolean locked
+    ) {
+        LoomCanvas canvas = project.elytra();
+        LoomLayer current = canvas.layers().stream()
+                .filter(layer -> layer.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown Elytra layer " + layerId
+                ));
+
+        LoomLayer replacement = current.withLocked(locked);
+        return replacement.equals(current)
+                ? project
+                : project.withElytra(
+                        canvas.replaceLayer(layerId, replacement)
+                );
+    }
+
+    public static LoomProject setElytraWingPixel(
+            LoomProject project,
+            UUID layerId,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int argb,
+            boolean linkedMirror
+    ) {
+        LoomCanvas canvas = project.elytra();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int width = wing.width(scale);
+        int height = wing.height(scale);
+
+        if (localX < 0
+                || localY < 0
+                || localX >= width
+                || localY >= height) {
+            return project;
+        }
+
+        LoomLayer layer = requireEditablePaintLayer(canvas, layerId);
+        int[] pixels = layer.pixels();
+        boolean changed = writeElytraWingPixel(
+                pixels,
+                canvas.width(),
+                wing,
+                localX,
+                localY,
+                scale,
+                argb
+        );
+
+        if (linkedMirror) {
+            ElytraWing opposite = wing.opposite();
+            changed |= writeElytraWingPixel(
+                    pixels,
+                    canvas.width(),
+                    opposite,
+                    opposite.mirroredLocalX(localX, scale),
+                    localY,
+                    scale,
+                    argb
+            );
+        }
+
+        if (!changed) {
+            return project;
+        }
+
+        return project.withElytra(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    public static LoomProject paintElytraWingBrush(
+            LoomProject project,
+            UUID layerId,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int brushSize,
+            int argb,
+            boolean linkedMirror
+    ) {
+        if (brushSize < 1 || brushSize > 32) {
+            throw new IllegalArgumentException("Brush size out of range");
+        }
+
+        LoomCanvas canvas = project.elytra();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int width = wing.width(scale);
+        int height = wing.height(scale);
+
+        LoomLayer layer = requireEditablePaintLayer(canvas, layerId);
+        int[] pixels = layer.pixels();
+        boolean changed = false;
+        double radius = Math.max(0.5, brushSize / 2.0);
+        int minX = localX - brushSize / 2;
+        int minY = localY - brushSize / 2;
+
+        for (int by = 0; by < brushSize; by++) {
+            for (int bx = 0; bx < brushSize; bx++) {
+                int px = minX + bx;
+                int py = minY + by;
+
+                if (px < 0 || py < 0 || px >= width || py >= height) {
+                    continue;
+                }
+
+                double dx = px + 0.5 - (localX + 0.5);
+                double dy = py + 0.5 - (localY + 0.5);
+                if (brushSize > 2
+                        && dx * dx + dy * dy > radius * radius) {
+                    continue;
+                }
+
+                changed |= writeElytraWingPixel(
+                        pixels,
+                        canvas.width(),
+                        wing,
+                        px,
+                        py,
+                        scale,
+                        argb
+                );
+
+                if (linkedMirror) {
+                    ElytraWing opposite = wing.opposite();
+                    changed |= writeElytraWingPixel(
+                            pixels,
+                            canvas.width(),
+                            opposite,
+                            opposite.mirroredLocalX(px, scale),
+                            py,
+                            scale,
+                            argb
+                    );
+                }
+            }
+        }
+
+        if (!changed) {
+            return project;
+        }
+
+        return project.withElytra(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    private static boolean writeElytraWingPixel(
+            int[] pixels,
+            int canvasWidth,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int scale,
+            int argb
+    ) {
+        int atlasX = wing.atlasX(localX, scale);
+        int atlasY = wing.atlasY(localY, scale);
+        int index = atlasY * canvasWidth + atlasX;
+
+        if (pixels[index] == argb) {
+            return false;
+        }
+
+        pixels[index] = argb;
+        return true;
+    }
+
     public static LoomProject setElytraPixel(
             LoomProject project,
             UUID layerId,

@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -29,7 +30,13 @@ import java.util.function.Supplier;
  * Reusable in-screen player preview for Loom showcase/editor layouts.
  */
 public final class LoomPlayerPreviewWidget extends AbstractWidget {
+    public enum Mode {
+        CAPE,
+        ELYTRA
+    }
+
     private final Supplier<LoomProject> projectSupplier;
+    private Mode mode;
 
     private float yaw = 180.0F;
     private float pitch;
@@ -43,11 +50,27 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             int height,
             Supplier<LoomProject> projectSupplier
     ) {
+        this(x, y, width, height, projectSupplier, Mode.CAPE);
+    }
+
+    public LoomPlayerPreviewWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            Supplier<LoomProject> projectSupplier,
+            Mode mode
+    ) {
         super(x, y, width, height, Component.literal("3D Preview"));
         this.projectSupplier = Objects.requireNonNull(
                 projectSupplier,
                 "projectSupplier"
         );
+        this.mode = Objects.requireNonNull(mode, "mode");
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = Objects.requireNonNull(mode, "mode");
     }
 
     @Override
@@ -98,8 +121,13 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             );
 
             if (renderState instanceof AvatarRenderState avatarState) {
-                avatarState.chestEquipment = ItemStack.EMPTY;
-                avatarState.showCape = true;
+                if (mode == Mode.ELYTRA) {
+                    avatarState.chestEquipment = new ItemStack(Items.ELYTRA);
+                    avatarState.showCape = false;
+                } else {
+                    avatarState.chestEquipment = ItemStack.EMPTY;
+                    avatarState.showCape = true;
+                }
             }
 
             if (renderState instanceof LivingEntityRenderState livingState) {

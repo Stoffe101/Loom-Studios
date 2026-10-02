@@ -141,12 +141,11 @@ public final class LoomHomeScreen extends Screen {
                 width,
                 cardHeight,
                 Component.literal("Edit Elytra"),
-                Component.literal("Wing editor coming next"),
+                Component.literal("Design linked or separate wings"),
                 LoomActionCard.Icon.ELYTRA,
                 false,
-                () -> { }
+                this::editElytra
         );
-        elytra.active = false;
         addRenderableWidget(elytra);
         y += cardHeight + gap;
 
@@ -470,6 +469,48 @@ public final class LoomHomeScreen extends Screen {
         );
 
         this.minecraft.setScreen(new CapeEditorScreen(this));
+    }
+
+    private void editElytra() {
+        if (this.minecraft.player == null) {
+            return;
+        }
+
+        if (ClientProjectWorkspace.isInitialized()
+                && ClientProjectWorkspace.isDirty()) {
+            this.minecraft.setScreen(new ElytraEditorScreen(this));
+            return;
+        }
+
+        ProjectLibraryIndex.selected().ifPresentOrElse(
+                descriptor -> {
+                    try {
+                        ClientProjectWorkspace.open(
+                                descriptor.projectPath(),
+                                this.minecraft.player.getUUID()
+                        );
+                        this.minecraft.setScreen(
+                                new ElytraEditorScreen(this)
+                        );
+                    } catch (IOException | IllegalArgumentException e) {
+                        LoomStudios.LOGGER.error(
+                                "Failed to open Loom project {} for Elytra editing",
+                                descriptor.projectPath(),
+                                e
+                        );
+                    }
+                },
+                () -> {
+                    ClientProjectWorkspace.createBlank(
+                            "Untitled Elytra",
+                            System.currentTimeMillis(),
+                            this.minecraft.player.getUUID()
+                    );
+                    this.minecraft.setScreen(
+                            new ElytraEditorScreen(this)
+                    );
+                }
+        );
     }
 
     private void createFromImport() {
