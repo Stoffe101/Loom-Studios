@@ -170,6 +170,13 @@ Existing rendering:
 ### Smart Import automated + local checks
 
 Automated/current CI:
+- cape Outside -> Elytra conversion aspect-fits into the semantic wing target
+- cape -> Elytra conversion mirrors the right wing deterministically
+- cape -> Elytra conversion preserves alpha and works against 4x target canvases
+- invalid cape conversion source dimensions are rejected
+- Elytra semantic normalized rects remain stable across backing resolutions
+- Elytra Image layers can be added and updated non-destructively
+- Elytra layer rename/opacity/blend round-trip through the project codec
 - Gradient translation uses layer-relative 5% movement steps
 - Gradient scale preserves aspect and reports clip-relative scale percent
 - Gradient H/V mirror toggles remain independent
@@ -221,6 +228,12 @@ Local/runtime verification:
 - reopen/edit Image layer
 - Undo/Redo around Apply
 - candidate preview does not change equipped/network state
+- Elytra linked import produces left/right semantic Image layers
+- opposite imported wing is horizontally mirrored
+- editing an Elytra Image layer reopens Smart Import
+- Cape -> Wings creates an editable Paint layer
+- Elytra layer reorder / opacity / rename / blend
+- Elytra Swatches select/update the active color
 
 ## Project format tests
 

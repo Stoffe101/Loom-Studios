@@ -33,9 +33,11 @@ Loom Studios currently has:
 - Elytra Paint-layer stack with direct visibility/lock affordances;
 - project-authored Elytra thickness controls from 25% to 200%.
 
-The current editor-productization branch is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+The current editor-productization work is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Latest merged-main baseline entering this pass: `213bd4e9d5d5f5f9449fbd8c3a3fce74cf71e6ec` — GitHub Actions #126 **SUCCESS**.
+Latest merged-main baseline entering the Elytra workflow-completion pass: `52576d191f451b49436a97f66b4501b2bc85eb13` — GitHub Actions #133 **SUCCESS**.
+
+Elytra workflow-completion implementation checkpoint: `cc55df2ba4b52907595a1d7d7cb7c48849059692` — GitHub Actions #137 **SUCCESS**.
 
 Current pass exact green implementation checkpoints:
 - Home reference shell: `0cc3b219fcda2c8b4fb619db900545890e40764e` — GitHub Actions #127 **SUCCESS**;
@@ -344,11 +346,20 @@ Semantic Elytra Editor implemented in the current pass:
 - project-authored Elytra thickness 25%–200%;
 - old debug thickness preset override retired so saved/equipped project thickness is authoritative.
 
+Additional Elytra workflow implemented in the current pass:
+- cape Outside -> Elytra starting conversion as a new editable Paint layer;
+- aspect-fit conversion preserves transparency and mirrors into the opposite semantic wing;
+- Smart Import can target Elytra directly;
+- linked Elytra import creates two editable Image layers, one per semantic wing;
+- the opposite imported wing uses mirrored horizontal placement rather than flattening both wings into one UV rectangle;
+- existing Elytra Image layers can be reopened in Smart Import;
+- layer reorder;
+- opacity;
+- rename;
+- blend mode;
+- shared Swatches/palette window with the Cape Editor.
+
 Still missing for the full reference target:
-- cape-to-Elytra starting conversion;
-- Elytra-target Smart Import / Image-layer authoring;
-- richer Elytra layer property UI (reorder, opacity, rename, blend);
-- full Swatches parity with Cape Editor;
 - standing/open/gliding preview-state controls;
 - animation timeline/tracks/effects;
 - final reference-layout polish.

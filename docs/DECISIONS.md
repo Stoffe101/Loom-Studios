@@ -952,3 +952,30 @@ This allows Cape and Elytra editors to share:
 - scrolling behavior.
 
 Target-specific edits remain in the owning editor/ProjectEdits path.
+
+
+## ADR-077 — Elytra Smart Import uses semantic twin Image layers
+**Status:** Accepted / implemented
+
+The two Elytra wing-front UV regions are disjoint. Smart Import must not pretend they form one rectangular editable target.
+
+A linked Elytra import therefore creates:
+- one Image layer clipped to the semantic left wing;
+- one Image layer clipped to the semantic right wing;
+- the right-wing transform mirrors horizontal placement relative to the left.
+
+The source remains embedded/editable through normal schema-v2 Image-layer data. Runtime compilation still flows through the shared typed-layer rasterizer.
+
+Existing Elytra Image layers can be reopened as a single target in Smart Import.
+
+## ADR-078 — Cape-to-Elytra conversion is an editable Paint starting layer
+**Status:** Accepted / implemented
+
+Cape-to-Elytra conversion compiles the current cape Outside face, aspect-fits it into the semantic Elytra wing face, mirrors it into the opposite wing and adds the result as a new Paint layer.
+
+The operation does not:
+- overwrite the existing Elytra stack;
+- resize the fixed Minecraft UV layout;
+- introduce a new schema field.
+
+This makes conversion a reversible/undoable authoring action and preserves the original cape project.

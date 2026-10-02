@@ -5,16 +5,22 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
 import dev.loomstudios.client.ui.LoomElytraCanvasWidget;
+import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.client.ui.LoomLayerListWidget;
+import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
+import dev.loomstudios.project.CapeToElytraConverter;
+import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -39,10 +45,26 @@ public final class ElytraEditorScreen extends Screen {
     private LoomColorPickerWidget colorPicker;
     private LoomPlayerPreviewWidget previewWidget;
     private LoomLayerListWidget layerListWidget;
+    private LoomPaletteWindow paletteWindow;
+    private EditBox layerNameField;
+
+    private boolean paletteWindowVisible;
+    private boolean paletteWindowPinned;
+    private int paletteWindowX = Integer.MIN_VALUE;
+    private int paletteWindowY = Integer.MIN_VALUE;
+    private String statusMessage = "";
 
     private LoomButton layerAddButton;
     private LoomButton layerDuplicateButton;
     private LoomButton layerDeleteButton;
+    private LoomButton layerUpButton;
+    private LoomButton layerDownButton;
+    private LoomButton layerEditImageButton;
+    private LoomButton layerOpacityDownButton;
+    private LoomButton layerOpacityLabelButton;
+    private LoomButton layerOpacityUpButton;
+    private LoomButton layerBlendButton;
+    private LoomButton swatchesButton;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
@@ -164,20 +186,24 @@ public final class ElytraEditorScreen extends Screen {
                 centerRight - centerLeft,
                 colorHeight,
                 selectedColor,
-                color -> selectedColor = color
+                this::setSelectedColor
         );
         addRenderableWidget(this.colorPicker);
 
         int rightWidth = previewRight - previewLeft;
         int rightHeight = shellBottom - contentTop - 7;
         int layerListHeight = Math.max(
-                72,
-                Math.min(96, rightHeight / 3)
+                68,
+                Math.min(90, rightHeight / 4)
         );
         int actionHeight = 20;
+        int propertyRowsHeight = 20 * 6 + 5 * 5;
         int previewHeight = Math.max(
-                84,
-                rightHeight - layerListHeight - actionHeight * 2 - 18
+                76,
+                rightHeight
+                        - layerListHeight
+                        - propertyRowsHeight
+                        - 12
         );
 
         this.previewWidget = new LoomPlayerPreviewWidget(
@@ -190,7 +216,7 @@ public final class ElytraEditorScreen extends Screen {
         );
         addRenderableWidget(this.previewWidget);
 
-        int layerTop = contentTop + previewHeight + 6;
+        int layerTop = contentTop + previewHeight + 5;
         this.layerListWidget = new LoomLayerListWidget(
                 previewLeft,
                 layerTop,
@@ -234,14 +260,129 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(this.layerDuplicateButton);
         addRenderableWidget(this.layerDeleteButton);
 
+        actionsTop += actionHeight + 5;
+        int quarter = Math.max(30, (rightWidth - 12) / 4);
+        this.layerUpButton = new LoomButton(
+                previewLeft,
+                actionsTop,
+                quarter,
+                actionHeight,
+                Component.literal("Up"),
+                () -> moveLayer(1)
+        );
+        this.layerDownButton = new LoomButton(
+                previewLeft + quarter + 4,
+                actionsTop,
+                quarter,
+                actionHeight,
+                Component.literal("Down"),
+                () -> moveLayer(-1)
+        );
+        this.layerEditImageButton = new LoomButton(
+                previewLeft + quarter * 2 + 8,
+                actionsTop,
+                rightWidth - quarter * 2 - 8,
+                actionHeight,
+                Component.literal("Edit Image"),
+                this::editSelectedImage
+        );
+        addRenderableWidget(this.layerUpButton);
+        addRenderableWidget(this.layerDownButton);
+        addRenderableWidget(this.layerEditImageButton);
+
+        actionsTop += actionHeight + 5;
+        this.layerNameField = new EditBox(
+                this.font,
+                previewLeft,
+                actionsTop,
+                Math.max(60, rightWidth - 58),
+                actionHeight,
+                Component.literal("Layer name")
+        );
+        this.layerNameField.setMaxLength(
+                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
+        );
+        addRenderableWidget(this.layerNameField);
+        addRenderableWidget(new LoomButton(
+                previewRight - 54,
+                actionsTop,
+                54,
+                actionHeight,
+                Component.literal("Rename"),
+                this::renameLayer
+        ));
+
+        actionsTop += actionHeight + 5;
+        int small = 38;
+        this.layerOpacityDownButton = new LoomButton(
+                previewLeft,
+                actionsTop,
+                small,
+                actionHeight,
+                Component.literal("-"),
+                () -> changeLayerOpacity(-0.1F)
+        );
+        this.layerOpacityLabelButton = new LoomButton(
+                previewLeft + small + 4,
+                actionsTop,
+                Math.max(42, rightWidth - small * 2 - 8),
+                actionHeight,
+                Component.literal("Opacity 100%"),
+                () -> { }
+        );
+        this.layerOpacityLabelButton.active = false;
+        this.layerOpacityUpButton = new LoomButton(
+                previewRight - small,
+                actionsTop,
+                small,
+                actionHeight,
+                Component.literal("+"),
+                () -> changeLayerOpacity(0.1F)
+        );
+        addRenderableWidget(this.layerOpacityDownButton);
+        addRenderableWidget(this.layerOpacityLabelButton);
+        addRenderableWidget(this.layerOpacityUpButton);
+
+        actionsTop += actionHeight + 5;
+        int half = Math.max(52, (rightWidth - 4) / 2);
+        this.layerBlendButton = new LoomButton(
+                previewLeft,
+                actionsTop,
+                half,
+                actionHeight,
+                Component.literal("Blend: Normal"),
+                this::cycleLayerBlendMode
+        );
+        this.swatchesButton = new LoomButton(
+                previewLeft + half + 4,
+                actionsTop,
+                rightWidth - half - 4,
+                actionHeight,
+                Component.literal("Swatches"),
+                this::toggleSwatches
+        );
+        addRenderableWidget(this.layerBlendButton);
+        addRenderableWidget(this.swatchesButton);
+
+        actionsTop += actionHeight + 5;
         addRenderableWidget(new LoomButton(
                 previewLeft,
-                actionsTop + actionHeight + 5,
-                rightWidth,
+                actionsTop,
+                half,
                 actionHeight,
-                Component.literal("Reset 3D View"),
-                this.previewWidget::resetView
+                Component.literal("Import PNG"),
+                this::importImage
         ));
+        addRenderableWidget(new LoomButton(
+                previewLeft + half + 4,
+                actionsTop,
+                rightWidth - half - 4,
+                actionHeight,
+                Component.literal("Cape → Wings"),
+                this::convertCapeToElytra
+        ));
+
+        buildPaletteWindow(centerRight, contentTop);
 
         updateButtonStates();
     }
@@ -566,6 +707,7 @@ public final class ElytraEditorScreen extends Screen {
             return;
         }
         selectedLayerId = layerId;
+        syncLayerName();
         updateButtonStates();
     }
 
@@ -640,6 +782,205 @@ public final class ElytraEditorScreen extends Screen {
                 .get(nextIndex)
                 .id();
         updateButtonStates();
+    }
+
+    private void moveLayer(int delta) {
+        ensureSelectedLayerExists();
+        if (selectedLayerId == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.moveElytraLayer(
+                        project,
+                        selectedLayerId,
+                        delta
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void renameLayer() {
+        LoomLayer layer = selectedLayer();
+        if (layer == null || layerNameField == null) {
+            return;
+        }
+
+        String name = layerNameField.getValue().trim();
+        if (name.isEmpty()) {
+            syncLayerName();
+            return;
+        }
+
+        try {
+            ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.renameElytraLayer(
+                            project,
+                            selectedLayerId,
+                            name
+                    )
+            );
+            statusMessage = "Renamed layer";
+        } catch (IllegalArgumentException e) {
+            statusMessage = "Invalid layer name";
+        }
+
+        syncLayerName();
+        updateButtonStates();
+    }
+
+    private void changeLayerOpacity(float delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer == null) {
+            return;
+        }
+
+        float next = Math.max(
+                0.0F,
+                Math.min(1.0F, layer.opacity() + delta)
+        );
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setElytraLayerOpacity(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void cycleLayerBlendMode() {
+        LoomLayer layer = selectedLayer();
+        if (layer == null) {
+            return;
+        }
+
+        BlendMode next = layer.blendMode().next();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setElytraLayerBlendMode(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void importImage() {
+        this.minecraft.setScreen(SmartImportScreen.forElytra(this));
+    }
+
+    private void editSelectedImage() {
+        LoomLayer layer = selectedLayer();
+        if (layer == null
+                || layer.kind() != LayerKind.IMAGE
+                || layer.locked()) {
+            return;
+        }
+
+        this.minecraft.setScreen(
+                SmartImportScreen.forElytraLayer(
+                        this,
+                        layer.id(),
+                        layer
+                )
+        );
+    }
+
+    private void convertCapeToElytra() {
+        var project = ClientProjectWorkspace.project();
+        int scale = CanvasResolution.fromCanvas(project.cape()).scale();
+        int[] outside = LoomTextureCompiler.compileCapeRegion(
+                project.cape(),
+                CapeUvRegion.OUTSIDE,
+                0,
+                false,
+                false
+        );
+        int[] converted = CapeToElytraConverter.convertOutsideFace(
+                outside,
+                CapeUvRegion.OUTSIDE.width(scale),
+                CapeUvRegion.OUTSIDE.height(scale),
+                project.elytra()
+        );
+
+        var result = ClientProjectWorkspace.apply(current ->
+                ProjectEdits.addElytraPaintLayer(
+                        current,
+                        "Cape Conversion",
+                        converted
+                )
+        );
+        selectedLayerId = result.elytra().layers().getLast().id();
+        statusMessage = "Cape Outside converted to editable wings";
+        syncLayerName();
+        updateButtonStates();
+    }
+
+    private void buildPaletteWindow(int anchorRight, int anchorTop) {
+        if (this.paletteWindow != null) {
+            this.paletteWindowX = this.paletteWindow.getX();
+            this.paletteWindowY = this.paletteWindow.getY();
+            this.paletteWindowPinned = this.paletteWindow.pinned();
+        }
+
+        boolean compact = this.width <= 700 || this.height <= 420;
+        int width = compact
+                ? Math.min(184, Math.max(164, this.width / 4 + 16))
+                : 224;
+        int height = compact
+                ? Math.min(230, Math.max(186, this.height - 50))
+                : Math.min(298, Math.max(250, this.height - 32));
+
+        int defaultX = Math.max(8, anchorRight - width - 8);
+        int defaultY = Math.max(8, anchorTop);
+
+        int x = paletteWindowX == Integer.MIN_VALUE
+                ? defaultX
+                : paletteWindowX;
+        int y = paletteWindowY == Integer.MIN_VALUE
+                ? defaultY
+                : paletteWindowY;
+
+        this.paletteWindow = new LoomPaletteWindow(
+                x,
+                y,
+                width,
+                height,
+                paletteWindowPinned,
+                () -> selectedColor,
+                this::setSelectedColor,
+                message -> statusMessage = message,
+                () -> this.width,
+                () -> this.height
+        );
+        this.paletteWindow.visible = paletteWindowVisible;
+        addRenderableWidget(this.paletteWindow);
+        this.paletteWindow.moveTo(x, y);
+    }
+
+    private void toggleSwatches() {
+        paletteWindowVisible = !paletteWindowVisible;
+        if (paletteWindow != null) {
+            paletteWindow.visible = paletteWindowVisible;
+        }
+        updateButtonStates();
+    }
+
+    private void setSelectedColor(int color) {
+        selectedColor = color;
+        if (colorPicker != null && colorPicker.color() != color) {
+            colorPicker.setColor(color);
+        }
+    }
+
+    private void syncLayerName() {
+        if (layerNameField == null || layerNameField.isFocused()) {
+            return;
+        }
+
+        LoomLayer layer = selectedLayer();
+        layerNameField.setValue(layer == null ? "" : layer.name());
     }
 
     private void undo() {
@@ -824,6 +1165,69 @@ public final class ElytraEditorScreen extends Screen {
         if (layerDeleteButton != null) {
             layerDeleteButton.active = layer != null && layerCount > 1;
         }
+
+        int selectedIndex = -1;
+        if (layer != null) {
+            var layers = ClientProjectWorkspace.project()
+                    .elytra()
+                    .layers();
+            for (int i = 0; i < layers.size(); i++) {
+                if (layers.get(i).id().equals(layer.id())) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (layerUpButton != null) {
+            layerUpButton.active =
+                    selectedIndex >= 0 && selectedIndex < layerCount - 1;
+        }
+        if (layerDownButton != null) {
+            layerDownButton.active = selectedIndex > 0;
+        }
+        if (layerEditImageButton != null) {
+            layerEditImageButton.active =
+                    layer != null
+                            && layer.kind() == LayerKind.IMAGE
+                            && !layer.locked();
+        }
+        if (layerOpacityDownButton != null) {
+            layerOpacityDownButton.active =
+                    layer != null && layer.opacity() > 0.0F;
+        }
+        if (layerOpacityUpButton != null) {
+            layerOpacityUpButton.active =
+                    layer != null && layer.opacity() < 1.0F;
+        }
+        if (layerOpacityLabelButton != null) {
+            layerOpacityLabelButton.setMessage(Component.literal(
+                    layer == null
+                            ? "Opacity"
+                            : "Opacity "
+                                    + Math.round(
+                                            layer.opacity() * 100.0F
+                                    )
+                                    + "%"
+            ));
+        }
+        if (layerBlendButton != null) {
+            layerBlendButton.active = layer != null;
+            layerBlendButton.setMessage(Component.literal(
+                    layer == null
+                            ? "Blend"
+                            : "Blend: " + layer.blendMode().displayName()
+            ));
+        }
+        if (swatchesButton != null) {
+            swatchesButton.setMessage(Component.literal(
+                    paletteWindowVisible
+                            ? "Hide Swatches"
+                            : "Swatches"
+            ));
+        }
+        syncLayerName();
+
         if (undoButton != null) {
             undoButton.active = ClientProjectWorkspace.session().canUndo();
         }
@@ -901,6 +1305,17 @@ public final class ElytraEditorScreen extends Screen {
                 false
         );
 
+        if (!statusMessage.isBlank()) {
+            graphics.drawString(
+                    this.font,
+                    Component.literal(statusMessage),
+                    shellLeft + 16,
+                    shellTop + 24,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
+
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -917,6 +1332,11 @@ public final class ElytraEditorScreen extends Screen {
     public void removed() {
         if (canvasWidget != null) {
             canvasWidget.close();
+        }
+        if (paletteWindow != null) {
+            paletteWindowX = paletteWindow.getX();
+            paletteWindowY = paletteWindow.getY();
+            paletteWindowPinned = paletteWindow.pinned();
         }
         super.removed();
     }

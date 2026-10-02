@@ -2,11 +2,15 @@
 
 ## Current gate
 
-Home + semantic Elytra Editor productization is implemented on the current branch and CI green.
+Home + semantic Elytra Editor productization is merged, and the Elytra workflow-completion implementation is CI green.
 
-Latest merged-main baseline entering the pass:
-- `213bd4e9d5d5f5f9449fbd8c3a3fce74cf71e6ec`
-- GitHub Actions #126: **SUCCESS**
+Latest merged-main baseline entering the workflow-completion pass:
+- `52576d191f451b49436a97f66b4501b2bc85eb13`
+- GitHub Actions #133: **SUCCESS**
+
+Current Elytra workflow-completion source checkpoint:
+- `cc55df2ba4b52907595a1d7d7cb7c48849059692`
+- GitHub Actions #137: **SUCCESS**
 
 Current pass source checkpoints:
 - `0cc3b219fcda2c8b4fb619db900545890e40764e` — Home shell — Actions #127 **SUCCESS**;
@@ -116,13 +120,21 @@ The remaining gate for visual DONE status is local runtime verification because 
 - layer Add / Copy / Delete;
 - row visibility;
 - direct row Lock;
-- locked Paint layer rejects edits;
+- reorder;
+- opacity;
+- rename;
+- blend mode;
+- locked Paint/Image layer rejects edits;
 - Undo / Redo;
 - Save / Save + Equip;
 - Depth 25% through 200%;
 - saved/equipped depth matches preview;
 - old debug V-key thickness override is gone;
 - 3D Elytra preview drag/zoom/reset;
+- Cape -> Wings conversion;
+- linked Smart Import creates two editable wing Image layers;
+- existing Elytra Image layer reopens in Smart Import;
+- shared Swatches/palette window;
 - compact layout at all mandatory GUI profiles.
 
 ## Next CI-safe product work
@@ -131,18 +143,16 @@ Home reference shell and the semantic Elytra Editor MVP are implemented in this 
 
 Priority order:
 
-1. finish the Elytra product workflow:
-   - cape-to-Elytra starting conversion;
-   - Elytra-target Smart Import / Image layers;
-   - richer Elytra layer properties (reorder / opacity / rename / blend);
-   - shared Swatches/palette workflow;
-   - standing / open / gliding preview states;
-2. animation authoring schema + UI:
+1. animation authoring schema + UI:
    - tracks;
    - keyframes;
    - procedural effects;
    - timeline;
    - play / pause / loop / speed;
+2. Elytra preview-state polish:
+   - standing;
+   - open;
+   - gliding;
 3. project Loom Codes/sharing;
 4. final Cape/Home/Smart Import/Elytra reference-fidelity hardening;
 5. final compatibility/performance matrix.
