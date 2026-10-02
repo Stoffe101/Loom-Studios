@@ -153,21 +153,34 @@ Later enhancements:
 
 ## Phase 5 — Elytra editor
 
-**Status:** RENDERING FOUNDATION PROVEN / EDITOR NOT STARTED.
+**Status:** SEMANTIC EDITOR MVP CI GREEN / LOCAL VISUAL VERIFICATION PENDING.
 
-Already available underneath:
+Implemented:
 - independent Elytra texture;
-- calibrated thickness rendering;
 - high-resolution Elytra project canvas/resizer;
-- preview Cape/Elytra switching.
+- semantic Left / Right 10x20 wing-front regions;
+- unfolded two-wing canvas;
+- Pencil / Eraser;
+- linked mirrored wing editing;
+- independent Separate Wings mode;
+- scalable brush;
+- 1x / 2x / 4x;
+- reusable canvas-backed typed layer list;
+- Add / Copy / Delete Paint layers;
+- row visibility + persistent Lock;
+- Undo / Redo;
+- Save / Save + Equip;
+- integrated Elytra 3D preview;
+- project-authored thickness UI 25%–200%;
+- old debug thickness override removed.
 
-Planned:
-- semantic unfolded-wing canvas;
-- linked/mirrored wings;
-- independent wings;
+Still planned:
 - cape-to-Elytra starting conversion;
-- thickness UI;
-- standing/open/gliding preview controls.
+- Elytra Smart Import / Image-layer target;
+- richer layer properties and ordering controls;
+- Swatches parity;
+- standing/open/gliding preview controls;
+- final reference polish.
 
 ## Phase 6 — Animation/effects
 
@@ -202,6 +215,24 @@ Planned:
 - private clickable chat result;
 - Copy / Import / Preview / Favorite;
 - permissions/visibility.
+
+## Home reference shell
+
+**Status:** FIRST REFERENCE-ORIENTED SHELL CI GREEN / LOCAL VISUAL VERIFICATION PENDING.
+
+Implemented:
+- responsive three-column shell;
+- icon action cards;
+- real recent-project thumbnails;
+- integrated selected-project 3D preview;
+- Blank + Gradient templates;
+- Edit Elytra and Smart Import routing;
+- status/footer treatment.
+
+Still planned:
+- Loom Codes and Settings destinations;
+- additional template packs;
+- final decorative wood/cloth/metal fidelity.
 
 ## Phase 8 — Reference-image fidelity
 

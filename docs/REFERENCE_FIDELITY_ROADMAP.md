@@ -57,24 +57,26 @@ Reference-oriented structure:
 
 ### Current status
 
-Implemented foundation:
-- home screen exists;
-- Create New Cape works;
-- local project library/index exists;
-- project thumbnail PNGs are generated/cached;
-- selecting/opening a saved project works;
-- Import Image routes into Smart Import.
+Implemented in the reference-shell pass:
+- responsive three-column project hub;
+- icon-led Create / Elytra / Load / Import / Loom Codes / Settings hierarchy;
+- Create New Cape;
+- Edit Elytra;
+- Load Design;
+- Import Image -> Smart Import;
+- real Recent Project thumbnail cards from the cached PNG thumbnails;
+- selected-project 3D preview with drag/zoom/reset;
+- functional Blank and Gradient template cards;
+- Nature / Space / Fantasy / Emblems placeholder cards;
+- project count/status footer;
+- unreadable-project warning state.
 
-Missing/reference gap:
-- real thumbnail cards;
-- branded multi-panel composition;
-- Elytra entry;
-- final Import card/reference styling;
-- Loom Codes entry;
-- Templates;
-- Settings;
-- integrated 3D preview;
-- final wood/metal/cloth treatment.
+Remaining/reference gap:
+- project Loom Codes action remains inactive until sharing exists;
+- Settings action remains inactive until settings product work exists;
+- additional template packs are placeholders;
+- final wood/metal/cloth decorative treatment;
+- local visual verification at all mandatory GUI profiles.
 
 ## Reference 02 — Cape Editor
 
@@ -247,23 +249,38 @@ Required:
 
 ### Current status
 
-Foundation proven:
+Implemented foundation:
 - independent Loom Elytra texture;
 - vanilla gliding/wing animation preserved;
-- calibrated visual thickness system;
-- high-resolution Elytra canvas support exists in project/resizer/runtime;
-- deterministic animation/emissive rendering proof exists;
-- preview can switch Cape/Elytra.
+- high-resolution Elytra canvas support;
+- deterministic animation/emissive rendering proof;
+- reusable Elytra 3D preview mode.
 
-Missing/reference gap:
-- Elytra semantic editor canvas;
-- left/right wing mapping UI;
-- linked/independent editing;
-- user-facing thickness control;
-- open/gliding preview controls;
-- timeline;
-- animated layer model;
-- final reference layout.
+Implemented in the semantic editor pass:
+- unfolded Left / Right semantic wing canvas;
+- vanilla-atlas 10x20 front-face mapping;
+- linked mirrored painting;
+- independent Separate Wings mode;
+- Pencil / Eraser;
+- brush sizing;
+- 1x / 2x / 4x;
+- reusable layer stack;
+- Add / Copy / Delete Paint layers;
+- direct visibility / persistent lock row controls;
+- Undo / Redo;
+- Save / Save + Equip;
+- integrated 3D Elytra preview;
+- project-authored thickness 25%–200%.
+
+Remaining/reference gap:
+- cape-to-Elytra conversion;
+- Elytra-target Image/Smart Import path;
+- richer layer properties/reorder;
+- shared Swatches parity;
+- standing/open/gliding preview-state controls;
+- animation timeline;
+- animated layer/effect model;
+- final reference layout and local visual verification.
 
 ## Reference 05 — Loom Codes / Sharing
 
@@ -303,12 +320,11 @@ Palette share codes are **not** a substitute for project Loom Codes.
 
 The practical order is:
 
-1. locally verify the current Cape Editor + Smart Import + Gradient/typed-layer UX;
-2. Recent Project thumbnail cards + Home reference shell;
-3. Elytra editor;
-4. animation/timeline;
-5. Loom Codes/sharing;
-6. final visual-fidelity pass across all five references.
+1. locally verify Cape + Smart Import + Gradient + Home + Elytra;
+2. finish remaining Elytra workflow/parity;
+3. animation/timeline;
+4. Loom Codes/sharing;
+5. final visual-fidelity pass across all five references.
 
 This ordering preserves the approved references while avoiding disposable UI built before the underlying feature model exists.
 

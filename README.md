@@ -14,9 +14,9 @@ Loom Studios is a Minecraft Java Edition Fabric mod for creating, editing, anima
 
 **Phase 2 Cape Editor MVP is active.**
 
-The current development build includes schema-v2 editable projects with explicit v1 migration, Paint/Image/Gradient layers, persistent layer locking, save/load + undo/redo, equipped-state multiplayer synchronization, cape/Elytra runtime rendering, 1x/2x/4x editable texture resolutions, live unsaved 3D preview, a face-first cape editor, grouped Swatches, selection Move/Flip tooling, and a functional non-destructive Smart Import workspace with PNG import, transforms, processing modes, texture preview and candidate 3D preview.
+The current development build includes schema-v2 editable projects with explicit v1 migration, Paint/Image/Gradient layers, persistent layer locking, save/load + undo/redo, equipped-state multiplayer synchronization, cape/Elytra runtime rendering, 1x/2x/4x editable texture resolutions, live unsaved 3D preview, a face-first Cape Editor, grouped Swatches, selection Move/Flip tooling, a functional non-destructive Smart Import workspace, the reference-oriented Home dashboard with project thumbnails/templates/3D preview, and the first semantic Elytra Editor with linked/separate wing painting, layers and project-authored thickness.
 
-Local visual verification of the newest UI, richer Gradient authoring, Home/reference polish, Cape Loom block flow, the full Elytra editor, animation authoring, project Loom Codes, and final Iris/shader hardening remain in progress.
+Local visual verification of the newest UI, remaining Elytra workflow pieces, Cape Loom block flow, animation authoring, project Loom Codes, and final Iris/shader hardening remain in progress.
 
 ## Documentation
 
