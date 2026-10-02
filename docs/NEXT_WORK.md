@@ -152,7 +152,7 @@ Run this before the deeper feature checklist:
 - Edit Elytra routing;
 - empty-library state;
 - unreadable-project warning;
-- disabled placeholder cards remain visibly secondary.
+- no dead Settings card occupies primary navigation; future template packs remain secondary.
 
 ### Elytra Editor
 - Left/Right wing orientation matches rendered Elytra;
@@ -202,8 +202,8 @@ Run this before the deeper feature checklist:
 - Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow visually;
 - Elytra animation output at 1x / 2x / 4x;
 - compact timeline at all four mandatory GUI profiles.
-### Loom Codes / Sharing
-- Home Loom Codes card opens the sharing screen;
+### Share / Export / Loom Codes
+- Home Share / Export card opens the sharing screen;
 - short `LS-XXXX-XXXX-XXXX` fingerprint is stable for unchanged content;
 - Copy Design ID;
 - Copy Portable Code;

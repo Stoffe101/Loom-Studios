@@ -153,7 +153,7 @@ Verify:
 - Gradient template
 - empty project library
 - unreadable project warning
-- placeholder Loom Codes / Settings / template packs are visibly inactive
+- Share / Export is active and discoverable; Settings is absent until implemented; future template packs remain visibly secondary
 - texture resources release when leaving/rebuilding Home
 
 ## Editor preview tests
@@ -829,4 +829,4 @@ Pass criteria:
 - transform/processing controls do not overlap
 - file/apply/cancel controls remain reachable
 - labels do not clip
-- scroll behavior does not steal preview interaction
+- Placement / Processing tabs fit without primary vertical scrolling
