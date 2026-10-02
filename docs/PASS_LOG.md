@@ -1,5 +1,51 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Equipped-state hardening + emissive cleanup + Select UI
+
+**Status: IMPLEMENTED / CI + LOCAL VISUAL VERIFICATION PENDING**
+
+Runtime/state hardening:
+- local multiplayer publication now reads the explicitly equipped project/hash rather than the dirty editor session;
+- local world rendering therefore follows the same equipped snapshot boundary documented by ADR-035;
+- unsaved editor changes remain available to the scoped 3D preview only.
+
+Emissive cleanup:
+- layer Emissive toggles now synchronize the schema-v1 runtime emissive master;
+- enabling the first emissive cape layer activates the runtime pass;
+- disabling the final emissive cape layer disables it again;
+- removed the hard-coded SPIKE-06 shimmer stripe from real project emissive output;
+- added automated emissive master/layer synchronization coverage.
+
+Selection UI:
+- Select tool added to Cape Editor;
+- drag creates a normalized `PixelSelection`;
+- persistent selection outline;
+- Clear Selection;
+- Move Left / Right / Up / Down;
+- arrow-key nudge while Select is active;
+- Flip H / Flip V;
+- UI nudge clamps the whole selection inside the active semantic cape face;
+- face or resolution changes clear temporary selection state;
+- selection remains editor state and is not serialized.
+
+Automated selection coverage expanded:
+- drag endpoint normalization;
+- invalid direct selection rejection;
+- vertical flip;
+- combined horizontal+vertical flip;
+- existing horizontal flip/move/bounds coverage retained.
+
+Documentation cleanup:
+- replaced stale chronological `CURRENT_STATE.md` with a current snapshot;
+- refreshed `NEXT_WORK.md`;
+- corrected stale Loom/Gradle pins;
+- corrected schema-v1 size/blend documentation.
+
+Local visual/runtime claims are intentionally deferred because the user is away from the development PC.
+
+---
+
+
 ## 2026-10-02 — Selection / transform core foundation
 
 **Status: IMPLEMENTED / CI RUNNING OR GREEN AT CHECKPOINT**
