@@ -1,10 +1,15 @@
 package dev.loomstudios.project;
 
+import dev.loomstudios.image.ImagePlacementMode;
+import dev.loomstudios.image.ImageProcessingMode;
+import dev.loomstudios.image.ImageProcessingSettings;
+import dev.loomstudios.image.PixelImage;
 import dev.loomstudios.palette.ColorPalette;
 import dev.loomstudios.palette.ColorPaletteCodec;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -654,6 +659,239 @@ class LoomProjectCodecTest {
                         new PixelSelection(0, 0, 20, 20),
                         true,
                         false
+                )
+        );
+    }
+
+    @Test
+    void schemaV1SnapshotMigratesToTypedSchemaV2() {
+        LoomProject current = LoomProjectFactory.blank("Legacy", 77L);
+        byte[] legacy = LoomProjectCodec.encodeVersion1SnapshotForTest(
+                current
+        );
+
+        LoomProject migrated = LoomProjectCodec.decode(legacy);
+
+        assertEquals(2, migrated.schemaVersion());
+        assertEquals(LayerKind.PAINT, migrated.cape().layers().getFirst().kind());
+        assertFalse(migrated.cape().layers().getFirst().locked());
+        assertArrayEquals(
+                current.cape().layers().getFirst().pixels(),
+                migrated.cape().layers().getFirst().pixels()
+        );
+    }
+
+    @Test
+    void schemaV2RoundTripPreservesImageGradientAndLockState() {
+        LoomProject project = LoomProjectFactory.blank("Typed", 1L);
+        PixelImage source = new PixelImage(
+                2,
+                2,
+                new int[]{
+                        0xFFFF0000,
+                        0xFF00FF00,
+                        0xFF0000FF,
+                        0x80FFFFFF
+                }
+        );
+
+        ImageLayerData imageData = ImageLayerData.placed(
+                source,
+                project.cape().width(),
+                project.cape().height(),
+                NormalizedRect.fullCanvas(),
+                ImagePlacementMode.FIT
+        ).withProcessing(
+                ImageProcessingSettings.defaults()
+                        .withMode(ImageProcessingMode.POSTERIZE)
+                        .withPosterizeLevels(3)
+        );
+
+        LoomProject withImage = ProjectEdits.addCapeImageLayer(
+                project,
+                "Imported",
+                imageData
+        );
+        UUID imageId = withImage.cape().layers().getLast().id();
+        withImage = ProjectEdits.setCapeLayerLocked(
+                withImage,
+                imageId,
+                true
+        );
+
+        GradientLayerData gradient =
+                GradientLayerData.defaultLinear(
+                        0xFFFF0000,
+                        0xFF0000FF,
+                        NormalizedRect.fullCanvas()
+                ).withType(GradientType.RADIAL)
+                        .withDither(true);
+
+        LoomProject typed = ProjectEdits.addCapeGradientLayer(
+                withImage,
+                "Gradient",
+                gradient
+        );
+
+        LoomProject decoded = LoomProjectCodec.decode(typed.encode());
+
+        assertEquals(typed, decoded);
+        assertEquals(2, decoded.schemaVersion());
+        assertEquals(
+                LayerKind.IMAGE,
+                decoded.cape().layers().get(1).kind()
+        );
+        assertTrue(decoded.cape().layers().get(1).locked());
+        assertEquals(
+                LayerKind.GRADIENT,
+                decoded.cape().layers().get(2).kind()
+        );
+    }
+
+    @Test
+    void imageLayerRasterizesThroughPersistentTransformAndProcessing() {
+        PixelImage source = new PixelImage(
+                2,
+                1,
+                new int[]{0xFFFF0000, 0xFF0000FF}
+        );
+        ImageLayerData data = ImageLayerData.placed(
+                source,
+                4,
+                2,
+                NormalizedRect.fullCanvas(),
+                ImagePlacementMode.STRETCH
+        );
+
+        LoomLayer layer = LoomLayer.image(
+                UUID.randomUUID(),
+                "Image",
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                data
+        );
+
+        int[] raster = LayerRasterizer.rasterize(layer, 4, 2);
+
+        assertEquals(0xFFFF0000, raster[0]);
+        assertEquals(0xFF0000FF, raster[3]);
+        assertEquals(0xFFFF0000, raster[4]);
+        assertEquals(0xFF0000FF, raster[7]);
+    }
+
+    @Test
+    void gradientLayerRasterizationIsDeterministic() {
+        GradientLayerData data = GradientLayerData.defaultLinear(
+                0xFF000000,
+                0xFFFFFFFF,
+                NormalizedRect.fullCanvas()
+        );
+
+        LoomLayer layer = LoomLayer.gradient(
+                UUID.randomUUID(),
+                "Gradient",
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                data
+        );
+
+        int[] first = LayerRasterizer.rasterize(layer, 8, 4);
+        int[] second = LayerRasterizer.rasterize(layer, 8, 4);
+
+        assertArrayEquals(first, second);
+        assertNotEquals(first[0], first[7]);
+    }
+
+    @Test
+    void typedLayersKeepNormalizedPlacementAcrossResolutionChanges() {
+        LoomProject project = LoomProjectFactory.blank("Resize Typed", 1L);
+        PixelImage source = new PixelImage(
+                1,
+                1,
+                new int[]{0xFFFFFFFF}
+        );
+
+        ImageLayerData data = ImageLayerData.placed(
+                source,
+                project.cape().width(),
+                project.cape().height(),
+                NormalizedRect.fullCanvas(),
+                ImagePlacementMode.FIT
+        );
+
+        LoomProject withImage = ProjectEdits.addCapeImageLayer(
+                project,
+                "Image",
+                data
+        );
+        LoomLayer before = withImage.cape().layers().getLast();
+
+        LoomProject resized = ProjectResizer.resizeCape(
+                withImage,
+                CanvasResolution.ULTRA
+        );
+        LoomLayer after = resized.cape().layers().getLast();
+
+        assertEquals(LayerKind.IMAGE, after.kind());
+        assertEquals(before.imageData(), after.imageData());
+        assertEquals(256, resized.cape().width());
+        assertEquals(128, resized.cape().height());
+    }
+
+    @Test
+    void lockedAndTypedLayersRejectPaintMutation() {
+        LoomProject project = LoomProjectFactory.blank("Lock", 1L);
+        UUID baseId = project.cape().layers().getFirst().id();
+
+        LoomProject locked = ProjectEdits.setCapeLayerLocked(
+                project,
+                baseId,
+                true
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> ProjectEdits.setCapePixel(
+                        locked,
+                        baseId,
+                        1,
+                        1,
+                        0xFFFFFFFF
+                )
+        );
+
+        PixelImage source = new PixelImage(
+                1,
+                1,
+                new int[]{0xFFFFFFFF}
+        );
+        LoomProject imageProject = ProjectEdits.addCapeImageLayer(
+                project,
+                "Image",
+                ImageLayerData.placed(
+                        source,
+                        project.cape().width(),
+                        project.cape().height(),
+                        NormalizedRect.fullCanvas(),
+                        ImagePlacementMode.FIT
+                )
+        );
+        UUID imageId = imageProject.cape().layers().getLast().id();
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> ProjectEdits.setCapePixel(
+                        imageProject,
+                        imageId,
+                        1,
+                        1,
+                        0xFF000000
                 )
         );
     }
