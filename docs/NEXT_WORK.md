@@ -58,30 +58,17 @@ The user is currently away from the development PC, so do not claim visual/runti
 
 Priority order:
 
-1. finish/verify the current selection UI slice in CI;
-2. define reusable transform primitives needed by imported image layers:
-   - integer/floating position;
-   - scale;
-   - rotate;
-   - mirror;
-   - fit/center/aspect rules;
-3. build pure image-processing primitives with automated tests:
-   - resize;
-   - crop;
-   - mirror;
-   - rotate;
-   - brightness;
-   - contrast;
-   - saturation;
-   - color reduction;
-   - dithering;
-4. design schema v2 and migration fixtures;
-5. add first-class Gradient data model/compiler tests;
-6. prepare non-destructive Image layer representation;
-7. build Smart Import processing core around those primitives;
-8. prepare Elytra semantic UV/editor model;
-9. design animation authoring schema/timeline data model;
-10. add reusable tooltip/icon-button primitives where they do not depend on visual judgment.
+1. verify the Smart Import transform/adjustment foundation in exact-SHA CI;
+2. add pure palette quantization / Reduce Colors;
+3. add deterministic dithering;
+4. add Posterize / Monochrome / Palette Limited processing primitives;
+5. design schema v2 and migration fixtures;
+6. add first-class Gradient data model/compiler tests;
+7. prepare non-destructive Image layer representation using the proven placement/processing core;
+8. add the PNG decode/import adapter with strict size validation;
+9. prepare Elytra semantic UV/editor model;
+10. design animation authoring schema/timeline data model;
+11. add reusable tooltip/icon-button primitives where they do not depend on visual judgment.
 
 ## Schema-v2 gate
 
