@@ -51,6 +51,26 @@ The implementation should get recognizably close to the reference images while r
 
 Heavy decorative wood should frame the experience but not consume excessive editor workspace.
 
+## 3.1 Interaction density and progressive disclosure
+
+The approved references are not permission to expose every feature at once.
+
+Loom Studios must follow these interaction rules:
+
+- persistent high-frequency tools use icon-led compact controls;
+- the canvas/task remains visually dominant;
+- only one inspector context is shown at a time;
+- contextual controls appear when the selected tool/layer/task needs them;
+- primary editor operation should not depend on scrolling a giant settings column;
+- collections may scroll, but the whole editor chrome should not;
+- compact mode at approximately 640x360 must be designed intentionally;
+- future/unimplemented destinations should not occupy primary navigation;
+- Export must be discoverable directly from Cape/Elytra editing.
+
+The reference hierarchy is more important than literal screenshot replication:
+- Home/Sharing may carry more workshop decoration;
+- Cape/Elytra/Smart Import prioritize clean work surfaces;
+- decorative frames must never steal space required for editing.
 ## 4. Home / start screen
 
 The Cape Loom opens a Loom Studios home screen with:

@@ -1052,3 +1052,52 @@ Loom Codes local exports live under `.minecraft/loom-studios/exports`.
 Editable project, portable-code text and PNG exports allocate unique numbered filenames if a prior file already exists.
 
 The sharing UI exposes local/private behavior explicitly. Hosted visibility/permission controls remain unimplemented rather than cosmetic placeholders that claim a service exists.
+
+## ADR-090 — Progressive disclosure replaces persistent button walls
+**Status:** Accepted / implemented in reference UI refactor
+
+The pre-refactor editor exposed most authoring controls simultaneously, often inside long vertical scrolling columns.
+
+Local testing showed that this made the product difficult to understand even when the underlying features worked.
+
+The primary editor architecture is now:
+- compact icon tool rail for persistent tools;
+- contextual canvas controls;
+- one inspector context at a time;
+- tabs for Layers / Color / task-specific Properties or Animation;
+- hidden irrelevant controls rather than disabled clutter.
+
+Scrolling remains appropriate for genuinely variable collections such as large layer, swatch, or track lists, but not for the entire primary editor control surface.
+
+## ADR-091 — 640x360 effective GUI space is a first-class compact breakpoint
+**Status:** Accepted / implemented
+
+1920x1080 at Minecraft GUI scale 3 was the clearest failure profile in the local test.
+
+Loom Studios therefore treats <=700x420 effective GUI size as a first-class compact layout rather than a desktop layout that happens to be scaled down.
+
+Compact behavior includes:
+- icon-only primary tool/navigation buttons;
+- reduced project/template counts;
+- collapsed secondary text;
+- smaller inspector rows;
+- timeline secondary-control collapse;
+- preserved canvas/preview priority.
+
+The critical mental test size is approximately 640x360.
+
+## ADR-092 — Export must be directly discoverable from authoring screens
+**Status:** Accepted / implemented
+
+Export functionality previously existed in Loom Codes but was not discoverable during normal Cape/Elytra authoring.
+
+Cape and Elytra now expose **Share / Export** directly in persistent top navigation.
+
+The sharing screen is split into Export and Import. Export immediately surfaces editable .loom, portable code, Cape PNG and Elytra PNG.
+
+## ADR-093 — Nonfunctional destinations do not occupy primary Home navigation
+**Status:** Accepted / implemented
+
+A disabled Settings card contributed visual noise without providing value.
+
+Settings is removed from the Home primary action stack until there is a real preferences product surface.

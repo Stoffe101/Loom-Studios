@@ -83,6 +83,60 @@ Existing rendering:
 - cache hit/miss behavior
 - disconnect/world change cleanup
 
+## Reference UI architecture regression checks
+
+The 2026-10-02 pre-refactor build failed this gate even though feature behavior broadly worked.
+
+### Critical compact profile
+Treat approximately 640x360 effective GUI space (1920x1080 / GUI scale 3) as release-critical.
+
+Verify:
+- no text crosses panel boundaries;
+- no primary action is outside the viewport;
+- no primary editor requires scrolling the entire control surface;
+- icon rails remain clickable;
+- active tool/tab state is obvious;
+- canvas/preview retains more visual importance than settings chrome.
+
+### Home
+- five working primary actions fit without scrolling;
+- Share / Export wording is explicit;
+- no disabled Settings placeholder;
+- compact action cards hide subtitles before clipping;
+- compact recent projects/templates intentionally show fewer cards.
+
+### Cape
+- tool rail fits vertically;
+- face/resolution/zoom toolbar does not collide;
+- contextual brush controls appear only for brush/shape tools;
+- selection movement controls appear only for Select;
+- Layers / Color / Properties never render simultaneously;
+- Gradient controls only appear for Gradient Properties;
+- inspector content fits the compact panel without a full-screen scroll;
+- Save / Equip / Share-Export remain reachable.
+
+### Elytra / Animation
+- canvas, timeline and 3D preview are simultaneously understandable;
+- Layers / Color / Animation are mutually exclusive inspectors;
+- + Track targets selected layer;
+- timeline click/scrub is not obscured by inspector controls;
+- compact timeline hides secondary footer before track rows overlap;
+- effect/keyframe editing is in the Animation inspector, not duplicated across the timeline;
+- workflow hint remains readable.
+
+### Smart Import
+- Placement and Processing are mutually exclusive;
+- transform controls fit without vertical scroll;
+- processing controls fit without vertical scroll;
+- 3D Preview / Apply / Cancel stay visible on both tabs;
+- preview surfaces remain usable.
+
+### Share / Export
+- Export is the default workspace;
+- .loom, portable code, Cape PNG and Elytra PNG are visible without switching contexts;
+- Import-only actions are hidden while Export is selected;
+- Import shows paste/file/preview/library actions without Export clutter;
+- preview mode controls remain usable.
 ## Home dashboard local checks
 
 - responsive three-column shell at all mandatory GUI profiles
