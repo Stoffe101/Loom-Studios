@@ -128,3 +128,15 @@ Animation definitions are part of the normal encoded `.loom` project blob and th
 The network does **not** stream timeline ticks, keyframe interpolation results, or rendered animation frames.
 
 Clients evaluate the saved animation locally. A schema-v3 project received from the server passes through the same bounded codec/migration validation as local files.
+
+## Local Loom Codes versus hosted share codes
+
+Current product sharing is deliberately offline-first.
+
+- `LSP1:` is a self-contained compressed project code. It does not contact the server.
+- `LS-XXXX-XXXX-XXXX` is currently a deterministic content fingerprint, not a remotely resolvable token.
+- importing an `LSP1:` code passes through the same bounded Loom project codec validation/migration as files/network blobs.
+
+Conceptual SHARE_CODE_REQUEST / SHARE_CODE_CREATED messages remain future-only and must not be treated as implemented protocol until a real resolver service exists.
+
+A future hosted sharing system should store/resolve validated content-addressed project blobs rather than streaming editor state or animation frames.

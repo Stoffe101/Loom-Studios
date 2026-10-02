@@ -14,9 +14,9 @@ Loom Studios is a Minecraft Java Edition Fabric mod for creating, editing, anima
 
 **Editor productization + animation authoring are active.**
 
-The current development build includes schema-v3 editable projects with explicit v1 -> v2 -> v3 migration, Paint/Image/Gradient layers, persistent layer locking, save/load + undo/redo, equipped-state multiplayer synchronization, cape/Elytra runtime rendering, 1x/2x/4x editable texture resolutions, isolated 3D preview, the Cape Editor, grouped Swatches, selection Move/Flip tooling, non-destructive Smart Import for Cape and Elytra, the reference-oriented Home dashboard, semantic Elytra editing with linked/separate wings, cape-to-Elytra conversion, project-authored thickness, and a first real animation timeline with layer-targeted tracks/keyframes plus Pulse, Scroll, Hue Shift, Moving Gradient, Sparkle and Emissive Glow.
+The current development build includes schema-v3 editable projects with explicit v1 -> v2 -> v3 migration, Paint/Image/Gradient layers, persistent layer locking, save/load + undo/redo, equipped-state multiplayer synchronization, cape/Elytra runtime rendering, 1x/2x/4x editable texture resolutions, isolated 3D preview, the Cape Editor, grouped Swatches, selection Move/Flip tooling, non-destructive Smart Import for Cape and Elytra, the reference-oriented Home dashboard, semantic Elytra editing with linked/separate wings, cape-to-Elytra conversion, project-authored thickness, a real animation timeline with layer-targeted tracks/keyframes plus Pulse/Scroll/Hue Shift/Moving Gradient/Sparkle/Emissive Glow, and offline-first Loom Codes sharing with portable project codes, import preview, `.loom` exchange and Cape/Elytra PNG export.
 
-Local visual verification of the newest UI/timeline, preview-state polish, Cape Loom block flow, project Loom Codes, and final Iris/shader hardening remain in progress.
+Local visual verification of the newest UI/timeline/sharing screens, preview-state polish, Cape Loom block flow, and final Iris/shader hardening remain in progress.
 
 ## Documentation
 

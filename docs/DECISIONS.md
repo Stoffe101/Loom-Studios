@@ -1009,3 +1009,46 @@ The scoped player preview therefore uses a stable preview-only hash and a runtim
 The approved Elytra + Animation reference remains the composition target, but work-mode usability outranks screenshot reproduction.
 
 The current Elytra editor keeps the unfolded wing canvas dominant, docks the compact timeline beneath it, keeps the 3D preview/layer actions on the right, and uses restrained cyan/violet emphasis for selected/active timeline state.
+
+## ADR-086 — LSP1 is the offline portable project code
+**Status:** Accepted / implemented
+
+Loom Studios needs project sharing that works before any hosted service exists.
+
+`LSP1:` is a self-contained versioned portable code containing a DEFLATE-compressed bounded `.loom` project encoded as URL-safe Base64.
+
+Decode rules:
+- explicit `LSP1:` prefix;
+- encoded-length bound;
+- compressed-byte bound;
+- bounded decompression;
+- final normal Loom project codec validation/migration.
+
+This makes offline copy/paste sharing real without inventing a server dependency.
+
+## ADR-087 — LS short IDs are fingerprints until a resolver exists
+**Status:** Accepted / implemented
+
+`LS-XXXX-XXXX-XXXX` is currently a human-readable deterministic fingerprint derived from the project's content hash.
+
+It is **not** represented as a globally resolvable cloud share code.
+
+A future hosted service may register this fingerprint or issue another identifier, but product copy must not imply online resolution before a real backend exists.
+
+## ADR-088 — Imported shared projects fork identity
+**Status:** Accepted / implemented
+
+Importing another person's portable code or external `.loom` project creates a new local project UUID and appends an Imported suffix to the local name.
+
+Cape, Elytra, runtime and animation authoring data remain intact.
+
+This prevents a received design from overwriting a local library entry that shares the sender's original project UUID.
+
+## ADR-089 — Sharing exports never silently overwrite prior exports
+**Status:** Accepted / implemented
+
+Loom Codes local exports live under `.minecraft/loom-studios/exports`.
+
+Editable project, portable-code text and PNG exports allocate unique numbered filenames if a prior file already exists.
+
+The sharing UI exposes local/private behavior explicitly. Hosted visibility/permission controls remain unimplemented rather than cosmetic placeholders that claim a service exists.

@@ -286,35 +286,49 @@ Remaining/reference gap:
 
 ### Target experience
 
-A deliberate private share/import/export surface.
+A showcase-oriented sharing/export screen that makes designs portable without obscuring whether an action is local or service-backed.
 
-Required:
-- generate Loom Code;
-- private player-only result;
-- left-click/copy interaction;
-- Import;
-- Preview;
-- Favorite;
-- project export/import;
-- portable code path;
-- clear distinction between editable project and flattened PNG export.
+Reference-oriented structure:
+- current-design identity/share block;
+- export options;
+- import/redeem options;
+- Cape/Elytra visual preview;
+- clear permission/visibility language;
+- copy/import/preview actions;
+- restrained cyan/violet primary emphasis.
 
 ### Current status
 
-Implemented related infrastructure:
-- project hashing;
-- multiplayer project cache/sync;
-- palette-specific `LOOMPAL1:` clipboard codes;
-- local project serialization.
+Implemented in the local/offline sharing pass:
+- Home -> Loom Codes navigation;
+- `LS-XXXX-XXXX-XXXX` deterministic design fingerprint;
+- `LSP1:` self-contained portable project code;
+- Copy Design ID;
+- Copy Portable Code;
+- Save Portable Code;
+- Paste Portable Code;
+- native `.loom` project-file import;
+- imported-design validation and preview;
+- Cape/Elytra 3D preview toggle;
+- Import to Library;
+- Import + Open;
+- fork-on-import project identity;
+- editable `.loom` export;
+- Cape PNG export;
+- Elytra PNG export;
+- dedicated exports directory;
+- explicit local/private status instead of fake hosted permissions.
 
-Not yet implemented:
-- project-level Loom Code;
-- short code resolver/storage;
-- portable project code;
-- private clickable chat UX;
-- project favorite/preview/import flow.
+Reference deviation is intentional where the concept art implies a real online service:
+- short `LS-...` IDs are fingerprints, not online resolver tokens;
+- private/friends/server/public service controls are not enabled;
+- chat-card integration and Favorite are not faked.
 
-Palette share codes are **not** a substitute for project Loom Codes.
+Remaining reference gap:
+- final workshop decorative treatment;
+- richer icon treatment for sharing/export actions;
+- optional hosted resolver/gallery only if intentionally built;
+- local visual verification at all mandatory GUI profiles.
 
 ## Reference-driven build order
 
