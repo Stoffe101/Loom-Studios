@@ -169,18 +169,33 @@ Preview:
 
 ### Current status
 
-Not yet implemented.
+User-facing Smart Import screen is not yet implemented.
 
-Prerequisites already being built:
+Implemented pure-core prerequisites:
 - high-resolution canvases;
 - layers;
 - alpha;
 - Swatches/palette infrastructure;
 - project persistence;
 - live preview;
-- transform work is next.
+- selection/move/flip;
+- bounded immutable ARGB processing image;
+- Fit / Stretch / centered Crop / Center placement;
+- mirror H/V;
+- quarter-turn rotation;
+- crop + nearest-neighbor resize;
+- brightness/contrast/saturation.
 
-Smart Import should begin only after selection/transform primitives are stable so imported artwork becomes a real editable layer rather than a destructive paste.
+Still missing for reference #03:
+- PNG source adapter;
+- schema-v2 Image layer;
+- free move/scale/arbitrary rotate/aspect-lock authoring;
+- Reduce Colors;
+- Dither;
+- import modes;
+- original/processed/result/3D workspace UI.
+
+Imported artwork must still become a real editable layer rather than a destructive paste.
 
 ## Reference 04 — Elytra + Animation Editor
 
