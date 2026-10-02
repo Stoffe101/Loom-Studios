@@ -197,9 +197,9 @@ Current serialized project limit:
 Current embedded Image-layer source limit:
 - **256 px max dimension** before project persistence.
 
-Schema v1 projects are decoded through the old paint-only format and explicitly migrated to schema v2.
+Schema v1 projects are decoded through the old paint-only format, migrated to schema v2 typed layers, then migrated to current schema v3 with a default empty animation timeline. Schema v2 projects migrate directly to v3.
 
-Schema v1 blend ordinals remain frozen compatibility data; schema v2 uses stable string identifiers for blend modes and layer kinds.
+Schema v1 blend ordinals remain frozen compatibility data; schema v2/v3 uses stable string identifiers for blend modes and layer kinds.
 
 ## Cape Editor — implemented
 
@@ -459,7 +459,7 @@ Implemented:
 - Posterize;
 - selected Loom Swatches palette integration;
 - Apply as editable Image layer;
-- schema-v2 persistence for source/transform/processing intent;
+- typed Image-layer persistence for source/transform/processing intent (introduced in schema v2 and preserved in current schema v3);
 - Image-layer participation in normal opacity/blend/emissive/visibility/lock behavior;
 - runtime/editor/project-thumbnail/multiplayer compilation through the shared typed-layer compiler.
 

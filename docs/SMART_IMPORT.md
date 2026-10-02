@@ -182,7 +182,7 @@ Image layers also use normal layer metadata:
 - emissive;
 - persistent lock.
 
-Schema-v1 projects are decoded through the old paint-only layout and explicitly migrated to schema v2.
+Schema-v1 projects are decoded through the old paint-only layout, migrated to schema v2 typed layers, then migrated to current schema v3. Schema-v2 projects migrate directly to v3.
 
 ## Runtime/compiler behavior
 
@@ -223,8 +223,8 @@ The current milestone adds coverage for:
 - Direct-mode stability;
 - Pixel Art color bounds;
 - Palette Limited alpha preservation;
-- schema-v1 -> schema-v2 migration;
-- schema-v2 Image-layer round trip;
+- schema-v1 -> schema-v2 -> schema-v3 migration;
+- schema-v2 typed Image payload preserved through current schema-v3 round trip;
 - persistent lock state;
 - typed Image-layer rasterization;
 - resolution-independent typed-layer placement;
@@ -269,7 +269,7 @@ Smart Import can target Elytra directly.
 New linked-wing import:
 - uses the semantic left and right wing-front UV regions;
 - creates two editable Image layers;
-- preserves one embedded source per layer through the normal schema-v2 Image payload;
+- preserves one embedded source per layer through the typed Image payload introduced in schema v2 and retained in schema v3;
 - mirrors horizontal placement for the opposite wing;
 - previews the candidate on the Elytra canvas and Elytra 3D player mode;
 - validates the final project encode before committing.

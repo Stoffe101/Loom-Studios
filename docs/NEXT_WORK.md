@@ -80,8 +80,9 @@ The remaining gate for visual DONE status is local runtime verification because 
 - selected Swatches palette;
 - Apply new Image layer;
 - reopen/edit Image layer;
-- save/reopen schema-v2 project;
-- v1 project load -> v2 migration;
+- save/reopen current schema-v3 project;
+- v1 project load -> v2 -> v3 migration;
+- v2 project load -> v3 migration;
 - Undo/Redo after applying;
 - no equipped/network mutation until Save + Equip.
 
