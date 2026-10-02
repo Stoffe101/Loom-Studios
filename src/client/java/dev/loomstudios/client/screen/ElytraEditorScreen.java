@@ -43,6 +43,7 @@ public final class ElytraEditorScreen extends Screen {
     private LoomButton layerAddButton;
     private LoomButton layerDuplicateButton;
     private LoomButton layerDeleteButton;
+    private LoomButton capeConversionButton;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
@@ -276,6 +277,17 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(this.linkButton);
         row += 22 + gap;
 
+        this.capeConversionButton = new LoomButton(
+                x,
+                row,
+                width,
+                20,
+                Component.literal("Cape -> Elytra Layer"),
+                this::convertCapeToElytra
+        );
+        addRenderableWidget(this.capeConversionButton);
+        row += 20 + gap;
+
         int half = Math.max(48, (width - 4) / 2);
         this.pencilButton = new LoomButton(
                 x,
@@ -464,6 +476,18 @@ public final class ElytraEditorScreen extends Screen {
                         linkedMirror
                 )
         );
+    }
+
+    private void convertCapeToElytra() {
+        var result = ClientProjectWorkspace.apply(
+                ProjectEdits::addCapeConversionElytraLayer
+        );
+
+        selectedLayerId = result.elytra()
+                .layers()
+                .getLast()
+                .id();
+        updateButtonStates();
     }
 
     private void toggleLinked() {
@@ -811,9 +835,14 @@ public final class ElytraEditorScreen extends Screen {
                                     : "Off")
             ));
         }
+        boolean hasLayerCapacity =
+                layerCount
+                        < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+        if (capeConversionButton != null) {
+            capeConversionButton.active = hasLayerCapacity;
+        }
         if (layerAddButton != null) {
-            layerAddButton.active =
-                    layerCount < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            layerAddButton.active = hasLayerCapacity;
         }
         if (layerDuplicateButton != null) {
             layerDuplicateButton.active =
