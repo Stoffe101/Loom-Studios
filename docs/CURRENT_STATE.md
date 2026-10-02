@@ -23,7 +23,9 @@ Loom Studios currently has:
 - selection/move/flip common-core transforms;
 - first editor exposure of drag selection, nudge and flip controls.
 
-The current implementation slice is **IMPLEMENTED / CI + LOCAL VISUAL VERIFICATION PENDING**.
+The current implementation slice is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+
+Exact green checkpoint: `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
 
 Historical spike-by-spike detail belongs in `PASS_LOG.md`; this file intentionally describes only the current project state.
 
@@ -409,14 +411,13 @@ Still requires local eyes-on/runtime testing:
 - shader-on/off emissive behavior;
 - broader final Iris/shader matrix.
 
-CI/build verification for the current implementation slice must complete before it is called green.
+Automated build/test verification is green. The remaining gate for the newest editor controls is local visual/runtime verification when the development PC is available.
 
 ## Immediate direction
 
-1. get the current state-hardening + selection UI slice green in CI;
-2. locally verify it when the development PC is available;
-3. continue CI-safe work on reusable transform/import foundations meanwhile;
-4. design schema v2 before adding persistent layer lock/image/gradient/effect layer kinds;
-5. move into Smart Import, Elytra editor, animation authoring and project sharing in the documented order.
+1. locally verify the current selection/layer/emissive slice when the development PC is available;
+2. continue CI-safe work on reusable transform/import foundations meanwhile;
+3. design schema v2 before adding persistent layer lock/image/gradient/effect layer kinds;
+4. move into Smart Import, Elytra editor, animation authoring and project sharing in the documented order.
 
 See `NEXT_WORK.md` for the concrete queue.
