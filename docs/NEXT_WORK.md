@@ -2,24 +2,15 @@
 
 ## Current gate
 
-The active implementation slice contains:
-- equipped-state multiplayer hardening;
-- emissive-layer/runtime synchronization;
-- removal of the old SPIKE shimmer;
-- first Select tool UI;
-- drag selection;
-- persistent selection outline;
-- nudge/move controls;
-- Flip H / Flip V;
-- expanded selection tests.
+The Smart Import + schema-v2 milestone is functionally implemented and CI green on the branch.
 
-Before calling that slice DONE:
-1. GitHub Actions must pass on the exact implementation head;
-2. the latest selection/layer/emissive UI remains queued for local runtime verification.
+Exact green checkpoint before final documentation cleanup:
+- `7a568f736f273328a3b55d1ea28587832cd45282`
+- GitHub Actions #113: **SUCCESS**
+
+The remaining gate is local visual/runtime verification because the user is away from the development PC.
 
 ## Runtime verification queue
-
-The user is currently away from the development PC, so do not claim visual/runtime completion for these items yet.
 
 ### Select / transforms
 - drag selection at 1x / 2x / 4x;
@@ -28,7 +19,7 @@ The user is currently away from the development PC, so do not claim visual/runti
 - arrow-key nudge;
 - Flip H / Flip V;
 - correct behavior after zoom/pan;
-- selection clears on face/resolution changes;
+- selection clears on face/resolution/history changes;
 - tool-rail layout at all required GUI profiles.
 
 ### Layers / effects
@@ -37,11 +28,34 @@ The user is currently away from the development PC, so do not claim visual/runti
 - reorder;
 - opacity;
 - rename;
+- persistent Lock;
 - Emissive;
 - Normal / Add-Glow / Screen / Multiply / Overlay;
+- Paint / Image / Gradient rows;
 - Undo/Redo;
 - 3D Preview compositing;
 - emissive visual output with shaders OFF/ON.
+
+### Smart Import
+- file picker opens/returns correctly on Windows;
+- PNGs with/without alpha;
+- large/odd/small PNGs;
+- Original / Processed / Cape Texture preview layout;
+- 3D candidate preview;
+- Fit / Stretch / Crop / Center;
+- Keep Aspect;
+- move / scale / rotate / mirror;
+- Direct / Pixel Art / Outline / Monochrome / Palette Limited / Posterize;
+- Brightness / Contrast / Saturation;
+- Reduce Colors;
+- Dither;
+- selected Swatches palette;
+- Apply new Image layer;
+- reopen/edit Image layer;
+- save/reopen schema-v2 project;
+- v1 project load -> v2 migration;
+- Undo/Redo after applying;
+- no equipped/network mutation until Save + Equip.
 
 ### Swatches / color
 - compact 1920x1080 GUI 3 footprint;
@@ -54,54 +68,71 @@ The user is currently away from the development PC, so do not claim visual/runti
 - semi-transparent paint;
 - alpha-aware palette import/export.
 
-## CI-safe work that can continue without local runtime
+## Next CI-safe product work
 
 Priority order:
 
-1. verify the Smart Import quantization/dithering slice in exact-SHA CI;
-2. add Outline Only / edge-processing primitive;
-3. define Pixel-art processing presets/orchestration using the existing resize/reduction/dither core;
-4. design schema v2 and migration fixtures;
-5. add first-class Gradient data model/compiler tests;
-6. prepare non-destructive Image layer representation using the proven placement/processing core;
-7. add the PNG decode/import adapter with strict size validation;
-8. prepare Elytra semantic UV/editor model;
-9. design animation authoring schema/timeline data model;
-10. add reusable tooltip/icon-button primitives where they do not depend on visual judgment.
+1. richer Gradient authoring UI in the Cape Editor:
+   - create Gradient layer from UI;
+   - Linear / Radial;
+   - editable color stops;
+   - angle/direction;
+   - repeat;
+   - dither;
+   - transform controls;
+2. richer typed layer rows/icons and lock affordance;
+3. Home reference shell:
+   - real Recent Project thumbnail cards;
+   - Import Image entry now routed to Smart Import;
+   - Edit Elytra placeholder/entry once editor exists;
+   - Templates / Loom Codes / Settings hierarchy;
+4. Elytra semantic editor model:
+   - unfolded left/right wings;
+   - linked/mirrored vs independent;
+   - cape-to-Elytra starting conversion;
+   - thickness user control;
+   - standing/open/gliding preview states;
+5. animation authoring schema:
+   - tracks;
+   - keyframes;
+   - procedural effects;
+   - timeline;
+6. project Loom Codes/sharing;
+7. final reference-fidelity and compatibility hardening.
 
-## Schema-v2 gate
+## Schema-v2 status
 
-Do **not** bolt persistent layer lock or new layer kinds directly onto schema v1.
-
-Schema v2 should coordinate:
-- stable layer-kind/type identifiers;
-- persistent layer lock;
+Implemented:
+- explicit v1 -> v2 migration;
+- stable layer-kind identifiers;
+- stable schema-v2 blend identifiers;
 - Paint layer payload;
 - Image layer payload;
 - Gradient layer payload;
-- effect/reference metadata where appropriate;
-- transform data;
-- future animation targeting;
-- migration from schema v1;
-- stable blend identifiers instead of ordinal-only encoding.
+- persistent layer lock;
+- normalized transforms;
+- embedded bounded image source;
+- persistent processing settings.
 
-The schema design should be documented before implementation changes old project bytes.
+Future schema work should extend v2 deliberately for:
+- animation targeting;
+- effect/reference layer metadata;
+- external/content-addressed assets if ever needed;
+- portable project sharing.
+
+Do not introduce new byte-layout meaning without explicit migration/versioning.
 
 ## Crop clarification
 
-Do not implement a destructive “crop the cape face to a smaller canvas.”
+Minecraft cape/Elytra UV dimensions remain fixed.
 
-Minecraft cape UV face dimensions are fixed by the texture layout.
-
-For the Cape Editor, selection-based crop behavior should mean a transform/selection workflow, not changing the semantic cape-face dimensions.
-
-For Smart Import, Crop is an image-placement operation inside the fixed cape/Elytra target.
+Smart Import Crop means a centered source crop that fills the fixed target area. It never resizes the semantic Minecraft cape face itself.
 
 ## Reference-image priority
 
-Every new UI feature must continue tracking the five approved reference screens.
+The five approved references remain active constraints.
 
-Near-term work should preserve the reference hierarchy without spending time on final decorative polish while no local visual verification is available.
+The current Smart Import implementation is functionally complete but still needs local visual comparison against `Loom_Studios_03_Smart_Import.png` before final visual DONE status.
 
 See `REFERENCE_FIDELITY_ROADMAP.md`.
 
