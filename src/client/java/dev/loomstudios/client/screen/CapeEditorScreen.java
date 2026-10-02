@@ -1279,8 +1279,14 @@ public final class CapeEditorScreen extends Screen {
                         layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
             }
             if (layerImportButton != null) {
-                layerImportButton.active =
-                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+                boolean editingImage = layer.kind() == LayerKind.IMAGE;
+                layerImportButton.active = editingImage
+                        ? !layer.locked()
+                        : layers.size()
+                                < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+                layerImportButton.setMessage(Component.literal(
+                        editingImage ? "Edit Image" : "Import PNG"
+                ));
             }
             if (layerUpButton != null) {
                 layerUpButton.active =
@@ -1579,6 +1585,24 @@ public final class CapeEditorScreen extends Screen {
 
     private void openSmartImport() {
         this.selection = null;
+        LoomLayer layer = selectedLayer();
+
+        if (layer.kind() == LayerKind.IMAGE) {
+            if (layer.locked()) {
+                return;
+            }
+
+            this.minecraft.setScreen(
+                    new SmartImportScreen(
+                            this,
+                            this.capeRegion,
+                            layer.id(),
+                            layer
+                    )
+            );
+            return;
+        }
+
         this.minecraft.setScreen(
                 new SmartImportScreen(this, this.capeRegion)
         );
