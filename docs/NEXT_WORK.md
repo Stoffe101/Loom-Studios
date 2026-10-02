@@ -1,38 +1,20 @@
 # Loom Studios — Next Work
 
-## Active workshop pass
+## Completed workshop pass
 
-2026-10-03: five-screen styling and acceptance is IN PROGRESS on draft PR #14. Shared timber/steel/lantern/pennant/wordmark artwork, scenic live previews and revised Smart Import are implemented; 42-screen profile capture/build verification is pending. Prior editor evidence is historical for this new styling pass. See the newest PASS_LOG entry.
+**DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.
 
-## Current gate
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). PR #14 remains unmerged.
 
-The workspace repair follows the failed cape/elytra screenshots from 2026-10-02 and all five approved workshop references. The clean build and 22 actual editor screenshots have passed and been inspected. Overall reference acceptance remains PARTIAL: the current editor is clearer but still simpler than the decorative workshop references.
+## Next concrete work
 
-Current changes: unified canvas pixel boundaries, bounded shared layout, slim navigation with explicit Save + Equip, contextual tool rows, paged layer/gradient inspectors, cached two-wing canvas, adaptive timeline, real layer thumbnails, draggable collection scrollbars, preserved viewport state and coherent icon/theme primitives.
+PR #14 is ready for review; review/merge remains separate from this implementation pass. The requested styling/alignment gate is complete. Before a release, run the optional-mod/shader/multiplayer and exhaustive interactive feature checks below; do not treat these broader product checks as completed by screenshots.
 
-Run the development capture flow with `./gradlew runClient -PuiCapture` in the isolated `run-ui-capture` directory. It creates a flat test world, checks visible widget bounds and captures Cape/Elytra at the four mandatory profiles plus compact Color/Properties/Animation/Playback pages. It is disabled in production and ordinary development launches.
-
-Verified source `a2a9628afced367d4a178f944c5cce239d110fbf` passed Actions #178 (tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`). Next concrete gate: complete the decorative workshop styling and review Home/Smart Import/Share against their references. Keep shader, optional-mod, multiplayer and full manual workflow checks pending unless performed. The older checkpoint SHAs below are historical, not proof for this repair.
+Run `./gradlew runClient -PuiCapture` to reproduce the isolated development flow: 42 actual screenshots, visible-control bounds/nonoverlap, project/portable/PNG exports, and import candidate/apply equivalence on both pages. Packaged clients and ordinary development launches never invoke it.
 
 ## Runtime verification queue
 
-### Reference UI refactor smoke pass
-Run this before the deeper feature checklist:
-- 1920x1080 / GUI scale 3 first;
-- Home has no text overlap and primary actions are readable;
-- Cape Editor shows canvas + tool rail + one inspector context without a giant vertical control scroll;
-- Color tab is reachable without covering Layers;
-- Gradient Properties only appears when relevant;
-- Elytra Editor keeps canvas, timeline and 3D preview simultaneously understandable;
-- Animation tab explains the flow: select layer -> + Track -> scrub -> Add Key -> Value/Effect;
-- compact timeline rows do not overlap header/footer;
-- Smart Import switches Placement / Processing without scrolling through both at once;
-- Smart Import Apply remains visible regardless of tab;
-- Share / Export is reachable from both editors;
-- Export Project / Cape PNG / Elytra PNG are immediately visible in Export;
-- Import controls are hidden while Export is active and vice versa;
-- no inactive Settings placeholder on Home;
-- no primary UI text overlap at any required GUI profile.
+The five-screen reference smoke pass is complete at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Retained evidence includes compact Color/Properties/Gradient/Transform/Stops/Animation/Playback, long collections, one-pixel live/released selection and below-minimum guidance. The following queue is for deeper manual release testing.
 
 ### Select / transforms
 - drag selection at 1x / 2x / 4x;

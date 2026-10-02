@@ -106,7 +106,7 @@ Open Elytra -> Props -> Thickness. The authored 25%–200% value is saved with t
 
 ## Editor screenshot verification
 
-`./gradlew runClient -PuiCapture` explicitly enables a development-only screenshot flow that creates a flat test world in the isolated `run-ui-capture` directory. It captures the four required display/GUI profiles and checks visible widget bounds. Normal launches and packaged clients never invoke it.
+`./gradlew runClient -PuiCapture` explicitly enables a development-only screenshot flow that creates a flat test world in the isolated `run-ui-capture` directory. It records 42 actual Minecraft captures across all five screens at the four required display/GUI profiles, checks visible widget bounds and pairwise nonoverlap, and verifies project/portable/PNG exports plus candidate/apply pixel equivalence on both import pages. Normal launches and packaged clients never invoke it.
 
 ## Running two development clients on Windows
 

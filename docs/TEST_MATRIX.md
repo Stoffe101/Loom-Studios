@@ -846,6 +846,19 @@ Implementation base: `f49ddb2e9727e16d3e6438772534f278d0520a38`; verified source
 The opt-in development capture checks every visible widget against the window/footer bounds and records Cape/Elytra at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Inspect selection outline, context row, property pages, cached wing composition, preview and timeline; geometry tests alone do not establish reference fidelity.
 
 
-## 2026-10-03 workshop styling gate (pending)
+## 2026-10-02 workshop styling gate — PASS
 
-Run 42 actual Minecraft captures: existing 22 editor scenarios, plus Home, Share Export, Share Import, Smart Import Placement and Smart Import Processing at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Assert every visible widget is bounded and pairwise nonoverlapping. Inspect brand sign, timber/metal edges, inset selected highlights, preview scenery, source/result previews, readable tab/stepper labels and status plaque. Retained PNGs must be fresh (CI deletes the prior set) and decode completely.
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC.
+
+| Physical display | GUI scale | Logical area | Home / Cape / Elytra / Share Export+Import / Smart Placement+Processing |
+| --- | --- | --- | --- |
+| 1920×1080 | 2 | 960×540 | PASS |
+| 1920×1080 | 3 | 640×360 | PASS |
+| 3440×1440 | 2 | 1720×720 | PASS |
+| 3440×1440 | 3 | 1147×480 | PASS |
+
+All 42 fresh PNGs decode fully and were inspected against the five approved references. Every visible widget is bounded above the footer and pairwise nonoverlapping. Compact property/color/animation pages and long layer/track collections pass. The live/released one-pixel canvas-body crop `(114,330)–(1284,910)` is identical at GUI 3 / 200% zoom; below-minimum guidance is readable. Source labels, candidate hints, brand artwork, preview scenery, export previews and fixed actions fit their assigned panels.
+
+Runtime workflow checks PASS: editable/portable export hash round-trips, Cape/Elytra PNG dimensions, both Smart Import pages add an Image layer whose compiled pixels equal the candidate. Capture completion and workflow markers occur once. Focus tooltips are transient expected overlays in some editor captures. Optional mods, shader packs, multiplayer, OS picker/clipboard and exhaustive manual feature interactions were not exercised here.
+
+Environment: MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 / Temurin 21.0.12+1 / Loom 1.17.21 / Gradle 9.6.1 / clean Ubuntu-Mesa llvmpipe-Xvfb. Build/tests PASS; capture job PASS. Retained evidence: [index](verification/editor-workspace/README.md).

@@ -15,6 +15,10 @@ It is a hard UI compatibility gate. New editor panels, floating windows, tool ro
 
 Minecraft may round the logical width/height by a pixel depending on platform/window state. Layout code must not depend on an exact quotient.
 
+## Verified workshop chrome budget
+
+Actions #182 verifies all five screens at the four required profiles. Shared brand headers reserve 36 logical pixels in compact mode and 56 normally; decorative timber/steel/cloth/lantern artwork stays inside those bounds. Normal editor tool rails reserve 106 pixels for labels; compact rails use 30-pixel icons. The 20-pixel footer owns the centered parchment plaque and independently clipped left/right status. Preview gesture hints shorten below 190 pixels and clip to their assigned width. These budgets are included in canvas, preview and inspector layout calculations.
+
 ## Editor requirements
 
 At every required profile:
