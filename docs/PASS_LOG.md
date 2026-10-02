@@ -1,5 +1,40 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Refreshed approved UI reference set
+
+**Status: DESIGN/DOCUMENTATION PASS — NO RUNTIME SOURCE CHANGE**
+
+Baseline entering this pass:
+- merged main: `6208086fd5c6f025376afd7cf8390829cda56dbd`;
+- GitHub Actions #121: **SUCCESS**.
+
+Approved and archived the refreshed five-screen Loom Studios reference set:
+- Home;
+- Cape Editor;
+- Smart Import;
+- Elytra + Animation Editor;
+- Loom Codes / Sharing.
+
+Repository:
+- optimized 1280x720 WebP copies live under `docs/references/ui/`.
+
+Project Library:
+- full-resolution 1672x941 PNG masters live under `/Loom Studios/UI References/`.
+
+Visual direction now explicitly favors:
+- roughly 70% clean modern creative editor / 30% magical Minecraft workshop;
+- stronger showcase framing on Home/Sharing;
+- calmer canvas-first work mode on Cape/Smart Import/Elytra;
+- icon-led tools/buttons/layer types;
+- restrained cyan/violet glow for active/selected/primary states;
+- fewer nested borders and repeated decorative elements.
+
+The refreshed set supersedes the earlier rough concepts. It remains a design target rather than a pixel-perfect screenshot contract.
+
+No gameplay/runtime behavior changed in this pass. Local visual verification against the implementation remains pending.
+
+---
+
 ## 2026-10-02 — Schema v2 + functional Smart Import
 
 **Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**

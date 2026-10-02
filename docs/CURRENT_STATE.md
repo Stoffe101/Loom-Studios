@@ -25,11 +25,13 @@ Loom Studios currently has:
 
 The current Smart Import + schema-v2 implementation slice is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Exact green branch checkpoint: `7a568f736f273328a3b55d1ea28587832cd45282` — GitHub Actions #113 **SUCCESS**.
+Exact merged-main checkpoint: `6208086fd5c6f025376afd7cf8390829cda56dbd` — GitHub Actions #121 **SUCCESS**.
 
 The earlier Select/runtime-hardening checkpoint remains `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
 
 Historical spike-by-spike detail belongs in `PASS_LOG.md`; this file intentionally describes only the current project state.
+
+The refreshed five-screen Loom Studios UI reference set is approved and committed under `docs/references/ui/`. The current visual direction is canvas/task-first, icon-led and intentionally calmer than the earlier concepts: roughly 70% clean creative editor / 30% magical Minecraft workshop, with stronger decoration on Home/Sharing than on work screens.
 
 ## Current development baseline
 
