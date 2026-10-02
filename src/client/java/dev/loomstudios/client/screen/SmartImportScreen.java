@@ -828,24 +828,42 @@ public final class SmartImportScreen extends Screen {
                 ? baseName.substring(0, dot)
                 : baseName;
 
-        if (editingLayerId == null) {
-            ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.addCapeImageLayer(
-                            project,
-                            normalizedLayerName,
-                            data
-                    )
+        try {
+            if (editingLayerId == null) {
+                ClientProjectWorkspace.apply(project -> {
+                    LoomProject updated =
+                            ProjectEdits.addCapeImageLayer(
+                                    project,
+                                    normalizedLayerName,
+                                    data
+                            );
+                    // Fail before mutating workspace state if this embedded
+                    // source would make the project unsavable/network-invalid.
+                    updated.encode();
+                    return updated;
+                });
+                status = "Imported as editable Image layer";
+            } else {
+                ClientProjectWorkspace.apply(project -> {
+                    LoomProject updated =
+                            ProjectEdits.setCapeImageData(
+                                    project,
+                                    editingLayerId,
+                                    data
+                            );
+                    updated.encode();
+                    return updated;
+                });
+                status = "Updated editable Image layer";
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            LoomStudios.LOGGER.warn(
+                    "Smart Import result rejected: {}",
+                    e.getMessage()
             );
-            status = "Imported as editable Image layer";
-        } else {
-            ClientProjectWorkspace.apply(project ->
-                    ProjectEdits.setCapeImageData(
-                            project,
-                            editingLayerId,
-                            data
-                    )
-            );
-            status = "Updated editable Image layer";
+            status = "Import result is too large or invalid";
+            updateButtonLabels();
+            return;
         }
 
         if (parent instanceof CapeEditorScreen) {
