@@ -722,3 +722,5 @@ Common transform primitives retain clipping behavior for reusable low-level oper
 The user-facing nudge controls clamp movement so the full selection remains inside the active semantic cape face. This avoids accidental pixel loss from a one-pixel nudge at an edge.
 
 Changing semantic face or project resolution clears the temporary selection because its coordinates no longer describe the same editing surface.
+
+Undo/Redo also clear the temporary selection. Project history does not serialize editor selection coordinates, so clearing avoids leaving a moved selection box pointing at stale post-transform coordinates after the project snapshot jumps backward or forward.
