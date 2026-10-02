@@ -22,13 +22,8 @@ import java.util.function.Supplier;
 public final class PlayerCosmeticRenderer {
     public static final float ELYTRA_VISUAL_BASELINE_Z_SCALE = 0.5F;
 
-    private static final float[] THICKNESS_PRESETS = {
-            1.0F, 0.75F, 0.5F, 0.25F, 1.5F
-    };
-
     private static final Map<UUID, CachedSkin> SKINS = new HashMap<>();
 
-    private static int thicknessPresetIndex;
     private static boolean emissivePassEnabled = true;
     private static String lastLocalProjectHash;
     private static String previewProjectHash;
@@ -120,18 +115,7 @@ public final class PlayerCosmeticRenderer {
             return 1.0F;
         }
 
-        Minecraft client = Minecraft.getInstance();
         float userScale = bundle.project.runtime().elytraThickness();
-
-        if (client.player != null
-                && state.id == client.player.getId()
-                && ClientProjectWorkspace.isInitialized()
-                && bundle.projectHash.equals(
-                        ClientProjectWorkspace.equippedProjectHash()
-                )) {
-            userScale = THICKNESS_PRESETS[thicknessPresetIndex];
-        }
-
         return ELYTRA_VISUAL_BASELINE_Z_SCALE * userScale;
     }
 
@@ -199,27 +183,6 @@ public final class PlayerCosmeticRenderer {
         previewProjectHash = null;
     }
 
-    public static void cycleElytraThickness(Minecraft client) {
-        thicknessPresetIndex =
-                (thicknessPresetIndex + 1) % THICKNESS_PRESETS.length;
-
-        if (client.player != null) {
-            int percent = Math.round(
-                    THICKNESS_PRESETS[thicknessPresetIndex] * 100.0F
-            );
-
-            client.player.displayClientMessage(
-                    Component.literal(
-                            "Loom Studios Elytra thickness: "
-                                    + percent
-                                    + "%"
-                                    + (percent == 100 ? " (vanilla-like)" : "")
-                    ),
-                    true
-            );
-        }
-    }
-
     public static void toggleEmissivePass(Minecraft client) {
         emissivePassEnabled = !emissivePassEnabled;
 
@@ -240,7 +203,6 @@ public final class PlayerCosmeticRenderer {
 
     public static void close(Minecraft client) {
         SKINS.clear();
-        thicknessPresetIndex = 0;
         emissivePassEnabled = true;
         clearPreviewProject(client);
         RuntimeCosmeticCache.close(client);

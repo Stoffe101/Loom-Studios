@@ -19,7 +19,6 @@ import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public final class LoomStudiosClient implements ClientModInitializer {
-    private static KeyMapping cycleElytraThickness;
     private static KeyMapping openPreview;
     private static KeyMapping openStudio;
     private static KeyMapping toggleEmissive;
@@ -49,13 +48,6 @@ public final class LoomStudiosClient implements ClientModInitializer {
                 Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID, "debug")
         );
 
-        cycleElytraThickness = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "key.loom-studios.cycle_elytra_thickness",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_V,
-                debugCategory
-        ));
-
         openPreview = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.loom-studios.open_preview",
                 InputConstants.Type.KEYSYM,
@@ -78,10 +70,6 @@ public final class LoomStudiosClient implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (cycleElytraThickness.consumeClick()) {
-                PlayerCosmeticRenderer.cycleElytraThickness(client);
-            }
-
             while (openPreview.consumeClick()) {
                 if (client.player != null && client.level != null) {
                     client.setScreen(new LoomPlayerPreviewScreen());

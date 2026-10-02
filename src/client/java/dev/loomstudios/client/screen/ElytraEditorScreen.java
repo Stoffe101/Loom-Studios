@@ -53,6 +53,9 @@ public final class ElytraEditorScreen extends Screen {
     private LoomButton resolutionDownButton;
     private LoomButton resolutionLabelButton;
     private LoomButton resolutionUpButton;
+    private LoomButton thicknessDownButton;
+    private LoomButton thicknessLabelButton;
+    private LoomButton thicknessUpButton;
     private LoomButton lockButton;
     private LoomButton undoButton;
     private LoomButton redoButton;
@@ -361,6 +364,36 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(this.resolutionUpButton);
         row += 20 + gap;
 
+        this.thicknessDownButton = new LoomButton(
+                x,
+                row,
+                small,
+                20,
+                Component.literal("-"),
+                () -> changeThickness(-0.25F)
+        );
+        this.thicknessLabelButton = new LoomButton(
+                x + small + 4,
+                row,
+                Math.max(42, width - small * 2 - 8),
+                20,
+                Component.literal("Depth 100%"),
+                () -> { }
+        );
+        this.thicknessLabelButton.active = false;
+        this.thicknessUpButton = new LoomButton(
+                x + width - small,
+                row,
+                small,
+                20,
+                Component.literal("+"),
+                () -> changeThickness(0.25F)
+        );
+        addRenderableWidget(this.thicknessDownButton);
+        addRenderableWidget(this.thicknessLabelButton);
+        addRenderableWidget(this.thicknessUpButton);
+        row += 20 + gap;
+
         this.lockButton = new LoomButton(
                 x,
                 row,
@@ -465,6 +498,27 @@ public final class ElytraEditorScreen extends Screen {
                 ProjectResizer.resizeElytra(project, next)
         );
         brushSize = Math.min(brushSize, next.scale() * 8);
+        updateButtonStates();
+    }
+
+    private void changeThickness(float delta) {
+        float current = ClientProjectWorkspace.project()
+                .runtime()
+                .elytraThickness();
+        float next = Math.max(
+                0.25F,
+                Math.min(2.0F, current + delta)
+        );
+
+        if (Math.abs(next - current) < 1.0E-6F) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                project.withRuntime(
+                        project.runtime().withElytraThickness(next)
+                )
+        );
         updateButtonStates();
     }
 
@@ -732,6 +786,20 @@ public final class ElytraEditorScreen extends Screen {
         if (resolutionLabelButton != null) {
             resolutionLabelButton.setMessage(Component.literal(
                     resolution.label()
+            ));
+        }
+        float thickness = ClientProjectWorkspace.project()
+                .runtime()
+                .elytraThickness();
+        if (thicknessDownButton != null) {
+            thicknessDownButton.active = thickness > 0.25F;
+        }
+        if (thicknessUpButton != null) {
+            thicknessUpButton.active = thickness < 2.0F;
+        }
+        if (thicknessLabelButton != null) {
+            thicknessLabelButton.setMessage(Component.literal(
+                    "Depth " + Math.round(thickness * 100.0F) + "%"
             ));
         }
         if (lockButton != null) {
