@@ -174,7 +174,9 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         );
 
         renderPrimaryHeader(graphics, animation);
-        renderSecondaryHeader(graphics, animation);
+        if (!compactTimeline()) {
+            renderSecondaryHeader(graphics, animation);
+        }
         renderRuler(graphics, animation);
 
         int rowTop = rowTop();
@@ -218,7 +220,9 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             }
         }
 
-        renderFooter(graphics, project, animation, tracks);
+        if (!compactTimeline()) {
+            renderFooter(graphics, project, animation, tracks);
+        }
 
         if (tracks.size() > visibleRows) {
             renderScrollbar(graphics, tracks.size(), visibleRows);
@@ -229,14 +233,15 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             GuiGraphics graphics,
             LoomAnimation animation
     ) {
-        int y = getY() + 4;
+        int y = getY() + (compactTimeline() ? 2 : 4);
 
+        int controlHeight = compactTimeline() ? 14 : 15;
         drawControl(
                 graphics,
                 getX() + 6,
                 y,
                 20,
-                15,
+                controlHeight,
                 playingSupplier.getAsBoolean() ? "II" : ">",
                 true
         );
@@ -245,7 +250,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 getX() + 30,
                 y,
                 34,
-                15,
+                controlHeight,
                 animation.loop() ? "Loop" : "Once",
                 animation.loop()
         );
@@ -268,7 +273,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 getRight() - addWidth - 6,
                 y,
                 addWidth,
-                15,
+                controlHeight,
                 "+ Track",
                 animation.tracks().size()
                         < LoomAnimation.MAX_TRACKS
@@ -339,16 +344,19 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             GuiGraphics graphics,
             LoomAnimation animation
     ) {
-        int top = getY() + HEADER_PRIMARY + HEADER_SECONDARY + 3;
+        int top = getY()
+                + primaryHeight()
+                + secondaryHeight()
+                + (compactTimeline() ? 1 : 3);
         int timelineLeft = timelineLeft();
         int timelineRight = getRight() - 6;
         int width = Math.max(1, timelineRight - timelineLeft);
 
         graphics.fill(
                 timelineLeft,
-                top + RULER_HEIGHT - 2,
+                top + rulerHeight() - 2,
                 timelineRight,
-                top + RULER_HEIGHT - 1,
+                top + rulerHeight() - 1,
                 0xFF31404D
         );
 
@@ -358,9 +366,9 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                     + width * fraction / 4;
             graphics.fill(
                     x,
-                    top + RULER_HEIGHT - 5,
+                    top + rulerHeight() - 5,
                     x + 1,
-                    top + RULER_HEIGHT,
+                    top + rulerHeight(),
                     LoomUiTheme.TEXT_MUTED
             );
 
@@ -396,18 +404,19 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     ) {
         int left = getX() + 4;
         int right = getRight() - 4;
+        int rowHeight = rowHeight();
         int background = selected
                 ? 0xFF203846
                 : 0xFF111B24;
 
-        graphics.fill(left, y, right, y + ROW_HEIGHT - 1, background);
+        graphics.fill(left, y, right, y + rowHeight - 1, background);
 
         if (selected) {
             graphics.fill(
                     left,
                     y,
                     left + 2,
-                    y + ROW_HEIGHT - 1,
+                    y + rowHeight - 1,
                     LoomUiTheme.ACCENT
             );
         }
@@ -452,7 +461,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         int timelineLeft = timelineLeft();
         int timelineRight = getRight() - 6;
         int timelineWidth = Math.max(1, timelineRight - timelineLeft);
-        int centerY = y + ROW_HEIGHT / 2;
+        int centerY = y + rowHeight / 2;
 
         graphics.fill(
                 timelineLeft,
@@ -486,7 +495,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 currentX,
                 y + 2,
                 currentX + 1,
-                y + ROW_HEIGHT - 3,
+                y + rowHeight - 3,
                 LoomUiTheme.TEXT
         );
     }
@@ -497,7 +506,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             LoomAnimation animation,
             List<AnimationTrack> tracks
     ) {
-        int y = getBottom() - FOOTER_HEIGHT + 3;
+        int y = getBottom() - footerHeight() + 3;
         UUID selectedId = selectedTrackSupplier.get();
         AnimationTrack selected = findTrack(tracks, selectedId);
 
@@ -595,7 +604,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             int visibleRows
     ) {
         int top = rowTop();
-        int bottom = getBottom() - FOOTER_HEIGHT - 2;
+        int bottom = getBottom() - footerHeight() - 2;
         int height = Math.max(1, bottom - top);
         int thumbHeight = Math.max(
                 10,
@@ -665,7 +674,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         LoomProject project = projectSupplier.get();
         LoomAnimation animation = project.animation();
 
-        if (mouseY < getY() + HEADER_PRIMARY) {
+        if (mouseY < getY() + primaryHeight()) {
             if (mouseX >= getX() + 6 && mouseX < getX() + 26) {
                 controller.togglePlayback();
                 return;
@@ -683,20 +692,21 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             }
         }
 
-        if (mouseY >= getY() + HEADER_PRIMARY
+        if (!compactTimeline()
+                && mouseY >= getY() + primaryHeight()
                 && mouseY < getY()
-                + HEADER_PRIMARY
-                + HEADER_SECONDARY) {
+                + primaryHeight()
+                + secondaryHeight()) {
             handleSecondaryHeaderClick(mouseX);
             return;
         }
 
         List<AnimationTrack> tracks = filteredTracks(animation);
         int rowTop = rowTop();
-        int footerTop = getBottom() - FOOTER_HEIGHT;
+        int footerTop = getBottom() - footerHeight();
 
         if (mouseY >= rowTop && mouseY < footerTop) {
-            int row = (int)((mouseY - rowTop) / ROW_HEIGHT);
+            int row = (int)((mouseY - rowTop) / rowHeight());
             int index = scrollRows + row;
 
             if (index >= 0 && index < tracks.size()) {
@@ -721,7 +731,9 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             return;
         }
 
-        if (mouseY >= footerTop && inlineTrackControls) {
+        if (!compactTimeline()
+                && mouseY >= footerTop
+                && inlineTrackControls) {
             handleFooterClick(
                     mouseX,
                     tracks,
@@ -879,22 +891,46 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 .orElse(null);
     }
 
+    private boolean compactTimeline() {
+        return getHeight() < 112;
+    }
+
+    private int primaryHeight() {
+        return compactTimeline() ? 18 : HEADER_PRIMARY;
+    }
+
+    private int secondaryHeight() {
+        return compactTimeline() ? 0 : HEADER_SECONDARY;
+    }
+
+    private int rulerHeight() {
+        return compactTimeline() ? 10 : RULER_HEIGHT;
+    }
+
+    private int footerHeight() {
+        return compactTimeline() ? 0 : FOOTER_HEIGHT;
+    }
+
+    private int rowHeight() {
+        return compactTimeline() ? 18 : ROW_HEIGHT;
+    }
+
     private int rowTop() {
         return getY()
-                + HEADER_PRIMARY
-                + HEADER_SECONDARY
-                + RULER_HEIGHT
-                + 5;
+                + primaryHeight()
+                + secondaryHeight()
+                + rulerHeight()
+                + (compactTimeline() ? 2 : 5);
     }
 
     private int visibleRows() {
         int available = getHeight()
-                - HEADER_PRIMARY
-                - HEADER_SECONDARY
-                - RULER_HEIGHT
-                - FOOTER_HEIGHT
-                - 8;
-        return Math.max(1, available / ROW_HEIGHT);
+                - primaryHeight()
+                - secondaryHeight()
+                - rulerHeight()
+                - footerHeight()
+                - (compactTimeline() ? 3 : 8);
+        return Math.max(1, available / rowHeight());
     }
 
     private int timelineLeft() {
