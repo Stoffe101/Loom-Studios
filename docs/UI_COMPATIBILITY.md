@@ -107,3 +107,48 @@ Swatches specifically:
 - must not overlap its own labels/buttons.
 
 Future floating tools should use the same principle: the frequently-used content stays visible, while infrequent management controls collapse behind an explicit Edit/Manage affordance.
+
+
+## Reference UI architecture rules
+
+The 2026-10-02 local test invalidated the previous "show most controls in a scrollable column" approach.
+
+The editor shell now follows these rules:
+
+1. **Progressive disclosure over button walls.**
+   - persistent tools use compact icon rails;
+   - layer/color/animation/gradient controls live in contextual inspector tabs;
+   - controls irrelevant to the current task stay hidden.
+
+2. **Primary editing should not require a giant vertical settings scroll.**
+   - normal Cape authoring must fit tool rail + canvas + one inspector context;
+   - Elytra keeps canvas + timeline + preview visible together;
+   - Smart Import separates Placement and Processing rather than stacking both.
+
+3. **640x360 effective GUI size is a first-class compact layout.**
+   This approximates 1920x1080 at GUI scale 3 and is release-critical.
+
+4. **Export is a first-class destination.**
+   Cape/Elytra editors expose Share / Export directly.
+   The sharing screen separates Export and Import into explicit workspaces.
+
+5. **Disabled future features should not occupy primary navigation.**
+   Settings was removed from Home until it is a real destination.
+
+6. **Reference fidelity is structural before decorative.**
+   Match hierarchy, grouping, density, icon usage, preview placement and canvas dominance before adding heavier workshop ornament.
+
+7. **Scroll only the content that genuinely scales.**
+   Layer lists, grouped swatches and long track collections may scroll.
+   The whole primary editor control surface should not.
+
+### Compact-mode pass criteria
+
+At <=700x420 effective GUI size:
+- icon rails replace verbose tool buttons;
+- action-card subtitles may collapse;
+- only essential project cards/templates are shown;
+- timeline secondary controls collapse before track rows overlap;
+- inspector controls use compact rows/tabs;
+- text must not render across neighboring panels;
+- all primary actions remain reachable without scrolling the full screen.

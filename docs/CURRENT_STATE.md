@@ -38,9 +38,43 @@ Loom Studios currently has:
 - layer-targeted animation tracks + keyframes for Cape and Elytra;
 - runtime Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow effects;
 - a reference-oriented Elytra animation timeline with play/pause, scrub, duration, loop, playback speed, track speed, effect selection and keyframe editing;
-- isolated fixed-tick 3D preview for timeline scrubbing.
+- isolated fixed-tick 3D preview for timeline scrubbing;
+- a responsive shared reference UI shell;
+- icon-led compact editor controls;
+- contextual Cape inspector tabs for Layers / Color / Properties;
+- contextual Elytra inspector tabs for Layers / Color / Animation;
+- a compact timeline mode for 640x360 effective GUI layouts;
+- tabbed Smart Import Placement / Processing controls with fixed Apply actions;
+- first-class Share / Export navigation from Home, Cape and Elytra;
+- a simplified Export / Import sharing workspace.
 
-The current editor-productization work is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+The current editor-productization work is **CI GREEN / LOCAL RE-VERIFICATION OF THE UI REFACTOR PENDING**.
+
+A local test on 2026-10-02 confirmed the underlying editor/import/Elytra/animation/sharing features were broadly functional, but the pre-refactor interface failed the visual/usability gate:
+- it did not resemble the approved references closely enough;
+- persistent button walls exposed too many controls at once;
+- Cape/Gradient surfaces required excessive vertical scrolling;
+- several labels/controls overlapped or became difficult to parse;
+- animation authoring was hard to understand;
+- Export was technically present but not discoverable from the editors;
+- 1920x1080 / GUI scale 3 was especially poor.
+
+That feedback triggered the current full UI-shell refactor rather than incremental spacing patches.
+
+Latest merged-main baseline entering the reference UI refactor: `e3e417ff21f231e8513186e499026682d4cfb785` — GitHub Actions #158 **SUCCESS**.
+
+Current UI-refactor implementation checkpoint: `db90568ad8e47b342e3be36419381f4e2c37af66` — GitHub Actions #172 **SUCCESS**.
+
+Current refactor includes:
+- shared `LoomScreenChrome` and responsive theme primitives;
+- rebuilt responsive Home;
+- Cape contextual workspace with icon tool rail and inspector tabs;
+- Elytra contextual workspace with dedicated Animation inspector;
+- compact timeline geometry;
+- Smart Import Placement / Processing tabs;
+- Share / Export and Import workspaces;
+- explicit top-level Share / Export routing from editors;
+- inactive Settings removed from the Home primary action stack.
 
 Latest merged-main baseline entering the animation pass: `2eca773a0358344491fd3280f535feb3515268a0` — GitHub Actions #139 **SUCCESS**.
 
@@ -143,7 +177,7 @@ Rendered animation frames are never streamed.
 
 ## Project format
 
-Current schema: **v2**
+Current schema: **v3**
 
 Stored today:
 - project UUID/name;
@@ -151,7 +185,9 @@ Stored today:
 - runtime settings;
 - cape canvas;
 - Elytra canvas;
-- ordered typed layers.
+- ordered typed layers;
+- project animation duration/loop/playback speed;
+- layer-targeted animation tracks and ordered keyframes.
 
 Layer kinds:
 - Paint;
@@ -605,7 +641,7 @@ Every meaningful editor-layout change must eventually be checked at:
 - 3440x1440 / GUI scale 2;
 - 3440x1440 / GUI scale 3.
 
-Because the current user is away from the development PC, the latest Cape/Gradient controls, Home dashboard and Elytra Editor are **not visually/runtime verified yet**.
+The previous build has now been locally tested. The feature behavior was broadly functional, but its UI failed the visual/usability gate described above. The **new reference UI refactor has not yet been locally re-tested** and must be checked at all four profiles, with 1920x1080 / GUI scale 3 treated as a release-critical compact profile.
 
 ## Automated coverage currently includes
 
@@ -631,25 +667,33 @@ Because the current user is away from the development PC, the latest Cape/Gradie
 
 ## Current verification gaps
 
-Still requires local eyes-on/runtime testing:
-- latest Select tool layout and interaction;
-- selection outline at all required GUI profiles;
-- nudge/flip interaction under zoom/pan;
-- compact Swatches after the newest tool-rail growth;
-- latest Layers controls;
-- emissive layer toggle in real rendering;
-- blend modes visually;
-- shader-on/off emissive behavior;
-- broader final Iris/shader matrix.
+The immediate gate is a local eyes-on pass of the **new UI architecture**, not another feature expansion.
 
-Automated build/test verification is green. The remaining gate for the newest editor controls is local visual/runtime verification when the development PC is available.
+Verify first:
+- Home hierarchy and card density;
+- Cape icon rail / context bar / Layers-Color-Properties inspectors;
+- no primary Cape editor scrolling for normal authoring;
+- Elytra Layers-Color-Animation inspector flow;
+- animation track/keyframe workflow clarity;
+- compact timeline at 640x360 effective size;
+- Smart Import Placement / Processing tabs;
+- fixed Apply / 3D Preview / Cancel actions;
+- first-class Share / Export discoverability;
+- Export Project / Cape PNG / Elytra PNG visibility;
+- no text overlap or clipped controls at 1920x1080 GUI 3;
+- Swatches floating window interaction over the new editor shell.
+
+Feature-level runtime verification still remains for emissive/blend/shader behavior and the broader Iris/shader matrix.
+
+Automated build/test verification is green through the current UI-refactor checkpoint.
 
 ## Immediate direction
 
-1. locally verify Cape/Gradient/Smart Import/Home/Elytra/Animation/Loom Codes at the required GUI profiles when the development PC is available;
-2. add Elytra preview-state polish for standing/open/gliding;
-3. expose/refine animation authoring where useful in the Cape Editor;
-4. decide whether Settings becomes a product screen before release;
-5. finish reference-fidelity and compatibility hardening.
+1. locally re-test the new reference UI shell at all four required GUI profiles, starting with 1920x1080 / GUI scale 3;
+2. fix any remaining overlap, density, hit-target or reference-fidelity defects found in that pass;
+3. add Elytra preview-state polish for standing/open/gliding;
+4. expose/refine animation authoring in the Cape Editor only if it can remain context-driven rather than increasing clutter;
+5. decide whether Settings becomes a real product screen before restoring it to Home;
+6. finish final compatibility/performance hardening.
 
 See `NEXT_WORK.md` for the concrete queue.
