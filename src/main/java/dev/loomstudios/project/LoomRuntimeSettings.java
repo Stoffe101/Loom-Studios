@@ -27,6 +27,15 @@ public record LoomRuntimeSettings(
         return new LoomRuntimeSettings(1.0F, 40, true, true);
     }
 
+    public LoomRuntimeSettings withEmissiveEnabled(boolean enabled) {
+        return new LoomRuntimeSettings(
+                elytraThickness,
+                animationPeriodTicks,
+                hueCycleEnabled,
+                enabled
+        );
+    }
+
     /**
      * Normal editor-created projects are static unless the user explicitly
      * adds animation/effect behavior later.
