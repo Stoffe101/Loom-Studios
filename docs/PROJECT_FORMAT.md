@@ -143,7 +143,7 @@ Schema v1 currently implements these serialized blend modes:
 
 Their enum ordinals are compatibility data in schema v1 and are pinned by automated tests. New schema-v1 modes may only be appended. A future schema should use stable identifiers instead of enum ordinals.
 
-The project-level emissive runtime flag remains part of schema v1. Editor operations keep it synchronized with whether any cape layer is marked emissive, so normal blank projects start with no glow while enabling an emissive layer activates the runtime pass immediately. Synthetic SPIKE-only shimmer is not part of real project output.
+The project-level emissive runtime flag remains part of schema v1 for compatibility. Editor operations keep it synchronized with whether any cape layer is marked emissive, while per-layer emissive flags are the render-time authority. This also keeps older pre-fix projects usable if their stored master flag and layer flags disagree. Normal blank projects start with no glow, and synthetic SPIKE-only shimmer is not part of real project output.
 
 The local library uses `<gameDir>/loom-studios/projects/<project UUID>.loom`.
 
