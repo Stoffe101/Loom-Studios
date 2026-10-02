@@ -163,7 +163,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Back"),
                 LoomButton.Icon.BACK,
-                compactMode,
+                false,
                 this::goBack
         );
         addRenderableWidget(back);
@@ -175,7 +175,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Export"),
                 LoomButton.Icon.EXPORT,
-                compactMode,
+                false,
                 () -> setWorkspace(Workspace.EXPORT)
         );
         addRenderableWidget(exportTabButton);
@@ -188,7 +188,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Import"),
                 LoomButton.Icon.IMAGE,
-                compactMode,
+                false,
                 () -> setWorkspace(Workspace.IMPORT)
         );
         addRenderableWidget(importTabButton);
@@ -351,9 +351,9 @@ public final class LoomCodesScreen extends Screen {
 
         previewWidget = new LoomPlayerPreviewWidget(
                 rightLeft,
-                contentTop + 20,
+                contentTop,
                 width,
-                previewHeight - 20,
+                previewHeight,
                 () -> previewProject,
                 previewMode
         );
@@ -699,14 +699,6 @@ public final class LoomCodesScreen extends Screen {
                 rightRight,
                 contentBottom
         );
-        LoomScreenChrome.panelHeader(
-                graphics,
-                rightLeft,
-                contentTop,
-                rightRight,
-                "3D Preview"
-        );
-
         if (workspace == Workspace.EXPORT) {
             renderExportIntro(graphics);
         } else {
@@ -740,9 +732,11 @@ public final class LoomCodesScreen extends Screen {
         );
 
         String id = LoomProjectCode.designId(sourceProject);
+        graphics.fill(left-2,top+11,centerRight-8,top+25,0xFF123347);
+        graphics.fill(left-2,top+11,left,top+25,LoomUiTheme.ACCENT);
         graphics.drawString(
                 font,
-                Component.literal(id),
+                Component.literal(id).withStyle(net.minecraft.ChatFormatting.BOLD),
                 left,
                 top + 13,
                 LoomUiTheme.ACCENT,
@@ -799,7 +793,7 @@ public final class LoomCodesScreen extends Screen {
             graphics.drawString(
                     font,
                     Component.literal(
-                            "Imports create a new local project and never overwrite the sender."
+                            font.plainSubstrByWidth("Imports create a new local project.", max)
                     ),
                     left,
                     top + 28,

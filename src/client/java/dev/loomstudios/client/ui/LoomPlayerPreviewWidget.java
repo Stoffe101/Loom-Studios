@@ -93,36 +93,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(getX(), getY(), getRight(), getBottom(), LoomUiTheme.BORDER);
-        graphics.fill(
-                getX() + 1,
-                getY() + 1,
-                getRight() - 1,
-                getBottom() - 1,
-                LoomUiTheme.PANEL_INNER
-        );
-
-        graphics.drawString(
-                Minecraft.getInstance().font,
-                Component.literal("3D Preview"),
-                getX() + 8,
-                getY() + 7,
-                LoomUiTheme.TEXT,
-                false
-        );
-
+        LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
+        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D Preview");
         int contentLeft = getX() + 4;
         int contentTop = getY() + 19;
         int contentRight = getRight() - 4;
         int contentBottom = getBottom() - (getHeight() > 140 ? 16 : 4);
 
-        graphics.fill(
-                contentLeft,
-                contentTop,
-                contentRight,
-                contentBottom,
-                0xFF14243A
-        );
+        LoomWorkshopArt.previewScene(graphics,contentLeft,contentTop,contentRight,contentBottom);
 
         LoomProject project = projectSupplier.get();
         LivingEntity player = Minecraft.getInstance().player;

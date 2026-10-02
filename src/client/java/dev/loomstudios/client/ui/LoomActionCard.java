@@ -84,6 +84,7 @@ public final class LoomActionCard extends AbstractButton {
                 background
         );
 
+        graphics.fill(getX()+2,getY()+2,getRight()-2,getY()+3,primary || hot ? 0xAA44BED7 : 0xFF354358);
         if (primary) {
             graphics.fill(
                     getX() + 1,
@@ -92,6 +93,20 @@ public final class LoomActionCard extends AbstractButton {
                     getBottom() - 1,
                     LoomUiTheme.ACCENT
             );
+        }
+
+        boolean template = switch(icon) { case BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM -> true; default -> false; };
+        if (template && getHeight() >= 50) {
+            int ch = Math.min(64,getHeight()-28), cw = ch*10/16;
+            int cx = getX()+(getWidth()-cw)/2, cy = getY()+6;
+            graphics.fill(cx-1,cy-1,cx+cw+1,cy+ch+1,LoomUiTheme.BORDER);
+            for (int row=0;row<ch;row++) graphics.fill(cx,cy+row,cx+cw,cy+row+1,
+                    icon == Icon.BLANK ? 0xFFCBD5E0 : LoomWorkshopArt.mix(LoomUiTheme.ACCENT,LoomUiTheme.ACCENT_ALT,row/(float)ch));
+            if(!active) graphics.fill(cx,cy,cx+cw,cy+ch,0x99303B4D);
+            String label = Minecraft.getInstance().font.plainSubstrByWidth(getMessage().getString(),getWidth()-8);
+            graphics.drawCenteredString(Minecraft.getInstance().font,Component.literal(label),getX()+getWidth()/2,getBottom()-14,
+                    active ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED);
+            return;
         }
 
         boolean compact = getHeight() < 34 || getWidth() < 145;

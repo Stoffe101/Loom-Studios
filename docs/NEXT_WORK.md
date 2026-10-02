@@ -1,5 +1,9 @@
 # Loom Studios — Next Work
 
+## Active workshop pass
+
+2026-10-03: five-screen styling and acceptance is IN PROGRESS on draft PR #14. Shared timber/steel/lantern/pennant/wordmark artwork, scenic live previews and revised Smart Import are implemented; 42-screen profile capture/build verification is pending. Prior editor evidence is historical for this new styling pass. See the newest PASS_LOG entry.
+
 ## Current gate
 
 The workspace repair follows the failed cape/elytra screenshots from 2026-10-02 and all five approved workshop references. The clean build and 22 actual editor screenshots have passed and been inspected. Overall reference acceptance remains PARTIAL: the current editor is clearer but still simpler than the decorative workshop references.

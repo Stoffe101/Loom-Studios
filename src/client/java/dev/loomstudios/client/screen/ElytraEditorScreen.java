@@ -276,9 +276,9 @@ public final class ElytraEditorScreen extends Screen {
     private void buildToolRail() {
         int x = toolRailLeft + 2, w = toolRailRight - toolRailLeft - 4;
         int y = contentTop + 5, h = compactMode ? 25 : 30;
-        pencilButton = iconButton(x, y, w, h, "Pencil (P)", LoomButton.Icon.PENCIL, () -> { tool = Tool.PENCIL; updateButtonStates(); }).setIconOnly(true);
-        eraserButton = iconButton(x, y + h + 4, w, h, "Eraser (E)", LoomButton.Icon.ERASER, () -> { tool = Tool.ERASER; updateButtonStates(); }).setIconOnly(true);
-        iconButton(x, y + (h + 4) * 2 + 8, w, h, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches).setIconOnly(true);
+        pencilButton = iconButton(x, y, w, h, "Pencil (P)", LoomButton.Icon.PENCIL, () -> { tool = Tool.PENCIL; updateButtonStates(); }).setIconOnly(compactMode);
+        eraserButton = iconButton(x, y + h + 4, w, h, "Eraser (E)", LoomButton.Icon.ERASER, () -> { tool = Tool.ERASER; updateButtonStates(); }).setIconOnly(compactMode);
+        iconButton(x, y + (h + 4) * 2 + 8, w, h, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches).setIconOnly(compactMode);
     }
 
 

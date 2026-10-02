@@ -1109,3 +1109,8 @@ Settings is removed from the Home primary action stack until there is a real pre
 Use one shared bounded layout for Cape/Elytra. Ordinary controls fit contextual pages; only layers/swatches/tracks scroll. This supersedes earlier ADRs prescribing a whole right-side ScrollableLayout. Compact 640×360 is a first-class composition. The timeline yields space when empty; layer properties and animation Playback have explicit owners. Keep workshop decoration slim on work screens and stronger on showcase screens.
 
 Add an opt-in development capture runner to obtain actual Minecraft evidence. Builds and pure layout tests are necessary but cannot establish visual acceptance. Production runs do not execute capture automation.
+
+
+## 2026-10-03 — Shared workshop artwork and reserved chrome
+
+Use code-native pixel artwork for the timber shell, steel fasteners, lanterns, pennants, brand wordmark and scenic preview. It scales with Minecraft GUI coordinates and needs no stretched screenshot backdrop. The 36/56-unit header is part of the layout contract; inset highlights never enlarge control bounds. Smart Import uses source/settings/result/live-preview ownership with fixed bottom actions. All five screens must pass the four physical-resolution/GUI-scale profiles, including visible-control bounds and nonoverlap, before visual acceptance.

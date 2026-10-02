@@ -1,5 +1,18 @@
 # Loom Studios — Pass Log
 
+## 2026-10-03 — Five-screen workshop styling and profile acceptance
+
+**State: IN PROGRESS — implementation checkpoint; clean build and expanded captures pending.**
+
+Continues draft PR #14 from `26b122220cd07ac61296e2ff4ddaa8ee66387659`. Re-inspected all five approved references. Replaced the flat shell with shared code-native timber planks, steel rivets, warm lanterns, stitched pennants, a cyan/violet pixel wordmark and parchment status plaque. Reserved header bounds grow to 36 compact / 56 normal; wide editor tool rails show labels. Decorative drawing owns no interaction or content coordinates. Selected controls gain inset highlights and panels use inset steel bevels. The live player preview sits in a moonlit forest scene.
+
+Smart Import now separates a source-image column, bounded Placement/Processing pages and processed/atlas previews, and an inline live candidate preview with fixed Apply/Cancel actions. Sharing keeps Export/Import labels at GUI 3, highlights the actual design fingerprint, removes a duplicate preview heading and clips explanatory copy. Home template cards show vertical cape silhouettes; actual recent thumbnails sample the back face rather than shrinking the entire UV atlas.
+
+Verification harness grows from 22 to 42 actual Minecraft captures: Cape/Elytra plus Home, Share Export/Import and Smart Import Placement/Processing at all four mandatory profiles, with compact editor pages/long collections and live/released one-pixel selection retained. It asserts both widget bounds and pairwise visible-control nonoverlap. Moon artwork and saved recent projects are deterministic development-world fixtures, not production templates or generated mockups. Current screenshot evidence remains the preceding checkpoint until the new capture job passes and PNGs are inspected.
+
+Next: clean CI, inspect all five screens against references at every profile, repair any failures, retain final evidence and synchronize canonical status.
+
+
 ## 2026-10-02 — Canvas geometry and bounded workspace repair
 
 **State: PARTIAL — clean build and editor screenshot verification PASS; full decorative reference acceptance pending.**

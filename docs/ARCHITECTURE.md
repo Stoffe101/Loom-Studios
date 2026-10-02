@@ -263,3 +263,8 @@ Current effects are evaluated deterministically and locally. The legacy runtime 
 Cape and both semantic Elytra wings use revision-cached textures; layer rows cache real raster thumbnails. Canvas zoom/pan/grid and preview rotation/zoom persist across screen rebuilds. Tool controls belong to the tool context; layer/gradient fields belong to inspector pages; animation fields belong to Keys/Playback. Floating Swatches remains an explicit overlay.
 
 `LoomUiCapture` is an opt-in development-only test harness (`-PuiCapture`). It creates an isolated test world, renders the real widgets, asserts bounds, captures screenshots and exits. Reflection is confined to this harness to exercise private editor contexts without exposing production APIs.
+
+
+### Workshop shell (2026-10-03)
+
+`LoomWorkshopArt` draws deterministic code-native pixel artwork inside shared chrome and preview bounds. `LoomScreenChrome` owns the reserved brand header and bounded status footer. `LoomWorkspaceLayout` reserves 36/56 header units and expands tool labels only in spacious profiles. Smart Import owns source, settings, processed/atlas and candidate-player regions separately. `LoomCaptureFixtures` is called only by the opt-in development capture runner; it exercises real projects, thumbnails, conversion and image processing without adding production templates.

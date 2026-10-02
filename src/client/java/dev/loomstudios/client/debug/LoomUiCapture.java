@@ -4,6 +4,11 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.screen.CapeEditorScreen;
 import dev.loomstudios.client.screen.ElytraEditorScreen;
 import dev.loomstudios.client.screen.LoomHomeScreen;
+import dev.loomstudios.client.screen.LoomCodesScreen;
+import dev.loomstudios.client.screen.SmartImportScreen;
+import dev.loomstudios.client.project.LocalProjectLibrary;
+import dev.loomstudios.client.importing.PngImportAdapter;
+import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.PixelSelection;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
@@ -23,7 +28,9 @@ public final class LoomUiCapture {
             && Boolean.getBoolean("loom.uiCapture");
     private static final int[][] PROFILES = {{1920,1080,2}, {1920,1080,3}, {3440,1440,2}, {3440,1440,3}};
     private static int ticks, stage = -2, wait;
-    private static boolean pending, prepared;
+    private static boolean pending, prepared, fixturesPrepared;
+    private static Path fixturePath;
+    private static LoomProject fixtureProject;
     private LoomUiCapture() {}
     public static void tick(Minecraft client) {
         if (!ENABLED || pending) return;
@@ -39,19 +46,29 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 22) { System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 42) { System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (!fixturesPrepared) {
+                String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
+                for(int i=3;i>=0;i--) {
+                    var project = LoomCaptureFixtures.moon(names[i],i);
+                    var path = LocalProjectLibrary.save(project);
+                    if(i==0) { fixturePath=path; fixtureProject=project; }
+                }
+                ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+                fixturesPrepared=true;
+            }
             client.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
             client.getToastManager().clear();
             int profile = Math.min(stage / 2, 3);
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
-                int[] target = stage == 21 ? new int[]{854,480,2} : stage < 8 ? p : PROFILES[1];
+                int[] target = stage == 21 ? new int[]{854,480,2} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
                 client.options.guiScale().set(target[2]);
                 org.lwjgl.glfw.GLFW.glfwSetWindowSize(client.getWindow().handle(), target[0], target[1]);
                 client.resizeDisplay(); prepared = true; wait = 10; return;
             }
             if (stage != 20) {
-                client.options.guiScale().set(stage == 21 ? 2 : stage < 8 ? p[2] : 3);
+                client.options.guiScale().set(stage == 21 ? 2 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
                 client.resizeDisplay();
             }
             if (stage < 8) {
@@ -93,7 +110,24 @@ public final class LoomUiCapture {
                     call(screen,"updateInspectorVisibility");
                 }
             }
+            if (stage >= 22) {
+                ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+                int view=(stage-22)%5;
+                if(view==0) client.setScreen(new LoomHomeScreen());
+                else if(view<=2) {
+                    var screen=new LoomCodesScreen(new LoomHomeScreen(),fixtureProject); client.setScreen(screen);
+                    if(view==2) { set(screen,"workspace",enumValue(screen,"workspace","IMPORT")); call(screen,"updateWorkspaceVisibility"); }
+                } else {
+                    var screen=new SmartImportScreen(new LoomHomeScreen(),dev.loomstudios.project.CapeUvRegion.OUTSIDE);
+                    var source=LoomCaptureFixtures.source(fixtureProject);
+                    set(screen,"loaded",new PngImportAdapter.LoadedImage(Path.of("capture-moon.png"),source,source));
+                    set(screen,"status","Moon artwork ready to import");
+                    if(view==4) set(screen,"panelTab",enumValue(screen,"panelTab","PROCESSING"));
+                    client.setScreen(screen);
+                }
+            }
             if (stage == 19) {
+                ClientProjectWorkspace.apply(project -> dev.loomstudios.project.ProjectResizer.resizeCape(project,dev.loomstudios.project.CanvasResolution.STANDARD));
                 CapeEditorScreen screen = new CapeEditorScreen(new LoomHomeScreen()); client.setScreen(screen);
                 set(screen,"tool",enumValue(screen,"tool","SELECT")); call(screen,"updateButtonStates");
                 var canvas = (dev.loomstudios.client.ui.LoomCapeFaceWidget)field(screen,"canvasWidget").get(screen);
@@ -126,8 +160,15 @@ public final class LoomUiCapture {
                 if (w.getX() < 0 || w.getY() < 0 || w.getRight() > client.screen.width || w.getBottom() > client.screen.height - 20)
                     throw new IllegalStateException("Out of bounds: " + w.getClass().getSimpleName() + " " + w.getMessage().getString());
             }
+            var widgets=client.screen.children().stream().filter(c -> c instanceof AbstractWidget w && w.visible).map(c -> (AbstractWidget)c).toList();
+            for(int a=0;a<widgets.size();a++) for(int b=a+1;b<widgets.size();b++) {
+                var x=widgets.get(a); var y=widgets.get(b);
+                if(x.getX()<y.getRight() && x.getRight()>y.getX() && x.getY()<y.getBottom() && x.getBottom()>y.getY())
+                    throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
+            }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
+            String name = index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+                    : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
                 try { image.writeToFile(dir.resolve(name+".png")); System.out.println("LOOM_UI_CAPTURE " + name + " " + client.screen.width + "x" + client.screen.height); }

@@ -18,11 +18,11 @@ public record LoomWorkspaceLayout(
         boolean compact = width <= 700 || height <= 420;
         int margin = compact ? 4 : 8;
         int gap = compact ? 4 : 6;
-        int header = compact ? 22 : 26;
+        int header = compact ? 36 : 56;
         int nav = compact ? 24 : 28;
         int top = header + nav + gap;
         int bottom = height - 22;
-        int rail = compact ? 30 : 38;
+        int rail = compact ? 30 : 106;
         int rightWidth = compact ? 204 : Math.min(286, Math.max(230, width / 4));
         int right = width - margin;
         int rightLeft = right - rightWidth;

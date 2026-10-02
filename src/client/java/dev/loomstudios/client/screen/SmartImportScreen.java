@@ -5,6 +5,7 @@ import dev.loomstudios.client.importing.PngImportAdapter;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.palette.ColorPaletteLibrary;
 import dev.loomstudios.client.ui.LoomButton;
+import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -88,6 +89,7 @@ public final class SmartImportScreen extends Screen {
     private LoomImagePreviewWidget originalPreview;
     private LoomImagePreviewWidget processedPreview;
     private LoomImagePreviewWidget texturePreview;
+    private LoomPlayerPreviewWidget playerPreview;
 
     private LoomButton placementButton;
     private LoomButton keepAspectButton;
@@ -223,157 +225,51 @@ public final class SmartImportScreen extends Screen {
         processingControls.clear();
         compactMode = LoomUiTheme.compact(width, height);
 
-        int margin = compactMode ? 5 : 10;
+        int margin = compactMode ? 8 : 12;
         int gap = compactMode ? 5 : 8;
-        int headerHeight = compactMode ? 22 : 26;
-        int footerHeight = 18;
-
-        controlPanelWidth = compactMode
-                ? Math.max(174, Math.min(190, width / 3))
-                : Math.min(238, Math.max(205, width / 3));
-        controlPanelX = width - margin - controlPanelWidth;
-        controlPanelY = headerHeight + 5;
-        controlPanelHeight =
-                height - controlPanelY - footerHeight - 4;
-
-        int workLeft = margin;
-        int workTop = controlPanelY;
-        int workRight = controlPanelX - gap;
-        int workWidth = Math.max(180, workRight - workLeft);
-        int workHeight = controlPanelHeight;
-
-        int topPreviewHeight = compactMode
-                ? Math.max(92, workHeight / 2)
-                : Math.max(105, workHeight / 2);
-        int halfWidth = Math.max(82, (workWidth - gap) / 2);
-
-        originalPreview = addRenderableWidget(
-                new LoomImagePreviewWidget(
-                        workLeft,
-                        workTop,
-                        halfWidth,
-                        topPreviewHeight,
-                        Component.literal("Original"),
-                        this::originalImage,
-                        this::revision
-                )
-        );
-
-        processedPreview = addRenderableWidget(
-                new LoomImagePreviewWidget(
-                        workLeft + halfWidth + gap,
-                        workTop,
-                        workWidth - halfWidth - gap,
-                        topPreviewHeight,
-                        Component.literal("Processed"),
-                        this::processedImage,
-                        this::revision
-                )
-        );
-
-        texturePreview = addRenderableWidget(
-                new LoomImagePreviewWidget(
-                        workLeft,
-                        workTop + topPreviewHeight + gap,
-                        workWidth,
-                        Math.max(
-                                70,
-                                workHeight - topPreviewHeight - gap
-                        ),
-                        Component.literal(
-                                importTarget == ImportTarget.CAPE
-                                        ? "Cape Texture"
-                                        : "Elytra Texture"
-                        ),
-                        this::textureImage,
-                        this::revision
-                )
-        );
-
-        int left = controlPanelX + 5;
-        int right = controlPanelX + controlPanelWidth - 5;
-        int panelWidth = right - left;
-        int buttonHeight = compactMode ? 18 : 21;
-        int rowGap = compactMode ? 3 : 4;
+        int top = LoomScreenChrome.headerHeight(compactMode) + 6;
+        int bottom = height - 24;
+        int leftWidth = compactMode ? 140 : Math.min(230,width / 5);
+        int rightWidth = compactMode ? 164 : Math.min(280,width / 4);
+        int rightX = width - margin - rightWidth;
+        controlPanelX = margin + leftWidth + gap;
+        controlPanelY = top;
+        controlPanelWidth = rightX - gap - controlPanelX;
+        controlPanelHeight = compactMode ? 180 : 210;
+        int workWidth = controlPanelWidth;
+        int halfWidth = (workWidth - gap) / 2;
+        originalPreview = addRenderableWidget(new LoomImagePreviewWidget(
+                margin,top,leftWidth,bottom-top-25,Component.literal("Source image"),this::originalImage,this::revision));
+        int previewTop = top + controlPanelHeight + gap;
+        processedPreview = addRenderableWidget(new LoomImagePreviewWidget(
+                controlPanelX,previewTop,halfWidth,bottom-previewTop,Component.literal("Processed"),this::processedImage,this::revision));
+        texturePreview = addRenderableWidget(new LoomImagePreviewWidget(
+                controlPanelX+halfWidth+gap,previewTop,workWidth-halfWidth-gap,bottom-previewTop,
+                Component.literal(importTarget == ImportTarget.CAPE ? "Cape Texture" : "Wing Texture"),this::textureImage,this::revision));
+        playerPreview = addRenderableWidget(new LoomPlayerPreviewWidget(
+                rightX,top,rightWidth,bottom-top-48,this::candidateProject,
+                importTarget == ImportTarget.CAPE ? LoomPlayerPreviewWidget.Mode.CAPE : LoomPlayerPreviewWidget.Mode.ELYTRA));
+        placeAction(null,margin,bottom-20,leftWidth,20,"Choose PNG",LoomButton.Icon.IMAGE,this::choosePng);
+        int left = controlPanelX + 5, right = controlPanelX + controlPanelWidth - 5;
+        int panelWidth = right-left;
+        int buttonHeight = compactMode ? 18 : 21, rowGap = compactMode ? 3 : 4;
         int y = controlPanelY + 5;
-
-        placeAction(
-                null,
-                left,
-                y,
-                panelWidth,
-                buttonHeight,
-                "Choose PNG",
-                LoomButton.Icon.IMAGE,
-                this::choosePng
-        );
-        y += buttonHeight + rowGap;
-
         int halfTab = (panelWidth - 3) / 2;
-        placementTabButton = placeAction(
-                null,
-                left,
-                y,
-                halfTab,
-                buttonHeight,
-                "Placement",
-                LoomButton.Icon.MOVE,
-                () -> setPanelTab(PanelTab.PLACEMENT)
-        );
-        processingTabButton = placeAction(
-                null,
-                left + halfTab + 3,
-                y,
-                panelWidth - halfTab - 3,
-                buttonHeight,
-                "Processing",
-                LoomButton.Icon.GRADIENT,
-                () -> setPanelTab(PanelTab.PROCESSING)
-        );
+        placementTabButton = placeAction(null,left,y,halfTab,buttonHeight,"Placement",LoomButton.Icon.MOVE,
+                () -> setPanelTab(PanelTab.PLACEMENT));
+        processingTabButton = placeAction(null,left+halfTab+3,y,panelWidth-halfTab-3,buttonHeight,"Processing",LoomButton.Icon.GRADIENT,
+                () -> setPanelTab(PanelTab.PROCESSING));
         y += buttonHeight + rowGap + 2;
 
         buildPlacementTab(left, y, panelWidth, buttonHeight, rowGap);
         buildProcessingTab(left, y, panelWidth, buttonHeight, rowGap);
 
-        int bottomH = compactMode ? 18 : 21;
-        int bottom = controlPanelY + controlPanelHeight - 5;
-
-        applyButton = placeAction(
-                null,
-                left,
-                bottom - bottomH,
-                panelWidth,
-                bottomH,
-                editingLayerId == null
-                        ? "Apply as Image Layer"
-                        : "Apply Changes",
-                LoomButton.Icon.EQUIP,
-                this::applyImport
-        );
+        applyButton = placeAction(null,rightX,bottom-44,rightWidth,20,
+                editingLayerId == null ? "Apply as Image Layer" : "Apply Changes",LoomButton.Icon.EQUIP,this::applyImport);
         applyButton.setPrimary(true);
-        bottom -= bottomH + 3;
-
-        int half = (panelWidth - 3) / 2;
-        preview3dButton = placeAction(
-                null,
-                left,
-                bottom - bottomH,
-                half,
-                bottomH,
-                "3D Preview",
-                LoomButton.Icon.CAPE,
-                this::open3dPreview
-        );
-        placeAction(
-                null,
-                left + half + 3,
-                bottom - bottomH,
-                panelWidth - half - 3,
-                bottomH,
-                "Cancel",
-                LoomButton.Icon.BACK,
-                () -> minecraft.setScreen(parent)
-        );
+        int half = (rightWidth-3)/2;
+        preview3dButton = placeAction(null,rightX,bottom-20,half,20,"Full preview",LoomButton.Icon.CAPE,this::open3dPreview);
+        placeAction(null,rightX+half+3,bottom-20,rightWidth-half-3,20,"Cancel",LoomButton.Icon.BACK,() -> minecraft.setScreen(parent));
 
         updatePanelVisibility();
         updateButtonLabels();
@@ -1381,19 +1277,19 @@ public final class SmartImportScreen extends Screen {
                 "Levels " + processing.posterizeLevels()
         ));
         brightnessButton.setMessage(Component.literal(
-                percent(processing.brightness())
+                "Brightness " + percent(processing.brightness())
         ));
         contrastButton.setMessage(Component.literal(
-                percent(processing.contrast())
+                "Contrast " + percent(processing.contrast())
         ));
         saturationButton.setMessage(Component.literal(
-                percent(processing.saturation())
+                "Saturation " + percent(processing.saturation())
         ));
         scaleButton.setMessage(Component.literal(
-                Math.round(scale * 100.0) + "%"
+                "Scale " + Math.round(scale * 100.0) + "%"
         ));
         rotationButton.setMessage(Component.literal(
-                Math.round(rotationDegrees) + "°"
+                "Rotate " + Math.round(rotationDegrees) + "°"
         ));
         mirrorHorizontalButton.setMessage(Component.literal(
                 "Mirror H: " + (mirrorHorizontal ? "On" : "Off")

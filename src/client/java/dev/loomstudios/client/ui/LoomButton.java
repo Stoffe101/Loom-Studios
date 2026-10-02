@@ -163,7 +163,7 @@ public class LoomButton extends AbstractButton {
                 ? (hot ? 0xFFFF7180 : LoomUiTheme.DANGER)
                 : (selected || primary || hot)
                         ? LoomUiTheme.ACCENT
-                        : background;
+                        : LoomUiTheme.BORDER_SOFT;
 
         graphics.fill(
                 getX(),
@@ -180,6 +180,11 @@ public class LoomButton extends AbstractButton {
                 background
         );
 
+        if (selected || primary || hot) {
+            graphics.fill(getX()+2,getY()+2,getRight()-2,getY()+3,0xAA58D8ED);
+            graphics.fill(getX()+2,getBottom()-3,getRight()-2,getBottom()-2,0x663BB9DD);
+        }
+        graphics.fill(getX()+2,getBottom()-2,getRight()-2,getBottom()-1,0xFF101A2A);
         // Raised top edge is quiet; active edges alone carry colour.
         graphics.fill(getX() + 1, getY() + 1, getRight() - 1, getY() + 2, hot || selected || primary ? 0x5545CADA : 0x223E5878);
         if (selected) {

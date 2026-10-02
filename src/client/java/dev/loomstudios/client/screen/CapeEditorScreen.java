@@ -321,7 +321,7 @@ public final class CapeEditorScreen extends Screen {
                 "Pencil", LoomButton.Icon.PENCIL,
                 () -> setTool(Tool.PENCIL)
         );
-        pencilButton.setIconOnly(true);
+        pencilButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         eraserButton = iconButton(
@@ -329,7 +329,7 @@ public final class CapeEditorScreen extends Screen {
                 "Eraser", LoomButton.Icon.ERASER,
                 () -> setTool(Tool.ERASER)
         );
-        eraserButton.setIconOnly(true);
+        eraserButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         fillButton = iconButton(
@@ -337,7 +337,7 @@ public final class CapeEditorScreen extends Screen {
                 "Fill", LoomButton.Icon.FILL,
                 () -> setTool(Tool.FILL)
         );
-        fillButton.setIconOnly(true);
+        fillButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         eyedropperButton = iconButton(
@@ -345,7 +345,7 @@ public final class CapeEditorScreen extends Screen {
                 "Eyedropper", LoomButton.Icon.EYEDROPPER,
                 () -> setTool(Tool.EYEDROPPER)
         );
-        eyedropperButton.setIconOnly(true);
+        eyedropperButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         selectButton = iconButton(
@@ -353,7 +353,7 @@ public final class CapeEditorScreen extends Screen {
                 "Select", LoomButton.Icon.SELECT,
                 () -> setTool(Tool.SELECT)
         );
-        selectButton.setIconOnly(true);
+        selectButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         lineButton = iconButton(
@@ -361,7 +361,7 @@ public final class CapeEditorScreen extends Screen {
                 "Line", LoomButton.Icon.LINE,
                 () -> setTool(Tool.LINE)
         );
-        lineButton.setIconOnly(true);
+        lineButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
 
         rectangleButton = iconButton(
@@ -369,7 +369,7 @@ public final class CapeEditorScreen extends Screen {
                 "Rectangle", LoomButton.Icon.RECTANGLE,
                 () -> setTool(Tool.RECTANGLE)
         );
-        rectangleButton.setIconOnly(true);
+        rectangleButton.setIconOnly(compactMode);
     }
 
     private void buildCanvasToolbar(int toolbarHeight) {

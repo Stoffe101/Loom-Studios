@@ -147,7 +147,7 @@ public final class LoomHomeScreen extends Screen {
                 y,
                 width,
                 cardHeight,
-                Component.literal("Create New Cape"),
+                Component.literal(compactMode ? "New Cape" : "Create New Cape"),
                 Component.literal("Start from scratch"),
                 LoomActionCard.Icon.CAPE,
                 true,

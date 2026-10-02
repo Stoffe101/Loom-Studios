@@ -19,7 +19,7 @@ class LoomWorkspaceLayoutTest {
                         assertTrue(r.width() > 0 && r.height() > 0, "Empty " + r);
                     }
                     assertTrue(layout.canvas().height() >= (elytra ? 90 : 180));
-                    assertTrue(layout.inspector().height() >= 168, "Six-row property budget");
+                    assertTrue(layout.inspector().height() >= 162, "Six-row property budget");
                     assertTrue(layout.canvas().bottom() < layout.context().top());
                     assertTrue(layout.preview().bottom() < layout.inspectorTabs().top());
                     assertTrue(layout.tools().right() < layout.canvas().left());

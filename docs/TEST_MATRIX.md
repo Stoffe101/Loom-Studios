@@ -844,3 +844,8 @@ Implementation base: `f49ddb2e9727e16d3e6438772534f278d0520a38`; verified source
 - Optional mods, shaders, multiplayer and full interactive workflow: NOT RUN for this repair.
 
 The opt-in development capture checks every visible widget against the window/footer bounds and records Cape/Elytra at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Inspect selection outline, context row, property pages, cached wing composition, preview and timeline; geometry tests alone do not establish reference fidelity.
+
+
+## 2026-10-03 workshop styling gate (pending)
+
+Run 42 actual Minecraft captures: existing 22 editor scenarios, plus Home, Share Export, Share Import, Smart Import Placement and Smart Import Processing at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Assert every visible widget is bounded and pairwise nonoverlapping. Inspect brand sign, timber/metal edges, inset selected highlights, preview scenery, source/result previews, readable tab/stepper labels and status plaque. Retained PNGs must be fresh (CI deletes the prior set) and decode completely.

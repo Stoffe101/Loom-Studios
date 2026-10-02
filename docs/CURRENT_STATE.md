@@ -4,6 +4,10 @@
 **Target:** Minecraft Java Edition 1.21.11 / Fabric  
 **Active product phase:** Phase 2–5 — editor productization
 
+## Active workshop pass
+
+2026-10-03: five-screen styling and acceptance is IN PROGRESS on draft PR #14. Shared timber/steel/lantern/pennant/wordmark artwork, scenic live previews and revised Smart Import are implemented; 42-screen profile capture/build verification is pending. Prior editor evidence is historical for this new styling pass. See the newest PASS_LOG entry.
+
 ## Overall status
 
 The Minecraft/Fabric feasibility phase is complete enough to support normal product development.
