@@ -784,3 +784,82 @@ Floyd-Steinberg dithering:
 This prevents invisible/transparent areas from becoming color bridges during import processing.
 
 Posterize and Monochrome follow the same alpha-preservation rule.
+
+## ADR-070 — Schema v2 introduces typed layers with explicit v1 migration
+**Status:** Accepted / implemented
+
+Schema v2 coordinates the previously deferred structural changes instead of patching schema v1 piecemeal.
+
+Schema-v2 layers have:
+- stable layer-kind string IDs;
+- stable blend-mode string IDs;
+- persistent lock state;
+- type-specific payloads.
+
+Current kinds:
+- Paint;
+- Image;
+- Gradient.
+
+Schema-v1 bytes retain their original decoder and blend ordinals. Loading a v1 project explicitly migrates its Paint layers into an equivalent v2 project with lock disabled.
+
+Unknown schema versions remain rejected.
+
+## ADR-071 — Image layers preserve editable source, transform and processing intent
+**Status:** Accepted / implemented
+
+Smart Import never silently flattens imported artwork into Paint pixels.
+
+A schema-v2 Image layer owns:
+- bounded embedded source pixels;
+- normalized source crop;
+- normalized destination transform;
+- semantic clip;
+- processing mode/settings;
+- optional palette.
+
+Runtime/editor rasters are compiled products only.
+
+This keeps Fit/Crop/position/scale/rotation/mirror/color-processing choices editable after save/reopen.
+
+## ADR-072 — Typed-layer transforms are normalized to the Loom canvas
+**Status:** Accepted / implemented
+
+Image and Gradient layer placement is stored in normalized canvas coordinates.
+
+Consequences:
+- 1x / 2x / 4x project resolution changes preserve authored placement;
+- typed layers do not need destructive pixel resampling when only the Loom backing resolution changes;
+- arbitrary destination rotation is a persistent transform property;
+- semantic target clipping remains independent of the source asset resolution.
+
+Paint layers continue to resize their backing pixels when the project resolution changes.
+
+## ADR-073 — Smart Import candidate preview is isolated from equipped/network state
+**Status:** Accepted / implemented
+
+The Smart Import workspace may build and preview a temporary candidate project before Apply.
+
+That candidate is allowed to feed:
+- Original/Processed/Texture previews;
+- the scoped 3D preview.
+
+It must not:
+- replace the editable workspace project before Apply;
+- equip the project;
+- publish a multiplayer hash.
+
+Applying commits the Image-layer edit into normal ProjectSession history. Save and Save + Equip keep their existing separate semantics.
+
+## ADR-074 — Persisted Image sources are bounded independently from processing sources
+**Status:** Accepted / implemented
+
+The processing pipeline may temporarily accept images up to its common-core safety limits.
+
+Persisted Image-layer source data is stricter:
+- maximum 256 pixels per dimension;
+- nearest-neighbor downscale before persistence when required;
+- final project encode must still fit the 1 MiB `.loom` limit.
+
+This prevents a single imported image from bypassing project/network size bounds while preserving a larger temporary source for the guided import workflow.
+
