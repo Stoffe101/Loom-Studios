@@ -131,9 +131,24 @@ public final class PlayerCosmeticRenderer {
                         state.skin.cape().texturePath()
                 );
 
-        if (bundle == null
-                || bundle.project.cape().layers().stream()
-                        .noneMatch(layer -> layer.emissive())) {
+        if (bundle == null) {
+            return null;
+        }
+
+        boolean hasStaticEmissive =
+                bundle.project.cape().layers().stream()
+                        .anyMatch(layer -> layer.emissive());
+        boolean hasAnimatedEmissive =
+                bundle.project.animation().tracks().stream()
+                        .anyMatch(track ->
+                                track.enabled()
+                                        && track.channel()
+                                        == dev.loomstudios.project.AnimationChannel.CAPE
+                                        && track.effect()
+                                        == dev.loomstudios.project.AnimationEffectType.EMISSIVE_GLOW
+                        );
+
+        if (!hasStaticEmissive && !hasAnimatedEmissive) {
             return null;
         }
 
