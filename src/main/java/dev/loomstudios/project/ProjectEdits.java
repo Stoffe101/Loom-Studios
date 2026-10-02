@@ -1010,6 +1010,82 @@ public final class ProjectEdits {
         );
     }
 
+    public static LoomProject addElytraPaintLayer(
+            LoomProject project,
+            String name,
+            int[] pixels
+    ) {
+        LoomCanvas canvas = project.elytra();
+        ensureLayerCapacity(canvas);
+
+        if (pixels == null
+                || pixels.length != canvas.width() * canvas.height()) {
+            throw new IllegalArgumentException(
+                    "Elytra paint layer pixel count does not match canvas"
+            );
+        }
+
+        LoomLayer layer = LoomLayer.paint(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                pixels
+        );
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(layer);
+
+        return project.withElytra(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject addElytraImageLayer(
+            LoomProject project,
+            String name,
+            ImageLayerData data
+    ) {
+        LoomCanvas canvas = project.elytra();
+        ensureLayerCapacity(canvas);
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(LoomLayer.image(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                java.util.Objects.requireNonNull(data, "data")
+        ));
+
+        return project.withElytra(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject setElytraImageData(
+            LoomProject project,
+            UUID layerId,
+            ImageLayerData data
+    ) {
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> {
+                    requireUnlockedKind(layer, LayerKind.IMAGE);
+                    return layer.withImageData(
+                            java.util.Objects.requireNonNull(data, "data")
+                    );
+                }
+        );
+    }
+
     public static LoomProject duplicateElytraLayer(
             LoomProject project,
             UUID layerId

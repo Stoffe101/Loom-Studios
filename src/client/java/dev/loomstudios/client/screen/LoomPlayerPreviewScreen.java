@@ -61,12 +61,23 @@ public final class LoomPlayerPreviewScreen extends Screen {
             Screen parent,
             Supplier<LoomProject> previewProjectSupplier
     ) {
+        this(parent, previewProjectSupplier, false);
+    }
+
+    public LoomPlayerPreviewScreen(
+            Screen parent,
+            Supplier<LoomProject> previewProjectSupplier,
+            boolean startInElytraMode
+    ) {
         super(TITLE);
         this.parent = parent;
         this.previewProjectSupplier = Objects.requireNonNull(
                 previewProjectSupplier,
                 "previewProjectSupplier"
         );
+        this.mode = startInElytraMode
+                ? PreviewMode.ELYTRA
+                : PreviewMode.CAPE;
     }
 
     @Override

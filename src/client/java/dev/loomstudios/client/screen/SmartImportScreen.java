@@ -14,6 +14,7 @@ import dev.loomstudios.image.ImageProcessingSettings;
 import dev.loomstudios.image.PixelImage;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
+import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.ImageLayerData;
 import dev.loomstudios.project.LayerTransform;
 import dev.loomstudios.project.LoomCanvas;
@@ -38,6 +39,15 @@ import java.util.UUID;
 public final class SmartImportScreen extends Screen {
     private static final UUID PREVIEW_LAYER_ID =
             UUID.fromString("00000000-0000-4000-8000-00000000a11e");
+    private static final UUID PREVIEW_LAYER_ID_RIGHT =
+            UUID.fromString("00000000-0000-4000-8000-00000000a11f");
+
+    private enum ImportTarget {
+        CAPE,
+        ELYTRA_LINKED,
+        ELYTRA_SINGLE
+    }
+
     private static final int[] COLOR_LIMITS = {
             0, 4, 8, 16, 32, 64, 128, 256
     };
@@ -45,6 +55,7 @@ public final class SmartImportScreen extends Screen {
     private final Screen parent;
     private final CapeUvRegion targetRegion;
     private final UUID editingLayerId;
+    private final ImportTarget importTarget;
 
     private PngImportAdapter.LoadedImage loaded;
     private ImageLayerData editingBaseData;
@@ -95,7 +106,13 @@ public final class SmartImportScreen extends Screen {
     private int controlPanelHeight;
 
     public SmartImportScreen(Screen parent, CapeUvRegion targetRegion) {
-        this(parent, targetRegion, null, null);
+        this(
+                parent,
+                targetRegion,
+                null,
+                null,
+                ImportTarget.CAPE
+        );
     }
 
     public SmartImportScreen(
@@ -104,12 +121,56 @@ public final class SmartImportScreen extends Screen {
             UUID editingLayerId,
             LoomLayer editingLayer
     ) {
+        this(
+                parent,
+                targetRegion,
+                editingLayerId,
+                editingLayer,
+                ImportTarget.CAPE
+        );
+    }
+
+    public static SmartImportScreen forElytra(Screen parent) {
+        return new SmartImportScreen(
+                parent,
+                null,
+                null,
+                null,
+                ImportTarget.ELYTRA_LINKED
+        );
+    }
+
+    public static SmartImportScreen forElytraLayer(
+            Screen parent,
+            UUID editingLayerId,
+            LoomLayer editingLayer
+    ) {
+        return new SmartImportScreen(
+                parent,
+                null,
+                editingLayerId,
+                editingLayer,
+                ImportTarget.ELYTRA_SINGLE
+        );
+    }
+
+    private SmartImportScreen(
+            Screen parent,
+            CapeUvRegion targetRegion,
+            UUID editingLayerId,
+            LoomLayer editingLayer,
+            ImportTarget importTarget
+    ) {
         super(Component.literal("Loom Studios - Smart Import"));
         this.parent = parent;
         this.targetRegion = targetRegion == null
                 ? CapeUvRegion.OUTSIDE
                 : targetRegion;
         this.editingLayerId = editingLayerId;
+        this.importTarget = java.util.Objects.requireNonNull(
+                importTarget,
+                "importTarget"
+        );
 
         if (editingLayer != null) {
             if (editingLayer.kind()
@@ -136,6 +197,8 @@ public final class SmartImportScreen extends Screen {
             );
             this.status = "Editing Image layer: "
                     + editingLayer.name();
+        } else if (this.importTarget == ImportTarget.ELYTRA_LINKED) {
+            this.status = "Choose a PNG for linked Elytra wings";
         }
     }
 
@@ -564,9 +627,11 @@ public final class SmartImportScreen extends Screen {
     }
 
     private void move(int dx, int dy) {
-        LoomProject project = ClientProjectWorkspace.project();
-        offsetX += dx / (double)project.cape().width();
-        offsetY += dy / (double)project.cape().height();
+        LoomCanvas canvas = targetCanvas(
+                ClientProjectWorkspace.project()
+        );
+        offsetX += dx / (double)canvas.width();
+        offsetY += dy / (double)canvas.height();
         touch();
     }
 
@@ -712,36 +777,77 @@ public final class SmartImportScreen extends Screen {
             return;
         }
 
-        ImageLayerData data = buildImageData();
-        processedCache = ImageProcessingPipeline.apply(
-                data.source(),
-                data.processing()
-        );
-
         LoomProject project = ClientProjectWorkspace.project();
-        LoomLayer previewLayer = LoomLayer.image(
-                PREVIEW_LAYER_ID,
-                "Smart Import Preview",
-                true,
-                1.0F,
-                dev.loomstudios.project.BlendMode.NORMAL,
-                false,
-                false,
-                data
+        LoomCanvas canvas = targetCanvas(project);
+        ImageLayerData primary = buildImageData(
+                primaryTargetRect(project),
+                false
         );
 
+        processedCache = ImageProcessingPipeline.apply(
+                primary.source(),
+                primary.processing()
+        );
+
+        LoomLayer previewLayer = previewLayer(
+                PREVIEW_LAYER_ID,
+                primary
+        );
         int[] raster = LayerRasterizer.rasterize(
                 previewLayer,
-                project.cape().width(),
-                project.cape().height()
-        );
-        textureCache = new PixelImage(
-                project.cape().width(),
-                project.cape().height(),
-                raster
+                canvas.width(),
+                canvas.height()
         );
 
-        if (editingLayerId != null) {
+        if (importTarget == ImportTarget.ELYTRA_LINKED) {
+            ImageLayerData secondary = buildImageData(
+                    ElytraWing.RIGHT.normalizedRect(project.elytra()),
+                    true
+            );
+            LoomLayer rightPreview = previewLayer(
+                    PREVIEW_LAYER_ID_RIGHT,
+                    secondary
+            );
+            int[] rightRaster = LayerRasterizer.rasterize(
+                    rightPreview,
+                    canvas.width(),
+                    canvas.height()
+            );
+
+            for (int i = 0; i < raster.length; i++) {
+                if (((rightRaster[i] >>> 24) & 0xFF) != 0) {
+                    raster[i] = rightRaster[i];
+                }
+            }
+
+            LoomProject candidate = ProjectEdits.addElytraImageLayer(
+                    project,
+                    "Smart Import Left",
+                    primary
+            );
+            candidate = ProjectEdits.addElytraImageLayer(
+                    candidate,
+                    "Smart Import Right",
+                    secondary
+            );
+            candidateProjectCache = candidate;
+        } else if (importTarget == ImportTarget.ELYTRA_SINGLE) {
+            LoomLayer current = project.elytra().layers().stream()
+                    .filter(layer -> layer.id().equals(editingLayerId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (current != null
+                    && current.kind()
+                    == dev.loomstudios.project.LayerKind.IMAGE) {
+                candidateProjectCache = project.withElytra(
+                        project.elytra().replaceLayer(
+                                editingLayerId,
+                                current.withImageData(primary)
+                        )
+                );
+            }
+        } else if (editingLayerId != null) {
             LoomLayer current = project.cape().layers().stream()
                     .filter(layer -> layer.id().equals(editingLayerId))
                     .findFirst()
@@ -753,27 +859,56 @@ public final class SmartImportScreen extends Screen {
                 candidateProjectCache = project.withCape(
                         project.cape().replaceLayer(
                                 editingLayerId,
-                                current.withImageData(data)
+                                current.withImageData(primary)
                         )
                 );
-                return;
             }
+        } else {
+            ArrayList<LoomLayer> layers =
+                    new ArrayList<>(project.cape().layers());
+            layers.add(previewLayer);
+
+            candidateProjectCache = project.withCape(
+                    new LoomCanvas(
+                            project.cape().width(),
+                            project.cape().height(),
+                            layers
+                    )
+            );
         }
 
-        ArrayList<LoomLayer> layers =
-                new ArrayList<>(project.cape().layers());
-        layers.add(previewLayer);
+        textureCache = new PixelImage(
+                canvas.width(),
+                canvas.height(),
+                raster
+        );
+    }
 
-        candidateProjectCache = project.withCape(
-                new LoomCanvas(
-                        project.cape().width(),
-                        project.cape().height(),
-                        layers
-                )
+    private LoomLayer previewLayer(
+            UUID id,
+            ImageLayerData data
+    ) {
+        return LoomLayer.image(
+                id,
+                "Smart Import Preview",
+                true,
+                1.0F,
+                dev.loomstudios.project.BlendMode.NORMAL,
+                false,
+                false,
+                data
         );
     }
 
     private ImageLayerData buildImageData() {
+        LoomProject project = ClientProjectWorkspace.project();
+        return buildImageData(primaryTargetRect(project), false);
+    }
+
+    private ImageLayerData buildImageData(
+            NormalizedRect target,
+            boolean forceMirrorHorizontal
+    ) {
         if (loaded == null) {
             throw new IllegalStateException(
                     "No Smart Import image is loaded"
@@ -781,19 +916,21 @@ public final class SmartImportScreen extends Screen {
         }
 
         LoomProject project = ClientProjectWorkspace.project();
-        NormalizedRect target = targetRect(project);
+        LoomCanvas canvas = targetCanvas(project);
 
         ImagePlacementMode effectiveMode =
                 !keepAspect && placementMode == ImagePlacementMode.FIT
                         ? ImagePlacementMode.STRETCH
                         : placementMode;
 
-        ImageLayerData base = editingBaseData != null
+        ImageLayerData base =
+                editingBaseData != null
+                        && importTarget != ImportTarget.ELYTRA_LINKED
                 ? editingBaseData
                 : ImageLayerData.placed(
                         loaded.embedded(),
-                        project.cape().width(),
-                        project.cape().height(),
+                        canvas.width(),
+                        canvas.height(),
                         target,
                         effectiveMode
                 );
@@ -805,7 +942,7 @@ public final class SmartImportScreen extends Screen {
                 transform.width() * scale,
                 transform.height() * scale,
                 rotationDegrees,
-                mirrorHorizontal,
+                mirrorHorizontal ^ forceMirrorHorizontal,
                 mirrorVertical
         );
 
@@ -818,21 +955,36 @@ public final class SmartImportScreen extends Screen {
         );
     }
 
-    private NormalizedRect targetRect(LoomProject project) {
-        int scale = CanvasResolution.fromCanvas(
-                project.cape()
-        ).scale();
+    private LoomCanvas targetCanvas(LoomProject project) {
+        return importTarget == ImportTarget.CAPE
+                ? project.cape()
+                : project.elytra();
+    }
 
-        return new NormalizedRect(
-                targetRegion.atlasX(0, scale)
-                        / (double)project.cape().width(),
-                targetRegion.atlasY(0, scale)
-                        / (double)project.cape().height(),
-                targetRegion.width(scale)
-                        / (double)project.cape().width(),
-                targetRegion.height(scale)
-                        / (double)project.cape().height()
-        );
+    private NormalizedRect primaryTargetRect(LoomProject project) {
+        if (importTarget == ImportTarget.CAPE) {
+            int scale = CanvasResolution.fromCanvas(
+                    project.cape()
+            ).scale();
+
+            return new NormalizedRect(
+                    targetRegion.atlasX(0, scale)
+                            / (double)project.cape().width(),
+                    targetRegion.atlasY(0, scale)
+                            / (double)project.cape().height(),
+                    targetRegion.width(scale)
+                            / (double)project.cape().width(),
+                    targetRegion.height(scale)
+                            / (double)project.cape().height()
+            );
+        }
+
+        if (importTarget == ImportTarget.ELYTRA_SINGLE
+                && editingBaseData != null) {
+            return editingBaseData.clip();
+        }
+
+        return ElytraWing.LEFT.normalizedRect(project.elytra());
     }
 
     private void open3dPreview() {
@@ -843,7 +995,8 @@ public final class SmartImportScreen extends Screen {
         this.minecraft.setScreen(
                 new LoomPlayerPreviewScreen(
                         this,
-                        this::candidateProject
+                        this::candidateProject,
+                        importTarget != ImportTarget.CAPE
                 )
         );
     }
@@ -853,7 +1006,7 @@ public final class SmartImportScreen extends Screen {
             return;
         }
 
-        ImageLayerData data = buildImageData();
+        ImageLayerData primary = buildImageData();
         String baseName = layerName;
         int dot = baseName.lastIndexOf('.');
         String normalizedLayerName = dot > 0
@@ -861,16 +1014,49 @@ public final class SmartImportScreen extends Screen {
                 : baseName;
 
         try {
-            if (editingLayerId == null) {
+            if (importTarget == ImportTarget.ELYTRA_LINKED) {
+                LoomProject project = ClientProjectWorkspace.project();
+                ImageLayerData right = buildImageData(
+                        ElytraWing.RIGHT.normalizedRect(project.elytra()),
+                        true
+                );
+
+                ClientProjectWorkspace.apply(current -> {
+                    LoomProject updated =
+                            ProjectEdits.addElytraImageLayer(
+                                    current,
+                                    normalizedLayerName + " Left",
+                                    primary
+                            );
+                    updated = ProjectEdits.addElytraImageLayer(
+                            updated,
+                            normalizedLayerName + " Right",
+                            right
+                    );
+                    updated.encode();
+                    return updated;
+                });
+                status = "Imported as linked editable Elytra Image layers";
+            } else if (importTarget == ImportTarget.ELYTRA_SINGLE) {
+                ClientProjectWorkspace.apply(project -> {
+                    LoomProject updated =
+                            ProjectEdits.setElytraImageData(
+                                    project,
+                                    editingLayerId,
+                                    primary
+                            );
+                    updated.encode();
+                    return updated;
+                });
+                status = "Updated editable Elytra Image layer";
+            } else if (editingLayerId == null) {
                 ClientProjectWorkspace.apply(project -> {
                     LoomProject updated =
                             ProjectEdits.addCapeImageLayer(
                                     project,
                                     normalizedLayerName,
-                                    data
+                                    primary
                             );
-                    // Fail before mutating workspace state if this embedded
-                    // source would make the project unsavable/network-invalid.
                     updated.encode();
                     return updated;
                 });
@@ -881,7 +1067,7 @@ public final class SmartImportScreen extends Screen {
                             ProjectEdits.setCapeImageData(
                                     project,
                                     editingLayerId,
-                                    data
+                                    primary
                             );
                     updated.encode();
                     return updated;
@@ -898,12 +1084,13 @@ public final class SmartImportScreen extends Screen {
             return;
         }
 
-        if (parent instanceof CapeEditorScreen) {
+        if (parent instanceof CapeEditorScreen
+                || parent instanceof ElytraEditorScreen) {
             this.minecraft.setScreen(parent);
+        } else if (importTarget == ImportTarget.CAPE) {
+            this.minecraft.setScreen(new CapeEditorScreen(parent));
         } else {
-            this.minecraft.setScreen(
-                    new CapeEditorScreen(parent)
-            );
+            this.minecraft.setScreen(new ElytraEditorScreen(parent));
         }
     }
 
@@ -1015,7 +1202,11 @@ public final class SmartImportScreen extends Screen {
 
         graphics.drawString(
                 this.font,
-                Component.literal("Smart Import"),
+                Component.literal(
+                        importTarget == ImportTarget.CAPE
+                                ? "Smart Import"
+                                : "Smart Import • Elytra"
+                ),
                 18,
                 17,
                 LoomUiTheme.TEXT,
