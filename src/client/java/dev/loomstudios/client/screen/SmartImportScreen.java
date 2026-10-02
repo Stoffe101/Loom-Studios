@@ -3,6 +3,7 @@ package dev.loomstudios.client.screen;
 import dev.loomstudios.LoomStudios;
 import dev.loomstudios.client.importing.PngImportAdapter;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
+import dev.loomstudios.client.palette.ColorPaletteLibrary;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -74,6 +75,7 @@ public final class SmartImportScreen extends Screen {
     private LoomButton keepAspectButton;
     private LoomButton modeButton;
     private LoomButton ditherButton;
+    private LoomButton paletteButton;
     private LoomButton colorLimitButton;
     private LoomButton posterizeButton;
     private LoomButton brightnessButton;
@@ -330,6 +332,13 @@ public final class SmartImportScreen extends Screen {
         );
         controls.addChild(modeButton);
 
+        paletteButton = button(
+                contentWidth,
+                "",
+                this::toggleSelectedPalette
+        );
+        controls.addChild(paletteButton);
+
         controls.addChild(adjustmentRow(
                 contentWidth,
                 "Brightness",
@@ -579,6 +588,29 @@ public final class SmartImportScreen extends Screen {
                 processing.mode().next()
         );
         touch();
+    }
+
+    private void toggleSelectedPalette() {
+        if (!processing.palette().isEmpty()) {
+            processing = processing.withPalette(java.util.List.of());
+            touch();
+            return;
+        }
+
+        ColorPaletteLibrary.refresh();
+        ColorPaletteLibrary.selected().ifPresentOrElse(
+                palette -> {
+                    processing = processing.withPalette(palette.colors());
+                    processing = processing.withMode(
+                            ImageProcessingMode.PALETTE_LIMITED
+                    );
+                    touch();
+                },
+                () -> {
+                    status = "No saved Swatches palette is available";
+                    updateButtonLabels();
+                }
+        );
     }
 
     private void changeBrightness(float delta) {
@@ -904,6 +936,14 @@ public final class SmartImportScreen extends Screen {
         ditherButton.setMessage(Component.literal(
                 "Dither: " + (processing.dither() ? "On" : "Off")
         ));
+        paletteButton.setMessage(Component.literal(
+                processing.palette().isEmpty()
+                        ? "Palette: Auto"
+                        : "Palette: Swatches ("
+                                + processing.palette().size()
+                                + ")"
+        ));
+        paletteButton.active = hasImage;
         colorLimitButton.setMessage(Component.literal(
                 processing.colorLimit() == 0
                         ? "Colors: Auto"
