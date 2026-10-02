@@ -33,6 +33,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -1379,6 +1380,40 @@ public final class CapeEditorScreen extends Screen {
         updateButtonStates();
     }
 
+    private void addGradientLayer() {
+        LoomProject project = ClientProjectWorkspace.project();
+        NormalizedRect target = activeFaceRect(project);
+        int complement = (selectedColor & 0xFF000000)
+                | ((~selectedColor) & 0x00FFFFFF);
+
+        GradientLayerData gradient =
+                GradientLayerData.defaultLinear(
+                        selectedColor,
+                        complement,
+                        target
+                );
+
+        var result = ClientProjectWorkspace.apply(current ->
+                ProjectEdits.addCapeGradientLayer(
+                        current,
+                        "Gradient",
+                        gradient
+                )
+        );
+
+        selectedLayerId = result.cape().layers().getLast().id();
+        this.selection = null;
+        syncLayerFields();
+        updateButtonStates();
+    }
+
+    private void openSmartImport() {
+        this.selection = null;
+        this.minecraft.setScreen(
+                new SmartImportScreen(this, this.capeRegion)
+        );
+    }
+
     private void duplicateLayer() {
         ensureSelectedLayerExists();
 
@@ -1512,6 +1547,149 @@ public final class CapeEditorScreen extends Screen {
                 )
         );
         updateButtonStates();
+    }
+
+    private void toggleLayerLock() {
+        LoomLayer layer = selectedLayer();
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerLocked(
+                        project,
+                        selectedLayerId,
+                        !layer.locked()
+                )
+        );
+
+        this.selection = null;
+        updateButtonStates();
+    }
+
+    private void cycleGradientType() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withType(gradient.type().next())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void rotateGradient(double delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        double next = normalizeDegrees(
+                gradient.transform().rotationDegrees() + delta
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withTransform(
+                                gradient.transform().withRotation(next)
+                        )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void setGradientEndpoint(boolean start) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+
+        int index = start ? 0 : stops.size() - 1;
+        GradientStop previous = stops.get(index);
+        stops.set(
+                index,
+                new GradientStop(
+                        previous.position(),
+                        selectedColor
+                )
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void toggleGradientRepeat() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withRepeat(!gradient.repeat())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void toggleGradientDither() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withDither(!gradient.dither())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private NormalizedRect activeFaceRect(LoomProject project) {
+        int scale = CanvasResolution.fromCanvas(
+                project.cape()
+        ).scale();
+
+        return new NormalizedRect(
+                capeRegion.atlasX(0, scale)
+                        / (double)project.cape().width(),
+                capeRegion.atlasY(0, scale)
+                        / (double)project.cape().height(),
+                capeRegion.width(scale)
+                        / (double)project.cape().width(),
+                capeRegion.height(scale)
+                        / (double)project.cape().height()
+        );
+    }
+
+    private static double normalizeDegrees(double degrees) {
+        double normalized = degrees % 360.0;
+        return normalized < 0.0
+                ? normalized + 360.0
+                : normalized;
     }
 
     private void syncLayerFields() {
