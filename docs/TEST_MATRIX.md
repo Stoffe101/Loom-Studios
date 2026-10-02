@@ -111,6 +111,23 @@ Shader-sensitive effects should be checked with at least one representative shad
 - Saturation -1 produces luminance grayscale
 - adjustment ranges reject values outside -1..1 / non-finite values
 
+- Reduce Colors returns already-bounded artwork unchanged
+- Reduce Colors output uses no more than requested visible RGB colors
+- Reduce Colors preserves source alpha
+- generated palette and reduced output are deterministic
+- Palette Limited maps to nearest supplied RGB
+- Palette Limited preserves source alpha
+- Posterize honors per-channel level count
+- Monochrome uses luminance and preserves alpha
+- invalid reduction/palette/posterize bounds are rejected
+- Floyd-Steinberg output is deterministic
+- dithered output remains limited to supplied/generated palette
+- Floyd-Steinberg preserves source alpha
+- fully transparent pixels remain untouched
+- error diffusion does not cross fully transparent pixels
+- dithered Reduce Colors leaves already-bounded art unchanged
+- dithered Reduce Colors honors requested maximum color count
+
 ### Future PNG/UI import checks
 
 - PNG with alpha
