@@ -268,9 +268,12 @@ public final class ProjectEdits {
         return updateCapeLayer(
                 project,
                 layerId,
-                layer -> layer.withImageData(
-                        java.util.Objects.requireNonNull(data, "data")
-                )
+                layer -> {
+                    requireUnlockedKind(layer, LayerKind.IMAGE);
+                    return layer.withImageData(
+                            java.util.Objects.requireNonNull(data, "data")
+                    );
+                }
         );
     }
 
@@ -282,9 +285,12 @@ public final class ProjectEdits {
         return updateCapeLayer(
                 project,
                 layerId,
-                layer -> layer.withGradientData(
-                        java.util.Objects.requireNonNull(data, "data")
-                )
+                layer -> {
+                    requireUnlockedKind(layer, LayerKind.GRADIENT);
+                    return layer.withGradientData(
+                            java.util.Objects.requireNonNull(data, "data")
+                    );
+                }
         );
     }
 
@@ -330,6 +336,22 @@ public final class ProjectEdits {
             throw new IllegalStateException(
                     "Cape already has the maximum layer count"
             );
+        }
+    }
+
+    private static void requireUnlockedKind(
+            LoomLayer layer,
+            LayerKind expectedKind
+    ) {
+        if (layer.kind() != expectedKind) {
+            throw new IllegalStateException(
+                    "Expected "
+                            + expectedKind.displayName()
+                            + " layer"
+            );
+        }
+        if (layer.locked()) {
+            throw new IllegalStateException("Layer is locked");
         }
     }
 
