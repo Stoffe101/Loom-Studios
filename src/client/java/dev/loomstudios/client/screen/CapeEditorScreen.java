@@ -1828,49 +1828,43 @@ public final class CapeEditorScreen extends Screen {
     private void setTool(Tool next) {
         this.tool = next;
         updateButtonStates();
+        updateContextVisibility();
     }
 
     private void updateButtonStates() {
         if (pencilButton != null) {
-            pencilButton.setMessage(Component.literal(
-                    tool == Tool.PENCIL ? "Pencil ●" : "Pencil"
-            ));
+            pencilButton.setMessage(Component.literal("Pencil"));
+            pencilButton.setSelected(tool == Tool.PENCIL);
         }
 
         if (eraserButton != null) {
-            eraserButton.setMessage(Component.literal(
-                    tool == Tool.ERASER ? "Eraser ●" : "Eraser"
-            ));
+            eraserButton.setMessage(Component.literal("Eraser"));
+            eraserButton.setSelected(tool == Tool.ERASER);
         }
 
         if (fillButton != null) {
-            fillButton.setMessage(Component.literal(
-                    tool == Tool.FILL ? "Fill ●" : "Fill"
-            ));
+            fillButton.setMessage(Component.literal("Fill"));
+            fillButton.setSelected(tool == Tool.FILL);
         }
 
         if (eyedropperButton != null) {
-            eyedropperButton.setMessage(Component.literal(
-                    tool == Tool.EYEDROPPER ? "Eyedropper ●" : "Eyedropper"
-            ));
+            eyedropperButton.setMessage(Component.literal("Eyedropper"));
+            eyedropperButton.setSelected(tool == Tool.EYEDROPPER);
         }
 
         if (lineButton != null) {
-            lineButton.setMessage(Component.literal(
-                    tool == Tool.LINE ? "Line ●" : "Line"
-            ));
+            lineButton.setMessage(Component.literal("Line"));
+            lineButton.setSelected(tool == Tool.LINE);
         }
 
         if (rectangleButton != null) {
-            rectangleButton.setMessage(Component.literal(
-                    tool == Tool.RECTANGLE ? "Rectangle ●" : "Rectangle"
-            ));
+            rectangleButton.setMessage(Component.literal("Rectangle"));
+            rectangleButton.setSelected(tool == Tool.RECTANGLE);
         }
 
         if (selectButton != null) {
-            selectButton.setMessage(Component.literal(
-                    tool == Tool.SELECT ? "Select ●" : "Select"
-            ));
+            selectButton.setMessage(Component.literal("Select"));
+            selectButton.setSelected(tool == Tool.SELECT);
         }
 
         boolean editablePaintSelection = workspaceState != null
@@ -2280,6 +2274,8 @@ public final class CapeEditorScreen extends Screen {
                         && !layerNameField.getValue().trim().isEmpty();
             }
         }
+
+        updateInspectorVisibility();
     }
 
     private UUID findEditableLayer() {
@@ -2386,6 +2382,7 @@ public final class CapeEditorScreen extends Screen {
         selectedLayerId = result.cape().layers().getLast().id();
         this.selectedGradientStopIndex = 0;
         this.selection = null;
+        this.inspectorTab = InspectorTab.PROPERTIES;
         syncLayerFields();
         updateButtonStates();
     }
@@ -3424,61 +3421,142 @@ public final class CapeEditorScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                0,
-                0,
-                this.width,
-                this.height,
-                LoomUiTheme.BACKDROP
+        LoomScreenChrome.renderBackdrop(
+                graphics,
+                width,
+                height
+        );
+        LoomScreenChrome.renderBrandHeader(
+                graphics,
+                width,
+                compactMode
+                        ? "Cape Editor"
+                        : "Cape Editor • "
+                                + workspaceState.project().name()
+                                + (workspaceState.dirty() ? " *" : ""),
+                compactMode
         );
 
-        String title = workspaceState.project().name()
-                + (workspaceState.dirty() ? " *" : "");
+        LoomScreenChrome.panel(
+                graphics,
+                toolRailLeft,
+                contentTop,
+                toolRailRight,
+                contentBottom
+        );
+        if (!compactMode) {
+            LoomScreenChrome.panelHeader(
+                    graphics,
+                    toolRailLeft,
+                    contentTop,
+                    toolRailRight,
+                    "Tools"
+            );
+        }
 
-        graphics.drawString(
-                this.font,
-                Component.literal(title),
-                18,
-                18,
-                LoomUiTheme.TEXT,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                canvasLeft,
+                canvasTop,
+                canvasRight,
+                canvasBottom
+        );
+        LoomScreenChrome.panel(
+                graphics,
+                canvasLeft,
+                contextTop,
+                canvasRight,
+                contentBottom
         );
 
-        graphics.drawString(
-                this.font,
-                Component.literal(
-                        ClientProjectWorkspace.isCurrentProjectEquipped()
-                                ? "Saved / Equipped"
-                                : (workspaceState.dirty()
-                                        ? "Unsaved edits"
-                                        : "Saved, not equipped")
-                ),
-                18,
-                30,
-                LoomUiTheme.TEXT_MUTED,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                previewBottom
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                "3D Preview"
         );
 
-        if (this.capeRegion == CapeUvRegion.OUTSIDE) {
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                inspectorTop - 2,
+                rightPanelRight,
+                inspectorBottom
+        );
+
+        if (!compactMode) {
+            String inspectorTitle = switch (inspectorTab) {
+                case LAYERS -> "Layers";
+                case COLOR -> "Color";
+                case PROPERTIES -> {
+                    LoomLayer layer = selectedLayer();
+                    yield layer.kind() == LayerKind.GRADIENT
+                            ? "Gradient Properties"
+                            : layer.kind() == LayerKind.IMAGE
+                                    ? "Image Properties"
+                                    : "Layer Properties";
+                }
+            };
             graphics.drawString(
-                    this.font,
-                    Component.literal("Outside / Back = the main face other players see"),
-                    Math.max(18, this.width - 360),
-                    18,
+                    font,
+                    Component.literal(inspectorTitle),
+                    rightPanelLeft + 7,
+                    inspectorTop + 2,
                     LoomUiTheme.TEXT_MUTED,
                     false
             );
         }
 
-        graphics.fill(
-                this.toolPanelX - 4,
-                this.toolPanelY - 4,
-                this.toolPanelX + this.toolPanelWidth,
-                this.toolPanelY + this.toolPanelHeight + 4,
-                LoomUiTheme.PANEL
+        if (inspectorTab == InspectorTab.PROPERTIES
+                && selectedLayer().kind() != LayerKind.GRADIENT) {
+            String hint = selectedLayer().kind() == LayerKind.IMAGE
+                    ? "Use Edit Image in Layers to reopen Smart Import."
+                    : "Paint layers use the tool rail and context bar.";
+            graphics.drawString(
+                    font,
+                    Component.literal(
+                            font.plainSubstrByWidth(
+                                    hint,
+                                    rightPanelRight - rightPanelLeft - 12
+                            )
+                    ),
+                    rightPanelLeft + 6,
+                    inspectorTop + 18,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
+
+        String status = ClientProjectWorkspace.isCurrentProjectEquipped()
+                ? "Saved / Equipped"
+                : workspaceState.dirty()
+                        ? "Unsaved edits"
+                        : "Saved, not equipped";
+
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                status,
+                capeRegion.displayName()
+                        + " • "
+                        + resolutionLabel()
         );
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.render(
+                graphics,
+                mouseX,
+                mouseY,
+                partialTick
+        );
         updateButtonStates();
     }
 
