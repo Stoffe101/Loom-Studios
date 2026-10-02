@@ -86,6 +86,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
                 PlayerCosmeticRenderer.toggleEmissivePass(client);
             }
 
+            dev.loomstudios.client.debug.LoomUiCapture.tick(client);
             ClientCosmeticSync.tick(client);
             PlayerCosmeticRenderer.tick(client);
         });

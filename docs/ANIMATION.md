@@ -81,3 +81,7 @@ Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project stat
 - richer Moving Gradient parameterization;
 - final visual polish against Reference 04;
 - local runtime verification at all mandatory GUI profiles.
+
+## Workspace ownership
+
+Elytra uses a compact adaptive timeline dock. Empty timelines show the next action and reserve only 66 logical pixels. Track collections scroll; effect and keyframe authoring lives on Animation -> Keys, while track loop/speed and project playback speed live on Animation -> Playback. Layer opacity/blend/lock/thickness live on Props. Selecting a track opens Animation. Violet accents identify animation without competing with the cyan canvas selection.

@@ -42,13 +42,15 @@ Loom Studios currently has:
 - a responsive shared reference UI shell;
 - icon-led compact editor controls;
 - contextual Cape inspector tabs for Layers / Color / Properties;
-- contextual Elytra inspector tabs for Layers / Color / Animation;
+- contextual Elytra inspector tabs for Layers / Color / Properties / Animation;
 - a compact timeline mode for 640x360 effective GUI layouts;
 - tabbed Smart Import Placement / Processing controls with fixed Apply actions;
 - first-class Share / Export navigation from Home, Cape and Elytra;
 - a simplified Export / Import sharing workspace.
 
-The current editor-productization work is **CI GREEN / LOCAL RE-VERIFICATION OF THE UI REFACTOR PENDING**.
+The editor workspace repair is **PARTIAL: implementation and automated build pass; editor screenshot verification passed; final clean CI and wider visual acceptance pending**. The earlier refactor is historical evidence, not acceptance of this revision.
+
+Current repair base: `f49ddb2e9727e16d3e6438772534f278d0520a38`. A unified integer pixel transform now owns cape texture, grid, input, live shape and committed selection bounds. Both editors use a shared bounded workspace layout, slim navigation, contextual controls, cached textures and paged inspectors. Elytra has Layers / Color / Properties / Animation; animation separates Keys and Playback. Empty timelines yield more canvas space. View state survives rebuilds. See the newest PASS_LOG entry for exact validation and remaining gaps.
 
 A local test on 2026-10-02 confirmed the underlying editor/import/Elytra/animation/sharing features were broadly functional, but the pre-refactor interface failed the visual/usability gate:
 - it did not resemble the approved references closely enough;
@@ -413,7 +415,6 @@ Additional Elytra workflow implemented in the current pass:
 
 Still missing for the full reference target:
 - standing/open/gliding preview-state controls;
-- animation timeline/tracks/effects;
 - final reference-layout polish.
 
 The semantic wing-link mode is editor state, not serialized project state.
@@ -426,16 +427,7 @@ Proven underneath:
 - separate emissive cape pass;
 - emissive mask compilation.
 
-Not implemented as an authoring product:
-- timeline;
-- tracks;
-- keyframes;
-- Pulse;
-- Scroll;
-- Hue Shift;
-- Moving Gradient;
-- Sparkle;
-- authored Emissive Glow parameters.
+Implemented authoring: schema-v3 tracks, keyframes, Pulse, Scroll, Hue Shift, Moving Gradient, Sparkle and Emissive Glow. See the Animation section below. This is a functional MVP; visual and shader compatibility acceptance remain separate.
 
 ## Home / project library
 
@@ -458,9 +450,8 @@ Implemented:
 - project count/status footer;
 - unreadable-project warning surface.
 
-Intentionally still placeholder/inactive:
-- project Loom Codes;
-- Settings product screen;
+Intentionally still unavailable:
+- Settings product screen (removed from primary navigation);
 - Nature / Space / Fantasy / Emblems template packs.
 
 Home visual/runtime verification at the four mandatory GUI profiles is still pending.

@@ -225,7 +225,7 @@ public final class SmartImportScreen extends Screen {
 
         int margin = compactMode ? 5 : 10;
         int gap = compactMode ? 5 : 8;
-        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
+        int headerHeight = compactMode ? 22 : 26;
         int footerHeight = 18;
 
         controlPanelWidth = compactMode
@@ -350,6 +350,7 @@ public final class SmartImportScreen extends Screen {
                 LoomButton.Icon.EQUIP,
                 this::applyImport
         );
+        applyButton.setPrimary(true);
         bottom -= bottomH + 3;
 
         int half = (panelWidth - 3) / 2;
@@ -435,7 +436,7 @@ public final class SmartImportScreen extends Screen {
                 quarter,
                 h,
                 "Left",
-                LoomButton.Icon.MOVE,
+                LoomButton.Icon.LEFT,
                 () -> move(-1, 0)
         ).setIconOnly(true);
         placeAction(
@@ -465,7 +466,7 @@ public final class SmartImportScreen extends Screen {
                 width - quarter * 3 - gap * 3,
                 h,
                 "Right",
-                LoomButton.Icon.MOVE,
+                LoomButton.Icon.RIGHT,
                 () -> move(1, 0)
         ).setIconOnly(true);
         y += h + gap;
@@ -571,8 +572,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Brightness",
-                LoomButton.Icon.DOWN,
-                LoomButton.Icon.UP,
+                LoomButton.Icon.MINUS,
+                LoomButton.Icon.PLUS,
                 () -> changeBrightness(-0.1F),
                 () -> changeBrightness(0.1F)
         );
@@ -586,8 +587,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Contrast",
-                LoomButton.Icon.DOWN,
-                LoomButton.Icon.UP,
+                LoomButton.Icon.MINUS,
+                LoomButton.Icon.PLUS,
                 () -> changeContrast(-0.1F),
                 () -> changeContrast(0.1F)
         );
@@ -601,8 +602,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Saturation",
-                LoomButton.Icon.DOWN,
-                LoomButton.Icon.UP,
+                LoomButton.Icon.MINUS,
+                LoomButton.Icon.PLUS,
                 () -> changeSaturation(-0.1F),
                 () -> changeSaturation(0.1F)
         );
@@ -616,8 +617,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Colors",
-                LoomButton.Icon.DOWN,
-                LoomButton.Icon.UP,
+                LoomButton.Icon.MINUS,
+                LoomButton.Icon.PLUS,
                 () -> changeColorLimit(-1),
                 () -> changeColorLimit(1)
         );
@@ -649,8 +650,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 compactMode ? 20 : 24,
                 "Levels",
-                LoomButton.Icon.DOWN,
-                LoomButton.Icon.UP,
+                LoomButton.Icon.MINUS,
+                LoomButton.Icon.PLUS,
                 () -> changePosterize(-1),
                 () -> changePosterize(1)
         );
@@ -1433,7 +1434,7 @@ public final class SmartImportScreen extends Screen {
             float partialTick
     ) {
         LoomScreenChrome.renderBackdrop(graphics, width, height);
-        LoomScreenChrome.renderBrandHeader(
+        LoomScreenChrome.renderEditorHeader(
                 graphics,
                 width,
                 importTarget == ImportTarget.CAPE
@@ -1449,20 +1450,6 @@ public final class SmartImportScreen extends Screen {
                 controlPanelX + controlPanelWidth,
                 controlPanelY + controlPanelHeight
         );
-
-        String tabTitle = panelTab == PanelTab.PLACEMENT
-                ? "Fit & Transform"
-                : "Image Processing";
-        if (!compactMode) {
-            graphics.drawString(
-                    font,
-                    Component.literal(tabTitle),
-                    controlPanelX + 8,
-                    controlPanelY + 52,
-                    LoomUiTheme.TEXT_MUTED,
-                    false
-            );
-        }
 
         LoomScreenChrome.footer(
                 graphics,

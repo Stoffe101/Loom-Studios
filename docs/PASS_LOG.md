@@ -1,5 +1,20 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Canvas geometry and bounded workspace repair
+
+**State: PARTIAL — implementation/build tested; editor screenshots inspected; final clean CI pending.**
+
+Base: `f49ddb2e9727e16d3e6438772534f278d0520a38`. Target: all five approved `docs/references/ui` workshop screens, with primary work focused on the two failed Cape/Elytra screenshots.
+
+Changes: common integer canvas transform; identical live/committed selection bounds and no false hover handle; shared bounded compact/normal layout; slim workshop chrome; coherent icons; contextual tool rows; complete tab visibility; paged Layer/Gradient/Transform/Stops; opacity sliders; cached real layer thumbnails; cached two-wing composition with zoom/pan; adaptive timeline; explicit animation Keys/Playback; preserved canvas/preview view state; readable navigation and consistent Home routing; Elytra color alpha control. Smart Import retains its existing task tabs with the calmer shared surfaces.
+
+Architecture: pure geometry/layout contracts and bounded inspector allocator, replacing editor-owned duplicated absolute stacks. No schema or network change. Intentional reference deviations: native Minecraft font, code-native pixel icons, and paged compact properties preserve real functionality in 640×360 rather than reproducing reference-only decoration.
+
+Tests: full Gradle 9.6.1 `build` passed on Java 21.0.9 / MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 before final polish. New pixel transform and profile bounds tests passed. The earlier build passed all 99 tests. Actual Minecraft screenshots were inspected for Cape/Elytra at every required profile and compact Color/Properties/Gradient/Transform/Stops/Animation/Playback pages plus long layer/track collections. Live/committed single-pixel bounds were equal in the earlier capture run (88×88 physical pixels at 200%); one committed PNG was truncated during the environment failure and was removed. Final clean CI and regenerated evidence remain required. The container's unsupported Unix sockets required a local cached Loom platform-probe workaround; the repository itself contains no platform patch. Clean CI remains separate evidence.
+
+Risks/gaps: editor captures passed; full Home/Import/Share reference acceptance remains pending; optional-mod/shader/multiplayer compatibility not rechecked. Next: verify the exact final SHA in clean CI, regenerate capture evidence, and review the wider five-screen reference target.
+
+
 ## 2026-10-02 — Reference UI architecture refactor
 
 **Status: IMPLEMENTATION CI PASS / LOCAL RE-VERIFICATION PENDING**

@@ -1101,3 +1101,11 @@ The sharing screen is split into Export and Import. Export immediately surfaces 
 A disabled Settings card contributed visual noise without providing value.
 
 Settings is removed from the Home primary action stack until there is a real preferences product surface.
+
+## 2026-10-02 — Shared canvas boundaries and bounded workspace
+
+**Accepted.** The failed screenshots showed live selection using pixel centers while committed selection used boundaries, and controls escaping their inspector ownership. Use one integer transform for texture/input/grid/shape/selection, with exclusive screen right/bottom edges. Do not draw a brush hover cell over a selection gesture as a false handle.
+
+Use one shared bounded layout for Cape/Elytra. Ordinary controls fit contextual pages; only layers/swatches/tracks scroll. This supersedes earlier ADRs prescribing a whole right-side ScrollableLayout. Compact 640×360 is a first-class composition. The timeline yields space when empty; layer properties and animation Playback have explicit owners. Keep workshop decoration slim on work screens and stronger on showcase screens.
+
+Add an opt-in development capture runner to obtain actual Minecraft evidence. Builds and pure layout tests are necessary but cannot establish visual acceptance. Production runs do not execute capture automation.

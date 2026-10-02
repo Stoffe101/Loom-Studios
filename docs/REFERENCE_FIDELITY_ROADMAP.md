@@ -122,7 +122,7 @@ Implemented:
 - undo/redo;
 - save/equip;
 - unsaved 3D preview;
-- scrollable compact right tool rail.
+- bounded contextual inspector pages and scrolling collections.
 
 Implemented in the current Gradient/typed-layer UX pass:
 - typed Paint / Image / Gradient row icons;
@@ -436,3 +436,7 @@ Refactor status:
 - unimplemented hosted permission/gallery concepts no longer dominate the work area.
 
 Local re-verification pending.
+
+## 2026-10-02 workspace repair acceptance
+
+The two failed editor screenshots triggered a second structural repair: shared integer pixel boundaries, bounded workspace rectangles, paged properties, adaptive timeline and cached wing composition. Target references remain all five approved workshop screens. Native Minecraft fonts and compact property pages are intentional deviations. Current acceptance is PARTIAL: actual editor captures were inspected, but final clean CI and full five-screen reference acceptance remain pending. Home/Sharing receive the shared timber/steel header and quieter surfaces; this pass does not claim a full new screen-by-screen visual acceptance for them.

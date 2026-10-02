@@ -28,11 +28,17 @@ loom {
         client {
             client()
             displayName = "Loom Studios - Client"
-            runDirectory = file("run")
+            runDirectory = file(project.hasProperty("uiCapture") ? "run-ui-capture" : "run")
             generateRunConfig = true
             preferGradleTask = true
             ideConfigFolder = "Loom Studios"
             systemProperties.put("fabric.log.level", "debug")
+            if (project.hasProperty("uiCapture")) {
+                systemProperties.put("loom.uiCapture", "true")
+                vmArgs "-Xms256M", "-Xmx1024M"
+                if (project.hasProperty("uiCaptureStart")) systemProperties.put("loom.uiCaptureStart", project.property("uiCaptureStart").toString())
+                systemProperties.put("fabric.log.level", "info")
+            }
         }
 
         clientA {

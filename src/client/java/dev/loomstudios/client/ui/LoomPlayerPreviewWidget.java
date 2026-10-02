@@ -69,7 +69,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Drag to rotate · Wheel to zoom")));
     }
+
+    public record ViewState(float yaw, float pitch, float zoom) { }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier
@@ -106,17 +111,17 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 false
         );
 
-        int contentLeft = getX() + 6;
-        int contentTop = getY() + 22;
-        int contentRight = getRight() - 6;
-        int contentBottom = getBottom() - 18;
+        int contentLeft = getX() + 4;
+        int contentTop = getY() + 19;
+        int contentRight = getRight() - 4;
+        int contentBottom = getBottom() - (getHeight() > 140 ? 16 : 4);
 
         graphics.fill(
                 contentLeft,
                 contentTop,
                 contentRight,
                 contentBottom,
-                0xFF080E15
+                0xFF14243A
         );
 
         LoomProject project = projectSupplier.get();
@@ -171,7 +176,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     renderState,
                     Math.max(
                             18.0F,
-                            (contentBottom - contentTop) * 0.42F * zoom
+                            Math.min((contentBottom - contentTop) * 0.49F, (contentRight - contentLeft) * 0.46F) * zoom
                     ),
                     translation,
                     rotation,
@@ -191,7 +196,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             );
         }
 
-        graphics.drawCenteredString(
+        if (getHeight() > 140) graphics.drawCenteredString(
                 Minecraft.getInstance().font,
                 Component.literal("Drag to rotate  •  Wheel to zoom"),
                 getX() + getWidth() / 2,
