@@ -190,7 +190,8 @@ Editor exposure in the current slice:
 - Flip H / Flip V;
 - Clear Selection;
 - UI nudge clamps the selection inside the active semantic face;
-- changing semantic face or project resolution clears the temporary selection.
+- changing semantic face or project resolution clears the temporary selection;
+- Undo/Redo clear temporary selection state to avoid stale moved coordinates.
 
 Selection itself remains editor state and is not serialized into `.loom`.
 
