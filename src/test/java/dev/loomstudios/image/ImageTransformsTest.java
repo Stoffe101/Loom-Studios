@@ -206,6 +206,64 @@ class ImageTransformsTest {
     }
 
     @Test
+    void oversizedCropArithmeticCannotWrapIntoValidBounds() {
+        PixelImage source = image(2, 2, 1, 2, 3, 4);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ImageTransforms.crop(
+                        source,
+                        1,
+                        1,
+                        Integer.MAX_VALUE,
+                        1
+                )
+        );
+    }
+
+    @Test
+    void oversizedPlacementArithmeticCannotWrapIntoSourceBounds() {
+        PixelImage source = image(2, 2, 1, 2, 3, 4);
+        ImagePlacement invalid = new ImagePlacement(
+                1,
+                1,
+                Integer.MAX_VALUE,
+                1,
+                0,
+                0,
+                1,
+                1
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ImageTransforms.place(source, 2, 2, invalid)
+        );
+    }
+
+    @Test
+    void fullyOffscreenDestinationWithExtremeOffsetIsSafelyClipped() {
+        PixelImage source = image(1, 1, 7);
+        ImagePlacement offscreen = new ImagePlacement(
+                0,
+                0,
+                1,
+                1,
+                Integer.MIN_VALUE,
+                0,
+                Integer.MAX_VALUE,
+                1
+        );
+
+        assertPixels(
+                ImageTransforms.place(source, 2, 1, offscreen),
+                2,
+                1,
+                0, 0
+        );
+    }
+
+    @Test
     void customPlacementRejectsSourceRectangleOutsideImage() {
         PixelImage source = image(2, 2, 1, 2, 3, 4);
         ImagePlacement invalid = new ImagePlacement(
