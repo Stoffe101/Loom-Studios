@@ -71,6 +71,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     private final IntSupplier timelineTickSupplier;
     private final BooleanSupplier playingSupplier;
     private final Controller controller;
+    private final boolean inlineTrackControls;
 
     private int scrollRows;
 
@@ -85,6 +86,34 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             IntSupplier timelineTickSupplier,
             BooleanSupplier playingSupplier,
             Controller controller
+    ) {
+        this(
+                x,
+                y,
+                width,
+                height,
+                projectSupplier,
+                channel,
+                selectedTrackSupplier,
+                timelineTickSupplier,
+                playingSupplier,
+                controller,
+                true
+        );
+    }
+
+    public LoomAnimationTimelineWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            Supplier<LoomProject> projectSupplier,
+            AnimationChannel channel,
+            Supplier<UUID> selectedTrackSupplier,
+            IntSupplier timelineTickSupplier,
+            BooleanSupplier playingSupplier,
+            Controller controller,
+            boolean inlineTrackControls
     ) {
         super(
                 x,
@@ -114,6 +143,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 controller,
                 "controller"
         );
+        this.inlineTrackControls = inlineTrackControls;
     }
 
     @Override
@@ -153,11 +183,18 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         if (tracks.isEmpty()) {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
+                    Component.literal("No animation yet"),
+                    getX() + getWidth() / 2,
+                    rowTop + 10,
+                    LoomUiTheme.TEXT
+            );
+            graphics.drawCenteredString(
+                    Minecraft.getInstance().font,
                     Component.literal(
-                            "No animation tracks • + Track targets selected layer"
+                            "Select a layer, then use + Track or the Animation panel"
                     ),
                     getX() + getWidth() / 2,
-                    rowTop + 14,
+                    rowTop + 24,
                     LoomUiTheme.TEXT_MUTED
             );
         } else {
@@ -464,6 +501,27 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         UUID selectedId = selectedTrackSupplier.get();
         AnimationTrack selected = findTrack(tracks, selectedId);
 
+        if (!inlineTrackControls) {
+            String message = selected == null
+                    ? "Select a track to edit it in the Animation panel"
+                    : selected.effect().displayName()
+                            + " • edit effect, speed and keyframes on the right";
+            graphics.drawString(
+                    Minecraft.getInstance().font,
+                    Component.literal(
+                            Minecraft.getInstance().font.plainSubstrByWidth(
+                                    message,
+                                    Math.max(40, getWidth() - 14)
+                            )
+                    ),
+                    getX() + 7,
+                    y + 4,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+            return;
+        }
+
         if (selected == null) {
             graphics.drawString(
                     Minecraft.getInstance().font,
@@ -663,7 +721,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             return;
         }
 
-        if (mouseY >= footerTop) {
+        if (mouseY >= footerTop && inlineTrackControls) {
             handleFooterClick(
                     mouseX,
                     tracks,
