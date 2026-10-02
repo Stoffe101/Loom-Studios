@@ -41,6 +41,27 @@ public final class AnimationAuthoring {
         return animation.withTracks(next);
     }
 
+    public static LoomAnimation removeTracksForLayer(
+            LoomAnimation animation,
+            AnimationChannel channel,
+            UUID layerId
+    ) {
+        Objects.requireNonNull(animation, "animation");
+        Objects.requireNonNull(channel, "channel");
+        Objects.requireNonNull(layerId, "layerId");
+
+        List<AnimationTrack> next =
+                new ArrayList<>(animation.tracks());
+        next.removeIf(track ->
+                track.channel() == channel
+                        && track.layerId().equals(layerId)
+        );
+
+        return next.size() == animation.tracks().size()
+                ? animation
+                : animation.withTracks(next);
+    }
+
     public static LoomAnimation removeTrack(
             LoomAnimation animation,
             UUID trackId

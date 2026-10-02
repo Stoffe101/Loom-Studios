@@ -40,6 +40,36 @@ public record LoomProject(
 
         validateRuntimeCanvas("cape", cape);
         validateRuntimeCanvas("elytra", elytra);
+        validateAnimationReferences(animation, cape, elytra);
+    }
+
+    private static void validateAnimationReferences(
+            LoomAnimation animation,
+            LoomCanvas cape,
+            LoomCanvas elytra
+    ) {
+        java.util.Set<UUID> capeIds = cape.layers().stream()
+                .map(LoomLayer::id)
+                .collect(java.util.stream.Collectors.toSet());
+        java.util.Set<UUID> elytraIds = elytra.layers().stream()
+                .map(LoomLayer::id)
+                .collect(java.util.stream.Collectors.toSet());
+
+        for (AnimationTrack track : animation.tracks()) {
+            boolean exists = switch (track.channel()) {
+                case CAPE -> capeIds.contains(track.layerId());
+                case ELYTRA -> elytraIds.contains(track.layerId());
+            };
+
+            if (!exists) {
+                throw new IllegalArgumentException(
+                        "Animation track references missing "
+                                + track.channel().displayName()
+                                + " layer "
+                                + track.layerId()
+                );
+            }
+        }
     }
 
     public LoomProject(
