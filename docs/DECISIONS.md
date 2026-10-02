@@ -724,3 +724,30 @@ The user-facing nudge controls clamp movement so the full selection remains insi
 Changing semantic face or project resolution clears the temporary selection because its coordinates no longer describe the same editing surface.
 
 Undo/Redo also clear the temporary selection. Project history does not serialize editor selection coordinates, so clearing avoids leaving a moved selection box pointing at stale post-transform coordinates after the project snapshot jumps backward or forward.
+
+## ADR-067 — Smart Import processing core is schema-independent and bounded
+**Status:** Accepted / implemented foundation
+
+Smart Import transform/processing math lives in pure common code before schema-v2 Image layers or UI are introduced.
+
+`PixelImage` is an immutable ARGB processing value with:
+- maximum dimension 4096;
+- maximum 16,777,216 pixels;
+- exact pixel-count validation;
+- defensive array ownership.
+
+It is a temporary processing/preview/compiler representation, not the persistent Image-layer design.
+
+Placement semantics are pinned:
+- Fit = contain + preserve aspect + center + transparent letterbox;
+- Stretch = fill target without preserving aspect;
+- Crop = centered source crop preserving target aspect, then fill target;
+- Center = no scale, centered with target clipping.
+
+Crop never changes fixed Minecraft cape/Elytra UV surface dimensions.
+
+The first raster transform set is mirror H/V, quarter-turn rotation, crop, nearest-neighbor resize and placement rendering.
+
+Brightness/Contrast/Saturation use normalized -1..1 controls and preserve alpha.
+
+Schema v2 should store editable source/transform/processing intent and may reuse this core to compile previews/output.

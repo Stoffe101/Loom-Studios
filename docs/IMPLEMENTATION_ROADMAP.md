@@ -100,14 +100,21 @@ Persistent lock and new layer kinds should be introduced in one coordinated proj
 
 ## Phase 4 — Smart Import
 
-**Status:** NOT STARTED / PREREQUISITES IN PROGRESS.
+**Status:** PURE TRANSFORM/PROCESSING CORE STARTED / USER-FACING WORKSPACE NOT STARTED.
 
-Planned:
-- PNG import;
-- Fit / Stretch / Crop / Center;
-- aspect lock;
-- mirror/rotate;
+Implemented pure core:
+- Fit / Stretch / centered Crop / Center placement;
+- mirror H/V;
+- 90-degree rotate;
+- crop;
+- nearest-neighbor resize;
 - brightness/contrast/saturation;
+- bounded immutable ARGB processing image.
+
+Still planned:
+- PNG import;
+- interactive aspect lock;
+- free position/scale/arbitrary rotate;
 - color reduction;
 - dithering;
 - transparency/background handling;

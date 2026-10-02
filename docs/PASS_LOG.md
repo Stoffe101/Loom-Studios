@@ -1,5 +1,37 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Smart Import transform + color-adjustment foundation
+
+**Status: CI PASS**
+
+Exact verified checkpoint: `c7b3c4107543f42a30c214e7aa41942d59281249`  
+GitHub Actions #81: **SUCCESS**
+
+Added a schema-independent, pure common-core image-processing foundation:
+- immutable bounded `PixelImage`;
+- 4096 max dimension / 16,777,216 max pixels;
+- Fit / Stretch / centered Crop / Center placement math;
+- transparent placement rendering;
+- mirror horizontal / vertical;
+- 90-degree clockwise/counter-clockwise rotation;
+- rectangular crop;
+- nearest-neighbor resize;
+- Brightness / Contrast / Saturation with normalized -1..1 controls;
+- alpha preservation.
+
+Automated tests cover placement geometry, raster output, clipping, transform orientation, bounds/defensive ownership and color-adjustment behavior.
+
+Architecture rule:
+- these rasters are preview/compiler values, not a shortcut for flattening imported art into schema v1;
+- the future schema-v2 Image layer should preserve source/transform/processing intent.
+
+No visual/runtime claims are required for this pure-core slice.
+
+See `SMART_IMPORT.md`.
+
+---
+
+
 ## 2026-10-02 — Equipped-state hardening + emissive cleanup + Select UI
 
 **Status: CI PASS / LOCAL VISUAL VERIFICATION PENDING**
