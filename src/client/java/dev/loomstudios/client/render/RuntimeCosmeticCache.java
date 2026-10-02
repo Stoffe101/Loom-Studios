@@ -207,7 +207,10 @@ public final class RuntimeCosmeticCache {
     }
 
     private static void redrawEmissive(RuntimeBundle bundle) {
-        if (!bundle.project.runtime().emissiveEnabled()) {
+        boolean hasEmissiveLayer = bundle.project.cape().layers().stream()
+                .anyMatch(layer -> layer.emissive());
+
+        if (!hasEmissiveLayer) {
             clear(bundle.emissiveImage);
             return;
         }
@@ -221,9 +224,6 @@ public final class RuntimeCosmeticCache {
                         true
                 )
         );
-
-        int shimmerX = 49 + bundle.phase * 3;
-        drawRect(bundle.emissiveImage, shimmerX, 4, 2, 24, 0xCCFFFFFF);
     }
 
     private static void writePixels(NativeImage target, int[] pixels) {
@@ -245,25 +245,6 @@ public final class RuntimeCosmeticCache {
         for (int y = 0; y < target.getHeight(); y++) {
             for (int x = 0; x < target.getWidth(); x++) {
                 target.setPixel(x, y, 0x00000000);
-            }
-        }
-    }
-
-    private static void drawRect(
-            NativeImage target,
-            int x,
-            int y,
-            int width,
-            int height,
-            int argb
-    ) {
-        for (int py = Math.max(0, y);
-             py < Math.min(target.getHeight(), y + height);
-             py++) {
-            for (int px = Math.max(0, x);
-                 px < Math.min(target.getWidth(), x + width);
-                 px++) {
-                target.setPixel(px, py, argb);
             }
         }
     }

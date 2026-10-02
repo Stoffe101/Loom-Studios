@@ -61,7 +61,7 @@ public final class ClientCosmeticSync {
 
         ensureLocalProject(client.player.getUUID());
 
-        String currentHash = ClientProjectWorkspace.projectHash();
+        String currentHash = ClientProjectWorkspace.equippedProjectHash();
         boolean hashChanged = !currentHash.equals(announcedLocalHash);
 
         if (!helloPending && !hashChanged) {
@@ -106,7 +106,7 @@ public final class ClientCosmeticSync {
         if (playerId != null
                 && playerId.equals(localPlayerId)
                 && ClientProjectWorkspace.isInitialized()) {
-            return ClientProjectWorkspace.project();
+            return ClientProjectWorkspace.equippedProject();
         }
 
         String hash = EQUIPPED.get(playerId);
@@ -117,7 +117,7 @@ public final class ClientCosmeticSync {
         if (playerId != null
                 && playerId.equals(localPlayerId)
                 && ClientProjectWorkspace.isInitialized()) {
-            return ClientProjectWorkspace.projectHash();
+            return ClientProjectWorkspace.equippedProjectHash();
         }
 
         return EQUIPPED.get(playerId);
@@ -130,12 +130,12 @@ public final class ClientCosmeticSync {
     private static void sendLocalProjectIfRequested(String hash) {
         if (!serverSupportsLoom
                 || !ClientProjectWorkspace.isInitialized()
-                || !ClientProjectWorkspace.projectHash().equals(hash)
+                || !ClientProjectWorkspace.equippedProjectHash().equals(hash)
                 || !ClientPlayNetworking.canSend(ProjectBlobC2SPayload.ID)) {
             return;
         }
 
-        LoomProject project = ClientProjectWorkspace.project();
+        LoomProject project = ClientProjectWorkspace.equippedProject();
         ClientPlayNetworking.send(
                 new ProjectBlobC2SPayload(hash, project.encode())
         );

@@ -147,7 +147,9 @@ public final class PlayerCosmeticRenderer {
                         state.skin.cape().texturePath()
                 );
 
-        if (bundle == null || !bundle.project.runtime().emissiveEnabled()) {
+        if (bundle == null
+                || bundle.project.cape().layers().stream()
+                        .noneMatch(layer -> layer.emissive())) {
             return null;
         }
 

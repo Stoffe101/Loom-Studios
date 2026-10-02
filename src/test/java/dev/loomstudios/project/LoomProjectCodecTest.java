@@ -407,12 +407,159 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void emissiveLayerToggleKeepsRuntimeMasterInSync() {
+        LoomProject project = LoomProjectFactory.blank("Emissive Toggle", 1L);
+        UUID layerId = project.cape().layers().getFirst().id();
+
+        assertFalse(project.runtime().emissiveEnabled());
+
+        LoomProject enabled = ProjectEdits.setCapeLayerEmissive(
+                project,
+                layerId,
+                true
+        );
+        assertTrue(enabled.cape().layers().getFirst().emissive());
+        assertTrue(enabled.runtime().emissiveEnabled());
+
+        LoomProject disabled = ProjectEdits.setCapeLayerEmissive(
+                enabled,
+                layerId,
+                false
+        );
+        assertFalse(disabled.cape().layers().getFirst().emissive());
+        assertFalse(disabled.runtime().emissiveEnabled());
+    }
+
+    @Test
+    void emissiveRuntimeMirrorStaysEnabledUntilFinalLayerIsDisabled() {
+        LoomProject project = LoomProjectFactory.blank("Multi Emissive", 1L);
+        UUID baseId = project.cape().layers().getFirst().id();
+
+        LoomProject withSecond = ProjectEdits.addCapeLayer(project, "Second");
+        UUID secondId = withSecond.cape().layers().getLast().id();
+
+        LoomProject bothEnabled = ProjectEdits.setCapeLayerEmissive(
+                ProjectEdits.setCapeLayerEmissive(withSecond, baseId, true),
+                secondId,
+                true
+        );
+        assertTrue(bothEnabled.runtime().emissiveEnabled());
+
+        LoomProject oneRemaining = ProjectEdits.setCapeLayerEmissive(
+                bothEnabled,
+                baseId,
+                false
+        );
+        assertTrue(oneRemaining.runtime().emissiveEnabled());
+
+        LoomProject noneRemaining = ProjectEdits.setCapeLayerEmissive(
+                oneRemaining,
+                secondId,
+                false
+        );
+        assertFalse(noneRemaining.runtime().emissiveEnabled());
+    }
+
+    @Test
     void blendModeOrdinalsPreserveSchemaV1Compatibility() {
         assertEquals(0, BlendMode.NORMAL.ordinal());
         assertEquals(1, BlendMode.ADD.ordinal());
         assertEquals(2, BlendMode.SCREEN.ordinal());
         assertEquals(3, BlendMode.MULTIPLY.ordinal());
         assertEquals(4, BlendMode.OVERLAY.ordinal());
+    }
+
+    @Test
+    void pixelSelectionNormalizesDragEndpointsAndRejectsInvalidBounds() {
+        PixelSelection selection = PixelSelection.between(7, 9, 2, 3);
+
+        assertEquals(2, selection.minX());
+        assertEquals(3, selection.minY());
+        assertEquals(7, selection.maxX());
+        assertEquals(9, selection.maxY());
+        assertEquals(6, selection.width());
+        assertEquals(7, selection.height());
+        assertTrue(selection.contains(4, 5));
+        assertFalse(selection.contains(8, 5));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new PixelSelection(-1, 0, 1, 1)
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new PixelSelection(4, 4, 3, 5)
+        );
+    }
+
+    @Test
+    void selectionVerticalAndCombinedFlipAreDeterministic() {
+        LoomProject project = LoomProjectFactory.blank("Selection Flip", 1L);
+        LoomLayer layer = project.cape().layers().getFirst();
+
+        int[][] colors = {
+                {0xFFFF0000, 0xFF00FF00},
+                {0xFF0000FF, 0xFFFFFF00}
+        };
+
+        LoomProject painted = project;
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 2; x++) {
+                painted = ProjectEdits.setCapeRegionPixel(
+                        painted,
+                        layer.id(),
+                        CapeUvRegion.OUTSIDE,
+                        1 + x,
+                        1 + y,
+                        colors[y][x]
+                );
+            }
+        }
+
+        PixelSelection selection = new PixelSelection(1, 1, 2, 2);
+
+        LoomProject vertical = ProjectEdits.flipCapeRegionSelection(
+                painted,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                selection,
+                false,
+                true
+        );
+
+        int topLeft = CapeUvRegion.OUTSIDE.atlasY(1)
+                * vertical.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(1);
+        int bottomRight = CapeUvRegion.OUTSIDE.atlasY(2)
+                * vertical.cape().width()
+                + CapeUvRegion.OUTSIDE.atlasX(2);
+
+        assertEquals(
+                0xFF0000FF,
+                vertical.cape().layers().getFirst().pixelAt(topLeft)
+        );
+        assertEquals(
+                0xFF00FF00,
+                vertical.cape().layers().getFirst().pixelAt(bottomRight)
+        );
+
+        LoomProject combined = ProjectEdits.flipCapeRegionSelection(
+                painted,
+                layer.id(),
+                CapeUvRegion.OUTSIDE,
+                selection,
+                true,
+                true
+        );
+
+        assertEquals(
+                0xFFFFFF00,
+                combined.cape().layers().getFirst().pixelAt(topLeft)
+        );
+        assertEquals(
+                0xFFFF0000,
+                combined.cape().layers().getFirst().pixelAt(bottomRight)
+        );
     }
 
     @Test

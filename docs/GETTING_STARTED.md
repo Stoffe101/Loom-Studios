@@ -7,8 +7,8 @@
 - Fabric Loader 0.18.4
 - Fabric API 0.141.1+1.21.11 initial pin
 - Mojang mappings
-- Fabric Loom 1.18-SNAPSHOT
-- Gradle 9.7.1 wrapper
+- Fabric Loom 1.17.21
+- Gradle 9.6.1 wrapper
 
 ## IntelliJ IDEA
 

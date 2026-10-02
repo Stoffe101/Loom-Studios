@@ -46,6 +46,12 @@ Large assets are transferred separately.
 
 Names are conceptual until implementation pins Fabric payload classes.
 
+## Local publication boundary
+
+The network layer publishes the explicitly equipped project snapshot, never the dirty editable `ProjectSession`.
+
+Saving without equipping must not change the advertised hash. Save + Equip is the operation that advances local world/multiplayer state.
+
 ## Cache-miss flow
 
 1. remote player state announces hash H

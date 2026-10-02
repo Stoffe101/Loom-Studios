@@ -99,6 +99,18 @@ public record LoomProject(
         );
     }
 
+    public LoomProject withRuntime(LoomRuntimeSettings nextRuntime) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                name,
+                metadata,
+                cape,
+                elytra,
+                Objects.requireNonNull(nextRuntime, "nextRuntime")
+        );
+    }
+
     public byte[] encode() {
         return LoomProjectCodec.encode(this);
     }
