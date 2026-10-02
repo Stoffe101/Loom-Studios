@@ -23,9 +23,11 @@ Loom Studios currently has:
 - selection/move/flip common-core transforms;
 - first editor exposure of drag selection, nudge and flip controls.
 
-The current implementation slice is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+The current Smart Import + schema-v2 implementation slice is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Exact green checkpoint: `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
+Exact green branch checkpoint: `7a568f736f273328a3b55d1ea28587832cd45282` — GitHub Actions #113 **SUCCESS**.
+
+The earlier Select/runtime-hardening checkpoint remains `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
 
 Historical spike-by-spike detail belongs in `PASS_LOG.md`; this file intentionally describes only the current project state.
 
@@ -107,7 +109,7 @@ Rendered animation frames are never streamed.
 
 ## Project format
 
-Current schema: **v1**
+Current schema: **v2**
 
 Stored today:
 - project UUID/name;
@@ -115,16 +117,40 @@ Stored today:
 - runtime settings;
 - cape canvas;
 - Elytra canvas;
-- ordered paint layers.
+- ordered typed layers.
 
-Paint-layer fields:
+Layer kinds:
+- Paint;
+- Image;
+- Gradient.
+
+Common layer fields:
 - UUID;
 - name;
 - visible;
 - opacity;
-- blend mode;
+- stable blend-mode id;
 - emissive flag;
-- ARGB pixels.
+- persistent lock state;
+- stable layer-kind id.
+
+Paint layers store ARGB pixels.
+
+Image layers store:
+- bounded embedded source ARGB image;
+- normalized source crop;
+- normalized destination transform;
+- semantic clip;
+- processing mode/settings;
+- optional palette.
+
+Gradient layers store:
+- Linear/Radial type;
+- ordered color stops;
+- normalized transform;
+- semantic clip;
+- repeat;
+- dither.
 
 Supported canvas sizes:
 - 64x32;
@@ -134,16 +160,12 @@ Supported canvas sizes:
 Current serialized project limit:
 - **1 MiB**
 
-Current blend modes:
-- Normal;
-- Add / Glow;
-- Screen;
-- Multiply;
-- Overlay.
+Current embedded Image-layer source limit:
+- **256 px max dimension** before project persistence.
 
-Schema-v1 blend ordinals are pinned compatibility data.
+Schema v1 projects are decoded through the old paint-only format and explicitly migrated to schema v2.
 
-Persistent layer lock and new layer kinds are deliberately deferred to the coordinated schema-v2 expansion.
+Schema v1 blend ordinals remain frozen compatibility data; schema v2 uses stable string identifiers for blend modes and layer kinds.
 
 ## Cape Editor — implemented
 
@@ -306,44 +328,54 @@ Still missing:
 
 ## Smart Import
 
-**User-facing workspace not started / pure processing foundation CI green.**
+**Functional implementation is complete on the branch / local visual-runtime verification pending.**
 
-Exact verified Smart Import core checkpoint: `c7b3c4107543f42a30c214e7aa41942d59281249` — GitHub Actions #81 **SUCCESS**.
+Exact green checkpoint: `7a568f736f273328a3b55d1ea28587832cd45282` — GitHub Actions #113 **SUCCESS**.
 
-Implemented pure-core prerequisites:
-- immutable bounded `PixelImage`;
-- Fit / Stretch / centered Crop / Center placement math;
-- transparent placement rendering;
-- mirror horizontal / vertical;
-- 90-degree clockwise/counter-clockwise rotation;
-- rectangular crop;
-- nearest-neighbor resize;
-- Brightness / Contrast / Saturation with preserved alpha;
-- deterministic bounded Reduce Colors palette extraction;
-- Palette Limited nearest-color mapping;
-- Floyd-Steinberg dithering;
-- Posterize;
+Implemented:
+- PNG import adapter with size/decode validation;
+- Home-screen **Import PNG with Smart Import** entry;
+- Cape Editor **Import PNG** entry;
+- reopen/edit existing Image layers;
+- Original preview;
+- Processed preview;
+- resulting Cape Texture preview;
+- isolated 3D candidate-project preview;
+- Fit / Stretch / Crop / Center;
+- Keep Aspect;
+- move;
+- free scale;
+- arbitrary persistent rotation with 15-degree editor steps;
+- Mirror H / Mirror V;
+- Brightness / Contrast / Saturation;
+- Reduce Colors;
+- Floyd-Steinberg Dither;
+- Direct;
+- Pixel Art;
+- Outline Only;
 - Monochrome;
-- automated transform/placement/adjustment/quantization/dithering tests.
+- Palette Limited;
+- Posterize;
+- selected Loom Swatches palette integration;
+- Apply as editable Image layer;
+- schema-v2 persistence for source/transform/processing intent;
+- Image-layer participation in normal opacity/blend/emissive/visibility/lock behavior;
+- runtime/editor/project-thumbnail/multiplayer compilation through the shared typed-layer compiler.
 
-Exact green quantization/dithering checkpoint: `7d4efbe75744453ba03142eb61d97c917f79c7bc` — GitHub Actions #85 **SUCCESS**.
+Also implemented in schema v2:
+- persistent layer lock;
+- first-class editable Image layers;
+- first-class editable Gradient layers;
+- stable layer-kind/blend identifiers;
+- explicit schema-v1 -> schema-v2 migration.
 
-Already available elsewhere:
-- high-resolution Loom canvases;
-- alpha;
-- layers;
-- palettes;
-- live preview;
-- selection/move/flip primitives;
-- versioned project storage.
-
-Still required:
-- Outline Only / edge processing;
-- Pixel-art processing orchestration/presets;
-- arbitrary/free image transforms;
-- PNG decode/import adapter;
-- schema-v2 Image layer representation;
-- original/processed/texture/3D Smart Import UI.
+Still future for Smart Import:
+- automatic background-removal workflow;
+- tint control;
+- reference-only layer mode;
+- direct transform handles;
+- final decorative fidelity pass;
+- Elytra-target import once the Elytra editor exists.
 
 See `SMART_IMPORT.md`.
 
@@ -434,9 +466,10 @@ Automated build/test verification is green. The remaining gate for the newest ed
 
 ## Immediate direction
 
-1. locally verify the current selection/layer/emissive slice when the development PC is available;
-2. continue CI-safe work on reusable transform/import foundations meanwhile;
-3. design schema v2 before adding persistent layer lock/image/gradient/effect layer kinds;
-4. move into Smart Import, Elytra editor, animation authoring and project sharing in the documented order.
+1. locally verify Select/layers/emissive/Smart Import at the required GUI profiles when the development PC is available;
+2. finish richer Gradient authoring UI in the Cape Editor;
+3. move the Home screen toward the approved reference with real thumbnail cards and navigation hierarchy;
+4. begin the dedicated Elytra editor foundation;
+5. then animation authoring, Loom Codes/sharing and final reference-fidelity hardening.
 
 See `NEXT_WORK.md` for the concrete queue.

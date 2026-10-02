@@ -6,6 +6,7 @@ import dev.loomstudios.client.project.ProjectDescriptor;
 import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.CapeUvRegion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -47,12 +48,21 @@ public final class LoomHomeScreen extends Screen {
         open.active = ProjectLibraryIndex.selected().isPresent();
         addRenderableWidget(open);
 
+        addRenderableWidget(new LoomButton(
+                center - 150,
+                top + 70,
+                300,
+                22,
+                Component.literal("Import PNG with Smart Import"),
+                this::createFromImport
+        ));
+
         List<ProjectDescriptor> recent = ProjectLibraryIndex.entries()
                 .stream()
                 .limit(5)
                 .toList();
 
-        int y = top + 88;
+        int y = top + 116;
         for (ProjectDescriptor descriptor : recent) {
             LoomButton projectButton = new LoomButton(
                     center - 150,
@@ -85,6 +95,24 @@ public final class LoomHomeScreen extends Screen {
                 this.minecraft.player.getUUID()
         );
         this.minecraft.setScreen(new CapeEditorScreen(this));
+    }
+
+    private void createFromImport() {
+        if (this.minecraft.player == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.createBlank(
+                "Imported Cape",
+                System.currentTimeMillis(),
+                this.minecraft.player.getUUID()
+        );
+        this.minecraft.setScreen(
+                new SmartImportScreen(
+                        this,
+                        CapeUvRegion.OUTSIDE
+                )
+        );
     }
 
     private void openSelected() {
@@ -163,7 +191,7 @@ public final class LoomHomeScreen extends Screen {
                 this.font,
                 Component.literal("Recent Projects"),
                 this.width / 2 - 150,
-                top + 72,
+                top + 100,
                 LoomUiTheme.ACCENT,
                 false
         );

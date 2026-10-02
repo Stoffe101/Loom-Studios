@@ -15,7 +15,9 @@ public record LoomCanvas(
                 || height <= 0
                 || width > LoomProjectCodec.MAX_CANVAS_DIMENSION
                 || height > LoomProjectCodec.MAX_CANVAS_DIMENSION) {
-            throw new IllegalArgumentException("Canvas dimensions out of range");
+            throw new IllegalArgumentException(
+                    "Canvas dimensions out of range"
+            );
         }
 
         Objects.requireNonNull(layers, "layers");
@@ -24,11 +26,14 @@ public record LoomCanvas(
         }
 
         int expectedPixels = Math.multiplyExact(width, height);
+
         for (LoomLayer layer : layers) {
             Objects.requireNonNull(layer, "layer");
-            if (layer.pixelCount() != expectedPixels) {
+
+            if (layer.kind() == LayerKind.PAINT
+                    && layer.pixelCount() != expectedPixels) {
                 throw new IllegalArgumentException(
-                        "Layer pixel count does not match canvas dimensions"
+                        "Paint layer pixel count does not match canvas dimensions"
                 );
             }
         }
@@ -36,7 +41,10 @@ public record LoomCanvas(
         layers = List.copyOf(layers);
     }
 
-    public LoomCanvas replaceLayer(UUID layerId, LoomLayer replacement) {
+    public LoomCanvas replaceLayer(
+            UUID layerId,
+            LoomLayer replacement
+    ) {
         Objects.requireNonNull(layerId, "layerId");
         Objects.requireNonNull(replacement, "replacement");
 
@@ -52,7 +60,9 @@ public record LoomCanvas(
         }
 
         if (!replaced) {
-            throw new IllegalArgumentException("Unknown layer " + layerId);
+            throw new IllegalArgumentException(
+                    "Unknown layer " + layerId
+            );
         }
 
         return new LoomCanvas(width, height, next);

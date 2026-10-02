@@ -15,6 +15,11 @@ import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LoomProject;
+import dev.loomstudios.project.LayerKind;
+import dev.loomstudios.project.GradientLayerData;
+import dev.loomstudios.project.GradientStop;
+import dev.loomstudios.project.NormalizedRect;
 import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
@@ -29,6 +34,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -49,6 +55,7 @@ public final class CapeEditorScreen extends Screen {
     private SymmetryMode symmetryMode = SymmetryMode.NONE;
     private PixelSelection selection;
     private UUID selectedLayerId;
+    private int selectedGradientStopIndex;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
@@ -85,6 +92,23 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton layerRenameButton;
     private LoomButton layerBlendButton;
     private LoomButton layerEmissiveButton;
+    private LoomButton layerLockButton;
+    private LoomButton layerGradientAddButton;
+    private LoomButton layerImportButton;
+    private LoomButton gradientTypeButton;
+    private LoomButton gradientAngleButton;
+    private LoomButton gradientStartButton;
+    private LoomButton gradientEndButton;
+    private LoomButton gradientRepeatButton;
+    private LoomButton gradientDitherButton;
+    private LoomButton gradientStopLabelButton;
+    private LoomButton gradientStopPreviousButton;
+    private LoomButton gradientStopNextButton;
+    private LoomButton gradientStopAddButton;
+    private LoomButton gradientStopRemoveButton;
+    private LoomButton gradientStopPositionDownButton;
+    private LoomButton gradientStopPositionUpButton;
+    private LoomButton gradientStopColorButton;
     private LoomButton layerOpacityDownButton;
     private LoomButton layerOpacityLabelButton;
     private LoomButton layerOpacityUpButton;
@@ -437,6 +461,21 @@ public final class CapeEditorScreen extends Screen {
         layerCreateRow.addChild(layerDeleteButton);
         tools.addChild(layerCreateRow);
 
+        LinearLayout typedCreateRow = LinearLayout.horizontal().spacing(4);
+        layerGradientAddButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "New Gradient",
+                this::addGradientLayer
+        );
+        layerImportButton = createLoomButton(
+                contentWidth - 4 - layerGradientAddButton.getWidth(),
+                "Import PNG",
+                this::openSmartImport
+        );
+        typedCreateRow.addChild(layerGradientAddButton);
+        typedCreateRow.addChild(layerImportButton);
+        tools.addChild(typedCreateRow);
+
         LinearLayout layerMoveRow = LinearLayout.horizontal().spacing(4);
         layerUpButton = createLoomButton(
                 (contentWidth - 4) / 2,
@@ -489,6 +528,139 @@ public final class CapeEditorScreen extends Screen {
                 this::toggleLayerEmissive
         );
         tools.addChild(this.layerEmissiveButton);
+
+        this.layerLockButton = createLoomButton(
+                contentWidth,
+                "Lock: Off",
+                this::toggleLayerLock
+        );
+        tools.addChild(this.layerLockButton);
+
+        this.gradientTypeButton = createLoomButton(
+                contentWidth,
+                "Gradient Type",
+                this::cycleGradientType
+        );
+        tools.addChild(this.gradientTypeButton);
+
+        LinearLayout gradientAngleRow =
+                LinearLayout.horizontal().spacing(4);
+        gradientAngleRow.addChild(createLoomButton(
+                48,
+                "Angle -",
+                () -> rotateGradient(-15.0)
+        ));
+        this.gradientAngleButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "0°",
+                () -> { }
+        );
+        this.gradientAngleButton.active = false;
+        gradientAngleRow.addChild(this.gradientAngleButton);
+        gradientAngleRow.addChild(createLoomButton(
+                48,
+                "Angle +",
+                () -> rotateGradient(15.0)
+        ));
+        tools.addChild(gradientAngleRow);
+
+        LinearLayout gradientColorRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStartButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Set Start",
+                () -> setGradientEndpoint(true)
+        );
+        this.gradientEndButton = createLoomButton(
+                contentWidth - 4 - gradientStartButton.getWidth(),
+                "Set End",
+                () -> setGradientEndpoint(false)
+        );
+        gradientColorRow.addChild(this.gradientStartButton);
+        gradientColorRow.addChild(this.gradientEndButton);
+        tools.addChild(gradientColorRow);
+
+        LinearLayout gradientEffectRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientRepeatButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Repeat: Off",
+                this::toggleGradientRepeat
+        );
+        this.gradientDitherButton = createLoomButton(
+                contentWidth - 4 - gradientRepeatButton.getWidth(),
+                "Dither: Off",
+                this::toggleGradientDither
+        );
+        gradientEffectRow.addChild(this.gradientRepeatButton);
+        gradientEffectRow.addChild(this.gradientDitherButton);
+        tools.addChild(gradientEffectRow);
+
+        LinearLayout gradientStopNavRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopPreviousButton = createLoomButton(
+                48,
+                "Stop <",
+                () -> selectGradientStop(-1)
+        );
+        this.gradientStopLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "Stop",
+                () -> { }
+        );
+        this.gradientStopLabelButton.active = false;
+        this.gradientStopNextButton = createLoomButton(
+                48,
+                "Stop >",
+                () -> selectGradientStop(1)
+        );
+        gradientStopNavRow.addChild(this.gradientStopPreviousButton);
+        gradientStopNavRow.addChild(this.gradientStopLabelButton);
+        gradientStopNavRow.addChild(this.gradientStopNextButton);
+        tools.addChild(gradientStopNavRow);
+
+        LinearLayout gradientStopEditRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopAddButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Add Stop",
+                this::addGradientStop
+        );
+        this.gradientStopRemoveButton = createLoomButton(
+                contentWidth - 4 - gradientStopAddButton.getWidth(),
+                "Remove Stop",
+                this::removeGradientStop
+        );
+        gradientStopEditRow.addChild(this.gradientStopAddButton);
+        gradientStopEditRow.addChild(this.gradientStopRemoveButton);
+        tools.addChild(gradientStopEditRow);
+
+        LinearLayout gradientStopPositionRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopPositionDownButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Position -",
+                () -> moveGradientStop(-0.05)
+        );
+        this.gradientStopPositionUpButton = createLoomButton(
+                contentWidth - 4 - gradientStopPositionDownButton.getWidth(),
+                "Position +",
+                () -> moveGradientStop(0.05)
+        );
+        gradientStopPositionRow.addChild(
+                this.gradientStopPositionDownButton
+        );
+        gradientStopPositionRow.addChild(
+                this.gradientStopPositionUpButton
+        );
+        tools.addChild(gradientStopPositionRow);
+
+        this.gradientStopColorButton = createLoomButton(
+                contentWidth,
+                "Set Selected Stop = Current Color",
+                this::setSelectedGradientStopColor
+        );
+        tools.addChild(this.gradientStopColorButton);
 
         LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
         layerOpacityDownButton = createLoomButton(
@@ -953,7 +1125,10 @@ public final class CapeEditorScreen extends Screen {
             ));
         }
 
-        boolean hasSelection = selection != null;
+        boolean editablePaintSelection = workspaceState != null
+                && !workspaceState.project().cape().layers().isEmpty()
+                && selectedLayer().editableAsPaint();
+        boolean hasSelection = selection != null && editablePaintSelection;
         if (selectionClearButton != null) {
             selectionClearButton.active = hasSelection;
         }
@@ -1059,6 +1234,34 @@ public final class CapeEditorScreen extends Screen {
             }
 
             LoomLayer layer = selectedLayer();
+            boolean editablePaint = layer.editableAsPaint();
+            boolean editableGradient =
+                    layer.kind() == LayerKind.GRADIENT && !layer.locked();
+
+            if (pencilButton != null) {
+                pencilButton.active = editablePaint;
+            }
+            if (eraserButton != null) {
+                eraserButton.active = editablePaint;
+            }
+            if (fillButton != null) {
+                fillButton.active = editablePaint;
+            }
+            if (lineButton != null) {
+                lineButton.active = editablePaint;
+            }
+            if (rectangleButton != null) {
+                rectangleButton.active = editablePaint;
+            }
+            if (rectangleModeButton != null) {
+                rectangleModeButton.active = editablePaint;
+            }
+            if (selectButton != null) {
+                selectButton.active = editablePaint;
+            }
+            if (symmetryButton != null) {
+                symmetryButton.active = editablePaint;
+            }
 
             if (layerDeleteButton != null) {
                 layerDeleteButton.active = layers.size() > 1;
@@ -1070,6 +1273,20 @@ public final class CapeEditorScreen extends Screen {
             if (layerAddButton != null) {
                 layerAddButton.active =
                         layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerGradientAddButton != null) {
+                layerGradientAddButton.active =
+                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerImportButton != null) {
+                boolean editingImage = layer.kind() == LayerKind.IMAGE;
+                layerImportButton.active = editingImage
+                        ? !layer.locked()
+                        : layers.size()
+                                < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+                layerImportButton.setMessage(Component.literal(
+                        editingImage ? "Edit Image" : "Import PNG"
+                ));
             }
             if (layerUpButton != null) {
                 layerUpButton.active =
@@ -1109,6 +1326,148 @@ public final class CapeEditorScreen extends Screen {
                         )
                 );
             }
+            if (layerLockButton != null) {
+                layerLockButton.setMessage(Component.literal(
+                        "Lock: " + (layer.locked() ? "On" : "Off")
+                ));
+            }
+
+            GradientLayerData gradient = layer.gradientData();
+            if (gradientTypeButton != null) {
+                gradientTypeButton.active = editableGradient;
+                gradientTypeButton.setMessage(Component.literal(
+                        gradient == null
+                                ? "Gradient Type"
+                                : "Gradient: "
+                                        + gradient.type().displayName()
+                ));
+            }
+            if (gradientAngleButton != null) {
+                gradientAngleButton.setMessage(Component.literal(
+                        gradient == null
+                                ? "Angle"
+                                : Math.round(
+                                        gradient.transform()
+                                                .rotationDegrees()
+                                ) + "°"
+                ));
+            }
+            if (gradientStartButton != null) {
+                gradientStartButton.active = editableGradient;
+            }
+            if (gradientEndButton != null) {
+                gradientEndButton.active = editableGradient;
+            }
+            if (gradientRepeatButton != null) {
+                gradientRepeatButton.active = editableGradient;
+                gradientRepeatButton.setMessage(Component.literal(
+                        "Repeat: "
+                                + (gradient != null && gradient.repeat()
+                                        ? "On"
+                                        : "Off")
+                ));
+            }
+            if (gradientDitherButton != null) {
+                gradientDitherButton.active = editableGradient;
+                gradientDitherButton.setMessage(Component.literal(
+                        "Dither: "
+                                + (gradient != null && gradient.dither()
+                                        ? "On"
+                                        : "Off")
+                ));
+            }
+
+            if (gradient != null) {
+                int stopIndex = clampedGradientStopIndex(gradient);
+                GradientStop stop = gradient.stops().get(stopIndex);
+                int stopCount = gradient.stops().size();
+
+                if (gradientStopLabelButton != null) {
+                    gradientStopLabelButton.setMessage(
+                            Component.literal(
+                                    "Stop "
+                                            + (stopIndex + 1)
+                                            + "/"
+                                            + stopCount
+                                            + " "
+                                            + Math.round(
+                                                    stop.position() * 100.0
+                                            )
+                                            + "%"
+                            )
+                    );
+                }
+                if (gradientStopPreviousButton != null) {
+                    gradientStopPreviousButton.active =
+                            stopIndex > 0;
+                }
+                if (gradientStopNextButton != null) {
+                    gradientStopNextButton.active =
+                            stopIndex + 1 < stopCount;
+                }
+                if (gradientStopAddButton != null) {
+                    gradientStopAddButton.active =
+                            editableGradient
+                                    && stopCount
+                                    < dev.loomstudios.project.LoomProjectCodec.MAX_GRADIENT_STOPS;
+                }
+                if (gradientStopRemoveButton != null) {
+                    gradientStopRemoveButton.active =
+                            editableGradient && stopCount > 2;
+                }
+                if (gradientStopPositionDownButton != null) {
+                    gradientStopPositionDownButton.active =
+                            editableGradient
+                                    && stop.position()
+                                    > (stopIndex == 0
+                                            ? 0.0
+                                            : gradient.stops()
+                                                    .get(stopIndex - 1)
+                                                    .position()
+                                                    + 0.001);
+                }
+                if (gradientStopPositionUpButton != null) {
+                    gradientStopPositionUpButton.active =
+                            editableGradient
+                                    && stop.position()
+                                    < (stopIndex + 1 == stopCount
+                                            ? 1.0
+                                            : gradient.stops()
+                                                    .get(stopIndex + 1)
+                                                    .position()
+                                                    - 0.001);
+                }
+                if (gradientStopColorButton != null) {
+                    gradientStopColorButton.active = editableGradient;
+                }
+            } else {
+                if (gradientStopLabelButton != null) {
+                    gradientStopLabelButton.setMessage(
+                            Component.literal("Stop")
+                    );
+                }
+                if (gradientStopPreviousButton != null) {
+                    gradientStopPreviousButton.active = false;
+                }
+                if (gradientStopNextButton != null) {
+                    gradientStopNextButton.active = false;
+                }
+                if (gradientStopAddButton != null) {
+                    gradientStopAddButton.active = false;
+                }
+                if (gradientStopRemoveButton != null) {
+                    gradientStopRemoveButton.active = false;
+                }
+                if (gradientStopPositionDownButton != null) {
+                    gradientStopPositionDownButton.active = false;
+                }
+                if (gradientStopPositionUpButton != null) {
+                    gradientStopPositionUpButton.active = false;
+                }
+                if (gradientStopColorButton != null) {
+                    gradientStopColorButton.active = false;
+                }
+            }
             if (layerRenameButton != null) {
                 layerRenameButton.active = layerNameField != null
                         && !layerNameField.getValue().trim().isEmpty();
@@ -1117,12 +1476,15 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private UUID findEditableLayer() {
-        return ClientProjectWorkspace.project().cape().layers().stream()
-                .filter(layer -> !layer.emissive())
+        var layers = ClientProjectWorkspace.project().cape().layers();
+
+        return layers.stream()
+                .filter(LoomLayer::editableAsPaint)
                 .findFirst()
+                .or(() -> layers.stream().findFirst())
                 .map(LoomLayer::id)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Cape project has no editable paint layer"
+                        "Cape project has no layers"
                 ));
     }
 
@@ -1158,6 +1520,8 @@ public final class CapeEditorScreen extends Screen {
 
     private void selectLayer(UUID layerId) {
         this.selectedLayerId = layerId;
+        this.selectedGradientStopIndex = 0;
+        this.selection = null;
         syncLayerFields();
         updateButtonStates();
     }
@@ -1189,6 +1553,59 @@ public final class CapeEditorScreen extends Screen {
         selectedLayerId = result.cape().layers().getLast().id();
         syncLayerFields();
         updateButtonStates();
+    }
+
+    private void addGradientLayer() {
+        LoomProject project = ClientProjectWorkspace.project();
+        NormalizedRect target = activeFaceRect(project);
+        int complement = (selectedColor & 0xFF000000)
+                | ((~selectedColor) & 0x00FFFFFF);
+
+        GradientLayerData gradient =
+                GradientLayerData.defaultLinear(
+                        selectedColor,
+                        complement,
+                        target
+                );
+
+        var result = ClientProjectWorkspace.apply(current ->
+                ProjectEdits.addCapeGradientLayer(
+                        current,
+                        "Gradient",
+                        gradient
+                )
+        );
+
+        selectedLayerId = result.cape().layers().getLast().id();
+        this.selectedGradientStopIndex = 0;
+        this.selection = null;
+        syncLayerFields();
+        updateButtonStates();
+    }
+
+    private void openSmartImport() {
+        this.selection = null;
+        LoomLayer layer = selectedLayer();
+
+        if (layer.kind() == LayerKind.IMAGE) {
+            if (layer.locked()) {
+                return;
+            }
+
+            this.minecraft.setScreen(
+                    new SmartImportScreen(
+                            this,
+                            this.capeRegion,
+                            layer.id(),
+                            layer
+                    )
+            );
+            return;
+        }
+
+        this.minecraft.setScreen(
+                new SmartImportScreen(this, this.capeRegion)
+        );
     }
 
     private void duplicateLayer() {
@@ -1326,6 +1743,372 @@ public final class CapeEditorScreen extends Screen {
         updateButtonStates();
     }
 
+    private void toggleLayerLock() {
+        LoomLayer layer = selectedLayer();
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeLayerLocked(
+                        project,
+                        selectedLayerId,
+                        !layer.locked()
+                )
+        );
+
+        this.selection = null;
+        updateButtonStates();
+    }
+
+    private void cycleGradientType() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withType(gradient.type().next())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void rotateGradient(double delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        double next = normalizeDegrees(
+                gradient.transform().rotationDegrees() + delta
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withTransform(
+                                gradient.transform().withRotation(next)
+                        )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void setGradientEndpoint(boolean start) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+
+        int index = start ? 0 : stops.size() - 1;
+        GradientStop previous = stops.get(index);
+        stops.set(
+                index,
+                new GradientStop(
+                        previous.position(),
+                        selectedColor
+                )
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void selectGradientStop(int delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT) {
+            return;
+        }
+
+        int count = layer.gradientData().stops().size();
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(
+                        count - 1,
+                        selectedGradientStopIndex + delta
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void addGradientStop() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        if (gradient.stops().size()
+                >= dev.loomstudios.project.LoomProjectCodec.MAX_GRADIENT_STOPS) {
+            return;
+        }
+
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+
+        int gapIndex = 0;
+        double largestGap = -1.0;
+        for (int i = 0; i < stops.size() - 1; i++) {
+            double gap = stops.get(i + 1).position()
+                    - stops.get(i).position();
+            if (gap > largestGap) {
+                largestGap = gap;
+                gapIndex = i;
+            }
+        }
+
+        GradientStop left = stops.get(gapIndex);
+        GradientStop right = stops.get(gapIndex + 1);
+        double position =
+                (left.position() + right.position()) / 2.0;
+        int color = interpolateArgb(
+                left.argb(),
+                right.argb(),
+                0.5
+        );
+
+        stops.add(new GradientStop(position, color));
+        stops.sort(java.util.Comparator.comparingDouble(
+                GradientStop::position
+        ));
+
+        selectedGradientStopIndex = 0;
+        for (int i = 0; i < stops.size(); i++) {
+            if (Math.abs(stops.get(i).position() - position) < 1.0E-9) {
+                selectedGradientStopIndex = i;
+                break;
+            }
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void removeGradientStop() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        if (gradient.stops().size() <= 2) {
+            return;
+        }
+
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        stops.remove(index);
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(index, stops.size() - 1)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void moveGradientStop(double delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        GradientStop current = stops.get(index);
+
+        double min = index == 0
+                ? 0.0
+                : stops.get(index - 1).position() + 0.001;
+        double max = index + 1 == stops.size()
+                ? 1.0
+                : stops.get(index + 1).position() - 0.001;
+
+        double next = Math.max(
+                min,
+                Math.min(max, current.position() + delta)
+        );
+        stops.set(index, new GradientStop(next, current.argb()));
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void setSelectedGradientStopColor() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        GradientStop current = stops.get(index);
+        stops.set(
+                index,
+                new GradientStop(current.position(), selectedColor)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private int clampedGradientStopIndex(
+            GradientLayerData gradient
+    ) {
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(
+                        gradient.stops().size() - 1,
+                        selectedGradientStopIndex
+                )
+        );
+        return selectedGradientStopIndex;
+    }
+
+    private void toggleGradientRepeat() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withRepeat(!gradient.repeat())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void toggleGradientDither() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withDither(!gradient.dither())
+                )
+        );
+        updateButtonStates();
+    }
+
+    private NormalizedRect activeFaceRect(LoomProject project) {
+        int scale = CanvasResolution.fromCanvas(
+                project.cape()
+        ).scale();
+
+        return new NormalizedRect(
+                capeRegion.atlasX(0, scale)
+                        / (double)project.cape().width(),
+                capeRegion.atlasY(0, scale)
+                        / (double)project.cape().height(),
+                capeRegion.width(scale)
+                        / (double)project.cape().width(),
+                capeRegion.height(scale)
+                        / (double)project.cape().height()
+        );
+    }
+
+    private static int interpolateArgb(
+            int first,
+            int second,
+            double t
+    ) {
+        int a = interpolateChannel(
+                (first >>> 24) & 0xFF,
+                (second >>> 24) & 0xFF,
+                t
+        );
+        int r = interpolateChannel(
+                (first >>> 16) & 0xFF,
+                (second >>> 16) & 0xFF,
+                t
+        );
+        int g = interpolateChannel(
+                (first >>> 8) & 0xFF,
+                (second >>> 8) & 0xFF,
+                t
+        );
+        int b = interpolateChannel(
+                first & 0xFF,
+                second & 0xFF,
+                t
+        );
+
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    private static int interpolateChannel(
+            int first,
+            int second,
+            double t
+    ) {
+        return Math.max(
+                0,
+                Math.min(
+                        255,
+                        (int)Math.round(first + (second - first) * t)
+                )
+        );
+    }
+
+    private static double normalizeDegrees(double degrees) {
+        double normalized = degrees % 360.0;
+        return normalized < 0.0
+                ? normalized + 360.0
+                : normalized;
+    }
+
     private void syncLayerFields() {
         if (layerNameField == null
                 || workspaceState == null
@@ -1359,6 +2142,11 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private void editPixel(int x, int y) {
+        if (tool != Tool.EYEDROPPER
+                && !selectedLayer().editableAsPaint()) {
+            return;
+        }
+
         switch (tool) {
             case PENCIL -> ClientProjectWorkspace.apply(project ->
                     paintBrushWithSymmetry(
@@ -1398,6 +2186,10 @@ public final class CapeEditorScreen extends Screen {
             int endX,
             int endY
     ) {
+        if (!selectedLayer().editableAsPaint()) {
+            return;
+        }
+
         switch (tool) {
             case LINE -> ClientProjectWorkspace.apply(project ->
                     paintLineWithSymmetry(

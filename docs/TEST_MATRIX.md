@@ -128,31 +128,65 @@ Shader-sensitive effects should be checked with at least one representative shad
 - dithered Reduce Colors leaves already-bounded art unchanged
 - dithered Reduce Colors honors requested maximum color count
 
-### Future PNG/UI import checks
+### Smart Import automated + local checks
 
+Automated/current CI:
+- Outline Only clears non-edge interior pixels
+- Direct mode with zero adjustments is pixel-stable
+- Pixel Art honors configured color bounds
+- Palette Limited preserves source alpha
+- processing mode stable IDs round-trip
+- schema-v1 project bytes migrate explicitly to schema v2
+- schema-v2 round-trip preserves Image/Gradient payloads and lock state
+- typed Image layers rasterize deterministically
+- Gradient layers rasterize deterministically
+- typed-layer normalized placement survives 1x -> 4x canvas resizing
+- locked Paint layers reject pixel mutation
+- Image/Gradient layers reject Paint-tool pixel mutation
+
+Local/runtime verification:
 - PNG with alpha
 - PNG without alpha
 - large source image
 - odd aspect ratio
 - very small image
-- fit/stretch/crop/center
-- mirror/rotate
-- dithering
-- color reduction
-- brightness/contrast/saturation
-- background/transparency handling
-- palette-limited/posterize/monochrome/outline/pixel-art modes
+- file-picker cancel path
+- invalid/non-PNG content rejection
+- source >256px persistence downscale
+- import that would exceed 1 MiB project size is rejected
+- Fit / Stretch / Crop / Center
+- Keep Aspect
+- move / free scale / arbitrary rotate
+- Mirror H / Mirror V
+- Dither
+- Reduce Colors
+- Brightness / Contrast / Saturation
+- Direct / Pixel Art / Outline / Monochrome / Palette Limited / Posterize
+- selected Loom Swatches palette
+- Original / Processed / Cape Texture preview
+- isolated 3D candidate preview
+- Apply as new Image layer
+- reopen/edit Image layer
+- Undo/Redo around Apply
+- candidate preview does not change equipped/network state
 
 ## Project format tests
 
-- save/load round-trip
+- schema-v2 save/load round-trip
 - deterministic output where required
-- migration from older schema fixtures
-- missing/corrupt asset
-- unknown optional field
+- schema-v1 -> schema-v2 migration
+- stable schema-v2 blend IDs
+- stable layer-kind IDs
+- Paint payload round-trip
+- Image payload round-trip
+- Gradient payload round-trip
+- persistent lock round-trip
+- malformed typed payload rejection
+- oversized embedded Image source rejection
+- oversized project rejection
 - unsupported future major version
-- portable code round-trip
-- invalid portable code rejection
+- portable code round-trip when Loom Codes are implemented
+- invalid portable code rejection when Loom Codes are implemented
 
 ## Animation/effect tests
 
@@ -262,7 +296,7 @@ Deferred UX check:
 
 ## Phase-1 project-core checks
 
-- schema-v1 project encode/decode round trip
+- schema-v2 project encode/decode round trip
 - deterministic encoding produces stable SHA-256
 - invalid magic rejected
 - unsupported schema rejected
@@ -520,7 +554,7 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - layer rename persists through project encode/decode
 - emissive flag persists through project encode/decode
 - blend mode persists through project encode/decode
-- schema-v1 BlendMode ordinal mapping is pinned by automated test
+- schema-v1 BlendMode ordinal mapping remains pinned for migration compatibility; schema v2 uses stable blend IDs
 - Normal behaves as standard source-over
 - Add / Glow does not hide source over transparent destination
 - Screen does not hide source over transparent destination
@@ -584,3 +618,39 @@ Runtime:
 - no synthetic SPIKE shimmer stripe appears
 - shader OFF base cape remains visible
 - shader ON base cape remains visible even if optional glow behavior differs
+
+
+## Schema-v2 typed layer checks
+
+Automated:
+- v1 Paint layers migrate to v2 as unlocked Paint layers
+- Image layer source/crop/transform/processing survives encode/decode
+- Gradient type/stops/transform/repeat/dither survives encode/decode
+- persistent layer lock survives encode/decode
+- duplicate typed layer receives a fresh UUID while preserving payload
+- typed-layer resize keeps normalized authoring data unchanged
+- shared compiler applies visibility / opacity / blend / emissive to typed layers
+
+Local/runtime:
+- Paint / Image / Gradient rows are distinguishable
+- Lock prevents accidental Paint-tool edits
+- Image and Gradient layers composite correctly in editor preview
+- Image and Gradient layers composite correctly in 3D preview
+- Image and Gradient layers composite correctly when equipped
+- remote client receives/compiles schema-v2 project through normal hash/blob sync
+
+## Smart Import mandatory UI profile matrix
+
+Verify the Smart Import screen at:
+- 1920x1080 GUI scale 2
+- 1920x1080 GUI scale 3
+- 3440x1440 GUI scale 2
+- 3440x1440 GUI scale 3
+
+Pass criteria:
+- Original / Processed / Cape Texture previews remain readable
+- 3D candidate preview remains reachable
+- transform/processing controls do not overlap
+- file/apply/cancel controls remain reachable
+- labels do not clip
+- scroll behavior does not steal preview interaction

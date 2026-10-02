@@ -12,12 +12,12 @@ public record LoomProject(
         LoomCanvas elytra,
         LoomRuntimeSettings runtime
 ) {
-    public static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
     public static final int TEXTURE_WIDTH = 64;
     public static final int TEXTURE_HEIGHT = 32;
 
     public LoomProject {
-        if (schemaVersion != CURRENT_SCHEMA_VERSION) {
+        if (schemaVersion < 1 || schemaVersion > CURRENT_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
                     "Unsupported Loom project schema " + schemaVersion
             );

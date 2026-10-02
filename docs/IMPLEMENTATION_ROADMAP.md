@@ -17,12 +17,16 @@ Remaining release-hardening item:
 
 ## Phase 1 — Project core
 
-**Status:** FOUNDATION GREEN / EXPANDING AS EDITOR NEEDS IT.
+**Status:** SCHEMA-V2 FOUNDATION GREEN.
 
 Implemented:
-- schema-v1 project model;
+- schema-v2 project model;
+- explicit schema-v1 -> v2 migration;
 - cape + Elytra canvases;
-- immutable pixel layers;
+- typed Paint / Image / Gradient layers;
+- persistent layer lock;
+- stable schema-v2 blend/kind identifiers;
+- normalized typed-layer transforms;
 - serialization/hash;
 - local project library;
 - runtime texture cache;
@@ -31,8 +35,6 @@ Implemented:
 - dirty-state/save/load;
 - undo/redo;
 - multiplayer transfer/cache.
-
-Future schema expansion is intentionally deferred until non-pixel layer types and persistent layer locking are designed together.
 
 ## Phase 2 — Cape editor core
 
@@ -63,8 +65,8 @@ Implemented in the current selection slice:
 - Flip Horizontal / Vertical.
 
 Still required:
-- selection-aware transform refinement where needed for Smart Import;
-- first-class Gradient;
+- richer Gradient authoring controls in the Cape Editor;
+- richer typed-layer rows/icons;
 - shortcut/tooltips surface;
 - final reference-image editor composition.
 
@@ -72,7 +74,7 @@ Note: the fixed Minecraft cape UV face itself is not resized by a destructive cr
 
 ## Phase 3 — Layer system
 
-**Status:** ACTIVE / PAINT-LAYER WORKFLOW IMPLEMENTED.
+**Status:** TYPED LAYER FOUNDATION IMPLEMENTED.
 
 Implemented:
 - add;
@@ -82,59 +84,57 @@ Implemented:
 - visibility;
 - opacity;
 - rename;
+- persistent lock;
 - emissive flag;
 - Normal;
 - Add / Glow;
 - Screen;
 - Multiply;
-- Overlay.
+- Overlay;
+- Paint layers;
+- non-destructive Image layers;
+- editable Gradient layers;
+- shared typed-layer runtime compilation.
 
 Remaining:
-- persistent lock;
 - richer layer row/icon UI;
-- non-destructive image layers;
-- gradient layers;
-- effect/reference layers.
-
-Persistent lock and new layer kinds should be introduced in one coordinated project-schema expansion rather than patched into schema v1 piecemeal.
+- richer Gradient authoring controls;
+- future effect/reference layer metadata.
 
 ## Phase 4 — Smart Import
 
-**Status:** PURE TRANSFORM/PROCESSING CORE STARTED / USER-FACING WORKSPACE NOT STARTED.
+**Status:** FUNCTIONAL IMPLEMENTATION GREEN / LOCAL VISUAL VERIFICATION PENDING.
 
-Implemented pure core:
-- Fit / Stretch / centered Crop / Center placement;
+Implemented:
+- PNG import adapter;
+- Fit / Stretch / centered Crop / Center;
+- Keep Aspect;
+- move / free scale / arbitrary persistent rotation;
 - mirror H/V;
-- 90-degree rotate;
-- crop;
-- nearest-neighbor resize;
+- crop + nearest-neighbor resize;
 - brightness/contrast/saturation;
 - bounded immutable ARGB processing image;
 - Reduce Colors;
 - Palette Limited mapping;
 - Floyd-Steinberg dithering;
 - Posterize;
-- Monochrome.
-
-Still planned:
-- PNG import;
-- interactive aspect lock;
-- free position/scale/arbitrary rotate;
-- Outline processing;
-- Pixel-art mode orchestration;
-- transparency/background handling;
-- Direct;
-- Pixel-art;
-- Outline;
 - Monochrome;
-- Palette Limited;
-- Posterize;
-- imported image transforms;
-- original/processed/texture/3D previews.
+- Outline Only;
+- Direct;
+- Pixel Art orchestration;
+- Original / Processed / Cape Texture previews;
+- isolated 3D candidate preview;
+- Apply as editable Image layer;
+- reopen/edit Image layer;
+- schema-v2 persistence of source/transform/processing intent.
 
-Gate:
-- selection/transform primitives;
-- non-destructive image-layer representation.
+Later enhancements:
+- background removal workflow;
+- tint;
+- reference-only mode;
+- direct transform handles;
+- Elytra-target import once the Elytra editor exists;
+- final reference-image visual polish.
 
 ## Phase 5 — Elytra editor
 

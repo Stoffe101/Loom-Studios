@@ -1,239 +1,262 @@
 # Loom Studios — Smart Import
 
-**Status:** Processing/transform foundation in progress  
+**Status:** Functional implementation complete / exact-head CI and local visual verification pending  
 **Reference target:** `Loom_Studios_03_Smart_Import.png`
 
 ## Product rule
 
 Smart Import is a guided, non-destructive image workflow.
 
-The final project representation should preserve:
-- original imported asset or bounded source data;
-- placement/transform parameters;
-- processing parameters;
-- layer opacity/tint;
-- later animation/effect metadata where applicable.
+Imported artwork remains an editable Image layer. Loom Studios does not silently flatten the import into paint pixels.
 
-The pure image-processing core may rasterize temporary previews and compiled output, but the eventual Image layer must not silently replace editable intent with one flattened paint layer.
+The persistent Image layer keeps:
+- bounded source ARGB pixels;
+- source crop;
+- normalized target transform;
+- semantic target clip;
+- processing mode/settings;
+- optional palette;
+- normal layer opacity/blend/emissive/visibility/lock metadata.
 
-## Current pure-core model
+Runtime/editor textures are compiled products, not the editable source of truth.
 
-### PixelImage
+## Implemented import flow
 
-`PixelImage` is an immutable bounded ARGB raster value used by processing code and automated tests.
+Smart Import is reachable from:
+- Loom Home through **Import PNG with Smart Import**;
+- Cape Editor through **Import PNG**;
+- an existing Image layer through **Edit Image**.
 
-Current safety limits:
-- maximum dimension: 4096 pixels;
-- maximum total pixels: 16,777,216;
-- exact pixel-count validation;
-- defensive pixel-array ownership.
+The current screen provides:
+- PNG file picker;
+- Original preview;
+- Processed preview;
+- resulting Cape Texture preview;
+- isolated 3D candidate-project preview;
+- Apply as Image Layer;
+- update/reopen flow for existing Image layers;
+- Cancel without equipping or publishing the candidate project.
 
-These are processing limits, not Loom cape/Elytra canvas sizes.
+The candidate 3D preview uses the normal Loom render compiler through a scoped preview project. It does not mutate the equipped project or multiplayer state.
 
-The editable Loom canvas remains 64x32 / 128x64 / 256x128.
+## PNG safety and persistence
+
+Client PNG decoding is handled by `PngImportAdapter`.
+
+Safety rules:
+- current user-facing import accepts PNG only;
+- compressed input is capped at 32 MiB;
+- decoded processing images retain the common `PixelImage` safety limits:
+  - maximum dimension 4096;
+  - maximum 16,777,216 pixels;
+- alpha is preserved;
+- the extension is not sufficient by itself: NativeImage must successfully parse the content;
+- source decoding happens on import, not per rendered frame;
+- embedded project source is downscaled with nearest-neighbor sampling when either dimension exceeds 256;
+- final candidate project encoding is validated before the workspace edit is accepted, so an import that would exceed the 1 MiB `.loom` limit is rejected before it creates an unsavable project.
+
+The 256-pixel embedded-source bound is separate from the temporary 4096-pixel processing bound.
+
+## Placement and transform model
+
+The persistent target transform is normalized to the Loom canvas.
+
+That makes Image-layer placement resolution-independent across 64x32, 128x64 and 256x128 project canvases.
 
 ### Placement modes
 
-The approved first placement modes now have deterministic common-core semantics.
+**Fit**
+- contain source inside target;
+- preserve aspect ratio;
+- center result;
+- transparent letterbox is allowed.
 
-#### Fit
-
-- preserve source aspect ratio;
-- scale until the whole source fits inside the target;
-- center the result;
-- uncovered target pixels remain transparent.
-
-#### Stretch
-
-- use the full source;
-- fill the full target;
+**Stretch**
+- use full source;
+- fill target;
 - aspect ratio may change.
 
-#### Crop
-
+**Crop**
+- take a centered source crop matching target aspect;
 - preserve aspect ratio;
-- take a centered source crop matching the target aspect ratio;
-- scale that crop to fill the complete target.
+- fill target;
+- does not change Minecraft's fixed cape-face dimensions.
 
-This is the Smart Import meaning of Crop.
+**Center**
+- keep source pixel scale relative to the target canvas;
+- center it;
+- clip overflow at the target semantic face.
 
-It does **not** resize or change Minecraft's fixed semantic cape-face dimensions.
+### Interactive transforms
 
-#### Center
+Smart Import exposes:
+- Keep Aspect;
+- Move Left / Right / Up / Down;
+- free scale from 10% to 400% of the placed size;
+- arbitrary-angle rotation in 15-degree editor steps;
+- Mirror H;
+- Mirror V.
 
-- do not scale;
-- center source pixels in the target;
-- clip portions that lie outside the target;
-- preserve transparent target pixels where the source does not cover them.
+The persistent `LayerTransform` itself stores arbitrary finite rotation rather than restricting the schema to 90-degree turns.
 
-## Implemented raster transforms
+## Processing modes
 
-Pure/testable operations:
-- mirror horizontal;
-- mirror vertical;
-- rotate 90 degrees clockwise;
-- rotate 90 degrees counter-clockwise;
-- rectangular crop;
-- nearest-neighbor resize;
-- render an `ImagePlacement` into a transparent target;
-- Fit / Stretch / Crop / Center convenience placement.
+The common deterministic pipeline now exposes:
 
-Nearest-neighbor resizing is intentionally available because pixel-art import must not be forced through smoothing.
+### Direct
+Color adjustments only, with optional final color reduction.
 
-Later preview/compiler paths may add other sampling strategies when appropriate.
+### Pixel Art
+Uses nearest/pixel-preserving source data plus bounded color reduction. Default palette size is 16 when no explicit color limit is selected.
 
-## Implemented color adjustments
-
-Current deterministic controls:
-- Brightness;
-- Contrast;
-- Saturation.
-
-Each uses a normalized `-1..1` range.
-
-Rules:
-- alpha is preserved;
-- RGB output is clamped to 0..255;
-- zero adjustment is pixel-stable;
-- saturation -1 produces luminance grayscale.
-
-The eventual UI may present friendlier slider labels/percentages while mapping to this normalized core.
-
-## Implemented color reduction / import modes
-
-### Reduce Colors
-
-A deterministic bounded median-cut style quantizer now:
-- bins source RGB into a fixed 5-bit-per-channel histogram;
-- weights bins by source pixel frequency;
-- recursively splits color boxes by their widest channel/range;
-- produces at most 256 palette colors;
-- maps source RGB to the nearest generated palette color;
-- preserves the source alpha channel;
-- leaves already-within-limit artwork pixel-stable.
-
-This avoids an unbounded unique-color map for large source images.
-
-### Palette Limited
-
-`mapToPalette(...)` maps visible source pixels to the nearest supplied palette RGB while preserving source alpha.
-
-Palette size is bounded to 1..256 colors.
-
-This is the processing primitive that the eventual Palette Limited Smart Import mode will use with Loom Swatches/custom palettes.
-
-### Dither
-
-Deterministic Floyd-Steinberg error diffusion is implemented.
-
-Rules:
-- RGB error only;
-- source alpha is preserved;
-- fully transparent pixels remain byte-for-byte untouched;
-- error is not diffused into or through fully transparent pixels;
-- output colors remain limited to the supplied/generated palette;
-- dithered Reduce Colors reuses the same bounded palette extractor.
-
-### Posterize
-
-Posterize supports 2..256 levels per RGB channel and preserves alpha.
+### Outline Only
+Keeps visible edge pixels based on alpha/luminance discontinuities and clears non-edge interior pixels.
 
 ### Monochrome
+Converts RGB to luminance grayscale while preserving alpha.
 
-Monochrome uses luminance grayscale and preserves alpha.
+### Palette Limited
+Maps visible source RGB to a constrained palette while retaining source alpha.
 
-## Not implemented yet
+Smart Import can use:
+- the currently selected persisted Loom Swatches palette; or
+- an automatically extracted bounded palette when no explicit Swatches palette is attached.
 
-### Processing
+### Posterize
+Reduces each RGB channel to a configurable number of levels.
+
+## Processing controls
+
+Implemented:
+- Brightness `-1..1`;
+- Contrast `-1..1`;
+- Saturation `-1..1`;
+- Reduce Colors / palette-size limit;
+- deterministic Floyd-Steinberg dithering;
+- Posterize levels;
+- selected Loom Swatches palette integration.
+
+Processing settings remain serialized with the Image layer and can be reopened/edited after saving the project.
+
+## Pure image-processing foundation
+
+Reusable/testable common code includes:
+- immutable bounded `PixelImage`;
+- Fit / Stretch / Crop / Center geometry;
+- mirror horizontal/vertical;
+- rotate 90° clockwise/counter-clockwise;
+- crop;
+- nearest-neighbor resize;
+- arbitrary persistent destination rotation through `LayerTransform`;
+- Brightness / Contrast / Saturation;
+- deterministic bounded color quantization;
+- palette mapping;
+- Floyd-Steinberg dithering;
+- Posterize;
+- Monochrome;
 - Outline Only;
-- Pixel-art mode orchestration/presets;
-- transparency/background removal workflow;
-- tint.
+- processing-mode orchestration.
 
-### Transform
-- arbitrary-angle rotation;
-- free scale;
-- explicit position offsets after initial placement;
-- Keep Aspect Ratio interactive constraint;
-- transform handles.
+## Schema-v2 relationship
 
-### Data model
-- schema-v2 Image layer;
-- imported asset storage/content addressing;
-- persistent transform parameters;
-- persistent processing parameters;
-- migration fixtures.
+Schema v2 makes Smart Import a first-class project feature.
 
-### UI
-- PNG picker/import source;
-- original preview;
-- processed preview;
-- resulting cape/Elytra texture preview;
-- integrated 3D preview;
-- Apply Import;
-- Import as New Layer;
-- Use as Reference Layer;
-- Cancel.
+Image-layer payload:
+- embedded source image;
+- normalized source crop;
+- normalized destination transform;
+- normalized semantic clip;
+- processing mode;
+- Brightness / Contrast / Saturation;
+- color limit;
+- dither flag;
+- Posterize levels;
+- optional palette.
 
-## PNG decode safety gate
+Image layers also use normal layer metadata:
+- UUID;
+- name;
+- visible;
+- opacity;
+- stable blend mode;
+- emissive;
+- persistent lock.
 
-Before PNG loading is exposed:
-- inspect dimensions before allocating large processing buffers where the decoder permits;
-- keep crop/placement arithmetic overflow-safe even for hostile coordinates;
-- reject unsupported/oversized images cleanly;
-- enforce decompressed pixel bounds;
-- preserve alpha;
-- never trust extension alone;
-- avoid per-frame decoding.
+Schema-v1 projects are decoded through the old paint-only layout and explicitly migrated to schema v2.
 
-## Schema relationship
+## Runtime/compiler behavior
 
-This processing package is deliberately independent from schema v1.
+`LayerRasterizer` converts Paint, Image and Gradient layers into canvas-sized temporary rasters.
 
-Schema v2 should reference the transform/placement concepts without forcing preview rasters into project persistence.
+`LoomTextureCompiler` then applies the existing shared:
+- visibility;
+- opacity;
+- blend mode;
+- emissive-only filtering;
+- optional runtime hue animation.
 
-Persistent layer lock, Image layers, Gradient layers and stable layer-kind identifiers should still be introduced together as the coordinated schema expansion described in `PROJECT_FORMAT.md` and `NEXT_WORK.md`.
+Therefore imported Image layers automatically participate in:
+- editor composite preview;
+- project thumbnails;
+- 3D preview;
+- equipped runtime cape;
+- multiplayer hash/blob transfer.
+
+No special runtime-network format is required for Smart Import beyond the versioned `.loom` blob.
 
 ## Automated coverage
 
-Current tests cover:
-- PixelImage defensive ownership;
-- invalid dimensions/pixel counts;
-- mirror horizontal/vertical;
-- clockwise/counter-clockwise quarter rotation;
-- crop bounds;
-- nearest-neighbor resize;
-- Fit geometry;
-- Stretch geometry;
-- centered Crop geometry;
-- Center geometry with negative destination offsets;
-- transparent Fit letterboxing;
-- centered Crop raster output;
-- oversized Center clipping;
-- invalid custom source placement rejection;
-- overflow-safe crop/source-rectangle bounds checks;
-- extreme off-screen destination clipping without integer wraparound;
-- zero color-adjustment stability;
-- brightness alpha preservation;
-- full desaturation;
-- adjustment range validation;
-- Reduce Colors maximum-color enforcement;
-- deterministic palette extraction/reduction;
-- alpha preservation during reduction;
-- Palette Limited nearest-RGB mapping;
-- Posterize level validation/output;
-- Monochrome luminance behavior;
-- deterministic Floyd-Steinberg output;
-- dithering palette containment;
-- transparent-pixel error-diffusion barriers;
-- dithered Reduce Colors maximum-color enforcement.
+Existing processing tests cover:
+- PixelImage validation/defensive ownership;
+- placement geometry and clipping;
+- mirror/crop/resize/quarter-turn transforms;
+- adjustment bounds and alpha preservation;
+- deterministic bounded quantization;
+- palette mapping;
+- Posterize;
+- Monochrome;
+- deterministic Floyd-Steinberg dithering and transparency barriers.
 
-## Next implementation slice
+The current milestone adds coverage for:
+- Outline Only;
+- processing-mode stable IDs;
+- Direct-mode stability;
+- Pixel Art color bounds;
+- Palette Limited alpha preservation;
+- schema-v1 -> schema-v2 migration;
+- schema-v2 Image-layer round trip;
+- persistent lock state;
+- typed Image-layer rasterization;
+- resolution-independent typed-layer placement;
+- rejection of paint mutation against locked/typed layers.
 
-Recommended order:
-1. exact-SHA CI for the quantization/dithering slice;
-2. Outline Only / edge-processing primitive;
-3. Pixel-art processing preset/orchestration design;
-4. schema-v2 Image layer design;
-5. PNG decoding/import adapter;
-6. Smart Import UI/reference composition after the data model is stable.
+## Local visual/runtime verification still required
+
+Because the current user is away from the development PC, do not call the screen visually DONE yet.
+
+Verify later:
+- file picker opens and returns correctly on Windows;
+- PNG with and without alpha;
+- large/odd/small PNGs;
+- Original / Processed / Cape Texture preview layout;
+- all placement modes;
+- Keep Aspect;
+- move/scale/rotate/mirror;
+- each processing mode;
+- Reduce Colors and Dither;
+- selected Swatches palette;
+- Apply new Image layer;
+- reopen/edit an Image layer;
+- 3D candidate preview;
+- Undo/Redo after applying;
+- all mandatory GUI profiles.
+
+## Later enhancements outside this milestone
+
+Still future:
+- automatic background-removal workflow;
+- dedicated tint control;
+- Reference-only layer mode;
+- transform handles directly on the preview;
+- final reference-image decorative treatment;
+- importing directly into the dedicated Elytra editor once that screen exists.
