@@ -306,10 +306,21 @@ Still missing:
 
 ## Smart Import
 
-**Not started as a user-facing feature.**
+**User-facing workspace not started / pure processing foundation active.**
 
-Prerequisites already available:
-- high-resolution canvases;
+Implemented pure-core prerequisites:
+- immutable bounded `PixelImage`;
+- Fit / Stretch / centered Crop / Center placement math;
+- transparent placement rendering;
+- mirror horizontal / vertical;
+- 90-degree clockwise/counter-clockwise rotation;
+- rectangular crop;
+- nearest-neighbor resize;
+- Brightness / Contrast / Saturation with preserved alpha;
+- automated transform/placement/adjustment tests.
+
+Already available elsewhere:
+- high-resolution Loom canvases;
 - alpha;
 - layers;
 - palettes;
@@ -318,15 +329,15 @@ Prerequisites already available:
 - versioned project storage.
 
 Still required:
-- image-processing core;
-- image-layer representation;
-- Fit / Stretch / Crop / Center;
-- aspect handling;
-- scale/rotate/mirror transforms;
-- quantization/dithering;
-- brightness/contrast/saturation;
-- import modes;
-- original/processed/texture/3D previews.
+- palette quantization / Reduce Colors;
+- dithering;
+- Posterize / Monochrome / Outline / Pixel-art / Palette Limited processing;
+- arbitrary/free image transforms;
+- PNG decode/import adapter;
+- schema-v2 Image layer representation;
+- original/processed/texture/3D Smart Import UI.
+
+See `SMART_IMPORT.md`.
 
 ## Loom Codes / sharing
 
