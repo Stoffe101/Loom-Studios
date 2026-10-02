@@ -517,6 +517,7 @@ Editor/runtime checks:
 - Flip H / Flip V update one undoable project edit
 - changing face clears the temporary selection
 - changing project resolution clears the temporary selection
+- Undo/Redo clear temporary selection state after project history jumps
 - selection remains aligned after zoom and pan
 - compact tool rail remains usable after selection controls are added
 
