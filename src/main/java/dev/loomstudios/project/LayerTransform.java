@@ -17,12 +17,12 @@ public record LayerTransform(
                 || !Double.isFinite(rotationDegrees)
                 || width <= 0.0
                 || height <= 0.0
-                || width > 16.0
-                || height > 16.0
-                || centerX < -8.0
-                || centerX > 9.0
-                || centerY < -8.0
-                || centerY > 9.0) {
+                || width > 64.0
+                || height > 64.0
+                || centerX < -64.0
+                || centerX > 65.0
+                || centerY < -64.0
+                || centerY > 65.0) {
             throw new IllegalArgumentException(
                     "Layer transform out of range"
             );
