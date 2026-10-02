@@ -89,6 +89,28 @@ Shader-sensitive effects should be checked with at least one representative shad
 
 ## Import tests
 
+### Automated transform/processing foundation
+
+- PixelImage rejects invalid dimensions and pixel counts
+- PixelImage owns defensive ARGB copies
+- mirror horizontal
+- mirror vertical
+- rotate 90 degrees clockwise
+- rotate 90 degrees counter-clockwise
+- crop rejects out-of-bounds rectangles
+- nearest-neighbor resize is deterministic
+- Fit preserves aspect and transparent letterbox
+- Stretch fills target
+- Crop uses centered source crop matching target aspect
+- Center preserves source scale and clips oversized artwork
+- custom placement rejects source windows outside the image
+- zero brightness/contrast/saturation is pixel-stable
+- Brightness preserves alpha
+- Saturation -1 produces luminance grayscale
+- adjustment ranges reject values outside -1..1 / non-finite values
+
+### Future PNG/UI import checks
+
 - PNG with alpha
 - PNG without alpha
 - large source image
