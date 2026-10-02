@@ -55,6 +55,7 @@ public final class CapeEditorScreen extends Screen {
     private SymmetryMode symmetryMode = SymmetryMode.NONE;
     private PixelSelection selection;
     private UUID selectedLayerId;
+    private int selectedGradientStopIndex;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
@@ -100,6 +101,14 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton gradientEndButton;
     private LoomButton gradientRepeatButton;
     private LoomButton gradientDitherButton;
+    private LoomButton gradientStopLabelButton;
+    private LoomButton gradientStopPreviousButton;
+    private LoomButton gradientStopNextButton;
+    private LoomButton gradientStopAddButton;
+    private LoomButton gradientStopRemoveButton;
+    private LoomButton gradientStopPositionDownButton;
+    private LoomButton gradientStopPositionUpButton;
+    private LoomButton gradientStopColorButton;
     private LoomButton layerOpacityDownButton;
     private LoomButton layerOpacityLabelButton;
     private LoomButton layerOpacityUpButton;
@@ -586,6 +595,72 @@ public final class CapeEditorScreen extends Screen {
         gradientEffectRow.addChild(this.gradientRepeatButton);
         gradientEffectRow.addChild(this.gradientDitherButton);
         tools.addChild(gradientEffectRow);
+
+        LinearLayout gradientStopNavRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopPreviousButton = createLoomButton(
+                48,
+                "Stop <",
+                () -> selectGradientStop(-1)
+        );
+        this.gradientStopLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "Stop",
+                () -> { }
+        );
+        this.gradientStopLabelButton.active = false;
+        this.gradientStopNextButton = createLoomButton(
+                48,
+                "Stop >",
+                () -> selectGradientStop(1)
+        );
+        gradientStopNavRow.addChild(this.gradientStopPreviousButton);
+        gradientStopNavRow.addChild(this.gradientStopLabelButton);
+        gradientStopNavRow.addChild(this.gradientStopNextButton);
+        tools.addChild(gradientStopNavRow);
+
+        LinearLayout gradientStopEditRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopAddButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Add Stop",
+                this::addGradientStop
+        );
+        this.gradientStopRemoveButton = createLoomButton(
+                contentWidth - 4 - gradientStopAddButton.getWidth(),
+                "Remove Stop",
+                this::removeGradientStop
+        );
+        gradientStopEditRow.addChild(this.gradientStopAddButton);
+        gradientStopEditRow.addChild(this.gradientStopRemoveButton);
+        tools.addChild(gradientStopEditRow);
+
+        LinearLayout gradientStopPositionRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStopPositionDownButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Position -",
+                () -> moveGradientStop(-0.05)
+        );
+        this.gradientStopPositionUpButton = createLoomButton(
+                contentWidth - 4 - gradientStopPositionDownButton.getWidth(),
+                "Position +",
+                () -> moveGradientStop(0.05)
+        );
+        gradientStopPositionRow.addChild(
+                this.gradientStopPositionDownButton
+        );
+        gradientStopPositionRow.addChild(
+                this.gradientStopPositionUpButton
+        );
+        tools.addChild(gradientStopPositionRow);
+
+        this.gradientStopColorButton = createLoomButton(
+                contentWidth,
+                "Set Selected Stop = Current Color",
+                this::setSelectedGradientStopColor
+        );
+        tools.addChild(this.gradientStopColorButton);
 
         LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
         layerOpacityDownButton = createLoomButton(
