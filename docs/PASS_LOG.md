@@ -2,7 +2,10 @@
 
 ## 2026-10-02 — Smart Import transform + color-adjustment foundation
 
-**Status: IMPLEMENTED / CI PENDING**
+**Status: CI PASS**
+
+Exact verified checkpoint: `c7b3c4107543f42a30c214e7aa41942d59281249`  
+GitHub Actions #81: **SUCCESS**
 
 Added a schema-independent, pure common-core image-processing foundation:
 - immutable bounded `PixelImage`;
