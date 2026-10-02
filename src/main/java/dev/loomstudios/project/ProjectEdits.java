@@ -185,10 +185,21 @@ public final class ProjectEdits {
             UUID layerId,
             boolean emissive
     ) {
-        return updateCapeLayer(
+        LoomProject updated = updateCapeLayer(
                 project,
                 layerId,
                 layer -> layer.withEmissive(emissive)
+        );
+
+        boolean hasEmissiveLayer = updated.cape().layers().stream()
+                .anyMatch(LoomLayer::emissive);
+
+        if (updated.runtime().emissiveEnabled() == hasEmissiveLayer) {
+            return updated;
+        }
+
+        return updated.withRuntime(
+                updated.runtime().withEmissiveEnabled(hasEmissiveLayer)
         );
     }
 
