@@ -1,63 +1,94 @@
 # Loom Studios — UI Reference Images
 
-This directory is reserved for the approved Loom Studios visual reference mockups.
+**Approved reference set:** 2026-10-02
 
-Canonical filenames:
+These five images are the canonical visual targets for Loom Studios. They replace the earlier rough concept set as the active design reference.
 
-- `Loom_Studios_01_Home_Screen.png`
-- `Loom_Studios_02_Cape_Editor.png`
-- `Loom_Studios_03_Smart_Import.png`
-- `Loom_Studios_04_Elytra_Animation_Editor.png`
-- `Loom_Studios_05_Loom_Codes_and_Sharing.png`
+Repository copies are optimized WebP assets so the Git repository stays reasonably small. The full-resolution PNG masters are also stored in the ChatGPT Project Library under:
 
-These images define the visual target for layout, hierarchy, panel style, color direction, and overall polish.
+`/Loom Studios/UI References/`
 
-They are concept references rather than pixel-perfect engine screenshots. Intentional implementation deviations must be documented.
+## Canonical repository assets
 
-## Approved visual language
+1. [Home / Start Screen](./Loom_Studios_01_Home_Screen.webp)
+2. [Cape Editor](./Loom_Studios_02_Cape_Editor.webp)
+3. [Smart Import](./Loom_Studios_03_Smart_Import.webp)
+4. [Elytra + Animation Editor](./Loom_Studios_04_Elytra_Animation_Editor.webp)
+5. [Loom Codes / Sharing](./Loom_Studios_05_Loom_Codes_and_Sharing.webp)
 
+These are **design references, not pixel-perfect implementation screenshots**. Loom Studios should preserve their hierarchy, interaction intent and product identity while adapting layouts to Minecraft GUI constraints and real implementation needs.
+
+## Approved visual direction
+
+The target balance is approximately **70% clean modern creative editor / 30% magical Minecraft workshop**.
+
+Keep:
 - dark slate/charcoal work surfaces;
-- warm wood / cloth / metal Loom framing;
-- cyan + violet accent lighting;
-- compact Minecraft-friendly control density;
+- warm wood, cloth, metal and lantern framing where decorative space permits;
+- cyan + violet identity accents;
 - pixel-readable typography;
-- icon/tool grouping;
+- strong iconography for tools, buttons, layer types and actions;
 - project thumbnails;
-- layer stack;
-- advanced color controls;
-- clear grid canvas;
-- live rotatable player preview;
-- timeline/keyframes for animation;
+- clear canvas hierarchy;
+- live 3D preview;
+- timeline/keyframes where animation is authored;
 - deliberate sharing/import/export surfaces.
+
+Restrain:
+- glow on inactive controls;
+- nested borders around every sub-panel;
+- repeated decorative banners/slogans;
+- oversized fixed chrome;
+- multiple equally-dominant focal regions.
+
+Glow is semantic: it should primarily communicate **selected, active, focused or primary action**.
+
+## Showcase mode versus work mode
+
+### Showcase-oriented screens
+Home and Loom Codes / Sharing may carry more of the workshop personality because they are discovery/presentation surfaces.
+
+### Work-oriented screens
+Cape Editor, Smart Import and Elytra + Animation should become calmer once the user starts creating:
+- thinner shell/chrome;
+- larger working region;
+- quieter inactive controls;
+- icon-led tool groups;
+- one clearly dominant task area;
+- collapsible/compact secondary panels where needed.
+
+The canvas/result being edited should visually outrank the surrounding decoration.
 
 ## Screen intent
 
 ### 01 Home
-Project hub with creation/navigation, recent-project thumbnails, templates, and preview.
+Project hub with creation/navigation, recent-project thumbnails, templates and selected-project/player preview.
 
 ### 02 Cape Editor
-Central canvas with compact tool controls, color/Swatches, Layers, preview and project actions.
+Canvas-first editing workspace with icon tools, Colors/Swatches, typed Layers and live 3D preview.
 
 ### 03 Smart Import
-Original/processed comparison plus Fit/Stretch/Crop/Center/aspect/mirror/rotate, image processing and Minecraft-oriented import modes.
+Focused source → processing → result workflow with transform controls, processing modes, texture preview and candidate 3D preview.
 
 ### 04 Elytra + Animation
-Wing editor, geometry/preview state, layer/effect controls, timeline and animation authoring.
+Unfolded-wing editor with linked/separate wings, typed layers, live gliding preview and a readable animation timeline.
 
 ### 05 Loom Codes / Sharing
-Private intentional project sharing, code generation/import, preview/favorite/copy/export actions.
+Simple share-code-first hub with import/export options, permissions and design previews.
 
 ## Responsive rule
 
 The reference look must adapt rather than collapse at smaller logical GUI sizes.
 
-In particular, 1920x1080 at GUI scale 3 is a required profile. Decorative/reference fidelity must never reintroduce clipping, text overlap, or giant modal/floating panels.
+Required profiles:
+- 1920x1080 GUI x2;
+- 1920x1080 GUI x3;
+- 3440x1440 GUI x2;
+- 3440x1440 GUI x3.
+
+Reference fidelity must never reintroduce clipping, text overlap, giant modal/floating panels or controls that become unusable at GUI scale 3.
 
 See:
 - `../../LOOM_STUDIOS_DESIGN_SPEC.md`
 - `../../REFERENCE_FIDELITY_ROADMAP.md`
 - `../../UI_COMPATIBILITY.md`
-
-## Binary asset status
-
-The approved binary mockups are not yet committed in this directory. Their filenames are reserved for the local reference-asset import.

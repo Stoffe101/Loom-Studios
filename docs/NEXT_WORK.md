@@ -2,11 +2,11 @@
 
 ## Current gate
 
-The Smart Import + schema-v2 milestone is functionally implemented and CI green on the branch.
+The Smart Import + schema-v2 milestone is functionally implemented, merged and CI green on `main`.
 
-Exact green checkpoint before final documentation cleanup:
-- `7a568f736f273328a3b55d1ea28587832cd45282`
-- GitHub Actions #113: **SUCCESS**
+Exact merged-main checkpoint:
+- `6208086fd5c6f025376afd7cf8390829cda56dbd`
+- GitHub Actions #121: **SUCCESS**
 
 The remaining gate is local visual/runtime verification because the user is away from the development PC.
 
@@ -130,9 +130,11 @@ Smart Import Crop means a centered source crop that fills the fixed target area.
 
 ## Reference-image priority
 
-The five approved references remain active constraints.
+The refreshed five-screen reference set under `docs/references/ui/` is the active visual contract.
 
-The current Smart Import implementation is functionally complete but still needs local visual comparison against `Loom_Studios_03_Smart_Import.png` before final visual DONE status.
+Implementation should follow the refreshed direction rather than reproduce screenshots literally: roughly 70% clean modern editor / 30% magical Minecraft workshop, icon-led controls, restrained glow, fewer nested borders, showcase-oriented Home/Sharing, and calmer canvas-first work screens.
+
+The current Smart Import implementation is functionally complete but still needs local visual comparison against `Loom_Studios_03_Smart_Import.webp` before final visual DONE status.
 
 See `REFERENCE_FIDELITY_ROADMAP.md`.
 

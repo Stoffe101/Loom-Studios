@@ -2,15 +2,17 @@
 
 **Status:** Canonical visual/product tracking document
 
+**Approved visual baseline:** 2026-10-02 refreshed five-screen reference set, committed under `docs/references/ui/`.
+
 The approved Loom Studios reference pack contains five target screens:
 
-1. `Loom_Studios_01_Home_Screen.png`
-2. `Loom_Studios_02_Cape_Editor.png`
-3. `Loom_Studios_03_Smart_Import.png`
-4. `Loom_Studios_04_Elytra_Animation_Editor.png`
-5. `Loom_Studios_05_Loom_Codes_and_Sharing.png`
+1. `Loom_Studios_01_Home_Screen.webp`
+2. `Loom_Studios_02_Cape_Editor.webp`
+3. `Loom_Studios_03_Smart_Import.webp`
+4. `Loom_Studios_04_Elytra_Animation_Editor.webp`
+5. `Loom_Studios_05_Loom_Codes_and_Sharing.webp`
 
-The implementation is not expected to reproduce each image pixel-for-pixel. It **is** expected to preserve their hierarchy, density, interaction model, visual identity, and major feature placement.
+The implementation is not expected to reproduce each image pixel-for-pixel. It **is** expected to preserve their hierarchy, interaction model, visual identity and major feature placement while deliberately reducing unnecessary visual density.
 
 ## Global visual contract
 
@@ -25,7 +27,11 @@ Across all five screens, preserve:
 - strong panel hierarchy;
 - restrained decorative framing around a practical working area;
 - live 3D player/cosmetic preview where the reference shows it;
-- responsive layouts that still work at 1920x1080 GUI scale 3.
+- responsive layouts that still work at 1920x1080 GUI scale 3;
+- icon-led tools/buttons whose glyph communicates their purpose;
+- roughly 70% clean modern editor / 30% magical Minecraft workshop;
+- showcase mode for Home/Sharing and calmer work mode for Cape/Smart Import/Elytra;
+- cyan/violet glow reserved mainly for active, selected or primary controls.
 
 Reference-image fidelity must never reintroduce text overlap, clipped controls, unusable fixed-height panels, or giant floating windows.
 
@@ -56,13 +62,14 @@ Implemented foundation:
 - Create New Cape works;
 - local project library/index exists;
 - project thumbnail PNGs are generated/cached;
-- selecting/opening a saved project works.
+- selecting/opening a saved project works;
+- Import Image routes into Smart Import.
 
 Missing/reference gap:
 - real thumbnail cards;
 - branded multi-panel composition;
 - Elytra entry;
-- Import entry;
+- final Import card/reference styling;
 - Loom Codes entry;
 - Templates;
 - Settings;
@@ -294,6 +301,8 @@ This ordering preserves the approved references while avoiding disposable UI bui
 
 ## Asset note
 
-The canonical filenames are reserved under `docs/references/ui/`.
+The approved optimized WebP references are committed under `docs/references/ui/` and are the canonical repository-side visual targets.
 
-The binary reference images themselves are still awaiting the local reference-asset import into the repository. Until then, this document plus `LOOM_STUDIOS_DESIGN_SPEC.md` preserve their approved interaction/layout intent.
+Full-resolution PNG masters are also kept in the ChatGPT Project Library under `/Loom Studios/UI References/`.
+
+These refreshed references supersede the earlier rough visual concept set while preserving the same product identity.

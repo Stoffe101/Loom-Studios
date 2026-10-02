@@ -863,3 +863,33 @@ Persisted Image-layer source data is stricter:
 
 This prevents a single imported image from bypassing project/network size bounds while preserving a larger temporary source for the guided import workflow.
 
+
+
+## ADR-075 — Refreshed five-screen UI reference set defines the visual contract
+**Status:** Accepted
+
+The 2026-10-02 refreshed five-screen reference pack is the canonical Loom Studios visual target.
+
+Repository assets:
+- `docs/references/ui/Loom_Studios_01_Home_Screen.webp`;
+- `docs/references/ui/Loom_Studios_02_Cape_Editor.webp`;
+- `docs/references/ui/Loom_Studios_03_Smart_Import.webp`;
+- `docs/references/ui/Loom_Studios_04_Elytra_Animation_Editor.webp`;
+- `docs/references/ui/Loom_Studios_05_Loom_Codes_and_Sharing.webp`.
+
+Full-resolution PNG masters are also stored in the ChatGPT Project Library under `/Loom Studios/UI References/`.
+
+These images are references, not screenshot specifications. The implementation must preserve hierarchy and identity while improving usability.
+
+Visual rules:
+- target roughly 70% clean modern creative editor / 30% magical Minecraft workshop;
+- Home and Sharing are showcase-oriented and may carry more decoration;
+- Cape Editor, Smart Import and Elytra/Animation are work-oriented and should reduce chrome around the task;
+- the main canvas/result/preview should be the dominant focal area;
+- cyan/violet glow primarily indicates selected, active, focused or primary states;
+- inactive controls stay quieter;
+- icons should communicate the purpose of tools/buttons/layer types wherever practical;
+- use spacing/surface contrast instead of nesting borders around every region;
+- responsive usability outranks decorative fidelity at constrained GUI scales.
+
+The refreshed set supersedes the earlier rough concept references.
