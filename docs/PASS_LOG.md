@@ -2,7 +2,10 @@
 
 ## 2026-10-02 — Smart Import color reduction + dithering foundation
 
-**Status: IMPLEMENTED / CI RETEST PENDING**
+**Status: CI PASS**
+
+Exact green checkpoint: `7d4efbe75744453ba03142eb61d97c917f79c7bc`  
+GitHub Actions #85: **SUCCESS**
 
 Initial exact head `62d6a4a85322b067a11c79ccec1415b74cd08ab1` failed GitHub Actions #84 in `:compileJava`.
 
