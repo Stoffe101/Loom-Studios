@@ -185,7 +185,13 @@ Networking no longer owns a second local project copy.
 Saved project discovery is separate:
 `ProjectLibraryIndex -> ProjectDescriptor -> cached cape thumbnail`.
 
-This ownership model is the baseline for Phase 2 editor widgets.
+The Home screen now consumes that index through lazily loaded `LoomProjectCard` thumbnails and an isolated selected-project `LoomPlayerPreviewWidget`.
+
+Cape and Elytra editors share the same canvas-backed typed `LoomLayerListWidget`; target-specific editing semantics remain separate.
+
+Elytra editing maps the two semantic 10x20 front-face wings through `ElytraWing`, while runtime output remains the standard full Elytra canvas.
+
+This ownership model is the baseline for editor widgets.
 
 
 ## Editing versus equipped state
