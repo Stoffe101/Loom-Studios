@@ -220,7 +220,7 @@ Selection itself remains editor state and is not serialized into `.loom`.
 
 Layer edits participate in normal ProjectSession history.
 
-The emissive runtime master is synchronized automatically with whether any cape layer is emissive. The old SPIKE-06 synthetic shimmer has been removed from real project output.
+Per-layer emissive flags are the render-time authority. The schema-v1 runtime emissive master is synchronized automatically as a compatibility mirror, including multi-layer cases. The old SPIKE-06 synthetic shimmer has been removed from real project output.
 
 ### Project actions
 - Undo / Redo;
