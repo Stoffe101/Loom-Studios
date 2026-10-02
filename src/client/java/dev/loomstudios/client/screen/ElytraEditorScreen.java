@@ -35,6 +35,8 @@ public final class ElytraEditorScreen extends Screen {
     private int selectedColor = 0xFF22D7E8;
     private int brushSize = 1;
     private boolean linkedMirror = true;
+    private LoomPlayerPreviewWidget.ElytraPose previewPose =
+            LoomPlayerPreviewWidget.ElytraPose.STANDING;
     private UUID selectedLayerId;
 
     private LoomElytraCanvasWidget canvasWidget;
@@ -58,6 +60,9 @@ public final class ElytraEditorScreen extends Screen {
     private LoomButton pencilButton;
     private LoomButton eraserButton;
     private LoomButton linkButton;
+    private LoomButton previewStandingButton;
+    private LoomButton previewOpenButton;
+    private LoomButton previewGlidingButton;
     private LoomButton brushDownButton;
     private LoomButton brushLabelButton;
     private LoomButton brushUpButton;
@@ -203,6 +208,7 @@ public final class ElytraEditorScreen extends Screen {
                 ClientProjectWorkspace::project,
                 LoomPlayerPreviewWidget.Mode.ELYTRA
         );
+        this.previewWidget.setElytraPose(previewPose);
         addRenderableWidget(this.previewWidget);
 
         int layerTop = contentTop + previewHeight + 6;
@@ -392,6 +398,42 @@ public final class ElytraEditorScreen extends Screen {
                 this::convertCapeToElytra
         );
         addRenderableWidget(this.capeConversionButton);
+        row += 20 + gap;
+
+        int poseThird = Math.max(32, (width - 8) / 3);
+        this.previewStandingButton = new LoomButton(
+                x,
+                row,
+                poseThird,
+                20,
+                Component.literal("Stand"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.STANDING
+                )
+        );
+        this.previewOpenButton = new LoomButton(
+                x + poseThird + 4,
+                row,
+                poseThird,
+                20,
+                Component.literal("Open"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.OPEN
+                )
+        );
+        this.previewGlidingButton = new LoomButton(
+                x + poseThird * 2 + 8,
+                row,
+                Math.max(32, width - poseThird * 2 - 8),
+                20,
+                Component.literal("Glide"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.GLIDING
+                )
+        );
+        addRenderableWidget(this.previewStandingButton);
+        addRenderableWidget(this.previewOpenButton);
+        addRenderableWidget(this.previewGlidingButton);
         row += 20 + gap;
 
         int half = Math.max(48, (width - 4) / 2);
@@ -593,6 +635,16 @@ public final class ElytraEditorScreen extends Screen {
                 .layers()
                 .getLast()
                 .id();
+        updateButtonStates();
+    }
+
+    private void setPreviewPose(
+            LoomPlayerPreviewWidget.ElytraPose pose
+    ) {
+        previewPose = pose;
+        if (previewWidget != null) {
+            previewWidget.setElytraPose(pose);
+        }
         updateButtonStates();
     }
 
@@ -990,6 +1042,21 @@ public final class ElytraEditorScreen extends Screen {
                             ? "Wings: Linked Mirror"
                             : "Wings: Separate"
             ));
+        }
+        if (previewStandingButton != null) {
+            previewStandingButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.STANDING;
+        }
+        if (previewOpenButton != null) {
+            previewOpenButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.OPEN;
+        }
+        if (previewGlidingButton != null) {
+            previewGlidingButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.GLIDING;
         }
         if (pencilButton != null) {
             pencilButton.active = editable && tool != Tool.PENCIL;
