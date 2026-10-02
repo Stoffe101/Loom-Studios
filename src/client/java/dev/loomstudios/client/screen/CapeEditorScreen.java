@@ -1422,6 +1422,7 @@ public final class CapeEditorScreen extends Screen {
 
     private void selectLayer(UUID layerId) {
         this.selectedLayerId = layerId;
+        this.selectedGradientStopIndex = 0;
         this.selection = null;
         syncLayerFields();
         updateButtonStates();
@@ -1478,6 +1479,7 @@ public final class CapeEditorScreen extends Screen {
         );
 
         selectedLayerId = result.cape().layers().getLast().id();
+        this.selectedGradientStopIndex = 0;
         this.selection = null;
         syncLayerFields();
         updateButtonStates();
@@ -1710,6 +1712,186 @@ public final class CapeEditorScreen extends Screen {
         updateButtonStates();
     }
 
+    private void selectGradientStop(int delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT) {
+            return;
+        }
+
+        int count = layer.gradientData().stops().size();
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(
+                        count - 1,
+                        selectedGradientStopIndex + delta
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void addGradientStop() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        if (gradient.stops().size()
+                >= dev.loomstudios.project.LoomProjectCodec.MAX_GRADIENT_STOPS) {
+            return;
+        }
+
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+
+        int gapIndex = 0;
+        double largestGap = -1.0;
+        for (int i = 0; i < stops.size() - 1; i++) {
+            double gap = stops.get(i + 1).position()
+                    - stops.get(i).position();
+            if (gap > largestGap) {
+                largestGap = gap;
+                gapIndex = i;
+            }
+        }
+
+        GradientStop left = stops.get(gapIndex);
+        GradientStop right = stops.get(gapIndex + 1);
+        double position =
+                (left.position() + right.position()) / 2.0;
+        int color = interpolateArgb(
+                left.argb(),
+                right.argb(),
+                0.5
+        );
+
+        stops.add(new GradientStop(position, color));
+        stops.sort(java.util.Comparator.comparingDouble(
+                GradientStop::position
+        ));
+
+        selectedGradientStopIndex = 0;
+        for (int i = 0; i < stops.size(); i++) {
+            if (Math.abs(stops.get(i).position() - position) < 1.0E-9) {
+                selectedGradientStopIndex = i;
+                break;
+            }
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void removeGradientStop() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        if (gradient.stops().size() <= 2) {
+            return;
+        }
+
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        stops.remove(index);
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(index, stops.size() - 1)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void moveGradientStop(double delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        GradientStop current = stops.get(index);
+
+        double min = index == 0
+                ? 0.0
+                : stops.get(index - 1).position() + 0.001;
+        double max = index + 1 == stops.size()
+                ? 1.0
+                : stops.get(index + 1).position() - 0.001;
+
+        double next = Math.max(
+                min,
+                Math.min(max, current.position() + delta)
+        );
+        stops.set(index, new GradientStop(next, current.argb()));
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void setSelectedGradientStopColor() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        ArrayList<GradientStop> stops =
+                new ArrayList<>(gradient.stops());
+        int index = clampedGradientStopIndex(gradient);
+        GradientStop current = stops.get(index);
+        stops.set(
+                index,
+                new GradientStop(current.position(), selectedColor)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        gradient.withStops(stops)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private int clampedGradientStopIndex(
+            GradientLayerData gradient
+    ) {
+        selectedGradientStopIndex = Math.max(
+                0,
+                Math.min(
+                        gradient.stops().size() - 1,
+                        selectedGradientStopIndex
+                )
+        );
+        return selectedGradientStopIndex;
+    }
+
     private void toggleGradientRepeat() {
         LoomLayer layer = selectedLayer();
         if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
@@ -1758,6 +1940,49 @@ public final class CapeEditorScreen extends Screen {
                         / (double)project.cape().width(),
                 capeRegion.height(scale)
                         / (double)project.cape().height()
+        );
+    }
+
+    private static int interpolateArgb(
+            int first,
+            int second,
+            double t
+    ) {
+        int a = interpolateChannel(
+                (first >>> 24) & 0xFF,
+                (second >>> 24) & 0xFF,
+                t
+        );
+        int r = interpolateChannel(
+                (first >>> 16) & 0xFF,
+                (second >>> 16) & 0xFF,
+                t
+        );
+        int g = interpolateChannel(
+                (first >>> 8) & 0xFF,
+                (second >>> 8) & 0xFF,
+                t
+        );
+        int b = interpolateChannel(
+                first & 0xFF,
+                second & 0xFF,
+                t
+        );
+
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    private static int interpolateChannel(
+            int first,
+            int second,
+            double t
+    ) {
+        return Math.max(
+                0,
+                Math.min(
+                        255,
+                        (int)Math.round(first + (second - first) * t)
+                )
         );
     }
 
