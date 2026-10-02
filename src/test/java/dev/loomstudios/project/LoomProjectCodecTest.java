@@ -664,7 +664,7 @@ class LoomProjectCodecTest {
     }
 
     @Test
-    void schemaV1SnapshotMigratesToTypedSchemaV2() {
+    void schemaV1SnapshotMigratesThroughTypedSchemaV3() {
         LoomProject current = LoomProjectFactory.blank("Legacy", 77L);
         byte[] legacy = LoomProjectCodec.encodeVersion1SnapshotForTest(
                 current
@@ -672,7 +672,7 @@ class LoomProjectCodecTest {
 
         LoomProject migrated = LoomProjectCodec.decode(legacy);
 
-        assertEquals(2, migrated.schemaVersion());
+        assertEquals(3, migrated.schemaVersion());
         assertEquals(LayerKind.PAINT, migrated.cape().layers().getFirst().kind());
         assertFalse(migrated.cape().layers().getFirst().locked());
         assertArrayEquals(
@@ -682,7 +682,7 @@ class LoomProjectCodecTest {
     }
 
     @Test
-    void schemaV2RoundTripPreservesImageGradientAndLockState() {
+    void schemaV3RoundTripPreservesImageGradientAndLockState() {
         LoomProject project = LoomProjectFactory.blank("Typed", 1L);
         PixelImage source = new PixelImage(
                 2,
@@ -736,7 +736,7 @@ class LoomProjectCodecTest {
         LoomProject decoded = LoomProjectCodec.decode(typed.encode());
 
         assertEquals(typed, decoded);
-        assertEquals(2, decoded.schemaVersion());
+        assertEquals(3, decoded.schemaVersion());
         assertEquals(
                 LayerKind.IMAGE,
                 decoded.cape().layers().get(1).kind()
@@ -973,7 +973,7 @@ class LoomProjectCodecTest {
     @Test
     void unsupportedSchemaUsesExplicitMigrationGate() {
         byte[] encoded = LoomProjectFactory.forPlayer(PLAYER_ID).encode();
-        encoded[7] = 3;
+        encoded[7] = 4;
 
         IllegalArgumentException error = assertThrows(
                 IllegalArgumentException.class,
