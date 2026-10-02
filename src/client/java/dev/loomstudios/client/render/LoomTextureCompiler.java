@@ -1,14 +1,23 @@
 package dev.loomstudios.client.render;
 
+import dev.loomstudios.project.AnimationChannel;
+import dev.loomstudios.project.AnimationEffectType;
+import dev.loomstudios.project.AnimationEvaluator;
+import dev.loomstudios.project.AnimationTrack;
 import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomCanvas;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.LayerRasterizer;
+import dev.loomstudios.project.LoomAnimation;
+import dev.loomstudios.project.LoomProject;
+
+import java.awt.Color;
+import java.util.List;
 
 /**
- * Minimal non-destructive canvas compiler for Phase 1.
+ * Non-destructive typed-layer compiler used by editor/runtime surfaces.
  */
 public final class LoomTextureCompiler {
     private LoomTextureCompiler() {
@@ -41,6 +50,149 @@ public final class LoomTextureCompiler {
                 }
 
                 source = multiplyAlpha(source, layer.opacity());
+                output[i] = blend(
+                        output[i],
+                        source,
+                        layer.blendMode()
+                );
+            }
+        }
+
+        return output;
+    }
+
+    public static int[] compileAnimated(
+            LoomProject project,
+            AnimationChannel channel,
+            int timelineTick,
+            int legacyHuePhase,
+            boolean emissiveOnly
+    ) {
+        LoomCanvas canvas = channel == AnimationChannel.CAPE
+                ? project.cape()
+                : project.elytra();
+        LoomAnimation animation = project.animation();
+        int[] output = new int[
+                Math.multiplyExact(canvas.width(), canvas.height())
+        ];
+
+        for (LoomLayer layer : canvas.layers()) {
+            if (!layer.visible()) {
+                continue;
+            }
+
+            List<AnimationTrack> tracks = animation.tracks().stream()
+                    .filter(track -> track.enabled()
+                            && track.channel() == channel
+                            && track.layerId().equals(layer.id()))
+                    .toList();
+
+            boolean authoredEmissive = tracks.stream()
+                    .anyMatch(track ->
+                            track.effect()
+                                    == AnimationEffectType.EMISSIVE_GLOW
+                    );
+
+            if (emissiveOnly
+                    && !layer.emissive()
+                    && !authoredEmissive) {
+                continue;
+            }
+
+            int[] raster = LayerRasterizer.rasterize(
+                    layer,
+                    canvas.width(),
+                    canvas.height()
+            );
+
+            int shiftX = 0;
+            int shiftY = 0;
+            float alphaMultiplier = 1.0F;
+            float hueCycles = 0.0F;
+            float sparkleIntensity = -1.0F;
+            float emissiveMultiplier = 1.0F;
+
+            for (AnimationTrack track : tracks) {
+                float value = AnimationEvaluator.valueAt(
+                        track,
+                        animation,
+                        timelineTick
+                );
+
+                switch (track.effect()) {
+                    case PULSE -> alphaMultiplier *= clamp(
+                            value,
+                            0.0F,
+                            2.0F
+                    );
+                    case HUE_SHIFT -> hueCycles += value;
+                    case SCROLL -> shiftX += Math.round(
+                            value * canvas.width()
+                    );
+                    case MOVING_GRADIENT -> shiftY += Math.round(
+                            value * canvas.height()
+                    );
+                    case SPARKLE -> sparkleIntensity = Math.max(
+                            sparkleIntensity,
+                            clamp(value, 0.0F, 1.0F)
+                    );
+                    case EMISSIVE_GLOW -> emissiveMultiplier *= clamp(
+                            value,
+                            0.0F,
+                            2.0F
+                    );
+                }
+            }
+
+            if (shiftX != 0 || shiftY != 0) {
+                raster = shiftRaster(
+                        raster,
+                        canvas.width(),
+                        canvas.height(),
+                        shiftX,
+                        shiftY
+                );
+            }
+
+            for (int i = 0; i < output.length; i++) {
+                int source = raster[i];
+                if (((source >>> 24) & 0xFF) == 0) {
+                    continue;
+                }
+
+                if (channel == AnimationChannel.CAPE
+                        && project.runtime().hueCycleEnabled()) {
+                    source = rotateChannels(
+                            source,
+                            legacyHuePhase
+                    );
+                }
+
+                if (hueCycles != 0.0F) {
+                    source = rotateHue(source, hueCycles);
+                }
+
+                if (sparkleIntensity >= 0.0F
+                        && !sparkleVisible(
+                                i,
+                                timelineTick,
+                                sparkleIntensity
+                        )) {
+                    source &= 0x00FFFFFF;
+                }
+
+                float effectiveOpacity =
+                        layer.opacity() * alphaMultiplier;
+
+                if (emissiveOnly) {
+                    effectiveOpacity *= emissiveMultiplier;
+                }
+
+                source = multiplyAlpha(
+                        source,
+                        effectiveOpacity
+                );
+
                 output[i] = blend(
                         output[i],
                         source,
@@ -201,6 +353,79 @@ public final class LoomTextureCompiler {
         int outB = (sb * sa + db * dstWeight) / outA;
 
         return (outA << 24) | (outR << 16) | (outG << 8) | outB;
+    }
+
+    private static int[] shiftRaster(
+            int[] source,
+            int width,
+            int height,
+            int shiftX,
+            int shiftY
+    ) {
+        int[] shifted = new int[source.length];
+
+        for (int y = 0; y < height; y++) {
+            int destinationY = Math.floorMod(
+                    y + shiftY,
+                    height
+            );
+
+            for (int x = 0; x < width; x++) {
+                int destinationX = Math.floorMod(
+                        x + shiftX,
+                        width
+                );
+                shifted[
+                        destinationY * width + destinationX
+                ] = source[y * width + x];
+            }
+        }
+
+        return shifted;
+    }
+
+    private static int rotateHue(int argb, float cycles) {
+        int alpha = (argb >>> 24) & 0xFF;
+        int red = (argb >>> 16) & 0xFF;
+        int green = (argb >>> 8) & 0xFF;
+        int blue = argb & 0xFF;
+
+        float[] hsb = Color.RGBtoHSB(
+                red,
+                green,
+                blue,
+                null
+        );
+
+        float hue = hsb[0] + cycles;
+        hue -= (float)Math.floor(hue);
+
+        int rgb = Color.HSBtoRGB(
+                hue,
+                hsb[1],
+                hsb[2]
+        );
+        return (alpha << 24) | (rgb & 0x00FFFFFF);
+    }
+
+    private static boolean sparkleVisible(
+            int pixelIndex,
+            int timelineTick,
+            float intensity
+    ) {
+        int hash = pixelIndex * 0x45D9F3B
+                ^ timelineTick * 0x119DE1F3;
+        hash ^= hash >>> 16;
+        int sample = hash & 0xFFFF;
+        return sample / 65535.0F <= intensity;
+    }
+
+    private static float clamp(
+            float value,
+            float minimum,
+            float maximum
+    ) {
+        return Math.max(minimum, Math.min(maximum, value));
     }
 
     private static int rotateChannels(int argb, int phase) {

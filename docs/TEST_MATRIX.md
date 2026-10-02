@@ -235,6 +235,35 @@ Local/runtime verification:
 - Elytra layer reorder / opacity / rename / blend
 - Elytra Swatches select/update the active color
 
+## Animation automated + local checks
+
+Automated/current CI:
+- schema v1 migrates through v2 into v3;
+- schema v2 migrates into v3 with default empty timeline;
+- schema v3 animation track/keyframe round-trip;
+- keyframe interpolation;
+- timeline duration clamping;
+- malformed keyframe ordering rejection;
+- missing target-layer references rejected;
+- deleting a target layer prunes its animation tracks;
+- authored Cape/Elytra runtime compiler builds in CI;
+- fixed-tick preview cache path builds in CI.
+
+Local/runtime verification:
+- add/select/enable/delete Elytra animation tracks;
+- scrub/play/pause;
+- loop/once;
+- duration and playback speed;
+- per-track speed;
+- effect cycling;
+- add/remove keyframes;
+- keyframe value editing;
+- keyframe markers align to timeline ticks;
+- Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow;
+- timeline Undo/Redo;
+- scrubbed 3D preview matches exact authored tick;
+- preview remains isolated from equipped/network state;
+- timeline stays usable at all mandatory GUI profiles.
 ## Project format tests
 
 - schema-v2 save/load round-trip

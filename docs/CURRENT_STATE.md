@@ -31,13 +31,27 @@ Loom Studios currently has:
 - semantic unfolded Elytra wing editor;
 - linked-mirror and independent-wing painting;
 - Elytra Paint-layer stack with direct visibility/lock affordances;
-- project-authored Elytra thickness controls from 25% to 200%.
+- project-authored Elytra thickness controls from 25% to 200%;
+- cape -> Elytra conversion and Elytra-target Smart Import;
+- richer Elytra layer properties and shared Swatches;
+- schema-v3 authored animation data;
+- layer-targeted animation tracks + keyframes for Cape and Elytra;
+- runtime Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow effects;
+- a reference-oriented Elytra animation timeline with play/pause, scrub, duration, loop, playback speed, track speed, effect selection and keyframe editing;
+- isolated fixed-tick 3D preview for timeline scrubbing.
 
 The current editor-productization work is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Latest merged-main baseline entering the Elytra workflow-completion pass: `52576d191f451b49436a97f66b4501b2bc85eb13` — GitHub Actions #133 **SUCCESS**.
+Latest merged-main baseline entering the animation pass: `2eca773a0358344491fd3280f535feb3515268a0` — GitHub Actions #139 **SUCCESS**.
 
-Elytra workflow-completion implementation checkpoint: `cc55df2ba4b52907595a1d7d7cb7c48849059692` — GitHub Actions #137 **SUCCESS**.
+Animation milestone exact green implementation head: `c3e5ca49e4ecccbeaca7ad064a828c63c7720692` — GitHub Actions #147 **SUCCESS**.
+
+Key animation checkpoints:
+- schema-v3 model/migration tests: `e4c5aaa1112992e11a172c6cbf3d62874c1c808e` — Actions #141 **SUCCESS**;
+- authored runtime evaluator/compiler: `864e48534f5b1464e23089104096af2a4ee1d3d4` — Actions #142 **SUCCESS**;
+- reference-integrity + scrubbed preview fix: `88e1b1c051545661f021262b39fc57c3eebf4844` — Actions #145 **SUCCESS**;
+- timeline widget: `156afcfe9eb7a2cf5d38f38280bc35335e5dade8` — Actions #146 **SUCCESS**;
+- integrated Elytra timeline authoring: `c3e5ca49e4ecccbeaca7ad064a828c63c7720692` — Actions #147 **SUCCESS**.
 
 Current pass exact green implementation checkpoints:
 - Home reference shell: `0cc3b219fcda2c8b4fb619db900545890e40764e` — GitHub Actions #127 **SUCCESS**;
@@ -183,9 +197,9 @@ Current serialized project limit:
 Current embedded Image-layer source limit:
 - **256 px max dimension** before project persistence.
 
-Schema v1 projects are decoded through the old paint-only format and explicitly migrated to schema v2.
+Schema v1 projects are decoded through the old paint-only format, migrated to schema v2 typed layers, then migrated to current schema v3 with a default empty animation timeline. Schema v2 projects migrate directly to v3.
 
-Schema v1 blend ordinals remain frozen compatibility data; schema v2 uses stable string identifiers for blend modes and layer kinds.
+Schema v1 blend ordinals remain frozen compatibility data; schema v2/v3 uses stable string identifiers for blend modes and layer kinds.
 
 ## Cape Editor — implemented
 
@@ -445,26 +459,80 @@ Implemented:
 - Posterize;
 - selected Loom Swatches palette integration;
 - Apply as editable Image layer;
-- schema-v2 persistence for source/transform/processing intent;
+- typed Image-layer persistence for source/transform/processing intent (introduced in schema v2 and preserved in current schema v3);
 - Image-layer participation in normal opacity/blend/emissive/visibility/lock behavior;
 - runtime/editor/project-thumbnail/multiplayer compilation through the shared typed-layer compiler.
 
-Also implemented in schema v2:
+Schema-v2 typed-layer data remains fully supported inside current schema v3:
 - persistent layer lock;
 - first-class editable Image layers;
 - first-class editable Gradient layers;
 - stable layer-kind/blend identifiers;
-- explicit schema-v1 -> schema-v2 migration.
+- explicit schema-v1 -> schema-v2 -> schema-v3 migration.
+
+Smart Import now also supports Elytra:
+- linked wing import creates two semantic editable Image layers;
+- the opposite wing uses mirrored horizontal placement;
+- existing Elytra Image layers can be reopened and edited.
 
 Still future for Smart Import:
 - automatic background-removal workflow;
 - tint control;
 - reference-only layer mode;
 - direct transform handles;
-- final decorative fidelity pass;
-- Elytra-target import once the Elytra editor exists.
+- final decorative fidelity pass.
 
 See `SMART_IMPORT.md`.
+
+## Animation
+
+**Functional schema/runtime/timeline MVP is CI green / local visual-runtime verification pending.**
+
+Current schema v3 stores:
+- project timeline duration;
+- timeline loop;
+- playback speed;
+- bounded animation tracks;
+- target layer UUID;
+- Cape/Elytra channel;
+- effect type;
+- enabled state;
+- per-track speed/loop;
+- ordered keyframes with tick + scalar value.
+
+Current authored effects:
+- Pulse;
+- Scroll;
+- Hue Shift;
+- Moving Gradient;
+- Sparkle;
+- Emissive Glow.
+
+Runtime animation is evaluated locally from project data. No rendered frames are streamed over the network.
+
+The Elytra editor now contains a compact reference-oriented timeline dock:
+- play/pause;
+- scrub;
+- timeline loop;
+- duration +/-;
+- playback speed +/-;
+- add/select/enable/delete track;
+- cycle effect;
+- add/remove keyframe;
+- keyframe value +/-;
+- per-track speed cycle;
+- fixed-tick isolated 3D preview.
+
+Layer deletion prunes tracks targeting that layer, and schema-v3 validation rejects orphan track references.
+
+Still future:
+- standing/open/gliding preview-state controls;
+- richer per-effect property controls;
+- direct draggable keyframes;
+- Cape Editor timeline exposure;
+- final visual/reference polish.
+
+See `ANIMATION.md`.
 
 ## Loom Codes / sharing
 
@@ -553,10 +621,10 @@ Automated build/test verification is green. The remaining gate for the newest ed
 
 ## Immediate direction
 
-1. locally verify Cape/Gradient/Smart Import/Home/Elytra at the required GUI profiles when the development PC is available;
-2. finish remaining Elytra product workflow: cape-to-Elytra conversion, richer layer properties/import parity and preview states;
-3. design/implement animation authoring schema + timeline;
-4. implement project Loom Codes/sharing;
+1. locally verify Cape/Gradient/Smart Import/Home/Elytra/Animation at the required GUI profiles when the development PC is available;
+2. add Elytra preview-state polish for standing/open/gliding;
+3. implement project Loom Codes/sharing;
+4. expose/refine animation authoring where useful in the Cape Editor;
 5. finish reference-fidelity and compatibility hardening.
 
 See `NEXT_WORK.md` for the concrete queue.

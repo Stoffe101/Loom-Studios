@@ -120,3 +120,11 @@ Disconnect broadcasts an empty equipped hash as an unequip signal.
 The proof project is deliberately tiny. The final .loom transport will retain this same content-addressed/cache-miss architecture and move oversized project blobs to Fabric's 1.21.11 large-payload registration path when required.
 
 Animation is not transported frame-by-frame. The project carries animation parameters; clients evaluate them locally.
+
+## Schema-v3 animation data
+
+Animation definitions are part of the normal encoded `.loom` project blob and therefore use the existing content-addressed cache/equip protocol.
+
+The network does **not** stream timeline ticks, keyframe interpolation results, or rendered animation frames.
+
+Clients evaluate the saved animation locally. A schema-v3 project received from the server passes through the same bounded codec/migration validation as local files.

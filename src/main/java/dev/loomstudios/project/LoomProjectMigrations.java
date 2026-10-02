@@ -11,10 +11,15 @@ public final class LoomProjectMigrations {
         int schemaVersion = LoomProjectCodec.peekSchemaVersion(data);
 
         return switch (schemaVersion) {
-            case 1 -> migrateV1ToV2(
-                    LoomProjectCodec.decodeVersion1(data)
+            case 1 -> migrateV2ToV3(
+                    migrateV1ToV2(
+                            LoomProjectCodec.decodeVersion1(data)
+                    )
             );
-            case 2 -> LoomProjectCodec.decodeVersion2(data);
+            case 2 -> migrateV2ToV3(
+                    LoomProjectCodec.decodeVersion2(data)
+            );
+            case 3 -> LoomProjectCodec.decodeVersion3(data);
             default -> throw new IllegalArgumentException(
                     "Unsupported Loom project schema " + schemaVersion
             );
@@ -35,7 +40,27 @@ public final class LoomProjectMigrations {
                 legacy.metadata(),
                 legacy.cape(),
                 legacy.elytra(),
-                legacy.runtime()
+                legacy.runtime(),
+                LoomAnimation.empty()
+        );
+    }
+
+    private static LoomProject migrateV2ToV3(LoomProject legacy) {
+        if (legacy.schemaVersion() != 2) {
+            throw new IllegalArgumentException(
+                    "Expected schema-v2 project for migration"
+            );
+        }
+
+        return new LoomProject(
+                3,
+                legacy.projectId(),
+                legacy.name(),
+                legacy.metadata(),
+                legacy.cape(),
+                legacy.elytra(),
+                legacy.runtime(),
+                LoomAnimation.empty()
         );
     }
 }

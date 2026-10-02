@@ -140,7 +140,13 @@ public final class ProjectEdits {
             throw new IllegalArgumentException("Unknown layer " + layerId);
         }
 
-        return project.withCape(
+        LoomAnimation cleanedAnimation =
+                AnimationAuthoring.removeTracksForLayer(
+                        project.animation(),
+                        AnimationChannel.CAPE,
+                        layerId
+                );
+        return project.withAnimation(cleanedAnimation).withCape(
                 new LoomCanvas(canvas.width(), canvas.height(), next)
         );
     }
@@ -1133,7 +1139,13 @@ public final class ProjectEdits {
             );
         }
 
-        return project.withElytra(
+        LoomAnimation cleanedAnimation =
+                AnimationAuthoring.removeTracksForLayer(
+                        project.animation(),
+                        AnimationChannel.ELYTRA,
+                        layerId
+                );
+        return project.withAnimation(cleanedAnimation).withElytra(
                 new LoomCanvas(canvas.width(), canvas.height(), next)
         );
     }

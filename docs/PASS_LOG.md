@@ -1,5 +1,35 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Schema v3 + animation timeline MVP
+
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
+
+Latest merged-main baseline entering the pass:
+- `2eca773a0358344491fd3280f535feb3515268a0` — GitHub Actions #139 **SUCCESS**.
+
+Exact green checkpoints:
+- `e4c5aaa1112992e11a172c6cbf3d62874c1c808e` — schema-v3 model/migration tests — Actions #141 **SUCCESS**;
+- `864e48534f5b1464e23089104096af2a4ee1d3d4` — authored animation runtime — Actions #142 **SUCCESS**;
+- `88e1b1c051545661f021262b39fc57c3eebf4844` — reference integrity + fixed-tick preview correction — Actions #145 **SUCCESS**;
+- `156afcfe9eb7a2cf5d38f38280bc35335e5dade8` — compact timeline widget — Actions #146 **SUCCESS**;
+- `c3e5ca49e4ecccbeaca7ad064a828c63c7720692` — integrated Elytra timeline authoring — Actions #147 **SUCCESS**.
+
+Schema v3 adds project duration/loop/playback speed plus bounded layer-targeted tracks and ordered tick/value keyframes while preserving schema-v2 typed layers.
+
+Current authored effects: Pulse, Scroll, Hue Shift, Moving Gradient, Sparkle, Emissive Glow.
+
+The Elytra timeline now supports Play/Pause, scrub, Loop/Once, duration, project playback speed, Add Track, enable/select/delete track, effect cycle, Add/Remove Keyframe, keyframe Value +/- and per-track speed cycle.
+
+Timeline preview can render a fixed authored tick through a stable preview-only runtime bundle. Scrubbing updates preview textures in place and never equips/publishes the dirty project.
+
+Expected intermediate red runs:
+- #140 exposed old schema-v2 test assumptions;
+- #143/#144 exposed animation-layer deletion ordering during strict reference validation;
+- corrected exact heads are green above.
+
+Local visual/runtime verification remains required for timeline density, hit targets, effect output and scrubbed-preview fidelity at all mandatory GUI profiles.
+
+---
 ## 2026-10-02 — Elytra workflow completion
 
 **Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**

@@ -10,9 +10,10 @@ public record LoomProject(
         LoomProjectMetadata metadata,
         LoomCanvas cape,
         LoomCanvas elytra,
-        LoomRuntimeSettings runtime
+        LoomRuntimeSettings runtime,
+        LoomAnimation animation
 ) {
-    public static final int CURRENT_SCHEMA_VERSION = 2;
+    public static final int CURRENT_SCHEMA_VERSION = 3;
     public static final int TEXTURE_WIDTH = 64;
     public static final int TEXTURE_HEIGHT = 32;
 
@@ -29,16 +30,73 @@ public record LoomProject(
         Objects.requireNonNull(cape, "cape");
         Objects.requireNonNull(elytra, "elytra");
         Objects.requireNonNull(runtime, "runtime");
+        Objects.requireNonNull(animation, "animation");
 
-        if (name.isBlank() || name.length() > LoomProjectCodec.MAX_PROJECT_NAME_CHARS) {
+        if (name.isBlank()
+                || name.length()
+                > LoomProjectCodec.MAX_PROJECT_NAME_CHARS) {
             throw new IllegalArgumentException("Invalid project name");
         }
 
         validateRuntimeCanvas("cape", cape);
         validateRuntimeCanvas("elytra", elytra);
+        validateAnimationReferences(animation, cape, elytra);
     }
 
-    private static void validateRuntimeCanvas(String label, LoomCanvas canvas) {
+    private static void validateAnimationReferences(
+            LoomAnimation animation,
+            LoomCanvas cape,
+            LoomCanvas elytra
+    ) {
+        java.util.Set<UUID> capeIds = cape.layers().stream()
+                .map(LoomLayer::id)
+                .collect(java.util.stream.Collectors.toSet());
+        java.util.Set<UUID> elytraIds = elytra.layers().stream()
+                .map(LoomLayer::id)
+                .collect(java.util.stream.Collectors.toSet());
+
+        for (AnimationTrack track : animation.tracks()) {
+            boolean exists = switch (track.channel()) {
+                case CAPE -> capeIds.contains(track.layerId());
+                case ELYTRA -> elytraIds.contains(track.layerId());
+            };
+
+            if (!exists) {
+                throw new IllegalArgumentException(
+                        "Animation track references missing "
+                                + track.channel().displayName()
+                                + " layer "
+                                + track.layerId()
+                );
+            }
+        }
+    }
+
+    public LoomProject(
+            int schemaVersion,
+            UUID projectId,
+            String name,
+            LoomProjectMetadata metadata,
+            LoomCanvas cape,
+            LoomCanvas elytra,
+            LoomRuntimeSettings runtime
+    ) {
+        this(
+                schemaVersion,
+                projectId,
+                name,
+                metadata,
+                cape,
+                elytra,
+                runtime,
+                LoomAnimation.empty()
+        );
+    }
+
+    private static void validateRuntimeCanvas(
+            String label,
+            LoomCanvas canvas
+    ) {
         try {
             CanvasResolution.fromCanvas(canvas);
         } catch (IllegalArgumentException e) {
@@ -59,7 +117,8 @@ public record LoomProject(
                 metadata,
                 Objects.requireNonNull(nextCape, "nextCape"),
                 elytra,
-                runtime
+                runtime,
+                animation
         );
     }
 
@@ -71,11 +130,14 @@ public record LoomProject(
                 metadata,
                 cape,
                 Objects.requireNonNull(nextElytra, "nextElytra"),
-                runtime
+                runtime,
+                animation
         );
     }
 
-    public LoomProject withMetadata(LoomProjectMetadata nextMetadata) {
+    public LoomProject withMetadata(
+            LoomProjectMetadata nextMetadata
+    ) {
         return new LoomProject(
                 schemaVersion,
                 projectId,
@@ -83,7 +145,8 @@ public record LoomProject(
                 Objects.requireNonNull(nextMetadata, "nextMetadata"),
                 cape,
                 elytra,
-                runtime
+                runtime,
+                animation
         );
     }
 
@@ -95,11 +158,14 @@ public record LoomProject(
                 metadata,
                 cape,
                 elytra,
-                runtime
+                runtime,
+                animation
         );
     }
 
-    public LoomProject withRuntime(LoomRuntimeSettings nextRuntime) {
+    public LoomProject withRuntime(
+            LoomRuntimeSettings nextRuntime
+    ) {
         return new LoomProject(
                 schemaVersion,
                 projectId,
@@ -107,7 +173,26 @@ public record LoomProject(
                 metadata,
                 cape,
                 elytra,
-                Objects.requireNonNull(nextRuntime, "nextRuntime")
+                Objects.requireNonNull(nextRuntime, "nextRuntime"),
+                animation
+        );
+    }
+
+    public LoomProject withAnimation(
+            LoomAnimation nextAnimation
+    ) {
+        return new LoomProject(
+                schemaVersion,
+                projectId,
+                name,
+                metadata,
+                cape,
+                elytra,
+                runtime,
+                Objects.requireNonNull(
+                        nextAnimation,
+                        "nextAnimation"
+                )
         );
     }
 

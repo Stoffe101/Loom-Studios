@@ -954,7 +954,7 @@ This allows Cape and Elytra editors to share:
 Target-specific edits remain in the owning editor/ProjectEdits path.
 
 
-## ADR-077 — Elytra Smart Import uses semantic twin Image layers
+## ADR-080 — Elytra Smart Import uses semantic twin Image layers
 **Status:** Accepted / implemented
 
 The two Elytra wing-front UV regions are disjoint. Smart Import must not pretend they form one rectangular editable target.
@@ -968,7 +968,7 @@ The source remains embedded/editable through normal schema-v2 Image-layer data. 
 
 Existing Elytra Image layers can be reopened as a single target in Smart Import.
 
-## ADR-078 — Cape-to-Elytra conversion is an editable Paint starting layer
+## ADR-081 — Cape-to-Elytra conversion is an editable Paint starting layer
 **Status:** Accepted / implemented
 
 Cape-to-Elytra conversion compiles the current cape Outside face, aspect-fits it into the semantic Elytra wing face, mirrors it into the opposite wing and adds the result as a new Paint layer.
@@ -979,3 +979,33 @@ The operation does not:
 - introduce a new schema field.
 
 This makes conversion a reversible/undoable authoring action and preserves the original cape project.
+
+## ADR-082 — Schema v3 owns authored animation
+**Status:** Accepted / implemented
+
+Animation authoring is first-class project data rather than additional meaning hidden inside legacy runtime flags.
+
+Schema v3 appends project duration/loop/playback speed plus bounded layer-targeted tracks and ordered keyframes. Migration is explicit: v1 -> v2 -> v3, v2 -> v3, and v3 direct. Migrated v1/v2 projects receive an empty default timeline.
+
+The existing runtime hue-cycle flag remains compatibility behavior only. New authoring should use schema-v3 tracks.
+
+## ADR-083 — Animation tracks must reference live layer IDs
+**Status:** Accepted / implemented
+
+A track's layer UUID must exist in the track's declared Cape/Elytra channel. Project validation rejects orphan references.
+
+Layer deletion removes targeting tracks before replacing the canvas, keeping immutable project validation atomic and preventing dangling animation data.
+
+## ADR-084 — Timeline preview uses a fixed-tick preview cache
+**Status:** Accepted / implemented
+
+Timeline scrubbing must not mutate the real player, equip the dirty project, publish network state, or allocate a fresh texture identifier for every scrubbed tick.
+
+The scoped player preview therefore uses a stable preview-only hash and a runtime bundle with an optional fixed timeline tick. Scrubbing updates that bundle's texture contents in place. Fixed-tick preview bundles are excluded from normal game-time animation updates.
+
+## ADR-085 — Reference 04 uses a compact canvas-above / timeline-below work layout
+**Status:** Accepted / implemented
+
+The approved Elytra + Animation reference remains the composition target, but work-mode usability outranks screenshot reproduction.
+
+The current Elytra editor keeps the unfolded wing canvas dominant, docks the compact timeline beneath it, keeps the 3D preview/layer actions on the right, and uses restrained cyan/violet emphasis for selected/active timeline state.

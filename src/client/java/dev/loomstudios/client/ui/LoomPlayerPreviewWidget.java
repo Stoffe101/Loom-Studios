@@ -24,6 +24,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -37,6 +38,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
     private final Supplier<LoomProject> projectSupplier;
     private Mode mode;
+    private IntSupplier timelineTickSupplier;
 
     private float yaw = 180.0F;
     private float pitch;
@@ -67,6 +69,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
+    }
+
+    public void setTimelineTickSupplier(
+            IntSupplier timelineTickSupplier
+    ) {
+        this.timelineTickSupplier = timelineTickSupplier;
     }
 
     public void setMode(Mode mode) {
@@ -117,7 +125,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
         if (project != null && player != null) {
             EntityRenderState renderState = extractRenderState(
                     player,
-                    project
+                    project,
+                    timelineTickSupplier == null
+                            ? null
+                            : timelineTickSupplier.getAsInt()
             );
 
             if (renderState instanceof AvatarRenderState avatarState) {
@@ -191,12 +202,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
     private static EntityRenderState extractRenderState(
             LivingEntity entity,
-            LoomProject project
+            LoomProject project,
+            Integer timelineTick
     ) {
-        return PlayerCosmeticRenderer.withPreviewProject(
-                Minecraft.getInstance(),
-                project,
-                () -> {
+        Supplier<EntityRenderState> action = () -> {
                     EntityRenderDispatcher dispatcher =
                             Minecraft.getInstance().getEntityRenderDispatcher();
                     EntityRenderer<? super LivingEntity, ?> renderer =
@@ -208,8 +217,20 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     renderState.shadowPieces.clear();
                     renderState.outlineColor = 0;
                     return renderState;
-                }
-        );
+                };
+
+        return timelineTick == null
+                ? PlayerCosmeticRenderer.withPreviewProject(
+                        Minecraft.getInstance(),
+                        project,
+                        action
+                )
+                : PlayerCosmeticRenderer.withPreviewProjectAtTick(
+                        Minecraft.getInstance(),
+                        project,
+                        timelineTick,
+                        action
+                );
     }
 
     @Override

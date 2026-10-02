@@ -2,6 +2,9 @@ package dev.loomstudios.client.render;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.loomstudios.LoomStudios;
+import dev.loomstudios.project.AnimationChannel;
+import dev.loomstudios.project.AnimationEffectType;
+import dev.loomstudios.project.AnimationEvaluator;
 import dev.loomstudios.project.LoomProject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -27,8 +30,37 @@ public final class RuntimeCosmeticCache {
             String projectHash,
             LoomProject project
     ) {
+        return getOrCompile(
+                client,
+                projectHash,
+                project,
+                null
+        );
+    }
+
+    public static RuntimeBundle getOrCompile(
+            Minecraft client,
+            String projectHash,
+            LoomProject project,
+            Integer fixedTimelineTick
+    ) {
         RuntimeBundle existing = BUNDLES.get(projectHash);
         if (existing != null) {
+            if (fixedTimelineTick != null
+                    && !fixedTimelineTick.equals(
+                            existing.fixedTimelineTick
+                    )) {
+                existing.fixedTimelineTick = fixedTimelineTick;
+                existing.capeTimelineTick = fixedTimelineTick;
+                existing.elytraTimelineTick = fixedTimelineTick;
+                existing.legacyPhase = 0;
+                redrawCape(existing, fixedTimelineTick);
+                redrawElytra(existing, fixedTimelineTick);
+                redrawEmissive(existing, fixedTimelineTick);
+                existing.capeTexture.upload();
+                existing.elytraTexture.upload();
+                existing.emissiveTexture.upload();
+            }
             return existing;
         }
 
@@ -83,13 +115,19 @@ public final class RuntimeCosmeticCache {
                         project.cape().width(),
                         project.cape().height(),
                         false
-                )
+                ),
+                fixedTimelineTick
         );
 
-        bundle.phase = 0;
-        redrawCape(bundle);
-        redrawElytra(bundle);
-        redrawEmissive(bundle);
+        int initialTimelineTick = fixedTimelineTick == null
+                ? 0
+                : fixedTimelineTick;
+        bundle.legacyPhase = 0;
+        bundle.capeTimelineTick = initialTimelineTick;
+        bundle.elytraTimelineTick = initialTimelineTick;
+        redrawCape(bundle, initialTimelineTick);
+        redrawElytra(bundle, initialTimelineTick);
+        redrawEmissive(bundle, initialTimelineTick);
 
         bundle.capeTexture = new DynamicTexture(
                 () -> "Loom Studios cape " + suffix,
@@ -132,19 +170,48 @@ public final class RuntimeCosmeticCache {
         long gameTime = client.level.getGameTime();
 
         for (RuntimeBundle bundle : BUNDLES.values()) {
-            int phase = (int)(
-                    (gameTime / bundle.project.runtime().animationPeriodTicks()) % 4L
-            );
-
-            if (phase == bundle.phase) {
+            if (bundle.fixedTimelineTick != null) {
                 continue;
             }
 
-            bundle.phase = phase;
-            redrawCape(bundle);
-            redrawEmissive(bundle);
-            bundle.capeTexture.upload();
-            bundle.emissiveTexture.upload();
+            int legacyPhase = (int)(
+                    (gameTime
+                            / bundle.project.runtime()
+                                    .animationPeriodTicks())
+                            % 4L
+            );
+            int timelineTick = AnimationEvaluator.timelineTick(
+                    bundle.project.animation(),
+                    gameTime
+            );
+
+            boolean capeAnimated =
+                    bundle.project.animation()
+                            .hasEnabledTracks(AnimationChannel.CAPE)
+                            || bundle.project.runtime()
+                                    .hueCycleEnabled();
+
+            boolean elytraAnimated =
+                    bundle.project.animation()
+                            .hasEnabledTracks(AnimationChannel.ELYTRA);
+
+            if (capeAnimated
+                    && (bundle.capeTimelineTick != timelineTick
+                    || bundle.legacyPhase != legacyPhase)) {
+                bundle.capeTimelineTick = timelineTick;
+                bundle.legacyPhase = legacyPhase;
+                redrawCape(bundle, timelineTick);
+                redrawEmissive(bundle, timelineTick);
+                bundle.capeTexture.upload();
+                bundle.emissiveTexture.upload();
+            }
+
+            if (elytraAnimated
+                    && bundle.elytraTimelineTick != timelineTick) {
+                bundle.elytraTimelineTick = timelineTick;
+                redrawElytra(bundle, timelineTick);
+                bundle.elytraTexture.upload();
+            }
         }
     }
 
@@ -182,45 +249,68 @@ public final class RuntimeCosmeticCache {
         BY_ELYTRA_TEXTURE.clear();
     }
 
-    private static void redrawCape(RuntimeBundle bundle) {
+    private static void redrawCape(
+            RuntimeBundle bundle,
+            int timelineTick
+    ) {
         writePixels(
                 bundle.capeImage,
-                LoomTextureCompiler.compile(
-                        bundle.project.cape(),
-                        bundle.phase,
-                        bundle.project.runtime().hueCycleEnabled(),
+                LoomTextureCompiler.compileAnimated(
+                        bundle.project,
+                        AnimationChannel.CAPE,
+                        timelineTick,
+                        bundle.legacyPhase,
                         false
                 )
         );
     }
 
-    private static void redrawElytra(RuntimeBundle bundle) {
+    private static void redrawElytra(
+            RuntimeBundle bundle,
+            int timelineTick
+    ) {
         writePixels(
                 bundle.elytraImage,
-                LoomTextureCompiler.compile(
-                        bundle.project.elytra(),
+                LoomTextureCompiler.compileAnimated(
+                        bundle.project,
+                        AnimationChannel.ELYTRA,
+                        timelineTick,
                         0,
-                        false,
                         false
                 )
         );
     }
 
-    private static void redrawEmissive(RuntimeBundle bundle) {
-        boolean hasEmissiveLayer = bundle.project.cape().layers().stream()
-                .anyMatch(layer -> layer.emissive());
+    private static void redrawEmissive(
+            RuntimeBundle bundle,
+            int timelineTick
+    ) {
+        boolean hasEmissiveLayer =
+                bundle.project.cape().layers().stream()
+                        .anyMatch(layer -> layer.emissive());
 
-        if (!hasEmissiveLayer) {
+        boolean hasAuthoredEmissive =
+                bundle.project.animation().tracks().stream()
+                        .anyMatch(track ->
+                                track.enabled()
+                                        && track.channel()
+                                        == AnimationChannel.CAPE
+                                        && track.effect()
+                                        == AnimationEffectType.EMISSIVE_GLOW
+                        );
+
+        if (!hasEmissiveLayer && !hasAuthoredEmissive) {
             clear(bundle.emissiveImage);
             return;
         }
 
         writePixels(
                 bundle.emissiveImage,
-                LoomTextureCompiler.compile(
-                        bundle.project.cape(),
-                        bundle.phase,
-                        bundle.project.runtime().hueCycleEnabled(),
+                LoomTextureCompiler.compileAnimated(
+                        bundle.project,
+                        AnimationChannel.CAPE,
+                        timelineTick,
+                        bundle.legacyPhase,
                         true
                 )
         );
@@ -264,7 +354,10 @@ public final class RuntimeCosmeticCache {
         DynamicTexture capeTexture;
         DynamicTexture elytraTexture;
         DynamicTexture emissiveTexture;
-        int phase = -1;
+        int legacyPhase = -1;
+        int capeTimelineTick = -1;
+        int elytraTimelineTick = -1;
+        Integer fixedTimelineTick;
 
         RuntimeBundle(
                 String projectHash,
@@ -276,7 +369,8 @@ public final class RuntimeCosmeticCache {
                 ClientAsset.ResourceTexture elytraAsset,
                 NativeImage capeImage,
                 NativeImage elytraImage,
-                NativeImage emissiveImage
+                NativeImage emissiveImage,
+                Integer fixedTimelineTick
         ) {
             this.projectHash = projectHash;
             this.project = project;
@@ -288,6 +382,7 @@ public final class RuntimeCosmeticCache {
             this.capeImage = capeImage;
             this.elytraImage = elytraImage;
             this.emissiveImage = emissiveImage;
+            this.fixedTimelineTick = fixedTimelineTick;
         }
     }
 }

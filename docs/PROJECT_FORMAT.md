@@ -105,9 +105,9 @@ Portable codes require strict maximum sizes and decoding limits.
 Every saved project declares a schema version. Loading an old project runs explicit migrations rather than silently interpreting old fields as new semantics.
 
 
-## Implemented schema v2
+## Implemented schema v3
 
-Schema v2 is now the current project format.
+Schema v3 is now the current project format. Schema v2 remains the typed-layer foundation and is explicitly migrated when loaded.
 
 Current binary contents:
 - magic header `LOOM`;
@@ -118,11 +118,12 @@ Current binary contents:
 - runtime settings;
 - cape canvas;
 - Elytra canvas;
-- ordered typed layers.
+- ordered typed layers;
+- authored animation timeline.
 
 ### Common layer fields
 
-All schema-v2 layers store:
+Schema v2/v3 typed layers store:
 - stable UUID;
 - name;
 - visible;
@@ -185,7 +186,7 @@ Those ordinals remain frozen compatibility data for v1 decoding:
 - 3 Multiply;
 - 4 Overlay.
 
-Schema v2 stores stable blend string ids and is therefore no longer dependent on enum ordering.
+Schema v2/v3 stores stable blend string ids and is therefore no longer dependent on enum ordering.
 
 ### Current bounded limits
 
@@ -195,6 +196,12 @@ Schema v2 stores stable blend string ids and is therefore no longer dependent on
 - 256 px maximum embedded Image-layer source dimension;
 - up to 256 Image-layer palette colors;
 - up to 16 Gradient stops;
+- up to 64 animation tracks;
+- up to 128 keyframes per animation track;
+- 20..7200 tick timeline duration;
+- 0.25x..4.0x timeline playback speed;
+- 0.1x..8.0x track speed;
+- bounded keyframe scalar values;
 - bounded project/layer/string fields.
 
 ### Migration table
@@ -202,8 +209,9 @@ Schema v2 stores stable blend string ids and is therefore no longer dependent on
 All loading still passes through `LoomProjectMigrations`.
 
 Current migration table:
-- schema 1 -> decode with the original paint-only layout, then explicitly migrate to schema 2;
-- schema 2 -> decode directly;
+- schema 1 -> decode the original paint-only layout -> migrate to schema 2 -> migrate to schema 3;
+- schema 2 -> decode typed layers -> migrate to schema 3 with an empty timeline;
+- schema 3 -> decode directly;
 - every other schema -> reject explicitly.
 
 A schema-v1 migration preserves:
@@ -216,6 +224,46 @@ A schema-v1 migration preserves:
 - ARGB pixels.
 
 Migrated v1 Paint layers begin unlocked because lock metadata did not exist in v1.
+
+A migrated v1/v2 project receives the schema-v3 default empty animation:
+- duration 80 ticks;
+- loop enabled;
+- playback speed 1.0x;
+- zero tracks.
+
+### Animation timeline payload
+
+Schema v3 appends project-level animation data after both typed canvases.
+
+Project animation stores:
+- duration ticks;
+- timeline loop flag;
+- playback speed;
+- ordered bounded tracks.
+
+Each track stores:
+- stable track UUID;
+- target layer UUID;
+- channel id: `cape` or `elytra`;
+- effect id;
+- enabled flag;
+- track speed;
+- track loop flag;
+- ordered keyframes.
+
+Each keyframe stores:
+- timeline tick;
+- scalar value.
+
+Current effect ids:
+- `pulse`;
+- `scroll`;
+- `hue_shift`;
+- `moving_gradient`;
+- `sparkle`;
+- `emissive_glow`.
+
+Animation tracks must reference a layer that exists in their declared channel. Deleting a layer prunes its animation tracks before the replacement canvas is validated.
 
 ### Emissive compatibility
 
