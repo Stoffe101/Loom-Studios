@@ -109,14 +109,19 @@ Implemented pure core:
 - crop;
 - nearest-neighbor resize;
 - brightness/contrast/saturation;
-- bounded immutable ARGB processing image.
+- bounded immutable ARGB processing image;
+- Reduce Colors;
+- Palette Limited mapping;
+- Floyd-Steinberg dithering;
+- Posterize;
+- Monochrome.
 
 Still planned:
 - PNG import;
 - interactive aspect lock;
 - free position/scale/arbitrary rotate;
-- color reduction;
-- dithering;
+- Outline processing;
+- Pixel-art mode orchestration;
 - transparency/background handling;
 - Direct;
 - Pixel-art;
