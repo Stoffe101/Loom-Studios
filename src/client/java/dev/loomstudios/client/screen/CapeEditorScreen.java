@@ -15,6 +15,7 @@ import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.GradientLayerData;
 import dev.loomstudios.project.GradientStop;
