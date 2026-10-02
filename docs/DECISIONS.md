@@ -693,9 +693,13 @@ Schema v1 already stores both:
 - per-layer `emissive`;
 - project runtime `emissiveEnabled`.
 
-Until schema v2 can simplify effect metadata, editor operations keep these values consistent:
+Until schema v2 can simplify effect metadata:
+- per-layer emissive flags are the render-time authority;
+- editor operations keep the schema-v1 master synchronized as a compatibility mirror;
 - at least one emissive cape layer -> runtime emissive master ON;
 - no emissive cape layers -> runtime emissive master OFF.
+
+Treating layers as render authority also protects older pre-fix projects whose stored master flag may disagree with their layer flags.
 
 Blank editor projects still begin with no emissive layers and therefore no glow.
 
