@@ -516,12 +516,12 @@ public final class CapeEditorScreen extends Screen {
         undoButton = createLoomButton(
                 (contentWidth - 4) / 2,
                 "Undo",
-                ClientProjectWorkspace::undo
+                this::undo
         );
         redoButton = createLoomButton(
                 contentWidth - 4 - undoButton.getWidth(),
                 "Redo",
-                ClientProjectWorkspace::redo
+                this::redo
         );
         historyRow.addChild(undoButton);
         historyRow.addChild(redoButton);
@@ -1668,6 +1668,20 @@ public final class CapeEditorScreen extends Screen {
         setSelectedColor(color);
     }
 
+    private void undo() {
+        ClientProjectWorkspace.undo();
+        clearSelection();
+        syncLayerFields();
+        updateButtonStates();
+    }
+
+    private void redo() {
+        ClientProjectWorkspace.redo();
+        clearSelection();
+        syncLayerFields();
+        updateButtonStates();
+    }
+
     private void save() {
         try {
             ClientProjectWorkspace.save();
@@ -1843,11 +1857,11 @@ public final class CapeEditorScreen extends Screen {
 
         if (event.hasControlDownWithQuirk()) {
             if (event.key() == 90) {
-                ClientProjectWorkspace.undo();
+                undo();
                 return true;
             }
             if (event.key() == 89) {
-                ClientProjectWorkspace.redo();
+                redo();
                 return true;
             }
             if (event.key() == 83) {
