@@ -129,12 +129,21 @@ Current paint-layer fields:
 - ARGB pixel data.
 
 Current limits are deliberately bounded:
-- 256 KiB serialized project;
+- 1 MiB serialized project;
 - 256 x 256 maximum canvas dimension;
 - 64 layers per canvas;
 - bounded project/layer names.
 
-Only `NORMAL` blend is implemented in the compiler today. The enum is already serialized so later blend modes can be added through explicit schema/version handling.
+Schema v1 currently implements these serialized blend modes:
+- Normal;
+- Add / Glow;
+- Screen;
+- Multiply;
+- Overlay.
+
+Their enum ordinals are compatibility data in schema v1 and are pinned by automated tests. New schema-v1 modes may only be appended. A future schema should use stable identifiers instead of enum ordinals.
+
+The project-level emissive runtime flag remains part of schema v1. Editor operations keep it synchronized with whether any cape layer is marked emissive, so normal blank projects start with no glow while enabling an emissive layer activates the runtime pass immediately. Synthetic SPIKE-only shimmer is not part of real project output.
 
 The local library uses `<gameDir>/loom-studios/projects/<project UUID>.loom`.
 
