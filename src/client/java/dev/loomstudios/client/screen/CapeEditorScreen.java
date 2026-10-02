@@ -15,6 +15,10 @@ import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LayerKind;
+import dev.loomstudios.project.GradientLayerData;
+import dev.loomstudios.project.GradientStop;
+import dev.loomstudios.project.NormalizedRect;
 import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
@@ -85,6 +89,15 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton layerRenameButton;
     private LoomButton layerBlendButton;
     private LoomButton layerEmissiveButton;
+    private LoomButton layerLockButton;
+    private LoomButton layerGradientAddButton;
+    private LoomButton layerImportButton;
+    private LoomButton gradientTypeButton;
+    private LoomButton gradientAngleButton;
+    private LoomButton gradientStartButton;
+    private LoomButton gradientEndButton;
+    private LoomButton gradientRepeatButton;
+    private LoomButton gradientDitherButton;
     private LoomButton layerOpacityDownButton;
     private LoomButton layerOpacityLabelButton;
     private LoomButton layerOpacityUpButton;
@@ -437,6 +450,21 @@ public final class CapeEditorScreen extends Screen {
         layerCreateRow.addChild(layerDeleteButton);
         tools.addChild(layerCreateRow);
 
+        LinearLayout typedCreateRow = LinearLayout.horizontal().spacing(4);
+        layerGradientAddButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "New Gradient",
+                this::addGradientLayer
+        );
+        layerImportButton = createLoomButton(
+                contentWidth - 4 - layerGradientAddButton.getWidth(),
+                "Import PNG",
+                this::openSmartImport
+        );
+        typedCreateRow.addChild(layerGradientAddButton);
+        typedCreateRow.addChild(layerImportButton);
+        tools.addChild(typedCreateRow);
+
         LinearLayout layerMoveRow = LinearLayout.horizontal().spacing(4);
         layerUpButton = createLoomButton(
                 (contentWidth - 4) / 2,
@@ -489,6 +517,73 @@ public final class CapeEditorScreen extends Screen {
                 this::toggleLayerEmissive
         );
         tools.addChild(this.layerEmissiveButton);
+
+        this.layerLockButton = createLoomButton(
+                contentWidth,
+                "Lock: Off",
+                this::toggleLayerLock
+        );
+        tools.addChild(this.layerLockButton);
+
+        this.gradientTypeButton = createLoomButton(
+                contentWidth,
+                "Gradient Type",
+                this::cycleGradientType
+        );
+        tools.addChild(this.gradientTypeButton);
+
+        LinearLayout gradientAngleRow =
+                LinearLayout.horizontal().spacing(4);
+        gradientAngleRow.addChild(createLoomButton(
+                48,
+                "Angle -",
+                () -> rotateGradient(-15.0)
+        ));
+        this.gradientAngleButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "0°",
+                () -> { }
+        );
+        this.gradientAngleButton.active = false;
+        gradientAngleRow.addChild(this.gradientAngleButton);
+        gradientAngleRow.addChild(createLoomButton(
+                48,
+                "Angle +",
+                () -> rotateGradient(15.0)
+        ));
+        tools.addChild(gradientAngleRow);
+
+        LinearLayout gradientColorRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientStartButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Set Start",
+                () -> setGradientEndpoint(true)
+        );
+        this.gradientEndButton = createLoomButton(
+                contentWidth - 4 - gradientStartButton.getWidth(),
+                "Set End",
+                () -> setGradientEndpoint(false)
+        );
+        gradientColorRow.addChild(this.gradientStartButton);
+        gradientColorRow.addChild(this.gradientEndButton);
+        tools.addChild(gradientColorRow);
+
+        LinearLayout gradientEffectRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientRepeatButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Repeat: Off",
+                this::toggleGradientRepeat
+        );
+        this.gradientDitherButton = createLoomButton(
+                contentWidth - 4 - gradientRepeatButton.getWidth(),
+                "Dither: Off",
+                this::toggleGradientDither
+        );
+        gradientEffectRow.addChild(this.gradientRepeatButton);
+        gradientEffectRow.addChild(this.gradientDitherButton);
+        tools.addChild(gradientEffectRow);
 
         LinearLayout layerOpacityRow = LinearLayout.horizontal().spacing(4);
         layerOpacityDownButton = createLoomButton(
