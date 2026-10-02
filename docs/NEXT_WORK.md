@@ -2,13 +2,13 @@
 
 ## Current gate
 
-The workspace repair follows the failed cape/elytra screenshots from 2026-10-02 and all five approved workshop references. Implementation is complete enough to build and test; acceptance remains PARTIAL until screenshots have been inspected.
+The workspace repair follows the failed cape/elytra screenshots from 2026-10-02 and all five approved workshop references. The clean build and 22 actual editor screenshots have passed and been inspected. Overall reference acceptance remains PARTIAL: the current editor is clearer but still simpler than the decorative workshop references.
 
 Current changes: unified canvas pixel boundaries, bounded shared layout, slim navigation with explicit Save + Equip, contextual tool rows, paged layer/gradient inspectors, cached two-wing canvas, adaptive timeline, real layer thumbnails, draggable collection scrollbars, preserved viewport state and coherent icon/theme primitives.
 
 Run the development capture flow with `./gradlew runClient -PuiCapture` in the isolated `run-ui-capture` directory. It creates a flat test world, checks visible widget bounds and captures Cape/Elytra at the four mandatory profiles plus compact Color/Properties/Animation/Playback pages. It is disabled in production and ordinary development launches.
 
-Next concrete gate: record the final clean CI results and inspect regenerated captures, then review Home/Smart Import/Share against their references. Keep shader, optional-mod, multiplayer and full manual workflow checks pending unless performed. The older checkpoint SHAs below are historical, not proof for this repair.
+Verified source `a2a9628afced367d4a178f944c5cce239d110fbf` passed Actions #178 (tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`). Next concrete gate: complete the decorative workshop styling and review Home/Smart Import/Share against their references. Keep shader, optional-mod, multiplayer and full manual workflow checks pending unless performed. The older checkpoint SHAs below are historical, not proof for this repair.
 
 ## Runtime verification queue
 

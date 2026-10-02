@@ -48,7 +48,9 @@ Loom Studios currently has:
 - first-class Share / Export navigation from Home, Cape and Elytra;
 - a simplified Export / Import sharing workspace.
 
-The editor workspace repair is **PARTIAL: implementation and automated build pass; editor screenshot verification passed; final clean CI and wider visual acceptance pending**. The earlier refactor is historical evidence, not acceptance of this revision.
+The editor workspace repair is **PARTIAL: clean build and editor screenshot verification PASS; full five-screen decorative reference fidelity and wider workflow acceptance pending**. The earlier refactor is historical evidence, not acceptance of this revision.
+
+Verified implementation: `a2a9628afced367d4a178f944c5cce239d110fbf`, tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`; [Actions #178](https://github.com/Stoffe101/Loom-Studios/actions/runs/37068918058) passed both build and 22 fresh actual Minecraft captures. Draft PR #14 remains unmerged.
 
 Current repair base: `f49ddb2e9727e16d3e6438772534f278d0520a38`. A unified integer pixel transform now owns cape texture, grid, input, live shape and committed selection bounds. Both editors use a shared bounded workspace layout, slim navigation, contextual controls, cached textures and paged inspectors. Elytra has Layers / Color / Properties / Animation; animation separates Keys and Playback. Empty timelines yield more canvas space. View state survives rebuilds. See the newest PASS_LOG entry for exact validation and remaining gaps.
 

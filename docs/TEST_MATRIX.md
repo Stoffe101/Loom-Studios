@@ -833,14 +833,14 @@ Pass criteria:
 
 ## 2026-10-02 workspace repair verification
 
-Implementation base: `f49ddb2e9727e16d3e6438772534f278d0520a38`; working revision not yet committed.
+Implementation base: `f49ddb2e9727e16d3e6438772534f278d0520a38`; verified source `a2a9628afced367d4a178f944c5cce239d110fbf`, tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`, Actions #178.
 
 - Java 21.0.9, Minecraft 1.21.11, Fabric Loader 0.18.4, Fabric API 0.141.1+1.21.11, Loom 1.17.21, Gradle 9.6.1.
-- Full `build`: PASS before final navigation/alpha/capture polish; final build must be repeated after those changes.
+- Full `build`: PASS in clean Actions #178 after final navigation/alpha/capture polish, Java 21.0.12+1, unmodified Loom.
 - `CanvasViewportTransformTest`: PASS for all semantic cape faces, 1x/2x/4x, fit through 800% zoom, positive/negative pan, pixel centers and exclusive selection edges.
 - `LoomWorkspaceLayoutTest`: PASS for all four mandatory profiles, ±1 logical rounding, Cape and Elytra with 0/1/5/16 tracks; positive bounded regions and canvas minimums.
-- Actual Minecraft editor screenshots: PASS for the four required profiles and compact inspector/collection scenarios. One truncated committed-selection PNG was removed after workspace recovery; regeneration and final revision clean CI remain required.
-- Container-only Loom Unix socket probe workaround: cached plugin platform probe returns false because this container forbids Unix sockets. No project source or dependency version is changed by this workaround. Clean CI remains independently required.
+- Actual Minecraft editor screenshots: PASS for the four required profiles and compact inspector/collection scenarios. All 22 PNGs regenerated in clean Actions #178; live/released single-pixel outline region is identical at GUI 3 / 200% and the below-minimum guidance is readable.
+- Container-only Loom Unix socket probe workaround: cached plugin platform probe returns false because this container forbids Unix sockets. No project source or dependency version is changed by this workaround. Clean Actions #178 independently passed without this workaround.
 - Optional mods, shaders, multiplayer and full interactive workflow: NOT RUN for this repair.
 
 The opt-in development capture checks every visible widget against the window/footer bounds and records Cape/Elytra at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Inspect selection outline, context row, property pages, cached wing composition, preview and timeline; geometry tests alone do not establish reference fidelity.
