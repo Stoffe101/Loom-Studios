@@ -23,18 +23,36 @@ The remaining gate is local visual/runtime verification because the user is away
 - tool-rail layout at all required GUI profiles.
 
 ### Layers / effects
-- New / Duplicate / Delete;
+- New Paint / New Gradient / Import Image;
+- Duplicate / Delete;
 - visibility;
 - reorder;
 - opacity;
 - rename;
 - persistent Lock;
+- direct row lock toggle;
+- typed Paint / Image / Gradient icons;
+- selected-row accent;
 - Emissive;
 - Normal / Add-Glow / Screen / Multiply / Overlay;
-- Paint / Image / Gradient rows;
 - Undo/Redo;
 - 3D Preview compositing;
 - emissive visual output with shaders OFF/ON.
+
+### Gradient authoring
+- Linear / Radial;
+- start/end and additional stop colors;
+- add/remove stops;
+- stop position stepping;
+- angle +/-;
+- move left/up/down/right;
+- scale +/-;
+- Mirror H / Mirror V;
+- reset transform;
+- repeat;
+- dither;
+- locked Gradient disables authoring controls;
+- all controls remain usable at required GUI profiles.
 
 ### Smart Import
 - file picker opens/returns correctly on Windows;
@@ -70,35 +88,31 @@ The remaining gate is local visual/runtime verification because the user is away
 
 ## Next CI-safe product work
 
+Gradient authoring and typed-layer row UX are implemented in the current pass; local visual verification remains pending.
+
 Priority order:
 
-1. richer Gradient authoring UI in the Cape Editor:
-   - create Gradient layer from UI;
-   - Linear / Radial;
-   - editable color stops;
-   - angle/direction;
-   - repeat;
-   - dither;
-   - transform controls;
-2. richer typed layer rows/icons and lock affordance;
-3. Home reference shell:
+1. Home reference shell:
    - real Recent Project thumbnail cards;
-   - Import Image entry now routed to Smart Import;
+   - selected-project/player preview;
+   - Create New Cape hierarchy;
+   - Import Image routed to Smart Import;
    - Edit Elytra placeholder/entry once editor exists;
    - Templates / Loom Codes / Settings hierarchy;
-4. Elytra semantic editor model:
+   - calmer 70/30 reference styling with icon-led actions;
+2. Elytra semantic editor model:
    - unfolded left/right wings;
    - linked/mirrored vs independent;
    - cape-to-Elytra starting conversion;
    - thickness user control;
    - standing/open/gliding preview states;
-5. animation authoring schema:
+3. animation authoring schema:
    - tracks;
    - keyframes;
    - procedural effects;
    - timeline;
-6. project Loom Codes/sharing;
-7. final reference-fidelity and compatibility hardening.
+4. project Loom Codes/sharing;
+5. final reference-fidelity and compatibility hardening.
 
 ## Schema-v2 status
 

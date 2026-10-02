@@ -19,13 +19,18 @@ Loom Studios currently has:
 - 1x / 2x / 4x cape editing;
 - a functional semantic-face Cape Editor;
 - custom palettes/Swatches;
-- paint-layer editing and blend modes;
+- typed Paint / Image / Gradient layer editing;
+- persistent layer locking and blend/emissive controls;
+- Gradient authoring with type/stops/angle/repeat/dither plus move/scale/mirror/reset transforms;
+- icon-led typed layer rows with direct visibility/lock affordances;
 - selection/move/flip common-core transforms;
 - first editor exposure of drag selection, nudge and flip controls.
 
-The current Smart Import + schema-v2 implementation slice is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+The current Smart Import + schema-v2 merged baseline is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Exact merged-main checkpoint: `6208086fd5c6f025376afd7cf8390829cda56dbd` — GitHub Actions #121 **SUCCESS**.
+Exact merged-main baseline entering the Gradient/typed-layer pass: `fec3d46e8b3e3eb40e24b6a602d2f2bae0da2cf6` — GitHub Actions #123 **SUCCESS**.
+
+Gradient Editor + typed-layer UX implementation checkpoint: `29d43b67ae880679e3b8ae9c3093c7f5ad7c2613` — GitHub Actions #124 **SUCCESS**. Documentation-only head verification follows this implementation checkpoint.
 
 The earlier Select/runtime-hardening checkpoint remains `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
 
@@ -235,15 +240,38 @@ Selection itself remains editor state and is not serialized into `.loom`.
 - `LOOMPAL1:` palette share codes.
 
 ### Layers
-- New;
+- New Paint;
+- Import PNG / edit Image;
+- New Gradient;
 - Duplicate;
 - Delete;
 - reorder;
 - visibility;
 - opacity;
 - rename;
+- persistent Lock;
 - Emissive toggle;
-- Normal / Add-Glow / Screen / Multiply / Overlay.
+- Normal / Add-Glow / Screen / Multiply / Overlay;
+- typed Paint / Image / Gradient row icons;
+- selected-row accent;
+- direct row visibility control;
+- direct row lock control.
+
+Gradient authoring currently exposes:
+- Linear / Radial;
+- ordered editable color stops;
+- add/remove stop;
+- stop position stepping;
+- selected-stop color from the active Loom color;
+- angle rotation;
+- repeat;
+- dither;
+- layer-relative move;
+- bounded uniform scale;
+- horizontal / vertical mirror;
+- reset to the semantic target clip.
+
+Gradient move/scale/mirror/reset behavior is implemented through the pure common-core `GradientAuthoring` helper so UI behavior remains deterministic and unit-testable.
 
 Layer edits participate in normal ProjectSession history.
 

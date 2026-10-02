@@ -1,5 +1,51 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Gradient Editor + typed-layer UX
+
+**Status: CI PASS / LOCAL VISUAL VERIFICATION PENDING**
+
+Exact green implementation checkpoint: `29d43b67ae880679e3b8ae9c3093c7f5ad7c2613`  
+GitHub Actions #124: **SUCCESS**
+
+Refined the schema-v2 Gradient editing surface instead of duplicating the already-present first-pass controls.
+
+Gradient authoring now exposes:
+- Linear / Radial;
+- editable ordered stops;
+- start/end current-color assignment;
+- add/remove stop;
+- stop-position stepping;
+- angle +/-;
+- repeat;
+- dither;
+- layer-relative Move Left / Up / Down / Right;
+- bounded uniform Scale - / +;
+- Mirror H / Mirror V;
+- reset transform to the active semantic clip.
+
+Added pure common-core `GradientAuthoring` so move/scale/mirror/reset behavior is deterministic and unit-testable rather than screen-local.
+
+Typed layer list UX now provides:
+- primitive icon identity for Paint / Image / Gradient;
+- selected-row cyan accent;
+- direct visibility affordance;
+- direct persistent lock affordance;
+- quieter names without textual `[P]` / `[I]` / `[G]` / `[L]` prefixes;
+- opacity remains visible per row.
+
+Automated coverage added for:
+- layer-relative Gradient translation;
+- aspect-preserving Gradient scale and scale percentage;
+- independent H/V mirror toggles;
+- reset-to-clip behavior;
+- invalid scale rejection.
+
+No schema/network format changed.
+
+Local visual verification remains pending for layout, icon readability, direct row hit targets and all new Gradient controls across the four required GUI profiles.
+
+---
+
 ## 2026-10-02 — Refreshed approved UI reference set
 
 **Status: DESIGN/DOCUMENTATION PASS — NO RUNTIME SOURCE CHANGE**

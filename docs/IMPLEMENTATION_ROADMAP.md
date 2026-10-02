@@ -64,11 +64,19 @@ Implemented in the current selection slice:
 - Move/nudge;
 - Flip Horizontal / Vertical.
 
+Implemented in the Gradient/typed-layer UX pass:
+- Gradient create/edit controls;
+- Linear / Radial;
+- editable color stops;
+- angle / repeat / dither;
+- move / bounded scale / mirror / reset;
+- typed Paint / Image / Gradient row icons;
+- direct row visibility and lock affordances.
+
 Still required:
-- richer Gradient authoring controls in the Cape Editor;
-- richer typed-layer rows/icons;
-- shortcut/tooltips surface;
-- final reference-image editor composition.
+- broader shortcut/tooltips surface;
+- final reference-image editor composition;
+- local visual verification at all required GUI profiles.
 
 Note: the fixed Minecraft cape UV face itself is not resized by a destructive crop operation. Crop belongs to imported-image placement inside the fixed target surface.
 
@@ -96,10 +104,17 @@ Implemented:
 - editable Gradient layers;
 - shared typed-layer runtime compilation.
 
+Implemented UI refinement:
+- typed layer row icons;
+- selected-row accent;
+- direct visibility affordance;
+- direct persistent lock affordance;
+- fuller Gradient authoring controls.
+
 Remaining:
-- richer layer row/icon UI;
-- richer Gradient authoring controls;
-- future effect/reference layer metadata.
+- richer thumbnails/context actions as the visual shell evolves;
+- future effect/reference layer metadata;
+- local visual verification.
 
 ## Phase 4 — Smart Import
 
