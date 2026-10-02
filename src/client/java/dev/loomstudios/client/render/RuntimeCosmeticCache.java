@@ -207,7 +207,10 @@ public final class RuntimeCosmeticCache {
     }
 
     private static void redrawEmissive(RuntimeBundle bundle) {
-        if (!bundle.project.runtime().emissiveEnabled()) {
+        boolean hasEmissiveLayer = bundle.project.cape().layers().stream()
+                .anyMatch(layer -> layer.emissive());
+
+        if (!hasEmissiveLayer) {
             clear(bundle.emissiveImage);
             return;
         }
