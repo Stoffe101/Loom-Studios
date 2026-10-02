@@ -6,6 +6,7 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.palette.ColorPaletteLibrary;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
+import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.image.ImagePlacementMode;
 import dev.loomstudios.image.ImageProcessingMode;
@@ -34,6 +35,7 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class SmartImportScreen extends Screen {
@@ -46,6 +48,11 @@ public final class SmartImportScreen extends Screen {
         CAPE,
         ELYTRA_LINKED,
         ELYTRA_SINGLE
+    }
+
+    private enum PanelTab {
+        PLACEMENT,
+        PROCESSING
     }
 
     private static final int[] COLOR_LIMITS = {
@@ -98,6 +105,14 @@ public final class SmartImportScreen extends Screen {
     private LoomButton mirrorVerticalButton;
     private LoomButton preview3dButton;
     private LoomButton applyButton;
+    private LoomButton placementTabButton;
+    private LoomButton processingTabButton;
+    private final List<AbstractWidget> placementControls =
+            new ArrayList<>();
+    private final List<AbstractWidget> processingControls =
+            new ArrayList<>();
+    private PanelTab panelTab = PanelTab.PLACEMENT;
+    private boolean compactMode;
 
     private String status = "Choose a PNG to begin";
     private int controlPanelX;
@@ -204,39 +219,33 @@ public final class SmartImportScreen extends Screen {
 
     @Override
     protected void init() {
-        int margin = 12;
-        int top = 48;
-        int panelWidth = Math.min(
-                240,
-                Math.max(190, this.width / 3)
-        );
+        placementControls.clear();
+        processingControls.clear();
+        compactMode = LoomUiTheme.compact(width, height);
 
-        this.controlPanelWidth = panelWidth;
-        this.controlPanelX = this.width - margin - panelWidth;
-        this.controlPanelY = top;
-        this.controlPanelHeight = Math.max(
-                120,
-                this.height - top - margin
-        );
+        int margin = compactMode ? 5 : 10;
+        int gap = compactMode ? 5 : 8;
+        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
+        int footerHeight = 18;
+
+        controlPanelWidth = compactMode
+                ? Math.max(174, Math.min(190, width / 3))
+                : Math.min(238, Math.max(205, width / 3));
+        controlPanelX = width - margin - controlPanelWidth;
+        controlPanelY = headerHeight + 5;
+        controlPanelHeight =
+                height - controlPanelY - footerHeight - 4;
 
         int workLeft = margin;
-        int workTop = top;
-        int workRight = controlPanelX - margin;
-        int workWidth = Math.max(170, workRight - workLeft);
-        int workHeight = Math.max(
-                140,
-                this.height - workTop - margin
-        );
+        int workTop = controlPanelY;
+        int workRight = controlPanelX - gap;
+        int workWidth = Math.max(180, workRight - workLeft);
+        int workHeight = controlPanelHeight;
 
-        int gap = 8;
-        int topPreviewHeight = Math.max(
-                86,
-                (workHeight - gap) / 2
-        );
-        int halfWidth = Math.max(
-                80,
-                (workWidth - gap) / 2
-        );
+        int topPreviewHeight = compactMode
+                ? Math.max(92, workHeight / 2)
+                : Math.max(105, workHeight / 2);
+        int halfWidth = Math.max(82, (workWidth - gap) / 2);
 
         originalPreview = addRenderableWidget(
                 new LoomImagePreviewWidget(
@@ -268,188 +277,361 @@ public final class SmartImportScreen extends Screen {
                         workTop + topPreviewHeight + gap,
                         workWidth,
                         Math.max(
-                                72,
+                                70,
                                 workHeight - topPreviewHeight - gap
                         ),
-                        Component.literal("Cape Texture"),
+                        Component.literal(
+                                importTarget == ImportTarget.CAPE
+                                        ? "Cape Texture"
+                                        : "Elytra Texture"
+                        ),
                         this::textureImage,
                         this::revision
                 )
         );
 
-        int contentWidth = Math.max(150, panelWidth - 20);
-        LinearLayout controls = LinearLayout.vertical().spacing(6);
+        int left = controlPanelX + 5;
+        int right = controlPanelX + controlPanelWidth - 5;
+        int panelWidth = right - left;
+        int buttonHeight = compactMode ? 18 : 21;
+        int rowGap = compactMode ? 3 : 4;
+        int y = controlPanelY + 5;
 
-        controls.addChild(button(
-                contentWidth,
+        placeAction(
+                null,
+                left,
+                y,
+                panelWidth,
+                buttonHeight,
                 "Choose PNG",
+                LoomButton.Icon.IMAGE,
                 this::choosePng
-        ));
+        );
+        y += buttonHeight + rowGap;
 
-        controls.addChild(readOnlyButton(
-                contentWidth,
-                "Target: " + targetRegion.displayName()
-        ));
+        int halfTab = (panelWidth - 3) / 2;
+        placementTabButton = placeAction(
+                null,
+                left,
+                y,
+                halfTab,
+                buttonHeight,
+                "Placement",
+                LoomButton.Icon.MOVE,
+                () -> setPanelTab(PanelTab.PLACEMENT)
+        );
+        processingTabButton = placeAction(
+                null,
+                left + halfTab + 3,
+                y,
+                panelWidth - halfTab - 3,
+                buttonHeight,
+                "Processing",
+                LoomButton.Icon.GRADIENT,
+                () -> setPanelTab(PanelTab.PROCESSING)
+        );
+        y += buttonHeight + rowGap + 2;
 
-        placementButton = button(
-                contentWidth,
+        buildPlacementTab(left, y, panelWidth, buttonHeight, rowGap);
+        buildProcessingTab(left, y, panelWidth, buttonHeight, rowGap);
+
+        int bottomH = compactMode ? 18 : 21;
+        int bottom = controlPanelY + controlPanelHeight - 5;
+
+        applyButton = placeAction(
+                null,
+                left,
+                bottom - bottomH,
+                panelWidth,
+                bottomH,
+                editingLayerId == null
+                        ? "Apply as Image Layer"
+                        : "Apply Changes",
+                LoomButton.Icon.EQUIP,
+                this::applyImport
+        );
+        bottom -= bottomH + 3;
+
+        int half = (panelWidth - 3) / 2;
+        preview3dButton = placeAction(
+                null,
+                left,
+                bottom - bottomH,
+                half,
+                bottomH,
+                "3D Preview",
+                LoomButton.Icon.CAPE,
+                this::open3dPreview
+        );
+        placeAction(
+                null,
+                left + half + 3,
+                bottom - bottomH,
+                panelWidth - half - 3,
+                bottomH,
+                "Cancel",
+                LoomButton.Icon.BACK,
+                () -> minecraft.setScreen(parent)
+        );
+
+        updatePanelVisibility();
+        updateButtonLabels();
+    }
+
+    private void buildPlacementTab(
+            int left,
+            int startY,
+            int width,
+            int h,
+            int gap
+    ) {
+        int y = startY;
+        int small = compactMode ? 24 : 30;
+
+        LoomButton target = placeAction(
+                placementControls,
+                left,
+                y,
+                width,
+                h,
+                importTarget == ImportTarget.CAPE
+                        ? "Target: " + targetRegion.displayName()
+                        : "Target: Elytra",
+                LoomButton.Icon.CAPE,
+                () -> { }
+        );
+        target.active = false;
+        y += h + gap;
+
+        placementButton = placeAction(
+                placementControls,
+                left,
+                y,
+                width,
+                h,
                 "",
+                LoomButton.Icon.MOVE,
                 this::cyclePlacement
         );
-        controls.addChild(placementButton);
+        y += h + gap;
 
-        keepAspectButton = button(
-                contentWidth,
+        keepAspectButton = placeAction(
+                placementControls,
+                left,
+                y,
+                width,
+                h,
                 "",
+                LoomButton.Icon.SELECT,
                 this::toggleKeepAspect
         );
-        controls.addChild(keepAspectButton);
+        y += h + gap;
 
-        LinearLayout moveXRow = LinearLayout.horizontal().spacing(4);
-        moveXRow.addChild(button(
-                (contentWidth - 4) / 2,
-                "Move Left",
+        int quarter = Math.max(28, (width - gap * 3) / 4);
+        placeAction(
+                placementControls,
+                left,
+                y,
+                quarter,
+                h,
+                "Left",
+                LoomButton.Icon.MOVE,
                 () -> move(-1, 0)
-        ));
-        moveXRow.addChild(button(
-                contentWidth - 4 - (contentWidth - 4) / 2,
-                "Move Right",
-                () -> move(1, 0)
-        ));
-        controls.addChild(moveXRow);
-
-        LinearLayout moveYRow = LinearLayout.horizontal().spacing(4);
-        moveYRow.addChild(button(
-                (contentWidth - 4) / 2,
-                "Move Up",
+        ).setIconOnly(true);
+        placeAction(
+                placementControls,
+                left + quarter + gap,
+                y,
+                quarter,
+                h,
+                "Up",
+                LoomButton.Icon.UP,
                 () -> move(0, -1)
-        ));
-        moveYRow.addChild(button(
-                contentWidth - 4 - (contentWidth - 4) / 2,
-                "Move Down",
+        ).setIconOnly(true);
+        placeAction(
+                placementControls,
+                left + (quarter + gap) * 2,
+                y,
+                quarter,
+                h,
+                "Down",
+                LoomButton.Icon.DOWN,
                 () -> move(0, 1)
-        ));
-        controls.addChild(moveYRow);
+        ).setIconOnly(true);
+        placeAction(
+                placementControls,
+                left + (quarter + gap) * 3,
+                y,
+                width - quarter * 3 - gap * 3,
+                h,
+                "Right",
+                LoomButton.Icon.MOVE,
+                () -> move(1, 0)
+        ).setIconOnly(true);
+        y += h + gap;
 
-        LinearLayout scaleRow = LinearLayout.horizontal().spacing(4);
-        scaleRow.addChild(button(
-                48,
-                "Scale -",
-                () -> changeScale(-0.1)
-        ));
-        scaleButton = readOnlyButton(
-                Math.max(42, contentWidth - 104),
-                ""
-        );
-        scaleRow.addChild(scaleButton);
-        scaleRow.addChild(button(
-                48,
-                "Scale +",
+        scaleButton = placeStepper(
+                placementControls,
+                left,
+                y,
+                width,
+                h,
+                small,
+                "Scale",
+                LoomButton.Icon.ZOOM_OUT,
+                LoomButton.Icon.ZOOM_IN,
+                () -> changeScale(-0.1),
                 () -> changeScale(0.1)
-        ));
-        controls.addChild(scaleRow);
-
-        LinearLayout rotationRow = LinearLayout.horizontal().spacing(4);
-        rotationRow.addChild(button(
-                48,
-                "Rot -",
-                () -> rotate(-15.0)
-        ));
-        rotationButton = readOnlyButton(
-                Math.max(42, contentWidth - 104),
-                ""
         );
-        rotationRow.addChild(rotationButton);
-        rotationRow.addChild(button(
-                48,
-                "Rot +",
-                () -> rotate(15.0)
-        ));
-        controls.addChild(rotationRow);
+        y += h + gap;
 
-        LinearLayout mirrorRow = LinearLayout.horizontal().spacing(4);
-        mirrorHorizontalButton = button(
-                (contentWidth - 4) / 2,
+        rotationButton = placeStepper(
+                placementControls,
+                left,
+                y,
+                width,
+                h,
+                small,
+                "Rotation",
+                LoomButton.Icon.BACK,
+                LoomButton.Icon.PLAY,
+                () -> rotate(-15.0),
+                () -> rotate(15.0)
+        );
+        y += h + gap;
+
+        int half = (width - gap) / 2;
+        mirrorHorizontalButton = placeAction(
+                placementControls,
+                left,
+                y,
+                half,
+                h,
                 "",
+                LoomButton.Icon.FLIP_H,
                 () -> {
                     mirrorHorizontal = !mirrorHorizontal;
                     touch();
                 }
         );
-        mirrorVerticalButton = button(
-                contentWidth - 4 - (contentWidth - 4) / 2,
+        mirrorVerticalButton = placeAction(
+                placementControls,
+                left + half + gap,
+                y,
+                width - half - gap,
+                h,
                 "",
+                LoomButton.Icon.FLIP_V,
                 () -> {
                     mirrorVertical = !mirrorVertical;
                     touch();
                 }
         );
-        mirrorRow.addChild(mirrorHorizontalButton);
-        mirrorRow.addChild(mirrorVerticalButton);
-        controls.addChild(mirrorRow);
+    }
 
-        modeButton = button(
-                contentWidth,
+    private void buildProcessingTab(
+            int left,
+            int startY,
+            int width,
+            int h,
+            int gap
+    ) {
+        int y = startY;
+        int small = compactMode ? 24 : 30;
+
+        modeButton = placeAction(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
                 "",
+                LoomButton.Icon.GRADIENT,
                 this::cycleProcessingMode
         );
-        controls.addChild(modeButton);
+        y += h + gap;
 
-        paletteButton = button(
-                contentWidth,
+        paletteButton = placeAction(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
                 "",
+                LoomButton.Icon.PALETTE,
                 this::toggleSelectedPalette
         );
-        controls.addChild(paletteButton);
+        y += h + gap;
 
-        controls.addChild(adjustmentRow(
-                contentWidth,
+        brightnessButton = placeStepper(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
+                small,
                 "Brightness",
+                LoomButton.Icon.DOWN,
+                LoomButton.Icon.UP,
                 () -> changeBrightness(-0.1F),
                 () -> changeBrightness(0.1F)
-        ));
-        brightnessButton = lastReadOnly;
-        lastReadOnly = null;
+        );
+        y += h + gap;
 
-        controls.addChild(adjustmentRow(
-                contentWidth,
+        contrastButton = placeStepper(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
+                small,
                 "Contrast",
+                LoomButton.Icon.DOWN,
+                LoomButton.Icon.UP,
                 () -> changeContrast(-0.1F),
                 () -> changeContrast(0.1F)
-        ));
-        contrastButton = lastReadOnly;
-        lastReadOnly = null;
+        );
+        y += h + gap;
 
-        controls.addChild(adjustmentRow(
-                contentWidth,
+        saturationButton = placeStepper(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
+                small,
                 "Saturation",
+                LoomButton.Icon.DOWN,
+                LoomButton.Icon.UP,
                 () -> changeSaturation(-0.1F),
                 () -> changeSaturation(0.1F)
-        ));
-        saturationButton = lastReadOnly;
-        lastReadOnly = null;
-
-        LinearLayout colorRow = LinearLayout.horizontal().spacing(4);
-        colorRow.addChild(button(
-                48,
-                "Colors -",
-                () -> changeColorLimit(-1)
-        ));
-        colorLimitButton = readOnlyButton(
-                Math.max(42, contentWidth - 104),
-                ""
         );
-        colorRow.addChild(colorLimitButton);
-        colorRow.addChild(button(
-                48,
-                "Colors +",
-                () -> changeColorLimit(1)
-        ));
-        controls.addChild(colorRow);
+        y += h + gap;
 
-        ditherButton = button(
-                contentWidth,
+        colorLimitButton = placeStepper(
+                processingControls,
+                left,
+                y,
+                width,
+                h,
+                small,
+                "Colors",
+                LoomButton.Icon.DOWN,
+                LoomButton.Icon.UP,
+                () -> changeColorLimit(-1),
+                () -> changeColorLimit(1)
+        );
+        y += h + gap;
+
+        int half = (width - gap) / 2;
+        ditherButton = placeAction(
+                processingControls,
+                left,
+                y,
+                half,
+                h,
                 "",
+                LoomButton.Icon.GRADIENT,
                 () -> {
                     processing = processing.withColorReduction(
                             processing.colorLimit(),
@@ -458,62 +640,120 @@ public final class SmartImportScreen extends Screen {
                     touch();
                 }
         );
-        controls.addChild(ditherButton);
 
-        LinearLayout posterizeRow =
-                LinearLayout.horizontal().spacing(4);
-        posterizeRow.addChild(button(
-                48,
-                "Levels -",
-                () -> changePosterize(-1)
-        ));
-        posterizeButton = readOnlyButton(
-                Math.max(42, contentWidth - 104),
-                ""
-        );
-        posterizeRow.addChild(posterizeButton);
-        posterizeRow.addChild(button(
-                48,
-                "Levels +",
+        posterizeButton = placeStepper(
+                processingControls,
+                left + half + gap,
+                y,
+                width - half - gap,
+                h,
+                compactMode ? 20 : 24,
+                "Levels",
+                LoomButton.Icon.DOWN,
+                LoomButton.Icon.UP,
+                () -> changePosterize(-1),
                 () -> changePosterize(1)
-        ));
-        controls.addChild(posterizeRow);
-
-        preview3dButton = button(
-                contentWidth,
-                "3D Preview",
-                this::open3dPreview
         );
-        controls.addChild(preview3dButton);
+    }
 
-        applyButton = button(
-                contentWidth,
-                "Apply as Image Layer",
-                this::applyImport
+    private LoomButton placeAction(
+            List<AbstractWidget> group,
+            int x,
+            int y,
+            int width,
+            int height,
+            String label,
+            LoomButton.Icon icon,
+            Runnable action
+    ) {
+        LoomButton button = new LoomButton(
+                x,
+                y,
+                width,
+                height,
+                Component.literal(label),
+                icon,
+                false,
+                action
         );
-        controls.addChild(applyButton);
+        addRenderableWidget(button);
+        if (group != null) {
+            group.add(button);
+        }
+        return button;
+    }
 
-        controls.addChild(button(
-                contentWidth,
-                "Cancel",
-                () -> this.minecraft.setScreen(parent)
-        ));
-
-        ScrollableLayout scrollable = new ScrollableLayout(
-                this.minecraft,
-                controls,
-                controlPanelHeight
+    private LoomButton placeStepper(
+            List<AbstractWidget> group,
+            int x,
+            int y,
+            int width,
+            int height,
+            int side,
+            String label,
+            LoomButton.Icon downIcon,
+            LoomButton.Icon upIcon,
+            Runnable decrease,
+            Runnable increase
+    ) {
+        int gap = 3;
+        LoomButton down = placeAction(
+                group,
+                x,
+                y,
+                side,
+                height,
+                label + " -",
+                downIcon,
+                decrease
         );
-        scrollable.setMinWidth(panelWidth);
-        scrollable.setMaxHeight(controlPanelHeight);
-        scrollable.arrangeElements();
-        scrollable.setX(controlPanelX);
-        scrollable.setY(controlPanelY);
-        scrollable.visitWidgets(widget ->
-                addRenderableWidget((AbstractWidget)widget)
-        );
+        down.setIconOnly(true);
 
-        updateButtonLabels();
+        LoomButton middle = placeAction(
+                group,
+                x + side + gap,
+                y,
+                Math.max(26, width - side * 2 - gap * 2),
+                height,
+                label,
+                LoomButton.Icon.NONE,
+                () -> { }
+        );
+        middle.active = false;
+
+        LoomButton up = placeAction(
+                group,
+                x + width - side,
+                y,
+                side,
+                height,
+                label + " +",
+                upIcon,
+                increase
+        );
+        up.setIconOnly(true);
+        return middle;
+    }
+
+    private void setPanelTab(PanelTab tab) {
+        panelTab = tab;
+        updatePanelVisibility();
+    }
+
+    private void updatePanelVisibility() {
+        boolean placement = panelTab == PanelTab.PLACEMENT;
+        if (placementTabButton != null) {
+            placementTabButton.setSelected(placement);
+        }
+        if (processingTabButton != null) {
+            processingTabButton.setSelected(!placement);
+        }
+        for (AbstractWidget widget : placementControls) {
+            widget.visible = placement;
+        }
+        for (AbstractWidget widget : processingControls) {
+            widget.visible = !placement;
+        }
     }
 
     private LoomButton lastReadOnly;
@@ -1192,45 +1432,53 @@ public final class SmartImportScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                0,
-                0,
-                this.width,
-                this.height,
-                LoomUiTheme.BACKDROP
+        LoomScreenChrome.renderBackdrop(graphics, width, height);
+        LoomScreenChrome.renderBrandHeader(
+                graphics,
+                width,
+                importTarget == ImportTarget.CAPE
+                        ? "Smart Import"
+                        : "Smart Import • Elytra",
+                compactMode
         );
 
-        graphics.drawString(
-                this.font,
-                Component.literal(
-                        importTarget == ImportTarget.CAPE
-                                ? "Smart Import"
-                                : "Smart Import • Elytra"
-                ),
-                18,
-                17,
-                LoomUiTheme.TEXT,
-                false
-        );
-
-        graphics.drawString(
-                this.font,
-                Component.literal(status),
-                18,
-                31,
-                LoomUiTheme.TEXT_MUTED,
-                false
-        );
-
-        graphics.fill(
-                controlPanelX - 4,
-                controlPanelY - 4,
+        LoomScreenChrome.panel(
+                graphics,
+                controlPanelX,
+                controlPanelY,
                 controlPanelX + controlPanelWidth,
-                controlPanelY + controlPanelHeight + 4,
-                LoomUiTheme.PANEL
+                controlPanelY + controlPanelHeight
+        );
+
+        String tabTitle = panelTab == PanelTab.PLACEMENT
+                ? "Fit & Transform"
+                : "Image Processing";
+        if (!compactMode) {
+            graphics.drawString(
+                    font,
+                    Component.literal(tabTitle),
+                    controlPanelX + 8,
+                    controlPanelY + 52,
+                    LoomUiTheme.TEXT_MUTED,
+                    false
+            );
+        }
+
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                status,
+                loaded == null
+                        ? "No image loaded"
+                        : loaded.embedded().width()
+                                + "×"
+                                + loaded.embedded().height()
         );
 
         super.render(graphics, mouseX, mouseY, partialTick);
+        updateButtonLabels();
+        updatePanelVisibility();
     }
 
     @Override
