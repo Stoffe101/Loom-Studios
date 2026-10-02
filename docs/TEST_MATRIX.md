@@ -46,6 +46,26 @@ Shader-sensitive effects should be checked with at least one representative shad
 
 ## Elytra tests
 
+Automated semantic authoring:
+- linked Left-wing pixel mirrors into the opposite Right wing
+- Separate Wings edit does not touch the opposite wing
+- linked mirroring uses the scaled semantic width at 4x resolution
+- locked Elytra Paint layer rejects semantic wing painting
+- linked brush edits both wings
+
+Local/runtime:
+- semantic wing orientation matches the rendered left/right Elytra
+- linked mirror visual orientation is correct
+- separate-wing mode is independent
+- 1x / 2x / 4x unfolded wing layout remains aligned
+- Add / Copy / Delete layer controls
+- per-row visibility / lock controls
+- Undo / Redo
+- project-authored thickness from 25% through 200%
+- Save + Equip preserves authored thickness
+- integrated Elytra preview rotation / zoom
+
+Existing rendering:
 - equipped/unequipped
 - standing with Elytra
 - gliding
@@ -62,6 +82,25 @@ Shader-sensitive effects should be checked with at least one representative shad
 - old texture disposal
 - cache hit/miss behavior
 - disconnect/world change cleanup
+
+## Home dashboard local checks
+
+- responsive three-column shell at all mandatory GUI profiles
+- action-card icon/text alignment
+- Create New Cape
+- Load Design
+- Import Image -> Smart Import
+- Edit Elytra
+- real thumbnail cards
+- selected-card state
+- selected project drives integrated 3D preview
+- preview drag / wheel zoom / reset
+- Blank template
+- Gradient template
+- empty project library
+- unreadable project warning
+- placeholder Loom Codes / Settings / template packs are visibly inactive
+- texture resources release when leaving/rebuilding Home
 
 ## Editor preview tests
 

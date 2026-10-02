@@ -910,3 +910,45 @@ The common-core `GradientAuthoring` helper owns the deterministic authoring oper
 These operations update only existing schema-v2 `GradientLayerData` / `LayerTransform` state and therefore require no project-format migration.
 
 The Layers list also exposes visibility, typed identity and persistent lock as direct row affordances. Lock remains normal project state and participates in ProjectSession history.
+
+
+## ADR-077 — Elytra authoring uses semantic wing regions
+**Status:** Accepted / implemented
+
+The Elytra editor works in semantic unfolded wing space rather than exposing the raw 64x32 atlas.
+
+Current authoring regions:
+- Left Wing: atlas origin 24,2, logical size 10x20;
+- Right Wing: atlas origin 36,2, logical size 10x20.
+
+The Right wing's vanilla UV orientation is mirrored relative to the Left. Linked Mirror authoring therefore copies a local edit into the opposite wing using `mirroredX = semanticWidth - 1 - localX`.
+
+The mapping scales with the project's 1x/2x/4x backing resolution.
+
+Linked Mirror versus Separate Wings is transient editor mode, not serialized project meaning. Actual authored pixels remain ordinary Elytra layer data.
+
+## ADR-078 — Elytra thickness is project-authored runtime state
+**Status:** Accepted / implemented
+
+`LoomRuntimeSettings.elytraThickness` is the single runtime authority for Loom Elytra depth.
+
+The semantic Elytra Editor exposes 25%–200% in 25-point steps, matching the schema's existing 0.25–2.0 bound.
+
+The old development V-key thickness preset override is retired because it could override the saved/equipped project value for the local player. Preview, equipped local rendering and remote rendering now read the same project-authored value.
+
+No schema migration is required because the thickness field already existed in schema v1/v2 runtime settings.
+
+## ADR-079 — Layer list widgets are canvas-backed, not Cape-specific
+**Status:** Accepted / implemented
+
+The typed layer-list UI consumes a `LoomCanvas` supplier rather than hard-coding `project.cape()`.
+
+This allows Cape and Elytra editors to share:
+- Paint/Image/Gradient type iconography;
+- selected-row treatment;
+- visibility affordance;
+- persistent lock affordance;
+- opacity display;
+- scrolling behavior.
+
+Target-specific edits remain in the owning editor/ProjectEdits path.

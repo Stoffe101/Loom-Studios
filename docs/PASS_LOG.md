@@ -1,5 +1,64 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Home reference shell + semantic Elytra Editor
+
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
+
+Exact green implementation checkpoints:
+- `0cc3b219fcda2c8b4fb619db900545890e40764e` — Home shell — GitHub Actions #127 **SUCCESS**;
+- `fb21521181dae6139122b8e0e4891e4083627203` — semantic Elytra wing editor — GitHub Actions #128 **SUCCESS**;
+- `af767ce8c12a55c725d5b14fc2602872515b5564` — reusable Elytra layer stack — GitHub Actions #129 **SUCCESS**;
+- `e46960484bd4d8ef7ef308805a0ad449ba67c643` — project-authored Elytra thickness — GitHub Actions #130 **SUCCESS**.
+
+Home dashboard:
+- replaced the temporary centered launcher with a responsive three-column reference shell;
+- added reusable icon action cards;
+- real Recent Project thumbnail cards from the generated cache;
+- selected-project 3D cape preview with drag/zoom/reset;
+- Create New Cape / Load / Import Image / Edit Elytra routing;
+- functional Blank template;
+- functional Gradient template;
+- category placeholders for later template packs;
+- status/project-count footer;
+- unreadable-project warning state.
+
+Semantic Elytra Editor:
+- added common-core `ElytraWing` semantic mapping for the two 10x20 front faces;
+- unfolded Left / Right wing canvas;
+- Pencil / Eraser;
+- brush sizing;
+- 1x / 2x / 4x;
+- Linked Mirror and Separate Wings;
+- linked edits mirror local X into the opposite wing;
+- normal compound-edit Undo history;
+- integrated Elytra 3D preview;
+- Save / Save + Equip.
+
+Elytra Layers:
+- generalized `LoomLayerListWidget` from Cape-project-specific to generic canvas-backed;
+- reused typed icons/visibility/lock behavior in Elytra;
+- Add / Copy / Delete Paint layers;
+- lock enforcement through normal ProjectEdits.
+
+Thickness:
+- added `LoomRuntimeSettings.withElytraThickness`;
+- added editor Depth controls from 25% to 200%;
+- removed the old development V-key thickness preset override;
+- saved/equipped project thickness is now the single runtime authority.
+
+Automated tests added for:
+- linked wing pixel mirroring;
+- separate wing isolation;
+- 4x semantic mirror mapping;
+- lock rejection;
+- linked brush output.
+
+No project schema or network protocol version changed.
+
+Local visual/runtime verification is pending because the user is away from the development PC.
+
+---
+
 ## 2026-10-02 — Gradient Editor + typed-layer UX
 
 **Status: CI PASS / LOCAL VISUAL VERIFICATION PENDING**

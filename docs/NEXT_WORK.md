@@ -2,13 +2,19 @@
 
 ## Current gate
 
-The Smart Import + schema-v2 milestone is functionally implemented, merged and CI green on `main`.
+Home + semantic Elytra Editor productization is implemented on the current branch and CI green.
 
-Exact merged-main checkpoint:
-- `6208086fd5c6f025376afd7cf8390829cda56dbd`
-- GitHub Actions #121: **SUCCESS**
+Latest merged-main baseline entering the pass:
+- `213bd4e9d5d5f5f9449fbd8c3a3fce74cf71e6ec`
+- GitHub Actions #126: **SUCCESS**
 
-The remaining gate is local visual/runtime verification because the user is away from the development PC.
+Current pass source checkpoints:
+- `0cc3b219fcda2c8b4fb619db900545890e40764e` — Home shell — Actions #127 **SUCCESS**;
+- `fb21521181dae6139122b8e0e4891e4083627203` — semantic Elytra Editor — Actions #128 **SUCCESS**;
+- `af767ce8c12a55c725d5b14fc2602872515b5564` — Elytra layer stack — Actions #129 **SUCCESS**;
+- `e46960484bd4d8ef7ef308805a0ad449ba67c643` — project-authored thickness — Actions #130 **SUCCESS**.
+
+The remaining gate for visual DONE status is local runtime verification because the user is away from the development PC.
 
 ## Runtime verification queue
 
@@ -86,33 +92,60 @@ The remaining gate is local visual/runtime verification because the user is away
 - semi-transparent paint;
 - alpha-aware palette import/export.
 
+### Home dashboard
+- three-column layout at all four GUI profiles;
+- no action-card text clipping;
+- real project thumbnail load/release;
+- selected-card accent;
+- selected project updates 3D preview;
+- drag/zoom/reset preview interaction;
+- Blank template;
+- Gradient template;
+- Import Image -> Smart Import;
+- Edit Elytra routing;
+- empty-library state;
+- unreadable-project warning;
+- disabled placeholder cards remain visibly secondary.
+
+### Elytra Editor
+- Left/Right wing orientation matches rendered Elytra;
+- linked mirror paints expected opposite visual wing;
+- Separate Wings edits only the clicked wing;
+- Pencil / Eraser at 1x / 2x / 4x;
+- brush size;
+- layer Add / Copy / Delete;
+- row visibility;
+- direct row Lock;
+- locked Paint layer rejects edits;
+- Undo / Redo;
+- Save / Save + Equip;
+- Depth 25% through 200%;
+- saved/equipped depth matches preview;
+- old debug V-key thickness override is gone;
+- 3D Elytra preview drag/zoom/reset;
+- compact layout at all mandatory GUI profiles.
+
 ## Next CI-safe product work
 
-Gradient authoring and typed-layer row UX are implemented in the current pass; local visual verification remains pending.
+Home reference shell and the semantic Elytra Editor MVP are implemented in this pass; local visual verification remains pending.
 
 Priority order:
 
-1. Home reference shell:
-   - real Recent Project thumbnail cards;
-   - selected-project/player preview;
-   - Create New Cape hierarchy;
-   - Import Image routed to Smart Import;
-   - Edit Elytra placeholder/entry once editor exists;
-   - Templates / Loom Codes / Settings hierarchy;
-   - calmer 70/30 reference styling with icon-led actions;
-2. Elytra semantic editor model:
-   - unfolded left/right wings;
-   - linked/mirrored vs independent;
+1. finish the Elytra product workflow:
    - cape-to-Elytra starting conversion;
-   - thickness user control;
-   - standing/open/gliding preview states;
-3. animation authoring schema:
+   - Elytra-target Smart Import / Image layers;
+   - richer Elytra layer properties (reorder / opacity / rename / blend);
+   - shared Swatches/palette workflow;
+   - standing / open / gliding preview states;
+2. animation authoring schema + UI:
    - tracks;
    - keyframes;
    - procedural effects;
    - timeline;
-4. project Loom Codes/sharing;
-5. final reference-fidelity and compatibility hardening.
+   - play / pause / loop / speed;
+3. project Loom Codes/sharing;
+4. final Cape/Home/Smart Import/Elytra reference-fidelity hardening;
+5. final compatibility/performance matrix.
 
 ## Schema-v2 status
 

@@ -443,7 +443,7 @@ public final class CapeEditorScreen extends Screen {
                 0,
                 contentWidth,
                 92,
-                () -> this.workspaceState.project(),
+                () -> this.workspaceState.project().cape(),
                 () -> this.selectedLayerId,
                 this::selectLayer,
                 this::toggleLayerVisibility,

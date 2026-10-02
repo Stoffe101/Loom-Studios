@@ -27,6 +27,15 @@ public record LoomRuntimeSettings(
         return new LoomRuntimeSettings(1.0F, 40, true, true);
     }
 
+    public LoomRuntimeSettings withElytraThickness(float thickness) {
+        return new LoomRuntimeSettings(
+                thickness,
+                animationPeriodTicks,
+                hueCycleEnabled,
+                emissiveEnabled
+        );
+    }
+
     public LoomRuntimeSettings withEmissiveEnabled(boolean enabled) {
         return new LoomRuntimeSettings(
                 elytraThickness,

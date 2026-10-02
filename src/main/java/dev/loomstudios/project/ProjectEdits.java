@@ -983,6 +983,371 @@ public final class ProjectEdits {
         return project.withCape(nextCanvas);
     }
 
+    public static LoomProject addElytraLayer(
+            LoomProject project,
+            String name
+    ) {
+        LoomCanvas canvas = project.elytra();
+        ensureLayerCapacity(canvas);
+
+        int[] transparent = new int[canvas.width() * canvas.height()];
+        LoomLayer layer = LoomLayer.paint(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                transparent
+        );
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(layer);
+
+        return project.withElytra(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject duplicateElytraLayer(
+            LoomProject project,
+            UUID layerId
+    ) {
+        LoomCanvas canvas = project.elytra();
+        ensureLayerCapacity(canvas);
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+
+        for (int i = 0; i < next.size(); i++) {
+            LoomLayer source = next.get(i);
+            if (!source.id().equals(layerId)) {
+                continue;
+            }
+
+            LoomLayer copy = source.duplicate(
+                    UUID.randomUUID(),
+                    uniqueLayerName(next, source.name() + " Copy")
+            );
+            next.add(i + 1, copy);
+
+            return project.withElytra(
+                    new LoomCanvas(canvas.width(), canvas.height(), next)
+            );
+        }
+
+        throw new IllegalArgumentException(
+                "Unknown Elytra layer " + layerId
+        );
+    }
+
+    public static LoomProject removeElytraLayer(
+            LoomProject project,
+            UUID layerId
+    ) {
+        LoomCanvas canvas = project.elytra();
+        if (canvas.layers().size() <= 1) {
+            return project;
+        }
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        boolean removed = next.removeIf(layer -> layer.id().equals(layerId));
+        if (!removed) {
+            throw new IllegalArgumentException(
+                    "Unknown Elytra layer " + layerId
+            );
+        }
+
+        return project.withElytra(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject moveElytraLayer(
+            LoomProject project,
+            UUID layerId,
+            int delta
+    ) {
+        if (delta == 0) {
+            return project;
+        }
+
+        LoomCanvas canvas = project.elytra();
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+
+        for (int i = 0; i < next.size(); i++) {
+            if (!next.get(i).id().equals(layerId)) {
+                continue;
+            }
+
+            int target = Math.max(
+                    0,
+                    Math.min(next.size() - 1, i + delta)
+            );
+            if (target == i) {
+                return project;
+            }
+
+            LoomLayer layer = next.remove(i);
+            next.add(target, layer);
+            return project.withElytra(
+                    new LoomCanvas(canvas.width(), canvas.height(), next)
+            );
+        }
+
+        throw new IllegalArgumentException(
+                "Unknown Elytra layer " + layerId
+        );
+    }
+
+    public static LoomProject setElytraLayerVisible(
+            LoomProject project,
+            UUID layerId,
+            boolean visible
+    ) {
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> layer.withVisible(visible)
+        );
+    }
+
+    public static LoomProject setElytraLayerOpacity(
+            LoomProject project,
+            UUID layerId,
+            float opacity
+    ) {
+        float clamped = Math.max(0.0F, Math.min(1.0F, opacity));
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> layer.withOpacity(clamped)
+        );
+    }
+
+    public static LoomProject renameElytraLayer(
+            LoomProject project,
+            UUID layerId,
+            String name
+    ) {
+        String normalized = name == null ? "" : name.trim();
+        if (normalized.isEmpty()
+                || normalized.length()
+                > LoomProjectCodec.MAX_LAYER_NAME_CHARS) {
+            throw new IllegalArgumentException("Invalid layer name");
+        }
+
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> layer.withName(normalized)
+        );
+    }
+
+    public static LoomProject setElytraLayerBlendMode(
+            LoomProject project,
+            UUID layerId,
+            BlendMode blendMode
+    ) {
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> layer.withBlendMode(blendMode)
+        );
+    }
+
+    public static LoomProject setElytraLayerLocked(
+            LoomProject project,
+            UUID layerId,
+            boolean locked
+    ) {
+        return updateElytraLayer(
+                project,
+                layerId,
+                layer -> layer.withLocked(locked)
+        );
+    }
+
+    private static LoomProject updateElytraLayer(
+            LoomProject project,
+            UUID layerId,
+            java.util.function.UnaryOperator<LoomLayer> edit
+    ) {
+        LoomCanvas canvas = project.elytra();
+        LoomLayer current = canvas.layers().stream()
+                .filter(layer -> layer.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown Elytra layer " + layerId
+                ));
+
+        LoomLayer replacement = edit.apply(current);
+        if (replacement.equals(current)) {
+            return project;
+        }
+
+        return project.withElytra(
+                canvas.replaceLayer(layerId, replacement)
+        );
+    }
+
+    public static LoomProject setElytraWingPixel(
+            LoomProject project,
+            UUID layerId,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int argb,
+            boolean linkedMirror
+    ) {
+        LoomCanvas canvas = project.elytra();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int width = wing.width(scale);
+        int height = wing.height(scale);
+
+        if (localX < 0
+                || localY < 0
+                || localX >= width
+                || localY >= height) {
+            return project;
+        }
+
+        LoomLayer layer = requireEditablePaintLayer(canvas, layerId);
+        int[] pixels = layer.pixels();
+        boolean changed = writeElytraWingPixel(
+                pixels,
+                canvas.width(),
+                wing,
+                localX,
+                localY,
+                scale,
+                argb
+        );
+
+        if (linkedMirror) {
+            ElytraWing opposite = wing.opposite();
+            changed |= writeElytraWingPixel(
+                    pixels,
+                    canvas.width(),
+                    opposite,
+                    opposite.mirroredLocalX(localX, scale),
+                    localY,
+                    scale,
+                    argb
+            );
+        }
+
+        if (!changed) {
+            return project;
+        }
+
+        return project.withElytra(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    public static LoomProject paintElytraWingBrush(
+            LoomProject project,
+            UUID layerId,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int brushSize,
+            int argb,
+            boolean linkedMirror
+    ) {
+        if (brushSize < 1 || brushSize > 32) {
+            throw new IllegalArgumentException("Brush size out of range");
+        }
+
+        LoomCanvas canvas = project.elytra();
+        int scale = CanvasResolution.fromCanvas(canvas).scale();
+        int width = wing.width(scale);
+        int height = wing.height(scale);
+
+        LoomLayer layer = requireEditablePaintLayer(canvas, layerId);
+        int[] pixels = layer.pixels();
+        boolean changed = false;
+        double radius = Math.max(0.5, brushSize / 2.0);
+        int minX = localX - brushSize / 2;
+        int minY = localY - brushSize / 2;
+
+        for (int by = 0; by < brushSize; by++) {
+            for (int bx = 0; bx < brushSize; bx++) {
+                int px = minX + bx;
+                int py = minY + by;
+
+                if (px < 0 || py < 0 || px >= width || py >= height) {
+                    continue;
+                }
+
+                double dx = px + 0.5 - (localX + 0.5);
+                double dy = py + 0.5 - (localY + 0.5);
+                if (brushSize > 2
+                        && dx * dx + dy * dy > radius * radius) {
+                    continue;
+                }
+
+                changed |= writeElytraWingPixel(
+                        pixels,
+                        canvas.width(),
+                        wing,
+                        px,
+                        py,
+                        scale,
+                        argb
+                );
+
+                if (linkedMirror) {
+                    ElytraWing opposite = wing.opposite();
+                    changed |= writeElytraWingPixel(
+                            pixels,
+                            canvas.width(),
+                            opposite,
+                            opposite.mirroredLocalX(px, scale),
+                            py,
+                            scale,
+                            argb
+                    );
+                }
+            }
+        }
+
+        if (!changed) {
+            return project;
+        }
+
+        return project.withElytra(
+                canvas.replaceLayer(
+                        layerId,
+                        layer.withPixels(pixels)
+                )
+        );
+    }
+
+    private static boolean writeElytraWingPixel(
+            int[] pixels,
+            int canvasWidth,
+            ElytraWing wing,
+            int localX,
+            int localY,
+            int scale,
+            int argb
+    ) {
+        int atlasX = wing.atlasX(localX, scale);
+        int atlasY = wing.atlasY(localY, scale);
+        int index = atlasY * canvasWidth + atlasX;
+
+        if (pixels[index] == argb) {
+            return false;
+        }
+
+        pixels[index] = argb;
+        return true;
+    }
+
     public static LoomProject setElytraPixel(
             LoomProject project,
             UUID layerId,

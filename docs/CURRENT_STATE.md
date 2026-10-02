@@ -2,7 +2,7 @@
 
 **Checkpoint:** 2026-10-02  
 **Target:** Minecraft Java Edition 1.21.11 / Fabric  
-**Active product phase:** Phase 2 — Cape Editor core
+**Active product phase:** Phase 2–5 — editor productization
 
 ## Overall status
 
@@ -24,13 +24,24 @@ Loom Studios currently has:
 - Gradient authoring with type/stops/angle/repeat/dither plus move/scale/mirror/reset transforms;
 - icon-led typed layer rows with direct visibility/lock affordances;
 - selection/move/flip common-core transforms;
-- first editor exposure of drag selection, nudge and flip controls.
+- first editor exposure of drag selection, nudge and flip controls;
+- reference-oriented Home dashboard with real recent-project thumbnail cards;
+- integrated selected-project 3D preview on Home;
+- functional Blank and Gradient Home templates;
+- semantic unfolded Elytra wing editor;
+- linked-mirror and independent-wing painting;
+- Elytra Paint-layer stack with direct visibility/lock affordances;
+- project-authored Elytra thickness controls from 25% to 200%.
 
-The current Smart Import + schema-v2 merged baseline is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
+The current editor-productization branch is **CI GREEN / LOCAL VISUAL VERIFICATION PENDING**.
 
-Exact merged-main baseline entering the Gradient/typed-layer pass: `fec3d46e8b3e3eb40e24b6a602d2f2bae0da2cf6` — GitHub Actions #123 **SUCCESS**.
+Latest merged-main baseline entering this pass: `213bd4e9d5d5f5f9449fbd8c3a3fce74cf71e6ec` — GitHub Actions #126 **SUCCESS**.
 
-Gradient Editor + typed-layer UX implementation checkpoint: `29d43b67ae880679e3b8ae9c3093c7f5ad7c2613` — GitHub Actions #124 **SUCCESS**. Documentation-only head verification follows this implementation checkpoint.
+Current pass exact green implementation checkpoints:
+- Home reference shell: `0cc3b219fcda2c8b4fb619db900545890e40764e` — GitHub Actions #127 **SUCCESS**;
+- semantic Elytra wing editor: `fb21521181dae6139122b8e0e4891e4083627203` — GitHub Actions #128 **SUCCESS**;
+- reusable Elytra layer stack: `af767ce8c12a55c725d5b14fc2602872515b5564` — GitHub Actions #129 **SUCCESS**;
+- project-authored Elytra thickness: `e46960484bd4d8ef7ef308805a0ad449ba67c643` — GitHub Actions #130 **SUCCESS**.
 
 The earlier Select/runtime-hardening checkpoint remains `831b1139a14944b643926f67c655db9b46b65c38` — GitHub Actions #78 **SUCCESS**.
 
@@ -306,16 +317,43 @@ Still planned:
 
 ## Elytra
 
-Rendering foundation is implemented:
+Rendering foundation:
 - dedicated Loom Elytra texture;
 - independent cape/Elytra channels;
 - vanilla gliding/wing animation;
 - high-resolution project canvas support;
 - calibrated visual thickness baseline;
-- temporary development thickness presets;
 - preview Cape/Elytra switching.
 
-The dedicated Elytra editor is not implemented yet.
+Semantic Elytra Editor implemented in the current pass:
+- unfolded semantic Left / Right 10x20 wing-front regions;
+- 1x / 2x / 4x editing;
+- Pencil / Eraser;
+- scalable brush;
+- linked mirror mode;
+- separate-wing mode;
+- linked edits mirror local X into the opposite vanilla UV wing;
+- persistent Paint-layer lock enforcement;
+- reusable canvas-backed typed layer list;
+- Add / Copy / Delete Elytra Paint layers;
+- per-row visibility;
+- per-row persistent Lock;
+- Undo / Redo;
+- Save / Save + Equip;
+- integrated draggable/zoomable Elytra 3D preview;
+- project-authored Elytra thickness 25%–200%;
+- old debug thickness preset override retired so saved/equipped project thickness is authoritative.
+
+Still missing for the full reference target:
+- cape-to-Elytra starting conversion;
+- Elytra-target Smart Import / Image-layer authoring;
+- richer Elytra layer property UI (reorder, opacity, rename, blend);
+- full Swatches parity with Cape Editor;
+- standing/open/gliding preview-state controls;
+- animation timeline/tracks/effects;
+- final reference-layout polish.
+
+The semantic wing-link mode is editor state, not serialized project state.
 
 ## Animation/effects
 
@@ -339,22 +377,30 @@ Not implemented as an authoring product:
 ## Home / project library
 
 Implemented:
-- Loom home screen;
+- responsive reference-oriented three-column Home shell;
+- icon-led action cards;
 - Create New Cape;
-- open selected saved project;
+- functional Edit Elytra entry;
+- Load selected saved design;
+- Import Image -> Smart Import;
 - local Recent Projects index;
 - selection persistence;
-- generated project thumbnail PNG cache.
+- generated project thumbnail PNG cache;
+- real recent-project thumbnail cards;
+- selected-project 3D player/cape preview;
+- draggable preview rotation + wheel zoom + Reset View;
+- functional Blank template;
+- functional Gradient template;
+- template/category cards;
+- project count/status footer;
+- unreadable-project warning surface.
 
-Still missing:
-- actual thumbnail-card UI;
-- reference-style project hub hierarchy;
-- Edit Elytra;
-- Import Image;
-- Loom Codes;
-- Templates;
-- Settings;
-- integrated selected-project/player preview.
+Intentionally still placeholder/inactive:
+- project Loom Codes;
+- Settings product screen;
+- Nature / Space / Fantasy / Emblems template packs.
+
+Home visual/runtime verification at the four mandatory GUI profiles is still pending.
 
 ## Smart Import
 
@@ -444,7 +490,7 @@ The five approved references remain active product constraints:
 
 Current implementation intentionally prioritizes functional architecture before final decorative polish, but screen hierarchy, density, dark slate surfaces, cyan/violet accents, grouped tools, Swatches/Layers roles and live-preview intent must continue tracking the references.
 
-The binary reference PNGs are still not committed under `docs/references/ui/`.
+The approved optimized WebP reference set is committed under `docs/references/ui/`; full-resolution PNG masters live in the ChatGPT Project Library.
 
 ## Required UI profiles
 
@@ -455,7 +501,7 @@ Every meaningful editor-layout change must eventually be checked at:
 - 3440x1440 / GUI scale 2;
 - 3440x1440 / GUI scale 3.
 
-Because the current user is away from the development PC, newly added selection controls and latest layer/emissive behavior are **not visually/runtime verified yet**.
+Because the current user is away from the development PC, the latest Cape/Gradient controls, Home dashboard and Elytra Editor are **not visually/runtime verified yet**.
 
 ## Automated coverage currently includes
 
@@ -496,10 +542,10 @@ Automated build/test verification is green. The remaining gate for the newest ed
 
 ## Immediate direction
 
-1. locally verify Select/layers/emissive/Smart Import at the required GUI profiles when the development PC is available;
-2. finish richer Gradient authoring UI in the Cape Editor;
-3. move the Home screen toward the approved reference with real thumbnail cards and navigation hierarchy;
-4. begin the dedicated Elytra editor foundation;
-5. then animation authoring, Loom Codes/sharing and final reference-fidelity hardening.
+1. locally verify Cape/Gradient/Smart Import/Home/Elytra at the required GUI profiles when the development PC is available;
+2. finish remaining Elytra product workflow: cape-to-Elytra conversion, richer layer properties/import parity and preview states;
+3. design/implement animation authoring schema + timeline;
+4. implement project Loom Codes/sharing;
+5. finish reference-fidelity and compatibility hardening.
 
 See `NEXT_WORK.md` for the concrete queue.
