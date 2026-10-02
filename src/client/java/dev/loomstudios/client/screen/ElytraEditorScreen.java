@@ -397,7 +397,7 @@ public final class ElytraEditorScreen extends Screen {
         lockButton = iconButton(
                 x, y, width, h,
                 "Layer Lock", LoomButton.Icon.LOCK,
-                this::toggleSelectedLayerLock
+                this::toggleLock
         );
         lockButton.setIconOnly(true);
     }
@@ -1088,6 +1088,408 @@ public final class ElytraEditorScreen extends Screen {
             }
         }
     }
+
+    private void toggleTimelinePlayback() {
+        LoomAnimation animation =
+                ClientProjectWorkspace.project().animation();
+
+        if (timelineTick >= animation.durationTicks()) {
+            scrubTimeline(0);
+        }
+
+        timelinePlaying = !timelinePlaying;
+        statusMessage = timelinePlaying
+                ? "Animation preview playing"
+                : "Animation preview paused";
+    }
+
+    private void scrubTimeline(int tick) {
+        LoomAnimation animation =
+                ClientProjectWorkspace.project().animation();
+        timelineTick = Math.max(
+                0,
+                Math.min(animation.durationTicks(), tick)
+        );
+        timelineCursor = timelineTick;
+    }
+
+    private void toggleTimelineLoop() {
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        project.animation().withLoop(
+                                !project.animation().loop()
+                        )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void changeTimelineDuration(int deltaTicks) {
+        LoomProjectSnapshot snapshot = animationSnapshot();
+        int requested = snapshot.animation().durationTicks()
+                + deltaTicks;
+
+        var result = ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.changeDuration(
+                                project.animation(),
+                                requested
+                        )
+                )
+        );
+
+        timelineTick = Math.min(
+                timelineTick,
+                result.animation().durationTicks()
+        );
+        timelineCursor = timelineTick;
+        updateButtonStates();
+    }
+
+    private void changeTimelinePlaybackSpeed(float delta) {
+        LoomAnimation animation =
+                ClientProjectWorkspace.project().animation();
+        float next = Math.max(
+                0.25F,
+                Math.min(
+                        4.0F,
+                        animation.playbackSpeed() + delta
+                )
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        project.animation().withPlaybackSpeed(next)
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void addAnimationTrack() {
+        LoomLayer layer = selectedLayer();
+        if (layer == null) {
+            statusMessage = "Select an Elytra layer first";
+            return;
+        }
+
+        var result = ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.addTrack(
+                                project.animation(),
+                                layer.id(),
+                                AnimationChannel.ELYTRA,
+                                AnimationEffectType.PULSE
+                        )
+                )
+        );
+
+        selectedTrackId = result.animation().tracks().getLast().id();
+        scrubTimeline(0);
+        statusMessage = "Added Pulse animation track";
+        updateButtonStates();
+    }
+
+    private void selectAnimationTrack(UUID trackId) {
+        if (findAnimationTrack(trackId) == null) {
+            return;
+        }
+        selectedTrackId = trackId;
+        updateButtonStates();
+    }
+
+    private void toggleAnimationTrack(UUID trackId) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                track.withEnabled(!track.enabled())
+                        )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void cycleAnimationEffect(UUID trackId) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null) {
+            return;
+        }
+
+        AnimationEffectType next = track.effect().next();
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                track.withEffect(next)
+                        )
+                )
+        );
+        statusMessage = "Animation: " + next.displayName();
+        updateButtonStates();
+    }
+
+    private void addAnimationKeyframe(UUID trackId) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null) {
+            return;
+        }
+
+        LoomAnimation animation =
+                ClientProjectWorkspace.project().animation();
+        float value = AnimationEvaluator.valueAt(
+                track,
+                animation,
+                timelineTick
+        );
+        AnimationTrack updated =
+                AnimationAuthoring.addOrReplaceKeyframe(
+                        track,
+                        timelineTick,
+                        value
+                );
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                updated
+                        )
+                )
+        );
+        statusMessage = "Keyframe set at "
+                + timelineTick
+                + " ticks";
+        updateButtonStates();
+    }
+
+    private void removeAnimationKeyframe(UUID trackId) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null || track.keyframes().size() <= 1) {
+            return;
+        }
+
+        int targetTick = nearestKeyframeTick(
+                track,
+                timelineTick
+        );
+        AnimationTrack updated =
+                AnimationAuthoring.removeKeyframe(
+                        track,
+                        targetTick
+                );
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                updated
+                        )
+                )
+        );
+        scrubTimeline(targetTick);
+        statusMessage = "Removed nearest keyframe";
+        updateButtonStates();
+    }
+
+    private void adjustAnimationKeyframeValue(
+            UUID trackId,
+            float delta
+    ) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null) {
+            return;
+        }
+
+        LoomAnimation animation =
+                ClientProjectWorkspace.project().animation();
+        float current = track.keyframes().stream()
+                .filter(frame -> frame.tick() == timelineTick)
+                .findFirst()
+                .map(AnimationKeyframe::value)
+                .orElseGet(() ->
+                        AnimationEvaluator.valueAt(
+                                track,
+                                animation,
+                                timelineTick
+                        )
+                );
+
+        float next = Math.max(
+                LoomAnimation.MIN_KEYFRAME_VALUE,
+                Math.min(
+                        LoomAnimation.MAX_KEYFRAME_VALUE,
+                        current + delta
+                )
+        );
+
+        AnimationTrack updated =
+                AnimationAuthoring.addOrReplaceKeyframe(
+                        track,
+                        timelineTick,
+                        next
+                );
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                updated
+                        )
+                )
+        );
+        statusMessage = String.format(
+                java.util.Locale.ROOT,
+                "Keyframe value %.2f",
+                next
+        );
+        updateButtonStates();
+    }
+
+    private void cycleAnimationTrackSpeed(UUID trackId) {
+        AnimationTrack track = findAnimationTrack(trackId);
+        if (track == null) {
+            return;
+        }
+
+        float current = track.speed();
+        float next;
+        if (current < 0.75F) {
+            next = 1.0F;
+        } else if (current < 1.25F) {
+            next = 1.5F;
+        } else if (current < 1.75F) {
+            next = 2.0F;
+        } else {
+            next = 0.5F;
+        }
+
+        AnimationTrack updated = track.withSpeed(next);
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.replaceTrack(
+                                project.animation(),
+                                updated
+                        )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void deleteAnimationTrack(UUID trackId) {
+        if (findAnimationTrack(trackId) == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                project.withAnimation(
+                        AnimationAuthoring.removeTrack(
+                                project.animation(),
+                                trackId
+                        )
+                )
+        );
+        selectedTrackId = null;
+        ensureSelectedTrackExists();
+        statusMessage = "Animation track deleted";
+        updateButtonStates();
+    }
+
+    private AnimationTrack findAnimationTrack(UUID trackId) {
+        if (trackId == null || !ClientProjectWorkspace.isInitialized()) {
+            return null;
+        }
+
+        return ClientProjectWorkspace.project()
+                .animation()
+                .tracks()
+                .stream()
+                .filter(track ->
+                        track.channel() == AnimationChannel.ELYTRA
+                                && track.id().equals(trackId)
+                )
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void ensureSelectedTrackExists() {
+        if (!ClientProjectWorkspace.isInitialized()) {
+            selectedTrackId = null;
+            return;
+        }
+
+        if (findAnimationTrack(selectedTrackId) != null) {
+            return;
+        }
+
+        selectedTrackId = ClientProjectWorkspace.project()
+                .animation()
+                .tracks()
+                .stream()
+                .filter(track ->
+                        track.channel() == AnimationChannel.ELYTRA
+                )
+                .findFirst()
+                .map(AnimationTrack::id)
+                .orElse(null);
+    }
+
+    private static int nearestKeyframeTick(
+            AnimationTrack track,
+            int tick
+    ) {
+        int nearest = track.keyframes().getFirst().tick();
+        int distance = Math.abs(nearest - tick);
+
+        for (AnimationKeyframe frame : track.keyframes()) {
+            int candidateDistance = Math.abs(
+                    frame.tick() - tick
+            );
+            if (candidateDistance < distance) {
+                distance = candidateDistance;
+                nearest = frame.tick();
+            }
+        }
+
+        return nearest;
+    }
+
+    private record LoomProjectSnapshot(
+            LoomAnimation animation
+    ) {
+    }
+
+    private LoomProjectSnapshot animationSnapshot() {
+        return new LoomProjectSnapshot(
+                ClientProjectWorkspace.project().animation()
+        );
+    }
+
+    private void editWing(ElytraWing wing, int x, int y) {
+        LoomLayer layer = selectedLayer();
+        if (layer == null || !layer.editableAsPaint()) {
+            return;
+        }
+
+        int color = tool == Tool.ERASER ? 0 : selectedColor;
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.paintElytraWingBrush(
+                        project,
+                        selectedLayerId,
+                        wing,
+                        x,
+                        y,
+                        brushSize,
+                        color,
+                        linkedMirror
+                )
+        );
+    }
+
 
     private void toggleLinked() {
         linkedMirror = !linkedMirror;
