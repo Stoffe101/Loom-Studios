@@ -116,10 +116,10 @@ Implemented:
 - scrollable compact right tool rail.
 
 Missing/reference gap:
-- layer lock;
+- richer lock/type affordance in the layer row;
 - proper icon toolbar;
 - Select/Move/Flip UI is implemented functionally (local visual verification pending);
-- first-class editable Gradient tool/layer;
+- first-class Gradient layer exists, but richer Gradient authoring UI still needs the reference-level treatment;
 - recent colors;
 - richer tooltips/shortcut help;
 - integrated preview panel rather than separate utilitarian preview screen;
@@ -169,38 +169,41 @@ Preview:
 
 ### Current status
 
-User-facing Smart Import screen is not yet implemented.
+Functional Smart Import is implemented and CI green.
 
-Implemented pure-core prerequisites:
-- high-resolution canvases;
-- layers;
-- alpha;
-- Swatches/palette infrastructure;
-- project persistence;
-- live preview;
-- selection/move/flip;
-- bounded immutable ARGB processing image;
-- Fit / Stretch / centered Crop / Center placement;
-- mirror H/V;
-- quarter-turn rotation;
-- crop + nearest-neighbor resize;
-- brightness/contrast/saturation;
+Implemented:
+- Home and Cape Editor import entry points;
+- PNG picker/decoder adapter;
+- Original preview;
+- Processed preview;
+- Cape Texture preview;
+- isolated 3D candidate preview;
+- Fit / Stretch / Crop / Center;
+- Keep Aspect;
+- move / scale / arbitrary rotation;
+- Mirror H/V;
+- Brightness / Contrast / Saturation;
 - Reduce Colors;
-- Palette Limited mapping;
 - Floyd-Steinberg Dither;
-- Posterize;
-- Monochrome.
-
-Still missing for reference #03:
-- PNG source adapter;
-- schema-v2 Image layer;
-- free move/scale/arbitrary rotate/aspect-lock authoring;
+- Direct;
+- Pixel Art;
 - Outline Only;
-- Pixel-art mode orchestration;
-- transparency/background-removal workflow;
-- original/processed/result/3D workspace UI.
+- Monochrome;
+- Palette Limited;
+- Posterize;
+- selected Loom Swatches palette integration;
+- Apply as editable schema-v2 Image layer;
+- reopen/edit existing Image layers;
+- non-destructive source/transform/processing persistence.
 
-Imported artwork must still become a real editable layer rather than a destructive paste.
+Still missing for final reference fidelity:
+- tint;
+- background-removal workflow;
+- direct transform handles;
+- final decorative treatment;
+- local visual verification at all required GUI profiles.
+
+Imported artwork remains a real editable Image layer rather than a destructive paste.
 
 ## Reference 04 — Elytra + Animation Editor
 
@@ -279,16 +282,13 @@ Palette share codes are **not** a substitute for project Loom Codes.
 
 The practical order is:
 
-1. finish local verification of the current Cape Editor functional core;
-2. reusable transform/image-processing foundations for Smart Import;
-3. layer lock + richer layer metadata in the next project-schema expansion;
-4. editable Gradient architecture;
-5. Recent Project thumbnail cards + Home reference shell;
-6. Smart Import;
-7. Elytra editor;
-8. animation/timeline;
-9. Loom Codes/sharing;
-10. final visual-fidelity pass across all five references.
+1. locally verify the current Cape Editor + Smart Import functional core;
+2. richer Gradient authoring and typed-layer UI;
+3. Recent Project thumbnail cards + Home reference shell;
+4. Elytra editor;
+5. animation/timeline;
+6. Loom Codes/sharing;
+7. final visual-fidelity pass across all five references.
 
 This ordering preserves the approved references while avoiding disposable UI built before the underlying feature model exists.
 
