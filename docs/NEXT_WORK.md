@@ -58,17 +58,16 @@ The user is currently away from the development PC, so do not claim visual/runti
 
 Priority order:
 
-1. verify the Smart Import transform/adjustment foundation in exact-SHA CI;
-2. add pure palette quantization / Reduce Colors;
-3. add deterministic dithering;
-4. add Posterize / Monochrome / Palette Limited processing primitives;
-5. design schema v2 and migration fixtures;
-6. add first-class Gradient data model/compiler tests;
-7. prepare non-destructive Image layer representation using the proven placement/processing core;
-8. add the PNG decode/import adapter with strict size validation;
-9. prepare Elytra semantic UV/editor model;
-10. design animation authoring schema/timeline data model;
-11. add reusable tooltip/icon-button primitives where they do not depend on visual judgment.
+1. verify the Smart Import quantization/dithering slice in exact-SHA CI;
+2. add Outline Only / edge-processing primitive;
+3. define Pixel-art processing presets/orchestration using the existing resize/reduction/dither core;
+4. design schema v2 and migration fixtures;
+5. add first-class Gradient data model/compiler tests;
+6. prepare non-destructive Image layer representation using the proven placement/processing core;
+7. add the PNG decode/import adapter with strict size validation;
+8. prepare Elytra semantic UV/editor model;
+9. design animation authoring schema/timeline data model;
+10. add reusable tooltip/icon-button primitives where they do not depend on visual judgment.
 
 ## Schema-v2 gate
 
