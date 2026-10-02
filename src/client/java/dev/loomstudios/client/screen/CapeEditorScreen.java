@@ -1370,6 +1370,98 @@ public final class CapeEditorScreen extends Screen {
                                         : "Off")
                 ));
             }
+
+            if (gradient != null) {
+                int stopIndex = clampedGradientStopIndex(gradient);
+                GradientStop stop = gradient.stops().get(stopIndex);
+                int stopCount = gradient.stops().size();
+
+                if (gradientStopLabelButton != null) {
+                    gradientStopLabelButton.setMessage(
+                            Component.literal(
+                                    "Stop "
+                                            + (stopIndex + 1)
+                                            + "/"
+                                            + stopCount
+                                            + " "
+                                            + Math.round(
+                                                    stop.position() * 100.0
+                                            )
+                                            + "%"
+                            )
+                    );
+                }
+                if (gradientStopPreviousButton != null) {
+                    gradientStopPreviousButton.active =
+                            stopIndex > 0;
+                }
+                if (gradientStopNextButton != null) {
+                    gradientStopNextButton.active =
+                            stopIndex + 1 < stopCount;
+                }
+                if (gradientStopAddButton != null) {
+                    gradientStopAddButton.active =
+                            editableGradient
+                                    && stopCount
+                                    < dev.loomstudios.project.LoomProjectCodec.MAX_GRADIENT_STOPS;
+                }
+                if (gradientStopRemoveButton != null) {
+                    gradientStopRemoveButton.active =
+                            editableGradient && stopCount > 2;
+                }
+                if (gradientStopPositionDownButton != null) {
+                    gradientStopPositionDownButton.active =
+                            editableGradient
+                                    && stop.position()
+                                    > (stopIndex == 0
+                                            ? 0.0
+                                            : gradient.stops()
+                                                    .get(stopIndex - 1)
+                                                    .position()
+                                                    + 0.001);
+                }
+                if (gradientStopPositionUpButton != null) {
+                    gradientStopPositionUpButton.active =
+                            editableGradient
+                                    && stop.position()
+                                    < (stopIndex + 1 == stopCount
+                                            ? 1.0
+                                            : gradient.stops()
+                                                    .get(stopIndex + 1)
+                                                    .position()
+                                                    - 0.001);
+                }
+                if (gradientStopColorButton != null) {
+                    gradientStopColorButton.active = editableGradient;
+                }
+            } else {
+                if (gradientStopLabelButton != null) {
+                    gradientStopLabelButton.setMessage(
+                            Component.literal("Stop")
+                    );
+                }
+                if (gradientStopPreviousButton != null) {
+                    gradientStopPreviousButton.active = false;
+                }
+                if (gradientStopNextButton != null) {
+                    gradientStopNextButton.active = false;
+                }
+                if (gradientStopAddButton != null) {
+                    gradientStopAddButton.active = false;
+                }
+                if (gradientStopRemoveButton != null) {
+                    gradientStopRemoveButton.active = false;
+                }
+                if (gradientStopPositionDownButton != null) {
+                    gradientStopPositionDownButton.active = false;
+                }
+                if (gradientStopPositionUpButton != null) {
+                    gradientStopPositionUpButton.active = false;
+                }
+                if (gradientStopColorButton != null) {
+                    gradientStopColorButton.active = false;
+                }
+            }
             if (layerRenameButton != null) {
                 layerRenameButton.active = layerNameField != null
                         && !layerNameField.getValue().trim().isEmpty();
