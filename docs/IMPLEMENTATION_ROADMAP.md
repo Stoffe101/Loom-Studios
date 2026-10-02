@@ -56,14 +56,19 @@ Implemented:
 - save/equip;
 - responsive scrollable tool rail.
 
+Implemented in the current selection slice:
+- drag selection;
+- persistent selection outline;
+- Move/nudge;
+- Flip Horizontal / Vertical.
+
 Still required:
-- selection;
-- Move;
-- Crop;
-- Flip Horizontal / Vertical;
+- selection-aware transform refinement where needed for Smart Import;
 - first-class Gradient;
 - shortcut/tooltips surface;
 - final reference-image editor composition.
+
+Note: the fixed Minecraft cape UV face itself is not resized by a destructive crop operation. Crop belongs to imported-image placement inside the fixed target surface.
 
 ## Phase 3 — Layer system
 
