@@ -39,6 +39,14 @@ public final class ProjectResizer {
         List<LoomLayer> layers = new ArrayList<>(source.layers().size());
 
         for (LoomLayer layer : source.layers()) {
+            if (layer.kind() != LayerKind.PAINT) {
+                // Typed layers use normalized placement and therefore retain
+                // their authored geometry when the backing canvas scale moves
+                // between 1x, 2x and 4x.
+                layers.add(layer);
+                continue;
+            }
+
             int[] next = new int[resolution.width() * resolution.height()];
 
             for (int y = 0; y < resolution.height(); y++) {
