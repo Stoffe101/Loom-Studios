@@ -538,6 +538,11 @@ See `ANIMATION.md`.
 
 **Local/offline sharing MVP is implemented and CI green / local visual-runtime verification pending.**
 
+Exact green sharing checkpoints:
+- portable-code core: `bff95cbd5c79ce59b417e97f49cb58917b97d307` — Actions #152 **SUCCESS**;
+- functional sharing UI/file import: `709087febc06370df247bdb200d0b988e3f7ea79` — Actions #154 **SUCCESS**;
+- canonical sharing docs: `a34bfddac35d29e175d9bcdce75dff3ac2969365` — Actions #156 **SUCCESS**.
+
 Reference-05-oriented sharing now provides:
 - Home -> Loom Codes navigation;
 - deterministic short design fingerprint: `LS-XXXX-XXXX-XXXX`;

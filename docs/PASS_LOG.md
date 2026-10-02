@@ -2,14 +2,15 @@
 
 ## 2026-10-02 — Loom Codes local/offline sharing MVP
 
-**Status: IMPLEMENTATION CI PASS / FINAL DOCS + MERGE VERIFICATION PENDING**
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
 
 Merged-main baseline entering the pass:
 - `ccc8fe3ca8c05a7048745daf03c26d7f7940beac` — GitHub Actions #151 **SUCCESS**.
 
 Green checkpoints so far:
 - `bff95cbd5c79ce59b417e97f49cb58917b97d307` — portable-code common core — Actions #152 **SUCCESS**;
-- `709087febc06370df247bdb200d0b988e3f7ea79` — functional sharing screen + mapped clipboard + project-file import — Actions #154 **SUCCESS**.
+- `709087febc06370df247bdb200d0b988e3f7ea79` — functional sharing screen + mapped clipboard + project-file import — Actions #154 **SUCCESS**;
+- `a34bfddac35d29e175d9bcdce75dff3ac2969365` — canonical sharing documentation head — Actions #156 **SUCCESS**.
 
 Implemented common core:
 - `LSP1:` self-contained compressed portable project code;
