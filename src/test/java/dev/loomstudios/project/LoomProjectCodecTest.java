@@ -407,6 +407,30 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void emissiveLayerToggleKeepsRuntimeMasterInSync() {
+        LoomProject project = LoomProjectFactory.blank("Emissive Toggle", 1L);
+        UUID layerId = project.cape().layers().getFirst().id();
+
+        assertFalse(project.runtime().emissiveEnabled());
+
+        LoomProject enabled = ProjectEdits.setCapeLayerEmissive(
+                project,
+                layerId,
+                true
+        );
+        assertTrue(enabled.cape().layers().getFirst().emissive());
+        assertTrue(enabled.runtime().emissiveEnabled());
+
+        LoomProject disabled = ProjectEdits.setCapeLayerEmissive(
+                enabled,
+                layerId,
+                false
+        );
+        assertFalse(disabled.cape().layers().getFirst().emissive());
+        assertFalse(disabled.runtime().emissiveEnabled());
+    }
+
+    @Test
     void blendModeOrdinalsPreserveSchemaV1Compatibility() {
         assertEquals(0, BlendMode.NORMAL.ordinal());
         assertEquals(1, BlendMode.ADD.ordinal());
