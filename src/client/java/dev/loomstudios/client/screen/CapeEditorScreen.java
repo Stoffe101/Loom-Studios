@@ -15,6 +15,7 @@ import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -46,12 +47,14 @@ public final class CapeEditorScreen extends Screen {
     private int brushSize = 1;
     private boolean rectangleFilled;
     private SymmetryMode symmetryMode = SymmetryMode.NONE;
+    private PixelSelection selection;
     private UUID selectedLayerId;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
     private LoomButton fillButton;
     private LoomButton eyedropperButton;
+    private LoomButton selectButton;
     private LoomButton lineButton;
     private LoomButton rectangleButton;
     private LoomButton rectangleModeButton;
@@ -63,6 +66,13 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton resolutionLabelButton;
     private LoomButton brushLabelButton;
     private LoomButton symmetryButton;
+    private LoomButton selectionClearButton;
+    private LoomButton selectionLeftButton;
+    private LoomButton selectionRightButton;
+    private LoomButton selectionUpButton;
+    private LoomButton selectionDownButton;
+    private LoomButton selectionFlipHorizontalButton;
+    private LoomButton selectionFlipVerticalButton;
     private LoomButton zoomOutButton;
     private LoomButton zoomLabelButton;
     private LoomButton zoomInButton;
@@ -146,6 +156,8 @@ public final class CapeEditorScreen extends Screen {
                 () -> this.capeRegion,
                 this::editPixel,
                 this::commitShape,
+                () -> this.selection,
+                this::setSelection,
                 new LoomCapeFaceWidget.StrokeLifecycle() {
                     @Override
                     public void begin() {
@@ -218,6 +230,13 @@ public final class CapeEditorScreen extends Screen {
         );
         tools.addChild(eyedropperButton);
 
+        selectButton = createLoomButton(
+                contentWidth,
+                "Select",
+                () -> setTool(Tool.SELECT)
+        );
+        tools.addChild(selectButton);
+
         lineButton = createLoomButton(
                 contentWidth,
                 "Line",
@@ -263,6 +282,58 @@ public final class CapeEditorScreen extends Screen {
                 this::cycleSymmetry
         );
         tools.addChild(symmetryButton);
+
+        selectionClearButton = createLoomButton(
+                contentWidth,
+                "Clear Selection",
+                this::clearSelection
+        );
+        tools.addChild(selectionClearButton);
+
+        LinearLayout selectionHorizontalRow = LinearLayout.horizontal().spacing(4);
+        selectionLeftButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Move Left",
+                () -> nudgeSelection(-1, 0)
+        );
+        selectionRightButton = createLoomButton(
+                contentWidth - 4 - selectionLeftButton.getWidth(),
+                "Move Right",
+                () -> nudgeSelection(1, 0)
+        );
+        selectionHorizontalRow.addChild(selectionLeftButton);
+        selectionHorizontalRow.addChild(selectionRightButton);
+        tools.addChild(selectionHorizontalRow);
+
+        LinearLayout selectionVerticalRow = LinearLayout.horizontal().spacing(4);
+        selectionUpButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Move Up",
+                () -> nudgeSelection(0, -1)
+        );
+        selectionDownButton = createLoomButton(
+                contentWidth - 4 - selectionUpButton.getWidth(),
+                "Move Down",
+                () -> nudgeSelection(0, 1)
+        );
+        selectionVerticalRow.addChild(selectionUpButton);
+        selectionVerticalRow.addChild(selectionDownButton);
+        tools.addChild(selectionVerticalRow);
+
+        LinearLayout selectionFlipRow = LinearLayout.horizontal().spacing(4);
+        selectionFlipHorizontalButton = createLoomButton(
+                (contentWidth - 4) / 2,
+                "Flip H",
+                () -> flipSelection(true, false)
+        );
+        selectionFlipVerticalButton = createLoomButton(
+                contentWidth - 4 - selectionFlipHorizontalButton.getWidth(),
+                "Flip V",
+                () -> flipSelection(false, true)
+        );
+        selectionFlipRow.addChild(selectionFlipHorizontalButton);
+        selectionFlipRow.addChild(selectionFlipVerticalButton);
+        tools.addChild(selectionFlipRow);
 
         LinearLayout zoomRow = LinearLayout.horizontal().spacing(4);
         zoomOutButton = createLoomButton(
@@ -597,6 +668,7 @@ public final class CapeEditorScreen extends Screen {
 
     private void cycleFace() {
         this.capeRegion = this.capeRegion.next();
+        clearSelection();
         if (faceButton != null) {
             faceButton.setMessage(Component.literal(faceLabel()));
         }
@@ -782,6 +854,7 @@ public final class CapeEditorScreen extends Screen {
         ClientProjectWorkspace.apply(project ->
                 ProjectResizer.resizeCape(project, next)
         );
+        clearSelection();
 
         int maxBrush = next.scale() * 8;
         this.brushSize = Math.min(this.brushSize, maxBrush);
@@ -827,6 +900,7 @@ public final class CapeEditorScreen extends Screen {
             case PENCIL, ERASER -> LoomCapeFaceWidget.GestureMode.BRUSH;
             case LINE -> LoomCapeFaceWidget.GestureMode.LINE;
             case RECTANGLE -> LoomCapeFaceWidget.GestureMode.RECTANGLE;
+            case SELECT -> LoomCapeFaceWidget.GestureMode.SELECTION;
             case FILL, EYEDROPPER -> LoomCapeFaceWidget.GestureMode.CLICK;
         };
     }
@@ -871,6 +945,43 @@ public final class CapeEditorScreen extends Screen {
             rectangleButton.setMessage(Component.literal(
                     tool == Tool.RECTANGLE ? "Rectangle ●" : "Rectangle"
             ));
+        }
+
+        if (selectButton != null) {
+            selectButton.setMessage(Component.literal(
+                    tool == Tool.SELECT ? "Select ●" : "Select"
+            ));
+        }
+
+        boolean hasSelection = selection != null;
+        if (selectionClearButton != null) {
+            selectionClearButton.active = hasSelection;
+        }
+        if (selectionLeftButton != null) {
+            selectionLeftButton.active = hasSelection && selection.minX() > 0;
+        }
+        if (selectionRightButton != null) {
+            int scale = CanvasResolution.fromCanvas(
+                    this.workspaceState.project().cape()
+            ).scale();
+            selectionRightButton.active = hasSelection
+                    && selection.maxX() + 1 < this.capeRegion.width(scale);
+        }
+        if (selectionUpButton != null) {
+            selectionUpButton.active = hasSelection && selection.minY() > 0;
+        }
+        if (selectionDownButton != null) {
+            int scale = CanvasResolution.fromCanvas(
+                    this.workspaceState.project().cape()
+            ).scale();
+            selectionDownButton.active = hasSelection
+                    && selection.maxY() + 1 < this.capeRegion.height(scale);
+        }
+        if (selectionFlipHorizontalButton != null) {
+            selectionFlipHorizontalButton.active = hasSelection;
+        }
+        if (selectionFlipVerticalButton != null) {
+            selectionFlipVerticalButton.active = hasSelection;
         }
 
         if (rectangleModeButton != null) {
@@ -1274,7 +1385,7 @@ public final class CapeEditorScreen extends Screen {
                     )
             );
             case EYEDROPPER -> sampleVisibleColor(x, y);
-            case LINE, RECTANGLE -> {
+            case LINE, RECTANGLE, SELECT -> {
             }
         }
 
@@ -1446,6 +1557,89 @@ public final class CapeEditorScreen extends Screen {
             case VERTICAL -> new int[]{0, 2};
             case BOTH -> new int[]{0, 1, 2, 3};
         };
+    }
+
+    private void setSelection(PixelSelection selection) {
+        this.selection = selection;
+        updateButtonStates();
+    }
+
+    private void clearSelection() {
+        this.selection = null;
+        updateButtonStates();
+    }
+
+    private void nudgeSelection(int deltaX, int deltaY) {
+        if (selection == null) {
+            return;
+        }
+
+        int scale = CanvasResolution.fromCanvas(
+                ClientProjectWorkspace.project().cape()
+        ).scale();
+        int regionWidth = capeRegion.width(scale);
+        int regionHeight = capeRegion.height(scale);
+
+        int targetMinX = Math.max(
+                0,
+                Math.min(
+                        regionWidth - selection.width(),
+                        selection.minX() + deltaX
+                )
+        );
+        int targetMinY = Math.max(
+                0,
+                Math.min(
+                        regionHeight - selection.height(),
+                        selection.minY() + deltaY
+                )
+        );
+
+        int actualDeltaX = targetMinX - selection.minX();
+        int actualDeltaY = targetMinY - selection.minY();
+
+        if (actualDeltaX == 0 && actualDeltaY == 0) {
+            return;
+        }
+
+        PixelSelection currentSelection = selection;
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.moveCapeRegionSelection(
+                        project,
+                        selectedLayerId,
+                        capeRegion,
+                        currentSelection,
+                        actualDeltaX,
+                        actualDeltaY
+                )
+        );
+
+        this.selection = new PixelSelection(
+                targetMinX,
+                targetMinY,
+                targetMinX + currentSelection.width() - 1,
+                targetMinY + currentSelection.height() - 1
+        );
+        updateButtonStates();
+    }
+
+    private void flipSelection(boolean horizontal, boolean vertical) {
+        if (selection == null) {
+            return;
+        }
+
+        PixelSelection currentSelection = selection;
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.flipCapeRegionSelection(
+                        project,
+                        selectedLayerId,
+                        capeRegion,
+                        currentSelection,
+                        horizontal,
+                        vertical
+                )
+        );
+        updateButtonStates();
     }
 
     private void sampleVisibleColor(int x, int y) {
@@ -1669,6 +1863,29 @@ public final class CapeEditorScreen extends Screen {
         if (!event.hasControlDown()
                 && !event.hasAltDown()
                 && !event.hasShiftDown()) {
+            if (tool == Tool.SELECT && selection != null) {
+                switch (event.key()) {
+                    case 263 -> {
+                        nudgeSelection(-1, 0);
+                        return true;
+                    }
+                    case 262 -> {
+                        nudgeSelection(1, 0);
+                        return true;
+                    }
+                    case 265 -> {
+                        nudgeSelection(0, -1);
+                        return true;
+                    }
+                    case 264 -> {
+                        nudgeSelection(0, 1);
+                        return true;
+                    }
+                    default -> {
+                    }
+                }
+            }
+
             switch (event.key()) {
                 case 66 -> {
                     setTool(Tool.PENCIL);
@@ -1746,6 +1963,7 @@ public final class CapeEditorScreen extends Screen {
         ERASER,
         FILL,
         EYEDROPPER,
+        SELECT,
         LINE,
         RECTANGLE
     }
