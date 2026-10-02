@@ -3,6 +3,7 @@ package dev.loomstudios.client.render;
 import dev.loomstudios.client.network.ClientCosmeticSync;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.project.LoomProject;
+import dev.loomstudios.project.LoomProjectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.player.PlayerSkin;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -79,7 +81,14 @@ public final class PlayerCosmeticRenderer {
         }
 
         RuntimeCosmeticCache.RuntimeBundle bundle =
-                RuntimeCosmeticCache.getOrCompile(client, projectHash, project);
+                RuntimeCosmeticCache.getOrCompile(
+                        client,
+                        projectHash,
+                        project,
+                        preview == null
+                                ? null
+                                : preview.timelineTick()
+                );
 
         CachedSkin cached = SKINS.get(playerId);
 
@@ -160,10 +169,53 @@ public final class PlayerCosmeticRenderer {
             LoomProject project,
             Supplier<T> action
     ) {
-        String hash = ClientProjectWorkspace.isInitialized()
+        return withPreviewProjectInternal(
+                client,
+                project,
+                null,
+                action
+        );
+    }
+
+    public static <T> T withPreviewProjectAtTick(
+            Minecraft client,
+            LoomProject project,
+            int timelineTick,
+            Supplier<T> action
+    ) {
+        int clampedTick = Math.max(
+                0,
+                Math.min(
+                        project.animation().durationTicks(),
+                        timelineTick
+                )
+        );
+
+        return withPreviewProjectInternal(
+                client,
+                project,
+                clampedTick,
+                action
+        );
+    }
+
+    private static <T> T withPreviewProjectInternal(
+            Minecraft client,
+            LoomProject project,
+            Integer timelineTick,
+            Supplier<T> action
+    ) {
+        String baseHash = ClientProjectWorkspace.isInitialized()
                 && ClientProjectWorkspace.project() == project
                 ? ClientProjectWorkspace.projectHash()
                 : project.hash();
+
+        String hash = timelineTick == null
+                ? baseHash
+                : LoomProjectCodec.sha256(
+                        (baseHash + "#timeline-preview")
+                                .getBytes(StandardCharsets.UTF_8)
+                );
 
         if (previewProjectHash != null
                 && !previewProjectHash.equals(hash)
@@ -175,7 +227,11 @@ public final class PlayerCosmeticRenderer {
         }
 
         previewProjectHash = hash;
-        PREVIEW_OVERRIDE.set(new PreviewOverride(project, hash));
+        PREVIEW_OVERRIDE.set(new PreviewOverride(
+                project,
+                hash,
+                timelineTick
+        ));
 
         try {
             return action.get();
@@ -233,7 +289,8 @@ public final class PlayerCosmeticRenderer {
 
     private record PreviewOverride(
             LoomProject project,
-            String projectHash
+            String projectHash,
+            Integer timelineTick
     ) {
     }
 }

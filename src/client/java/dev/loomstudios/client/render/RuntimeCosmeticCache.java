@@ -30,8 +30,37 @@ public final class RuntimeCosmeticCache {
             String projectHash,
             LoomProject project
     ) {
+        return getOrCompile(
+                client,
+                projectHash,
+                project,
+                null
+        );
+    }
+
+    public static RuntimeBundle getOrCompile(
+            Minecraft client,
+            String projectHash,
+            LoomProject project,
+            Integer fixedTimelineTick
+    ) {
         RuntimeBundle existing = BUNDLES.get(projectHash);
         if (existing != null) {
+            if (fixedTimelineTick != null
+                    && !fixedTimelineTick.equals(
+                            existing.fixedTimelineTick
+                    )) {
+                existing.fixedTimelineTick = fixedTimelineTick;
+                existing.capeTimelineTick = fixedTimelineTick;
+                existing.elytraTimelineTick = fixedTimelineTick;
+                existing.legacyPhase = 0;
+                redrawCape(existing, fixedTimelineTick);
+                redrawElytra(existing, fixedTimelineTick);
+                redrawEmissive(existing, fixedTimelineTick);
+                existing.capeTexture.upload();
+                existing.elytraTexture.upload();
+                existing.emissiveTexture.upload();
+            }
             return existing;
         }
 
@@ -86,15 +115,19 @@ public final class RuntimeCosmeticCache {
                         project.cape().width(),
                         project.cape().height(),
                         false
-                )
+                ),
+                fixedTimelineTick
         );
 
+        int initialTimelineTick = fixedTimelineTick == null
+                ? 0
+                : fixedTimelineTick;
         bundle.legacyPhase = 0;
-        bundle.capeTimelineTick = 0;
-        bundle.elytraTimelineTick = 0;
-        redrawCape(bundle, 0);
-        redrawElytra(bundle, 0);
-        redrawEmissive(bundle, 0);
+        bundle.capeTimelineTick = initialTimelineTick;
+        bundle.elytraTimelineTick = initialTimelineTick;
+        redrawCape(bundle, initialTimelineTick);
+        redrawElytra(bundle, initialTimelineTick);
+        redrawEmissive(bundle, initialTimelineTick);
 
         bundle.capeTexture = new DynamicTexture(
                 () -> "Loom Studios cape " + suffix,
@@ -137,6 +170,10 @@ public final class RuntimeCosmeticCache {
         long gameTime = client.level.getGameTime();
 
         for (RuntimeBundle bundle : BUNDLES.values()) {
+            if (bundle.fixedTimelineTick != null) {
+                continue;
+            }
+
             int legacyPhase = (int)(
                     (gameTime
                             / bundle.project.runtime()
@@ -320,6 +357,7 @@ public final class RuntimeCosmeticCache {
         int legacyPhase = -1;
         int capeTimelineTick = -1;
         int elytraTimelineTick = -1;
+        Integer fixedTimelineTick;
 
         RuntimeBundle(
                 String projectHash,
@@ -331,7 +369,8 @@ public final class RuntimeCosmeticCache {
                 ClientAsset.ResourceTexture elytraAsset,
                 NativeImage capeImage,
                 NativeImage elytraImage,
-                NativeImage emissiveImage
+                NativeImage emissiveImage,
+                Integer fixedTimelineTick
         ) {
             this.projectHash = projectHash;
             this.project = project;
@@ -343,6 +382,7 @@ public final class RuntimeCosmeticCache {
             this.capeImage = capeImage;
             this.elytraImage = elytraImage;
             this.emissiveImage = emissiveImage;
+            this.fixedTimelineTick = fixedTimelineTick;
         }
     }
 }
