@@ -176,7 +176,8 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
         if (getHeight() > 140) graphics.drawCenteredString(
                 Minecraft.getInstance().font,
-                Component.literal("Drag to rotate  •  Wheel to zoom"),
+                Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(
+                        getWidth() < 190 ? "Drag · Scroll to zoom" : "Drag to rotate · Scroll to zoom",getWidth()-12)),
                 getX() + getWidth() / 2,
                 getBottom() - 12,
                 LoomUiTheme.TEXT_MUTED

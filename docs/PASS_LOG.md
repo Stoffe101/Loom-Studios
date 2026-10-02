@@ -12,7 +12,9 @@ Verification harness grows from 22 to 42 actual Minecraft captures: Cape/Elytra 
 
 First checkpoint `6c537d486888de3399f154e8840eb401e4ec7050`: clean build PASS, Actions #180 capture stopped at the long-layer fixture because 14 extra 4x Paint layers exceeded the existing serialized-size limit. The editor images before that fixture had bounded/nonoverlapping controls. Use standard resolution for the long-layer stress case, correct the wordmark spelling, balance Home recent/template heights, close replaced import textures on resize, and retain candidate-preview rotation. The runner also verifies editable/portable export round-trips, PNG dimensions and applied import pixels matching the candidate on both pages.
 
-Next: repeat clean CI, inspect all five screens against references at every profile, retain final evidence and synchronize canonical status.
+Second checkpoint `ee299ea7b0022632ae41e15a5c3bd557ae50f6e1`: Actions #181 clean build and all 42 captures PASS, including visible-widget nonoverlap and real export/import checks. Visual review caught the preview gesture hint spilling from Home's narrow panel and excessive empty Share space. Shorten the hint responsively, add actual Cape/Elytra PNG previews to Export, keep the capture cursor on chrome to avoid transient hover tooltips, and stop the runner before repeat shutdown ticks. Capture fixtures now include real converted wings for export preview inspection.
+
+Next: repeat CI for this polish, inspect final captures, retain evidence and synchronize canonical status.
 
 
 ## 2026-10-02 — Canvas geometry and bounded workspace repair

@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 42) { verifyWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 42) { pending=true; verifyWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -146,6 +146,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Single-pixel selection changed on release");
             }
             if (stage == 21) client.setScreen(new CapeEditorScreen(new LoomHomeScreen()));
+            org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
             pending = true;
             int captureStage = stage;
             // Allow several complete render frames after window resize and widget initialization.

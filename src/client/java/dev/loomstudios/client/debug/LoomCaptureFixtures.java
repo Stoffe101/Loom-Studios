@@ -30,7 +30,10 @@ final class LoomCaptureFixtures {
                 new LoomLayer(UUID.randomUUID(),"Night weave",true,1,BlendMode.NORMAL,false,base),
                 new LoomLayer(UUID.randomUUID(),"Starlight",true,1,BlendMode.NORMAL,true,stars),
                 new LoomLayer(UUID.randomUUID(),"Moon",true,1,BlendMode.NORMAL,true,moon));
-        return blank.withCape(new LoomCanvas(width,height,layers));
+        var project = blank.withCape(new LoomCanvas(width,height,layers));
+        var face = source(project);
+        return ProjectEdits.addElytraPaintLayer(project,"Moon wings",CapeToElytraConverter.convertOutsideFace(
+                face.pixels(),face.width(),face.height(),project.elytra()));
     }
     static PixelImage source(LoomProject project) {
         int[] atlas = dev.loomstudios.client.render.LoomTextureCompiler.compile(project.cape(),0,false,false);

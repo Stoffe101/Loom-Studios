@@ -6,6 +6,10 @@ import dev.loomstudios.client.project.LocalProjectLibrary;
 import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.sharing.LoomShareExportAdapter;
 import dev.loomstudios.client.ui.LoomButton;
+import dev.loomstudios.client.ui.LoomImagePreviewWidget;
+import dev.loomstudios.client.render.LoomTextureCompiler;
+import dev.loomstudios.image.PixelImage;
+import dev.loomstudios.project.AnimationChannel;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -38,6 +42,8 @@ public final class LoomCodesScreen extends Screen {
     private LoomProject previewProject;
 
     private LoomPlayerPreviewWidget previewWidget;
+    private LoomImagePreviewWidget capeTexturePreview, wingTexturePreview;
+    private PixelImage exportedCapeImage, exportedWingImage;
     private LoomPlayerPreviewWidget.Mode previewMode =
             LoomPlayerPreviewWidget.Mode.CAPE;
 
@@ -87,6 +93,8 @@ public final class LoomCodesScreen extends Screen {
 
     @Override
     protected void init() {
+        if(capeTexturePreview != null) capeTexturePreview.close();
+        if(wingTexturePreview != null) wingTexturePreview.close();
         exportControls.clear();
         importControls.clear();
         compactMode = LoomUiTheme.compact(width, height);
@@ -261,6 +269,16 @@ public final class LoomCodesScreen extends Screen {
                 LoomButton.Icon.ELYTRA,
                 this::exportElytra
         ));
+        int previewTop = y + buttonHeight + 10;
+        int previewHeight = contentBottom - previewTop - 7;
+        exportedCapeImage = new PixelImage(sourceProject.cape().width(),sourceProject.cape().height(),
+                LoomTextureCompiler.compileAnimated(sourceProject,AnimationChannel.CAPE,0,0,false));
+        exportedWingImage = new PixelImage(sourceProject.elytra().width(),sourceProject.elytra().height(),
+                LoomTextureCompiler.compileAnimated(sourceProject,AnimationChannel.ELYTRA,0,0,false));
+        capeTexturePreview = addRenderableWidget(new LoomImagePreviewWidget(left,previewTop,half,previewHeight,
+                Component.literal("Cape PNG"),() -> exportedCapeImage,() -> 0L));
+        wingTexturePreview = addRenderableWidget(new LoomImagePreviewWidget(left+half+gap,previewTop,right-left-half-gap,previewHeight,
+                Component.literal("Elytra PNG"),() -> exportedWingImage,() -> 0L));
     }
 
     private void buildImportControls() {
@@ -416,6 +434,8 @@ public final class LoomCodesScreen extends Screen {
         if (importTabButton != null) {
             importTabButton.setSelected(!exporting);
         }
+        if(capeTexturePreview != null) capeTexturePreview.visible = exporting;
+        if(wingTexturePreview != null) wingTexturePreview.visible = exporting;
         for (LoomButton button : exportControls) {
             button.visible = exporting;
         }
@@ -801,6 +821,12 @@ public final class LoomCodesScreen extends Screen {
                     false
             );
         }
+    }
+
+    @Override public void removed() {
+        if(capeTexturePreview != null) capeTexturePreview.close();
+        if(wingTexturePreview != null) wingTexturePreview.close();
+        super.removed();
     }
 
     private void goBack() {
