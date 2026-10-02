@@ -1,0 +1,83 @@
+# Loom Studios — Animation
+
+**Status:** Schema-v3 model/runtime/timeline MVP implemented; local visual-runtime verification pending.
+
+## Purpose
+
+Animation is editable project intent, not a stream of rendered frames. The authored timeline belongs in the `.loom` project, is synchronized as part of the normal content-addressed project blob, and is evaluated locally by each client.
+
+## Schema v3
+
+Schema v3 extends the schema-v2 typed-layer project with `LoomAnimation`.
+
+Project animation:
+- duration: 20..7200 ticks;
+- timeline loop;
+- playback speed: 0.25x..4.0x;
+- up to 64 tracks.
+
+Track:
+- stable UUID;
+- target layer UUID;
+- channel: Cape or Elytra;
+- effect;
+- enabled;
+- speed: 0.1x..8.0x;
+- loop;
+- 1..128 ordered keyframes.
+
+Keyframe:
+- timeline tick;
+- scalar value in the bounded animation value range.
+
+Older projects migrate explicitly: v1 -> v2 -> v3 and v2 -> v3. Migrated projects receive an 80-tick looping 1.0x empty timeline.
+
+## Reference integrity
+
+Tracks reference real layer UUIDs. `LoomProject` rejects a track whose target does not exist in its declared Cape/Elytra canvas. When a layer is deleted, `ProjectEdits` prunes its animation tracks before constructing the replacement canvas.
+
+## Current effects
+
+- Pulse: evaluated scalar multiplies layer alpha.
+- Scroll: moves the layer raster horizontally with wrapping.
+- Hue Shift: rotates hue continuously by the evaluated scalar value.
+- Moving Gradient: moves the layer raster vertically with wrapping in the current deterministic MVP.
+- Sparkle: deterministic pixel/tick hash with evaluated scalar density.
+- Emissive Glow: allows the track to participate in the emissive cape pass and scales emissive alpha.
+
+The old runtime hue-cycle flag remains supported only for legacy compatibility.
+
+## Elytra timeline authoring
+
+Reference target: `docs/references/ui/Loom_Studios_04_Elytra_Animation_Editor.webp`.
+
+The current work-mode hierarchy keeps the unfolded Elytra canvas dominant, docks a compact timeline underneath, and keeps 3D preview/layer authoring on the right.
+
+Current timeline controls:
+- Play / Pause;
+- scrub by clicking the timeline;
+- Loop / Once;
+- duration +/-;
+- project playback speed +/-;
+- Add Track;
+- select/enable/delete track;
+- cycle effect;
+- Add/Remove Keyframe;
+- scalar Value +/- at the scrubbed tick;
+- cycle track speed.
+
+The timeline renders one row per Elytra animation track, target layer + effect labels, keyframe markers, current-time cursor and scrolling for larger track counts.
+
+## Fixed-tick preview
+
+Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project state and fixed timeline ticks are allowed, but equipped/network state is never replaced or published. The preview hash remains stable while the scrub position changes, so texture contents update in place instead of creating a new texture identity for every frame.
+
+## Next animation work
+
+- standing/open/gliding preview-state controls;
+- direct drag-to-move keyframes;
+- richer effect-specific property UI;
+- Cape Editor timeline exposure;
+- richer Moving Gradient parameterization;
+- final visual polish against Reference 04;
+- local runtime verification at all mandatory GUI profiles.

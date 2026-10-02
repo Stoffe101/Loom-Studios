@@ -2,15 +2,15 @@
 
 ## Current gate
 
-Home + semantic Elytra Editor productization is merged, and the Elytra workflow-completion implementation is CI green.
+Home/Elytra workflow completion is merged. The schema-v3 animation timeline milestone is CI green on the current branch.
 
-Latest merged-main baseline entering the workflow-completion pass:
-- `52576d191f451b49436a97f66b4501b2bc85eb13`
-- GitHub Actions #133: **SUCCESS**
+Latest merged-main baseline entering animation:
+- `2eca773a0358344491fd3280f535feb3515268a0`
+- GitHub Actions #139: **SUCCESS**
 
-Current Elytra workflow-completion source checkpoint:
-- `cc55df2ba4b52907595a1d7d7cb7c48849059692`
-- GitHub Actions #137: **SUCCESS**
+Current animation milestone exact implementation head:
+- `c3e5ca49e4ecccbeaca7ad064a828c63c7720692`
+- GitHub Actions #147: **SUCCESS**
 
 Current pass source checkpoints:
 - `0cc3b219fcda2c8b4fb619db900545890e40764e` — Home shell — Actions #127 **SUCCESS**;
@@ -137,48 +137,77 @@ The remaining gate for visual DONE status is local runtime verification because 
 - shared Swatches/palette window;
 - compact layout at all mandatory GUI profiles.
 
+### Animation timeline
+- schema-v1 file migrates through v2 to v3 with an empty timeline;
+- schema-v2 file migrates to v3 without losing typed layers;
+- schema-v3 save/reopen preserves tracks/keyframes;
+- Add Track targets the selected Elytra layer;
+- track enable/disable;
+- effect cycling;
+- Add/Remove Keyframe;
+- keyframe scalar Value +/-;
+- track speed cycle;
+- timeline duration +/-;
+- project playback speed +/-;
+- timeline Loop/Once;
+- Play/Pause and scrub;
+- animation row scrolling with many tracks;
+- layer deletion removes its tracks;
+- Undo/Redo around animation edits;
+- fixed-tick 3D preview matches the scrubbed timeline position;
+- preview scrubbing does not equip/publish the dirty project;
+- Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow visually;
+- Elytra animation output at 1x / 2x / 4x;
+- compact timeline at all four mandatory GUI profiles.
 ## Next CI-safe product work
 
 Home reference shell and the semantic Elytra Editor MVP are implemented in this pass; local visual verification remains pending.
 
 Priority order:
 
-1. animation authoring schema + UI:
-   - tracks;
-   - keyframes;
-   - procedural effects;
-   - timeline;
-   - play / pause / loop / speed;
-2. Elytra preview-state polish:
+1. Elytra preview-state polish:
    - standing;
    - open;
    - gliding;
-3. project Loom Codes/sharing;
-4. final Cape/Home/Smart Import/Elytra reference-fidelity hardening;
+2. project Loom Codes/sharing:
+   - local portable project code first;
+   - copy/paste/import/preview UX;
+   - visibility/permission shell without pretending a hosted service already exists;
+3. Cape animation exposure/refinement where useful;
+4. final Cape/Home/Smart Import/Elytra/Animation reference-fidelity hardening;
 5. final compatibility/performance matrix.
 
-## Schema-v2 status
+## Schema-v3 status
 
 Implemented:
-- explicit v1 -> v2 migration;
-- stable layer-kind identifiers;
-- stable schema-v2 blend identifiers;
-- Paint layer payload;
-- Image layer payload;
-- Gradient layer payload;
+- explicit v1 -> v2 -> v3 migration;
+- all schema-v2 typed layer data unchanged;
+- Paint / Image / Gradient payloads;
 - persistent layer lock;
 - normalized transforms;
 - embedded bounded image source;
-- persistent processing settings.
+- persistent processing settings;
+- project animation duration / loop / playback speed;
+- bounded animation tracks;
+- Cape/Elytra channel;
+- stable effect id;
+- target layer UUID;
+- per-track enabled/speed/loop;
+- ordered keyframes.
 
-Future schema work should extend v2 deliberately for:
-- animation targeting;
-- effect/reference layer metadata;
+Current animation bounds:
+- up to 64 tracks per project;
+- up to 128 keyframes per track;
+- 20..7200 tick project duration;
+- 0.25x..4.0x project playback speed;
+- 0.1x..8.0x track speed;
+- bounded scalar keyframe values.
+
+Future schema changes still require explicit versioning/migration for:
+- richer effect-specific parameter payloads;
+- reference/effect layer metadata;
 - external/content-addressed assets if ever needed;
 - portable project sharing.
-
-Do not introduce new byte-layout meaning without explicit migration/versioning.
-
 ## Crop clarification
 
 Minecraft cape/Elytra UV dimensions remain fixed.
