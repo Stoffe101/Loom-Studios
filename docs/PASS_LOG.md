@@ -1,5 +1,66 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Schema v2 + functional Smart Import
+
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
+
+Exact green implementation checkpoint: `7a568f736f273328a3b55d1ea28587832cd45282`  
+GitHub Actions #113: **SUCCESS**
+
+Implemented schema v2:
+- explicit schema-v1 -> schema-v2 migration;
+- stable layer-kind IDs;
+- stable schema-v2 blend IDs;
+- Paint / Image / Gradient layers;
+- persistent layer lock;
+- normalized typed-layer transforms;
+- bounded embedded Image sources;
+- persistent Image processing settings;
+- Gradient transform/stop/repeat/dither data;
+- shared typed-layer runtime compilation.
+
+Implemented Smart Import:
+- PNG file picker/decoder adapter with bounded decode/persistence rules;
+- Home + Cape Editor import entry points;
+- Original / Processed / Cape Texture previews;
+- isolated 3D candidate-project preview;
+- Fit / Stretch / Crop / Center;
+- Keep Aspect;
+- move / scale / arbitrary persistent rotation;
+- Mirror H / Mirror V;
+- Direct / Pixel Art / Outline Only / Monochrome / Palette Limited / Posterize;
+- Brightness / Contrast / Saturation;
+- Reduce Colors;
+- Floyd-Steinberg Dither;
+- Loom Swatches palette integration;
+- Apply as editable Image layer;
+- reopen/edit existing Image layers.
+
+Runtime/compiler:
+- typed Image/Gradient layers compile through the same visibility/opacity/blend/emissive path as Paint layers;
+- typed-layer placement survives 1x/2x/4x backing-resolution changes;
+- locked/non-Paint layers reject paint-tool pixel mutation;
+- candidate import preview does not cross the equip/network boundary.
+
+Automated coverage includes:
+- processing mode behavior and stable IDs;
+- Outline Only;
+- Pixel Art color bounds;
+- Palette Limited alpha preservation;
+- v1 -> v2 migration;
+- typed-layer codec round trip;
+- persistent lock;
+- Image rasterization;
+- Gradient rasterization;
+- typed-layer resolution stability;
+- paint mutation rejection for locked/typed layers.
+
+Local visual/runtime verification is intentionally pending because the user is away from the development PC.
+
+---
+
+
+
 ## 2026-10-02 — Smart Import color reduction + dithering foundation
 
 **Status: CI PASS**
