@@ -493,6 +493,7 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 
 ## Selection / transform core
 
+Automated/common-core:
 - PixelSelection normalizes drag endpoints through `between(...)`
 - invalid negative/inverted direct selections are rejected
 - selection outside active semantic face is rejected
@@ -506,3 +507,38 @@ Pass criteria are defined in `UI_COMPATIBILITY.md`.
 - pixels moved outside semantic face are clipped rather than touching other UV faces
 - transform affects selected layer only
 - transform participates in normal ProjectSession history once exposed through editor UI
+
+Editor/runtime checks:
+- Select drag creates the expected inclusive region
+- persistent outline matches selected pixels at 1x / 2x / 4x
+- Move Left / Right / Up / Down moves selected-layer pixels only
+- arrow-key nudge matches button nudge
+- user-facing nudge clamps the whole selection at semantic-face edges
+- Flip H / Flip V update one undoable project edit
+- changing face clears the temporary selection
+- changing project resolution clears the temporary selection
+- selection remains aligned after zoom and pan
+- compact tool rail remains usable after selection controls are added
+
+
+## Equipped/editor state regression checks
+
+- dirty editor paint does not change the local world cosmetic before Save + Equip
+- dirty editor paint does not announce a new multiplayer hash
+- Save without Equip keeps the previous equipped world/network snapshot
+- Save + Equip changes the equipped world/network snapshot
+- scoped 3D Preview still renders dirty editor state
+
+## Emissive authoring regression checks
+
+Automated:
+- enabling the first emissive cape layer enables schema-v1 runtime emissive master
+- disabling the final emissive cape layer disables the runtime emissive master
+
+Runtime:
+- blank editor project has no glow
+- toggling one layer Emissive On produces only that authored layer in the glow mask
+- toggling the final emissive layer Off removes glow
+- no synthetic SPIKE shimmer stripe appears
+- shader OFF base cape remains visible
+- shader ON base cape remains visible even if optional glow behavior differs
