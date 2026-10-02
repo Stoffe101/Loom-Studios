@@ -672,3 +672,49 @@ Operations performed on that selection are immutable project edits and therefore
 - stay inside the currently active semantic cape face.
 
 This separation keeps project files free of accidental UI-session state while still making selection transforms deterministic and undoable.
+
+## ADR-064 — Multiplayer publication reads equipped state, never dirty editor state
+**Status:** Accepted / implemented
+
+The local editable `ProjectSession` may be dirty and is allowed to feed the scoped editor preview.
+
+World rendering and multiplayer publication must instead use:
+- `ClientProjectWorkspace.equippedProject()`;
+- `ClientProjectWorkspace.equippedProjectHash()`.
+
+`ClientCosmeticSync` must not announce or upload dirty editor content.
+
+This restores the boundary established by ADR-035 and makes Save versus Save + Equip meaningful.
+
+## ADR-065 — Schema-v1 emissive master follows emissive cape layers
+**Status:** Accepted / implemented
+
+Schema v1 already stores both:
+- per-layer `emissive`;
+- project runtime `emissiveEnabled`.
+
+Until schema v2 can simplify effect metadata, editor operations keep these values consistent:
+- at least one emissive cape layer -> runtime emissive master ON;
+- no emissive cape layers -> runtime emissive master OFF.
+
+Blank editor projects still begin with no emissive layers and therefore no glow.
+
+The synthetic SPIKE-06 shimmer stripe is not valid authored project output and has been removed.
+
+## ADR-066 — Selection UI is temporary editor state and nudge is non-destructive to face bounds
+**Status:** Accepted / implemented
+
+`PixelSelection` remains non-serialized editor state.
+
+The Cape Editor may:
+- drag-select;
+- show a persistent outline;
+- move/nudge the selected pixels;
+- flip horizontally/vertically;
+- clear the selection.
+
+Common transform primitives retain clipping behavior for reusable low-level operations.
+
+The user-facing nudge controls clamp movement so the full selection remains inside the active semantic cape face. This avoids accidental pixel loss from a one-pixel nudge at an edge.
+
+Changing semantic face or project resolution clears the temporary selection because its coordinates no longer describe the same editing surface.
