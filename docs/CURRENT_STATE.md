@@ -306,7 +306,9 @@ Still missing:
 
 ## Smart Import
 
-**User-facing workspace not started / pure processing foundation active.**
+**User-facing workspace not started / pure processing foundation CI green.**
+
+Exact verified Smart Import core checkpoint: `c7b3c4107543f42a30c214e7aa41942d59281249` — GitHub Actions #81 **SUCCESS**.
 
 Implemented pure-core prerequisites:
 - immutable bounded `PixelImage`;
