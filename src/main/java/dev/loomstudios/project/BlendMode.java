@@ -1,21 +1,30 @@
 package dev.loomstudios.project;
 
+import java.util.Arrays;
+
 /**
- * Stable serialized layer blend modes.
+ * Layer blend modes.
  *
- * <p>Append new values only. The schema-v1 codec stores the enum ordinal.</p>
+ * <p>Schema v1 stored enum ordinals, so existing values must never be
+ * reordered. Schema v2+ stores stable string ids.</p>
  */
 public enum BlendMode {
-    NORMAL("Normal"),
-    ADD("Add / Glow"),
-    SCREEN("Screen"),
-    MULTIPLY("Multiply"),
-    OVERLAY("Overlay");
+    NORMAL("normal", "Normal"),
+    ADD("add", "Add / Glow"),
+    SCREEN("screen", "Screen"),
+    MULTIPLY("multiply", "Multiply"),
+    OVERLAY("overlay", "Overlay");
 
+    private final String id;
     private final String displayName;
 
-    BlendMode(String displayName) {
+    BlendMode(String id, String displayName) {
+        this.id = id;
         this.displayName = displayName;
+    }
+
+    public String id() {
+        return id;
     }
 
     public String displayName() {
@@ -25,5 +34,14 @@ public enum BlendMode {
     public BlendMode next() {
         BlendMode[] values = values();
         return values[(ordinal() + 1) % values.length];
+    }
+
+    public static BlendMode fromId(String id) {
+        return Arrays.stream(values())
+                .filter(value -> value.id.equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown blend mode " + id
+                ));
     }
 }
