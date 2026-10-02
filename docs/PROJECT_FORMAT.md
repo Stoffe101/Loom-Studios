@@ -105,66 +105,132 @@ Portable codes require strict maximum sizes and decoding limits.
 Every saved project declares a schema version. Loading an old project runs explicit migrations rather than silently interpreting old fields as new semantics.
 
 
-## Implemented schema v1 foundation
+## Implemented schema v2
 
-The first real project model is now implemented.
+Schema v2 is now the current project format.
 
-Current binary v1 contents:
+Current binary contents:
 - magic header `LOOM`;
 - schema version;
 - project UUID;
 - project name;
-- runtime settings proven by the spikes;
+- created/modified timestamps;
+- runtime settings;
 - cape canvas;
 - Elytra canvas;
-- ordered paint layers.
+- ordered typed layers.
 
-Current paint-layer fields:
+### Common layer fields
+
+All schema-v2 layers store:
 - stable UUID;
 - name;
 - visible;
 - opacity;
-- blend mode;
+- stable blend-mode string id;
 - emissive flag;
-- ARGB pixel data.
+- persistent lock flag;
+- stable layer-kind string id.
 
-Current limits are deliberately bounded:
+Current layer kinds:
+- `paint`;
+- `image`;
+- `gradient`.
+
+### Paint layer
+
+Stores:
+- exact ARGB pixel payload matching the current canvas dimensions.
+
+### Image layer
+
+Stores:
+- bounded embedded ARGB source image;
+- normalized source crop;
+- normalized destination transform;
+- normalized semantic clip;
+- processing mode id;
+- Brightness;
+- Contrast;
+- Saturation;
+- optional color limit;
+- Dither flag;
+- Posterize levels;
+- optional palette.
+
+Embedded source constraints:
+- maximum 256 px per dimension in the persisted project;
+- the temporary Smart Import processing pipeline may accept larger images under its separate safety limits;
+- import downscales the embedded source with nearest-neighbor sampling when required;
+- the final encoded project must still fit the 1 MiB project limit.
+
+### Gradient layer
+
+Stores:
+- stable Linear/Radial type id;
+- 2..16 ordered color stops;
+- normalized transform;
+- normalized semantic clip;
+- repeat flag;
+- dither flag.
+
+### Blend compatibility
+
+Schema v1 stored blend enum ordinals.
+
+Those ordinals remain frozen compatibility data for v1 decoding:
+- 0 Normal;
+- 1 Add / Glow;
+- 2 Screen;
+- 3 Multiply;
+- 4 Overlay.
+
+Schema v2 stores stable blend string ids and is therefore no longer dependent on enum ordering.
+
+### Current bounded limits
+
 - 1 MiB serialized project;
-- 256 x 256 maximum canvas dimension;
+- 256 x 256 maximum Loom canvas dimension;
 - 64 layers per canvas;
-- bounded project/layer names.
+- 256 px maximum embedded Image-layer source dimension;
+- up to 256 Image-layer palette colors;
+- up to 16 Gradient stops;
+- bounded project/layer/string fields.
 
-Schema v1 currently implements these serialized blend modes:
-- Normal;
-- Add / Glow;
-- Screen;
-- Multiply;
-- Overlay.
+### Migration table
 
-Their enum ordinals are compatibility data in schema v1 and are pinned by automated tests. New schema-v1 modes may only be appended. A future schema should use stable identifiers instead of enum ordinals.
-
-The project-level emissive runtime flag remains part of schema v1 for compatibility. Editor operations keep it synchronized with whether any cape layer is marked emissive, while per-layer emissive flags are the render-time authority. This also keeps older pre-fix projects usable if their stored master flag and layer flags disagree. Normal blank projects start with no glow, and synthetic SPIKE-only shimmer is not part of real project output.
-
-The local library uses `<gameDir>/loom-studios/projects/<project UUID>.loom`.
-
-The development cosmetics used by the runtime/network proof are now generated as real schema-v1 projects, encoded through this codec, SHA-256 addressed, transferred, decoded and compiled locally.
-
-
-## Project metadata and load/migration policy
-
-Schema v1 now stores:
-- created timestamp (epoch milliseconds);
-- modified timestamp (epoch milliseconds).
-
-The editor session updates the modified timestamp when a real project edit is committed.
-
-All project loading goes through `LoomProjectMigrations`.
+All loading still passes through `LoomProjectMigrations`.
 
 Current migration table:
-- schema 1 -> decode directly as current schema;
+- schema 1 -> decode with the original paint-only layout, then explicitly migrate to schema 2;
+- schema 2 -> decode directly;
 - every other schema -> reject explicitly.
 
-There are no legacy public schemas yet. When schema 2 is introduced, schema-1 migration must be implemented here before old projects are considered supported.
+A schema-v1 migration preserves:
+- project identity/name;
+- timestamps;
+- runtime settings;
+- cape/Elytra dimensions;
+- ordered Paint layers;
+- visibility/opacity/blend/emissive;
+- ARGB pixels.
+
+Migrated v1 Paint layers begin unlocked because lock metadata did not exist in v1.
+
+### Emissive compatibility
+
+Per-layer emissive flags remain the render-time authority.
+
+The runtime project-level emissive flag is retained as a compatibility mirror while the existing runtime model uses it. Editor operations synchronize that mirror with whether any cape layer is emissive.
+
+### Local persistence
+
+The local library remains:
+
+`<gameDir>/loom-studios/projects/<project UUID>.loom`
+
+Projects are still deterministically encoded and SHA-256 addressed for runtime/network cache identity.
+
 
 ## Persistence/session lifecycle
 
