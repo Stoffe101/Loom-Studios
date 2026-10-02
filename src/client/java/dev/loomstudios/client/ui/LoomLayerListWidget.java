@@ -1,8 +1,8 @@
 package dev.loomstudios.client.ui;
 
 import dev.loomstudios.project.LayerKind;
+import dev.loomstudios.project.LoomCanvas;
 import dev.loomstudios.project.LoomLayer;
-import dev.loomstudios.project.LoomProject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -30,7 +30,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
     private static final int VISIBILITY_HIT_WIDTH = 18;
     private static final int LOCK_HIT_WIDTH = 20;
 
-    private final Supplier<LoomProject> projectSupplier;
+    private final Supplier<LoomCanvas> canvasSupplier;
     private final Supplier<UUID> selectedLayerSupplier;
     private final Consumer<UUID> onSelect;
     private final Consumer<UUID> onToggleVisibility;
@@ -43,14 +43,14 @@ public final class LoomLayerListWidget extends AbstractWidget {
             int y,
             int width,
             int height,
-            Supplier<LoomProject> projectSupplier,
+            Supplier<LoomCanvas> canvasSupplier,
             Supplier<UUID> selectedLayerSupplier,
             Consumer<UUID> onSelect,
             Consumer<UUID> onToggleVisibility,
             Consumer<UUID> onToggleLock
     ) {
         super(x, y, width, height, Component.literal("Layers"));
-        this.projectSupplier = Objects.requireNonNull(projectSupplier);
+        this.canvasSupplier = Objects.requireNonNull(canvasSupplier);
         this.selectedLayerSupplier = Objects.requireNonNull(selectedLayerSupplier);
         this.onSelect = Objects.requireNonNull(onSelect);
         this.onToggleVisibility = Objects.requireNonNull(onToggleVisibility);
@@ -88,7 +88,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                 false
         );
 
-        List<LoomLayer> layers = projectSupplier.get().cape().layers();
+        List<LoomLayer> layers = canvasSupplier.get().layers();
         clampScroll(layers.size());
 
         int visibleRows = visibleRows();
@@ -268,7 +268,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
 
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
-        List<LoomLayer> layers = projectSupplier.get().cape().layers();
+        List<LoomLayer> layers = canvasSupplier.get().layers();
         int localY = (int)event.y() - getY() - HEADER_HEIGHT;
 
         if (localY < 0) {
@@ -305,7 +305,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
             return false;
         }
 
-        List<LoomLayer> layers = projectSupplier.get().cape().layers();
+        List<LoomLayer> layers = canvasSupplier.get().layers();
         int max = Math.max(0, layers.size() - visibleRows());
 
         scrollRows = Math.max(

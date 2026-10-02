@@ -5,6 +5,7 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
 import dev.loomstudios.client.ui.LoomElytraCanvasWidget;
+import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.CanvasResolution;
@@ -37,6 +38,11 @@ public final class ElytraEditorScreen extends Screen {
     private LoomElytraCanvasWidget canvasWidget;
     private LoomColorPickerWidget colorPicker;
     private LoomPlayerPreviewWidget previewWidget;
+    private LoomLayerListWidget layerListWidget;
+
+    private LoomButton layerAddButton;
+    private LoomButton layerDuplicateButton;
+    private LoomButton layerDeleteButton;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
@@ -64,7 +70,7 @@ public final class ElytraEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        ensureSelectedPaintLayer();
+        ensureSelectedLayerExists();
 
         int margin = Math.max(8, Math.min(14, this.width / 70));
         shellLeft = margin;
@@ -159,25 +165,77 @@ public final class ElytraEditorScreen extends Screen {
         );
         addRenderableWidget(this.colorPicker);
 
-        int previewHeight = Math.max(
-                100,
-                shellBottom - contentTop - 34
+        int rightWidth = previewRight - previewLeft;
+        int rightHeight = shellBottom - contentTop - 7;
+        int layerListHeight = Math.max(
+                72,
+                Math.min(96, rightHeight / 3)
         );
+        int actionHeight = 20;
+        int previewHeight = Math.max(
+                84,
+                rightHeight - layerListHeight - actionHeight * 2 - 18
+        );
+
         this.previewWidget = new LoomPlayerPreviewWidget(
                 previewLeft,
                 contentTop,
-                previewRight - previewLeft,
+                rightWidth,
                 previewHeight,
                 ClientProjectWorkspace::project,
                 LoomPlayerPreviewWidget.Mode.ELYTRA
         );
         addRenderableWidget(this.previewWidget);
 
+        int layerTop = contentTop + previewHeight + 6;
+        this.layerListWidget = new LoomLayerListWidget(
+                previewLeft,
+                layerTop,
+                rightWidth,
+                layerListHeight,
+                () -> ClientProjectWorkspace.project().elytra(),
+                () -> selectedLayerId,
+                this::selectLayer,
+                this::toggleLayerVisibility,
+                this::toggleLayerLock
+        );
+        addRenderableWidget(this.layerListWidget);
+
+        int actionsTop = layerTop + layerListHeight + 5;
+        int third = Math.max(38, (rightWidth - 8) / 3);
+        this.layerAddButton = new LoomButton(
+                previewLeft,
+                actionsTop,
+                third,
+                actionHeight,
+                Component.literal("+ Layer"),
+                this::addLayer
+        );
+        this.layerDuplicateButton = new LoomButton(
+                previewLeft + third + 4,
+                actionsTop,
+                third,
+                actionHeight,
+                Component.literal("Copy"),
+                this::duplicateLayer
+        );
+        this.layerDeleteButton = new LoomButton(
+                previewLeft + third * 2 + 8,
+                actionsTop,
+                Math.max(38, rightWidth - third * 2 - 8),
+                actionHeight,
+                Component.literal("Delete"),
+                this::deleteLayer
+        );
+        addRenderableWidget(this.layerAddButton);
+        addRenderableWidget(this.layerDuplicateButton);
+        addRenderableWidget(this.layerDeleteButton);
+
         addRenderableWidget(new LoomButton(
                 previewLeft,
-                contentTop + previewHeight + 6,
-                previewRight - previewLeft,
-                20,
+                actionsTop + actionHeight + 5,
+                rightWidth,
+                actionHeight,
                 Component.literal("Reset 3D View"),
                 this.previewWidget::resetView
         ));
@@ -355,8 +413,8 @@ public final class ElytraEditorScreen extends Screen {
     }
 
     private void editWing(ElytraWing wing, int x, int y) {
-        LoomLayer layer = selectedPaintLayer();
-        if (layer == null || layer.locked()) {
+        LoomLayer layer = selectedLayer();
+        if (layer == null || !layer.editableAsPaint()) {
             return;
         }
 
@@ -411,7 +469,14 @@ public final class ElytraEditorScreen extends Screen {
     }
 
     private void toggleLock() {
-        LoomLayer layer = selectedPaintLayer();
+        ensureSelectedLayerExists();
+        if (selectedLayerId != null) {
+            toggleLayerLock(selectedLayerId);
+        }
+    }
+
+    private void toggleLayerLock(UUID layerId) {
+        LoomLayer layer = findLayer(layerId);
         if (layer == null) {
             return;
         }
@@ -419,22 +484,119 @@ public final class ElytraEditorScreen extends Screen {
         ClientProjectWorkspace.apply(project ->
                 ProjectEdits.setElytraLayerLocked(
                         project,
-                        selectedLayerId,
+                        layerId,
                         !layer.locked()
                 )
         );
         updateButtonStates();
     }
 
+    private void toggleLayerVisibility(UUID layerId) {
+        LoomLayer layer = findLayer(layerId);
+        if (layer == null) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setElytraLayerVisible(
+                        project,
+                        layerId,
+                        !layer.visible()
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void selectLayer(UUID layerId) {
+        if (findLayer(layerId) == null) {
+            return;
+        }
+        selectedLayerId = layerId;
+        updateButtonStates();
+    }
+
+    private void addLayer() {
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.addElytraLayer(project, "Wing Layer")
+        );
+        selectedLayerId = result.elytra().layers().getLast().id();
+        updateButtonStates();
+    }
+
+    private void duplicateLayer() {
+        ensureSelectedLayerExists();
+        if (selectedLayerId == null) {
+            return;
+        }
+
+        var before = ClientProjectWorkspace.project().elytra().layers();
+        int index = -1;
+        for (int i = 0; i < before.size(); i++) {
+            if (before.get(i).id().equals(selectedLayerId)) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            return;
+        }
+
+        int originalIndex = index;
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.duplicateElytraLayer(
+                        project,
+                        selectedLayerId
+                )
+        );
+        selectedLayerId = result.elytra()
+                .layers()
+                .get(originalIndex + 1)
+                .id();
+        updateButtonStates();
+    }
+
+    private void deleteLayer() {
+        ensureSelectedLayerExists();
+        var before = ClientProjectWorkspace.project().elytra().layers();
+        if (selectedLayerId == null || before.size() <= 1) {
+            return;
+        }
+
+        int index = 0;
+        for (int i = 0; i < before.size(); i++) {
+            if (before.get(i).id().equals(selectedLayerId)) {
+                index = i;
+                break;
+            }
+        }
+
+        int oldIndex = index;
+        var result = ClientProjectWorkspace.apply(project ->
+                ProjectEdits.removeElytraLayer(
+                        project,
+                        selectedLayerId
+                )
+        );
+        int nextIndex = Math.min(
+                oldIndex,
+                result.elytra().layers().size() - 1
+        );
+        selectedLayerId = result.elytra()
+                .layers()
+                .get(nextIndex)
+                .id();
+        updateButtonStates();
+    }
+
     private void undo() {
         ClientProjectWorkspace.undo();
-        ensureSelectedPaintLayer();
+        ensureSelectedLayerExists();
         updateButtonStates();
     }
 
     private void redo() {
         ClientProjectWorkspace.redo();
-        ensureSelectedPaintLayer();
+        ensureSelectedLayerExists();
         updateButtonStates();
     }
 
@@ -460,17 +622,10 @@ public final class ElytraEditorScreen extends Screen {
     }
 
     private void ensureSelectedPaintLayer() {
-        if (!ClientProjectWorkspace.isInitialized()) {
-            selectedLayerId = null;
-            return;
-        }
+        ensureSelectedLayerExists();
 
-        boolean exists = selectedLayerId != null
-                && ClientProjectWorkspace.project().elytra().layers().stream()
-                .anyMatch(layer -> layer.id().equals(selectedLayerId)
-                        && layer.kind() == LayerKind.PAINT);
-
-        if (exists) {
+        LoomLayer current = selectedLayer();
+        if (current != null && current.kind() == LayerKind.PAINT) {
             return;
         }
 
@@ -481,17 +636,47 @@ public final class ElytraEditorScreen extends Screen {
                 .filter(layer -> layer.kind() == LayerKind.PAINT)
                 .findFirst()
                 .map(LoomLayer::id)
-                .orElse(null);
+                .orElse(selectedLayerId);
     }
 
-    private LoomLayer selectedPaintLayer() {
-        ensureSelectedPaintLayer();
-        if (selectedLayerId == null) {
+    private void ensureSelectedLayerExists() {
+        if (!ClientProjectWorkspace.isInitialized()
+                || ClientProjectWorkspace.project()
+                        .elytra()
+                        .layers()
+                        .isEmpty()) {
+            selectedLayerId = null;
+            return;
+        }
+
+        boolean exists = selectedLayerId != null
+                && findLayer(selectedLayerId) != null;
+        if (!exists) {
+            selectedLayerId = ClientProjectWorkspace.project()
+                    .elytra()
+                    .layers()
+                    .getLast()
+                    .id();
+        }
+    }
+
+    private LoomLayer selectedLayer() {
+        ensureSelectedLayerExists();
+        return selectedLayerId == null
+                ? null
+                : findLayer(selectedLayerId);
+    }
+
+    private LoomLayer findLayer(UUID layerId) {
+        if (layerId == null || !ClientProjectWorkspace.isInitialized()) {
             return null;
         }
 
-        return ClientProjectWorkspace.project().elytra().layers().stream()
-                .filter(layer -> layer.id().equals(selectedLayerId))
+        return ClientProjectWorkspace.project()
+                .elytra()
+                .layers()
+                .stream()
+                .filter(layer -> layer.id().equals(layerId))
                 .findFirst()
                 .orElse(null);
     }
@@ -504,8 +689,12 @@ public final class ElytraEditorScreen extends Screen {
         CanvasResolution resolution = CanvasResolution.fromCanvas(
                 ClientProjectWorkspace.project().elytra()
         );
-        LoomLayer layer = selectedPaintLayer();
-        boolean editable = layer != null && !layer.locked();
+        LoomLayer layer = selectedLayer();
+        boolean editable = layer != null && layer.editableAsPaint();
+        int layerCount = ClientProjectWorkspace.project()
+                .elytra()
+                .layers()
+                .size();
 
         if (linkButton != null) {
             linkButton.setMessage(Component.literal(
@@ -553,6 +742,19 @@ public final class ElytraEditorScreen extends Screen {
                                     ? "On"
                                     : "Off")
             ));
+        }
+        if (layerAddButton != null) {
+            layerAddButton.active =
+                    layerCount < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+        }
+        if (layerDuplicateButton != null) {
+            layerDuplicateButton.active =
+                    layer != null
+                            && layerCount
+                            < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+        }
+        if (layerDeleteButton != null) {
+            layerDeleteButton.active = layer != null && layerCount > 1;
         }
         if (undoButton != null) {
             undoButton.active = ClientProjectWorkspace.session().canUndo();
