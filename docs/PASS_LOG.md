@@ -2,7 +2,16 @@
 
 ## 2026-10-02 — Smart Import color reduction + dithering foundation
 
-**Status: IMPLEMENTED / CI PENDING**
+**Status: IMPLEMENTED / CI RETEST PENDING**
+
+Initial exact head `62d6a4a85322b067a11c79ccec1415b74cd08ab1` failed GitHub Actions #84 in `:compileJava`.
+
+Cause:
+- Java generic inference treated the median-cut comparator lambda parameter as `Object` in a chained `Comparator.comparingInt(...).thenComparingInt(...)` expression.
+
+Correction:
+- explicitly type the comparator lambda parameter as `ColorPoint`;
+- no quantization/dithering behavior changed.
 
 Added deterministic pure-core processing:
 - bounded Reduce Colors palette extraction;
