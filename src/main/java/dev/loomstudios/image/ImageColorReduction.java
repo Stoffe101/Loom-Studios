@@ -492,7 +492,7 @@ public final class ImageColorReduction {
             List<ColorPoint> sorted = new ArrayList<>(points);
             sorted.sort(
                     Comparator.comparingInt(
-                            point -> channel.value(point)
+                            (ColorPoint point) -> channel.value(point)
                     ).thenComparingInt(ColorPoint::binIndex)
             );
 
