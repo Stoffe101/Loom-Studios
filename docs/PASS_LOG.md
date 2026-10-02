@@ -1,5 +1,32 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Smart Import color reduction + dithering foundation
+
+**Status: IMPLEMENTED / CI PENDING**
+
+Added deterministic pure-core processing:
+- bounded Reduce Colors palette extraction;
+- 5-bit/channel fixed histogram to avoid unbounded unique-color memory;
+- weighted color-box splitting;
+- nearest-palette RGB mapping with source alpha preservation;
+- Palette Limited mapping primitive;
+- Posterize;
+- Monochrome;
+- Floyd-Steinberg dithering;
+- dithered Reduce Colors.
+
+Transparency behavior:
+- fully transparent source pixels remain byte-for-byte unchanged;
+- Floyd-Steinberg error is not diffused into or through fully transparent pixels;
+- semi-transparent pixels preserve their source alpha.
+
+Automated tests cover determinism, color-count bounds, alpha preservation, palette mapping, posterization, monochrome, transparency barriers, invalid limits and dithered color containment.
+
+No local visual verification is required for this pure common-core slice.
+
+---
+
+
 ## 2026-10-02 — Smart Import transform + color-adjustment foundation
 
 **Status: CI PASS**
