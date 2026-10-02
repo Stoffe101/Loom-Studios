@@ -141,6 +141,7 @@ The eventual UI may present friendlier slider labels/percentages while mapping t
 
 Before PNG loading is exposed:
 - inspect dimensions before allocating large processing buffers where the decoder permits;
+- keep crop/placement arithmetic overflow-safe even for hostile coordinates;
 - reject unsupported/oversized images cleanly;
 - enforce decompressed pixel bounds;
 - preserve alpha;
@@ -172,6 +173,8 @@ Current tests cover:
 - centered Crop raster output;
 - oversized Center clipping;
 - invalid custom source placement rejection;
+- overflow-safe crop/source-rectangle bounds checks;
+- extreme off-screen destination clipping without integer wraparound;
 - zero color-adjustment stability;
 - brightness alpha preservation;
 - full desaturation;
