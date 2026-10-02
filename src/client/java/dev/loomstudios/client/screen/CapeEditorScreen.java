@@ -1048,7 +1048,10 @@ public final class CapeEditorScreen extends Screen {
             ));
         }
 
-        boolean hasSelection = selection != null;
+        boolean editablePaintSelection = workspaceState != null
+                && !workspaceState.project().cape().layers().isEmpty()
+                && selectedLayer().editableAsPaint();
+        boolean hasSelection = selection != null && editablePaintSelection;
         if (selectionClearButton != null) {
             selectionClearButton.active = hasSelection;
         }
@@ -1154,6 +1157,34 @@ public final class CapeEditorScreen extends Screen {
             }
 
             LoomLayer layer = selectedLayer();
+            boolean editablePaint = layer.editableAsPaint();
+            boolean editableGradient =
+                    layer.kind() == LayerKind.GRADIENT && !layer.locked();
+
+            if (pencilButton != null) {
+                pencilButton.active = editablePaint;
+            }
+            if (eraserButton != null) {
+                eraserButton.active = editablePaint;
+            }
+            if (fillButton != null) {
+                fillButton.active = editablePaint;
+            }
+            if (lineButton != null) {
+                lineButton.active = editablePaint;
+            }
+            if (rectangleButton != null) {
+                rectangleButton.active = editablePaint;
+            }
+            if (rectangleModeButton != null) {
+                rectangleModeButton.active = editablePaint;
+            }
+            if (selectButton != null) {
+                selectButton.active = editablePaint;
+            }
+            if (symmetryButton != null) {
+                symmetryButton.active = editablePaint;
+            }
 
             if (layerDeleteButton != null) {
                 layerDeleteButton.active = layers.size() > 1;
@@ -1164,6 +1195,14 @@ public final class CapeEditorScreen extends Screen {
             }
             if (layerAddButton != null) {
                 layerAddButton.active =
+                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerGradientAddButton != null) {
+                layerGradientAddButton.active =
+                        layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            }
+            if (layerImportButton != null) {
+                layerImportButton.active =
                         layers.size() < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
             }
             if (layerUpButton != null) {
@@ -1204,6 +1243,56 @@ public final class CapeEditorScreen extends Screen {
                         )
                 );
             }
+            if (layerLockButton != null) {
+                layerLockButton.setMessage(Component.literal(
+                        "Lock: " + (layer.locked() ? "On" : "Off")
+                ));
+            }
+
+            GradientLayerData gradient = layer.gradientData();
+            if (gradientTypeButton != null) {
+                gradientTypeButton.active = editableGradient;
+                gradientTypeButton.setMessage(Component.literal(
+                        gradient == null
+                                ? "Gradient Type"
+                                : "Gradient: "
+                                        + gradient.type().displayName()
+                ));
+            }
+            if (gradientAngleButton != null) {
+                gradientAngleButton.setMessage(Component.literal(
+                        gradient == null
+                                ? "Angle"
+                                : Math.round(
+                                        gradient.transform()
+                                                .rotationDegrees()
+                                ) + "°"
+                ));
+            }
+            if (gradientStartButton != null) {
+                gradientStartButton.active = editableGradient;
+            }
+            if (gradientEndButton != null) {
+                gradientEndButton.active = editableGradient;
+            }
+            if (gradientRepeatButton != null) {
+                gradientRepeatButton.active = editableGradient;
+                gradientRepeatButton.setMessage(Component.literal(
+                        "Repeat: "
+                                + (gradient != null && gradient.repeat()
+                                        ? "On"
+                                        : "Off")
+                ));
+            }
+            if (gradientDitherButton != null) {
+                gradientDitherButton.active = editableGradient;
+                gradientDitherButton.setMessage(Component.literal(
+                        "Dither: "
+                                + (gradient != null && gradient.dither()
+                                        ? "On"
+                                        : "Off")
+                ));
+            }
             if (layerRenameButton != null) {
                 layerRenameButton.active = layerNameField != null
                         && !layerNameField.getValue().trim().isEmpty();
@@ -1212,12 +1301,15 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private UUID findEditableLayer() {
-        return ClientProjectWorkspace.project().cape().layers().stream()
-                .filter(layer -> !layer.emissive())
+        var layers = ClientProjectWorkspace.project().cape().layers();
+
+        return layers.stream()
+                .filter(LoomLayer::editableAsPaint)
                 .findFirst()
+                .or(() -> layers.stream().findFirst())
                 .map(LoomLayer::id)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Cape project has no editable paint layer"
+                        "Cape project has no layers"
                 ));
     }
 
@@ -1253,6 +1345,7 @@ public final class CapeEditorScreen extends Screen {
 
     private void selectLayer(UUID layerId) {
         this.selectedLayerId = layerId;
+        this.selection = null;
         syncLayerFields();
         updateButtonStates();
     }
@@ -1454,6 +1547,11 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private void editPixel(int x, int y) {
+        if (tool != Tool.EYEDROPPER
+                && !selectedLayer().editableAsPaint()) {
+            return;
+        }
+
         switch (tool) {
             case PENCIL -> ClientProjectWorkspace.apply(project ->
                     paintBrushWithSymmetry(
@@ -1493,6 +1591,10 @@ public final class CapeEditorScreen extends Screen {
             int endX,
             int endY
     ) {
+        if (!selectedLayer().editableAsPaint()) {
+            return;
+        }
+
         switch (tool) {
             case LINE -> ClientProjectWorkspace.apply(project ->
                     paintLineWithSymmetry(
