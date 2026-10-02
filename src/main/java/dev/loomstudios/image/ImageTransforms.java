@@ -89,12 +89,15 @@ public final class ImageTransforms {
     ) {
         Objects.requireNonNull(source, "source");
 
+        long cropRight = (long)x + width;
+        long cropBottom = (long)y + height;
+
         if (x < 0
                 || y < 0
                 || width <= 0
                 || height <= 0
-                || x + width > source.width()
-                || y + height > source.height()) {
+                || cropRight > source.width()
+                || cropBottom > source.height()) {
             throw new IllegalArgumentException("Crop rectangle outside image");
         }
 
@@ -161,9 +164,13 @@ public final class ImageTransforms {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(placement, "placement");
 
-        if (placement.sourceX() + placement.sourceWidth() > source.width()
-                || placement.sourceY() + placement.sourceHeight()
-                > source.height()) {
+        long sourceRight =
+                (long)placement.sourceX() + placement.sourceWidth();
+        long sourceBottom =
+                (long)placement.sourceY() + placement.sourceHeight();
+
+        if (sourceRight > source.width()
+                || sourceBottom > source.height()) {
             throw new IllegalArgumentException(
                     "Placement source rectangle exceeds image"
             );
@@ -173,31 +180,44 @@ public final class ImageTransforms {
                 PixelImage.checkedPixelCount(targetWidth, targetHeight)
         ];
 
-        int startX = Math.max(0, placement.destinationX());
-        int startY = Math.max(0, placement.destinationY());
-        int endX = Math.min(
-                targetWidth,
-                placement.destinationX() + placement.destinationWidth()
+        long destinationLeft = placement.destinationX();
+        long destinationTop = placement.destinationY();
+        long destinationRight =
+                destinationLeft + placement.destinationWidth();
+        long destinationBottom =
+                destinationTop + placement.destinationHeight();
+
+        int startX = (int)Math.max(
+                0L,
+                Math.min((long)targetWidth, destinationLeft)
         );
-        int endY = Math.min(
-                targetHeight,
-                placement.destinationY() + placement.destinationHeight()
+        int startY = (int)Math.max(
+                0L,
+                Math.min((long)targetHeight, destinationTop)
+        );
+        int endX = (int)Math.max(
+                0L,
+                Math.min((long)targetWidth, destinationRight)
+        );
+        int endY = (int)Math.max(
+                0L,
+                Math.min((long)targetHeight, destinationBottom)
         );
 
         for (int y = startY; y < endY; y++) {
-            int localY = y - placement.destinationY();
+            long localY = (long)y - destinationTop;
             int sourceY = placement.sourceY()
                     + (int)(
-                            (long)localY
+                            localY
                                     * placement.sourceHeight()
                                     / placement.destinationHeight()
                     );
 
             for (int x = startX; x < endX; x++) {
-                int localX = x - placement.destinationX();
+                long localX = (long)x - destinationLeft;
                 int sourceX = placement.sourceX()
                         + (int)(
-                                (long)localX
+                                localX
                                         * placement.sourceWidth()
                                         / placement.destinationWidth()
                         );
