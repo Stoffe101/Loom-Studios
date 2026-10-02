@@ -5,6 +5,7 @@ import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomCanvas;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LayerRasterizer;
 
 /**
  * Minimal non-destructive canvas compiler for Phase 1.
@@ -26,8 +27,14 @@ public final class LoomTextureCompiler {
                 continue;
             }
 
+            int[] raster = LayerRasterizer.rasterize(
+                    layer,
+                    canvas.width(),
+                    canvas.height()
+            );
+
             for (int i = 0; i < output.length; i++) {
-                int source = layer.pixelAt(i);
+                int source = raster[i];
 
                 if (animateHue && ((source >>> 24) & 0xFF) != 0) {
                     source = rotateChannels(source, animationPhase);
@@ -62,14 +69,20 @@ public final class LoomTextureCompiler {
                 continue;
             }
 
+            int[] raster = LayerRasterizer.rasterize(
+                    layer,
+                    canvas.width(),
+                    canvas.height()
+            );
+
             for (int y = 0; y < regionHeight; y++) {
                 int atlasY = region.atlasY(y, scale);
 
                 for (int x = 0; x < regionWidth; x++) {
                     int atlasX = region.atlasX(x, scale);
-                    int source = layer.pixelAt(
+                    int source = raster[
                             atlasY * canvas.width() + atlasX
-                    );
+                    ];
 
                     if (animateHue && ((source >>> 24) & 0xFF) != 0) {
                         source = rotateChannels(source, animationPhase);
