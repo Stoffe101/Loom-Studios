@@ -1,5 +1,6 @@
 package dev.loomstudios.client.ui;
 
+import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.LoomProject;
 import net.minecraft.client.Minecraft;
@@ -17,19 +18,23 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Compact layer stack. The visual order is top-most layer first.
+ * Compact typed-layer stack. The visual order is top-most layer first.
  *
- * <p>Click a row to select it. Click the visibility square on the left to
- * toggle that layer without changing the selection.</p>
+ * <p>The row exposes three direct affordances: visibility on the left,
+ * type identity beside the layer name, and lock state on the right. Clicking
+ * the rest of a row selects it.</p>
  */
 public final class LoomLayerListWidget extends AbstractWidget {
     private static final int HEADER_HEIGHT = 18;
     private static final int ROW_HEIGHT = 18;
+    private static final int VISIBILITY_HIT_WIDTH = 18;
+    private static final int LOCK_HIT_WIDTH = 20;
 
     private final Supplier<LoomProject> projectSupplier;
     private final Supplier<UUID> selectedLayerSupplier;
     private final Consumer<UUID> onSelect;
     private final Consumer<UUID> onToggleVisibility;
+    private final Consumer<UUID> onToggleLock;
 
     private int scrollRows;
 
@@ -41,13 +46,15 @@ public final class LoomLayerListWidget extends AbstractWidget {
             Supplier<LoomProject> projectSupplier,
             Supplier<UUID> selectedLayerSupplier,
             Consumer<UUID> onSelect,
-            Consumer<UUID> onToggleVisibility
+            Consumer<UUID> onToggleVisibility,
+            Consumer<UUID> onToggleLock
     ) {
         super(x, y, width, height, Component.literal("Layers"));
         this.projectSupplier = Objects.requireNonNull(projectSupplier);
         this.selectedLayerSupplier = Objects.requireNonNull(selectedLayerSupplier);
         this.onSelect = Objects.requireNonNull(onSelect);
         this.onToggleVisibility = Objects.requireNonNull(onToggleVisibility);
+        this.onToggleLock = Objects.requireNonNull(onToggleLock);
     }
 
     @Override
@@ -106,51 +113,59 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     y + ROW_HEIGHT - 1,
                     isSelected ? 0xFF213744 : LoomUiTheme.PANEL_INNER
             );
+            if (isSelected) {
+                graphics.fill(
+                        getX() + 2,
+                        y,
+                        getX() + 4,
+                        y + ROW_HEIGHT - 1,
+                        LoomUiTheme.ACCENT
+                );
+            }
 
-            int eyeX = getX() + 6;
-            int eyeY = y + 5;
-            graphics.fill(
-                    eyeX,
-                    eyeY,
-                    eyeX + 8,
-                    eyeY + 8,
+            drawVisibilityIcon(
+                    graphics,
+                    getX() + 6,
+                    y + 5,
                     layer.visible()
-                            ? LoomUiTheme.ACCENT
-                            : 0xFF3A454E
+            );
+            drawKindIcon(
+                    graphics,
+                    getX() + 20,
+                    y + 5,
+                    layer.kind()
             );
 
-            String kind = switch (layer.kind()) {
-                case PAINT -> "P";
-                case IMAGE -> "I";
-                case GRADIENT -> "G";
-            };
-            String name = "["
-                    + kind
-                    + "] "
-                    + (layer.locked() ? "[L] " : "")
-                    + layer.name();
-            int maxNameWidth = Math.max(24, getWidth() - 72);
-            name = Minecraft.getInstance().font.plainSubstrByWidth(
-                    name,
-                    maxNameWidth
+            int lockX = getRight() - 15;
+            drawLockIcon(
+                    graphics,
+                    lockX,
+                    y + 5,
+                    layer.locked()
+            );
+
+            String opacity = Math.round(layer.opacity() * 100.0F) + "%";
+            int opacityWidth = Minecraft.getInstance().font.width(opacity);
+            int opacityX = lockX - opacityWidth - 6;
+
+            String name = Minecraft.getInstance().font.plainSubstrByWidth(
+                    layer.name(),
+                    Math.max(18, opacityX - (getX() + 34) - 4)
             );
 
             graphics.drawString(
                     Minecraft.getInstance().font,
                     Component.literal(name),
-                    getX() + 20,
+                    getX() + 34,
                     y + 5,
                     isSelected ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED,
                     false
             );
 
-            String opacity = Math.round(layer.opacity() * 100.0F) + "%";
-            int opacityWidth = Minecraft.getInstance().font.width(opacity);
-
             graphics.drawString(
                     Minecraft.getInstance().font,
                     Component.literal(opacity),
-                    getRight() - opacityWidth - 7,
+                    opacityX,
                     y + 5,
                     LoomUiTheme.TEXT_MUTED,
                     false
@@ -187,6 +202,70 @@ public final class LoomLayerListWidget extends AbstractWidget {
         }
     }
 
+    private static void drawVisibilityIcon(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            boolean visible
+    ) {
+        int color = visible ? LoomUiTheme.ACCENT : 0xFF3A454E;
+        graphics.fill(x + 1, y + 3, x + 8, y + 5, color);
+        graphics.fill(x + 3, y + 1, x + 6, y + 7, color);
+        graphics.fill(
+                x + 4,
+                y + 3,
+                x + 5,
+                y + 4,
+                LoomUiTheme.PANEL_INNER
+        );
+    }
+
+    private static void drawKindIcon(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            LayerKind kind
+    ) {
+        switch (kind) {
+            case PAINT -> {
+                graphics.fill(x + 1, y + 6, x + 7, y + 8, LoomUiTheme.TEXT);
+                graphics.fill(x + 5, y + 2, x + 8, y + 7, LoomUiTheme.ACCENT);
+                graphics.fill(x + 7, y + 1, x + 9, y + 3, LoomUiTheme.TEXT);
+            }
+            case IMAGE -> {
+                graphics.fill(x + 1, y + 1, x + 9, y + 2, LoomUiTheme.TEXT_MUTED);
+                graphics.fill(x + 1, y + 8, x + 9, y + 9, LoomUiTheme.TEXT_MUTED);
+                graphics.fill(x + 1, y + 2, x + 2, y + 8, LoomUiTheme.TEXT_MUTED);
+                graphics.fill(x + 8, y + 2, x + 9, y + 8, LoomUiTheme.TEXT_MUTED);
+                graphics.fill(x + 3, y + 5, x + 5, y + 8, LoomUiTheme.ACCENT);
+                graphics.fill(x + 5, y + 4, x + 8, y + 8, LoomUiTheme.ACCENT_ALT);
+            }
+            case GRADIENT -> {
+                graphics.fill(x + 1, y + 1, x + 5, y + 9, LoomUiTheme.ACCENT);
+                graphics.fill(x + 5, y + 1, x + 9, y + 9, LoomUiTheme.ACCENT_ALT);
+            }
+        }
+    }
+
+    private static void drawLockIcon(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            boolean locked
+    ) {
+        int color = locked ? LoomUiTheme.ACCENT_ALT : LoomUiTheme.TEXT_MUTED;
+
+        graphics.fill(x + 2, y + 4, x + 8, y + 9, color);
+        if (locked) {
+            graphics.fill(x + 3, y + 1, x + 7, y + 2, color);
+            graphics.fill(x + 2, y + 2, x + 3, y + 5, color);
+            graphics.fill(x + 7, y + 2, x + 8, y + 5, color);
+        } else {
+            graphics.fill(x + 4, y + 1, x + 8, y + 2, color);
+            graphics.fill(x + 7, y + 2, x + 8, y + 4, color);
+        }
+    }
+
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
         List<LoomLayer> layers = projectSupplier.get().cape().layers();
@@ -206,8 +285,10 @@ public final class LoomLayerListWidget extends AbstractWidget {
 
         LoomLayer layer = layers.get(layerIndex);
 
-        if (event.x() < getX() + 18) {
+        if (event.x() < getX() + VISIBILITY_HIT_WIDTH) {
             onToggleVisibility.accept(layer.id());
+        } else if (event.x() >= getRight() - LOCK_HIT_WIDTH) {
+            onToggleLock.accept(layer.id());
         } else {
             onSelect.accept(layer.id());
         }

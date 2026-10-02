@@ -17,6 +17,7 @@ import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.LayerKind;
+import dev.loomstudios.project.GradientAuthoring;
 import dev.loomstudios.project.GradientLayerData;
 import dev.loomstudios.project.GradientStop;
 import dev.loomstudios.project.NormalizedRect;
@@ -96,7 +97,19 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton layerGradientAddButton;
     private LoomButton layerImportButton;
     private LoomButton gradientTypeButton;
+    private LoomButton gradientAngleDownButton;
     private LoomButton gradientAngleButton;
+    private LoomButton gradientAngleUpButton;
+    private LoomButton gradientMoveLeftButton;
+    private LoomButton gradientMoveUpButton;
+    private LoomButton gradientMoveDownButton;
+    private LoomButton gradientMoveRightButton;
+    private LoomButton gradientScaleDownButton;
+    private LoomButton gradientScaleLabelButton;
+    private LoomButton gradientScaleUpButton;
+    private LoomButton gradientMirrorHorizontalButton;
+    private LoomButton gradientMirrorVerticalButton;
+    private LoomButton gradientResetTransformButton;
     private LoomButton gradientStartButton;
     private LoomButton gradientEndButton;
     private LoomButton gradientRepeatButton;
@@ -433,7 +446,8 @@ public final class CapeEditorScreen extends Screen {
                 () -> this.workspaceState.project(),
                 () -> this.selectedLayerId,
                 this::selectLayer,
-                this::toggleLayerVisibility
+                this::toggleLayerVisibility,
+                this::toggleLayerLock
         );
         tools.addChild(this.layerListWidget);
 
@@ -442,12 +456,12 @@ public final class CapeEditorScreen extends Screen {
 
         layerAddButton = createLoomButton(
                 layerThird,
-                "New",
+                "+ Paint",
                 this::addLayer
         );
         layerDuplicateButton = createLoomButton(
                 layerThird,
-                "Duplicate",
+                "Copy",
                 this::duplicateLayer
         );
         layerDeleteButton = createLoomButton(
@@ -545,11 +559,12 @@ public final class CapeEditorScreen extends Screen {
 
         LinearLayout gradientAngleRow =
                 LinearLayout.horizontal().spacing(4);
-        gradientAngleRow.addChild(createLoomButton(
+        this.gradientAngleDownButton = createLoomButton(
                 48,
                 "Angle -",
                 () -> rotateGradient(-15.0)
-        ));
+        );
+        gradientAngleRow.addChild(this.gradientAngleDownButton);
         this.gradientAngleButton = createLoomButton(
                 Math.max(42, contentWidth - 104),
                 "0°",
@@ -557,12 +572,94 @@ public final class CapeEditorScreen extends Screen {
         );
         this.gradientAngleButton.active = false;
         gradientAngleRow.addChild(this.gradientAngleButton);
-        gradientAngleRow.addChild(createLoomButton(
+        this.gradientAngleUpButton = createLoomButton(
                 48,
                 "Angle +",
                 () -> rotateGradient(15.0)
-        ));
+        );
+        gradientAngleRow.addChild(this.gradientAngleUpButton);
         tools.addChild(gradientAngleRow);
+
+        LinearLayout gradientMoveRow =
+                LinearLayout.horizontal().spacing(4);
+        int gradientQuarter = Math.max(28, (contentWidth - 12) / 4);
+        this.gradientMoveLeftButton = createLoomButton(
+                gradientQuarter,
+                "Move <",
+                () -> moveGradient(-1, 0)
+        );
+        this.gradientMoveUpButton = createLoomButton(
+                gradientQuarter,
+                "Move ^",
+                () -> moveGradient(0, -1)
+        );
+        this.gradientMoveDownButton = createLoomButton(
+                gradientQuarter,
+                "Move v",
+                () -> moveGradient(0, 1)
+        );
+        this.gradientMoveRightButton = createLoomButton(
+                Math.max(
+                        28,
+                        contentWidth - gradientQuarter * 3 - 12
+                ),
+                "Move >",
+                () -> moveGradient(1, 0)
+        );
+        gradientMoveRow.addChild(this.gradientMoveLeftButton);
+        gradientMoveRow.addChild(this.gradientMoveUpButton);
+        gradientMoveRow.addChild(this.gradientMoveDownButton);
+        gradientMoveRow.addChild(this.gradientMoveRightButton);
+        tools.addChild(gradientMoveRow);
+
+        LinearLayout gradientScaleRow =
+                LinearLayout.horizontal().spacing(4);
+        this.gradientScaleDownButton = createLoomButton(
+                48,
+                "Scale -",
+                () -> scaleGradient(0.9)
+        );
+        this.gradientScaleLabelButton = createLoomButton(
+                Math.max(42, contentWidth - 104),
+                "100%",
+                () -> { }
+        );
+        this.gradientScaleLabelButton.active = false;
+        this.gradientScaleUpButton = createLoomButton(
+                48,
+                "Scale +",
+                () -> scaleGradient(1.1)
+        );
+        gradientScaleRow.addChild(this.gradientScaleDownButton);
+        gradientScaleRow.addChild(this.gradientScaleLabelButton);
+        gradientScaleRow.addChild(this.gradientScaleUpButton);
+        tools.addChild(gradientScaleRow);
+
+        LinearLayout gradientMirrorRow =
+                LinearLayout.horizontal().spacing(4);
+        int gradientThird = Math.max(38, (contentWidth - 8) / 3);
+        this.gradientMirrorHorizontalButton = createLoomButton(
+                gradientThird,
+                "Mirror H",
+                () -> toggleGradientMirror(true)
+        );
+        this.gradientMirrorVerticalButton = createLoomButton(
+                gradientThird,
+                "Mirror V",
+                () -> toggleGradientMirror(false)
+        );
+        this.gradientResetTransformButton = createLoomButton(
+                Math.max(
+                        38,
+                        contentWidth - gradientThird * 2 - 8
+                ),
+                "Reset",
+                this::resetGradientTransform
+        );
+        gradientMirrorRow.addChild(this.gradientMirrorHorizontalButton);
+        gradientMirrorRow.addChild(this.gradientMirrorVerticalButton);
+        gradientMirrorRow.addChild(this.gradientResetTransformButton);
+        tools.addChild(gradientMirrorRow);
 
         LinearLayout gradientColorRow =
                 LinearLayout.horizontal().spacing(4);
@@ -1342,6 +1439,9 @@ public final class CapeEditorScreen extends Screen {
                                         + gradient.type().displayName()
                 ));
             }
+            if (gradientAngleDownButton != null) {
+                gradientAngleDownButton.active = editableGradient;
+            }
             if (gradientAngleButton != null) {
                 gradientAngleButton.setMessage(Component.literal(
                         gradient == null
@@ -1351,6 +1451,62 @@ public final class CapeEditorScreen extends Screen {
                                                 .rotationDegrees()
                                 ) + "°"
                 ));
+            }
+            if (gradientAngleUpButton != null) {
+                gradientAngleUpButton.active = editableGradient;
+            }
+            if (gradientMoveLeftButton != null) {
+                gradientMoveLeftButton.active = editableGradient;
+            }
+            if (gradientMoveUpButton != null) {
+                gradientMoveUpButton.active = editableGradient;
+            }
+            if (gradientMoveDownButton != null) {
+                gradientMoveDownButton.active = editableGradient;
+            }
+            if (gradientMoveRightButton != null) {
+                gradientMoveRightButton.active = editableGradient;
+            }
+            if (gradientScaleDownButton != null) {
+                gradientScaleDownButton.active = editableGradient;
+            }
+            if (gradientScaleLabelButton != null) {
+                gradientScaleLabelButton.setMessage(Component.literal(
+                        gradient == null
+                                ? "Scale"
+                                : GradientAuthoring.scalePercent(gradient)
+                                        + "%"
+                ));
+            }
+            if (gradientScaleUpButton != null) {
+                gradientScaleUpButton.active = editableGradient;
+            }
+            if (gradientMirrorHorizontalButton != null) {
+                gradientMirrorHorizontalButton.active = editableGradient;
+                gradientMirrorHorizontalButton.setMessage(
+                        Component.literal(
+                                gradient != null
+                                        && gradient.transform()
+                                                .mirrorHorizontal()
+                                        ? "H: On"
+                                        : "Mirror H"
+                        )
+                );
+            }
+            if (gradientMirrorVerticalButton != null) {
+                gradientMirrorVerticalButton.active = editableGradient;
+                gradientMirrorVerticalButton.setMessage(
+                        Component.literal(
+                                gradient != null
+                                        && gradient.transform()
+                                                .mirrorVertical()
+                                        ? "V: On"
+                                        : "Mirror V"
+                        )
+                );
+            }
+            if (gradientResetTransformButton != null) {
+                gradientResetTransformButton.active = editableGradient;
             }
             if (gradientStartButton != null) {
                 gradientStartButton.active = editableGradient;
@@ -1744,17 +1900,31 @@ public final class CapeEditorScreen extends Screen {
     }
 
     private void toggleLayerLock() {
-        LoomLayer layer = selectedLayer();
+        ensureSelectedLayerExists();
+        toggleLayerLock(selectedLayerId);
+    }
+
+    private void toggleLayerLock(UUID layerId) {
+        LoomLayer layer = workspaceState.project().cape().layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElse(null);
+
+        if (layer == null) {
+            return;
+        }
 
         ClientProjectWorkspace.apply(project ->
                 ProjectEdits.setCapeLayerLocked(
                         project,
-                        selectedLayerId,
+                        layerId,
                         !layer.locked()
                 )
         );
 
-        this.selection = null;
+        if (layerId.equals(selectedLayerId)) {
+            this.selection = null;
+        }
         updateButtonStates();
     }
 
@@ -1793,6 +1963,94 @@ public final class CapeEditorScreen extends Screen {
                         gradient.withTransform(
                                 gradient.transform().withRotation(next)
                         )
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void moveGradient(int horizontal, int vertical) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData gradient = layer.gradientData();
+        GradientLayerData next = GradientAuthoring.translate(
+                gradient,
+                horizontal,
+                vertical
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void scaleGradient(double factor) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData next = GradientAuthoring.scale(
+                layer.gradientData(),
+                factor
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void toggleGradientMirror(boolean horizontal) {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData next = horizontal
+                ? GradientAuthoring.toggleMirrorHorizontal(
+                        layer.gradientData()
+                )
+                : GradientAuthoring.toggleMirrorVertical(
+                        layer.gradientData()
+                );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void resetGradientTransform() {
+        LoomLayer layer = selectedLayer();
+        if (layer.kind() != LayerKind.GRADIENT || layer.locked()) {
+            return;
+        }
+
+        GradientLayerData next = GradientAuthoring.resetTransform(
+                layer.gradientData()
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setCapeGradientData(
+                        project,
+                        selectedLayerId,
+                        next
                 )
         );
         updateButtonStates();

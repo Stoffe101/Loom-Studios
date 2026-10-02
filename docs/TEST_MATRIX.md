@@ -131,6 +131,11 @@ Shader-sensitive effects should be checked with at least one representative shad
 ### Smart Import automated + local checks
 
 Automated/current CI:
+- Gradient translation uses layer-relative 5% movement steps
+- Gradient scale preserves aspect and reports clip-relative scale percent
+- Gradient H/V mirror toggles remain independent
+- Gradient reset restores semantic clip placement and clears rotation/mirrors
+- invalid Gradient scale factors are rejected
 - Outline Only clears non-edge interior pixels
 - Direct mode with zero adjustments is pixel-stable
 - Pixel Art honors configured color bounds
@@ -145,6 +150,14 @@ Automated/current CI:
 - Image/Gradient layers reject Paint-tool pixel mutation
 
 Local/runtime verification:
+- typed layer icons distinguish Paint / Image / Gradient
+- direct visibility control changes only visibility
+- direct lock control changes only lock state
+- locked typed layer authoring controls disable correctly
+- Gradient Linear / Radial
+- Gradient stop add/remove/color/position
+- Gradient angle / move / scale / Mirror H / Mirror V / reset
+- Gradient repeat / dither
 - PNG with alpha
 - PNG without alpha
 - large source image

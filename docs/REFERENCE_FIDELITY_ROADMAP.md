@@ -122,15 +122,29 @@ Implemented:
 - unsaved 3D preview;
 - scrollable compact right tool rail.
 
-Missing/reference gap:
-- richer lock/type affordance in the layer row;
-- proper icon toolbar;
-- Select/Move/Flip UI is implemented functionally (local visual verification pending);
-- first-class Gradient layer exists, but richer Gradient authoring UI still needs the reference-level treatment;
+Implemented in the current Gradient/typed-layer UX pass:
+- typed Paint / Image / Gradient row icons;
+- selected-row accent;
+- direct visibility affordance;
+- direct lock affordance;
+- persistent lock remains synchronized with ProjectSession;
+- Gradient create/edit controls;
+- Linear / Radial;
+- editable stops and stop positions;
+- angle;
+- repeat / dither;
+- move / scale;
+- Mirror H / Mirror V;
+- reset-to-clip transform;
+- pure tested common-core Gradient transform authoring.
+
+Remaining/reference gap:
+- broader icon toolbar treatment outside Layers;
+- Select/Move/Flip local visual verification;
 - recent colors;
 - richer tooltips/shortcut help;
 - integrated preview panel rather than separate utilitarian preview screen;
-- final decorative/reference styling.
+- final decorative/reference styling and compact-mode polish.
 
 ## Reference 03 — Smart Import
 
@@ -289,13 +303,12 @@ Palette share codes are **not** a substitute for project Loom Codes.
 
 The practical order is:
 
-1. locally verify the current Cape Editor + Smart Import functional core;
-2. richer Gradient authoring and typed-layer UI;
-3. Recent Project thumbnail cards + Home reference shell;
-4. Elytra editor;
-5. animation/timeline;
-6. Loom Codes/sharing;
-7. final visual-fidelity pass across all five references.
+1. locally verify the current Cape Editor + Smart Import + Gradient/typed-layer UX;
+2. Recent Project thumbnail cards + Home reference shell;
+3. Elytra editor;
+4. animation/timeline;
+5. Loom Codes/sharing;
+6. final visual-fidelity pass across all five references.
 
 This ordering preserves the approved references while avoiding disposable UI built before the underlying feature model exists.
 

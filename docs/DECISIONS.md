@@ -893,3 +893,20 @@ Visual rules:
 - responsive usability outranks decorative fidelity at constrained GUI scales.
 
 The refreshed set supersedes the earlier rough concept references.
+
+
+## ADR-076 — Gradient authoring uses bounded common-core transform helpers
+**Status:** Accepted / implemented
+
+Gradient transform controls must not embed one-off geometry math inside the Minecraft screen.
+
+The common-core `GradientAuthoring` helper owns the deterministic authoring operations used by the Cape Editor:
+- translation uses 5% of the current Gradient width/height per UI step;
+- uniform scale preserves aspect and remains inside `LayerTransform` bounds;
+- horizontal and vertical mirrors toggle independently;
+- reset restores the Gradient transform to its semantic clip, zero rotation and no mirrors;
+- scale display is relative to the semantic clip.
+
+These operations update only existing schema-v2 `GradientLayerData` / `LayerTransform` state and therefore require no project-format migration.
+
+The Layers list also exposes visibility, typed identity and persistent lock as direct row affordances. Lock remains normal project state and participates in ProjectSession history.
