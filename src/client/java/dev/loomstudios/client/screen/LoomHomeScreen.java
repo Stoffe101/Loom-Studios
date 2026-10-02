@@ -135,10 +135,10 @@ public final class LoomHomeScreen extends Screen {
         int available = contentBottom - contentTop;
         int gap = compactMode ? 4 : 5;
         int cardHeight = compactMode
-                ? Math.max(26, Math.min(31, (available - gap * 5) / 6))
+                ? Math.max(28, Math.min(34, (available - gap * 4) / 5))
                 : Math.max(
-                        32,
-                        Math.min(40, (available - gap * 5) / 6)
+                        34,
+                        Math.min(42, (available - gap * 4) / 5)
                 );
         int y = contentTop;
 
@@ -211,28 +211,13 @@ public final class LoomHomeScreen extends Screen {
                 y,
                 width,
                 cardHeight,
-                Component.literal("Loom Codes"),
-                Component.literal("Share & redeem designs"),
+                Component.literal("Share / Export"),
+                Component.literal("PNG, .loom & portable codes"),
                 LoomActionCard.Icon.CODE,
                 false,
                 this::openLoomCodes
         );
         addRenderableWidget(codes);
-        y += cardHeight + gap;
-
-        LoomActionCard settings = new LoomActionCard(
-                leftPanelLeft,
-                y,
-                width,
-                cardHeight,
-                Component.literal("Settings"),
-                Component.literal("Editor preferences"),
-                LoomActionCard.Icon.SETTINGS,
-                false,
-                () -> { }
-        );
-        settings.active = false;
-        addRenderableWidget(settings);
     }
 
     private void buildCenterContent() {
