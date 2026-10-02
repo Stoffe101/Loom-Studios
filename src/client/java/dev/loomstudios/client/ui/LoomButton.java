@@ -220,17 +220,6 @@ public class LoomButton extends AbstractButton {
             );
         }
 
-        if (iconOnly
-                && hot
-                && getMessage() != null
-                && !getMessage().getString().isBlank()) {
-            graphics.renderTooltip(
-                    Minecraft.getInstance().font,
-                    getMessage(),
-                    mouseX,
-                    mouseY
-            );
-        }
     }
 
     public static void drawIcon(
