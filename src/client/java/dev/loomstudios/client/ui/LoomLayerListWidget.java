@@ -127,7 +127,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
             String name = "["
                     + kind
                     + "] "
-                    + (layer.locked() ? "🔒 " : "")
+                    + (layer.locked() ? "[L] " : "")
                     + layer.name();
             int maxNameWidth = Math.max(24, getWidth() - 72);
             name = Minecraft.getInstance().font.plainSubstrByWidth(
