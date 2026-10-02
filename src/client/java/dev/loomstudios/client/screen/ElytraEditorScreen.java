@@ -1184,6 +1184,7 @@ public final class ElytraEditorScreen extends Screen {
         );
 
         selectedTrackId = result.animation().tracks().getLast().id();
+        inspectorTab = InspectorTab.ANIMATION;
         scrubTimeline(0);
         statusMessage = "Added Pulse animation track";
         updateButtonStates();
@@ -2008,10 +2009,12 @@ public final class ElytraEditorScreen extends Screen {
             ));
         }
         if (pencilButton != null) {
-            pencilButton.active = editable && tool != Tool.PENCIL;
+            pencilButton.active = editable;
+            pencilButton.setSelected(tool == Tool.PENCIL);
         }
         if (eraserButton != null) {
-            eraserButton.active = editable && tool != Tool.ERASER;
+            eraserButton.active = editable;
+            eraserButton.setSelected(tool == Tool.ERASER);
         }
         if (brushDownButton != null) {
             brushDownButton.active = editable && brushSize > 1;
@@ -2054,11 +2057,11 @@ public final class ElytraEditorScreen extends Screen {
         }
         if (lockButton != null) {
             lockButton.active = layer != null;
+            lockButton.setSelected(layer != null && layer.locked());
             lockButton.setMessage(Component.literal(
-                    "Layer Lock: "
-                            + (layer != null && layer.locked()
-                                    ? "On"
-                                    : "Off")
+                    layer != null && layer.locked()
+                            ? "Unlock Layer"
+                            : "Lock Layer"
             ));
         }
         if (layerAddButton != null) {
@@ -2134,8 +2137,70 @@ public final class ElytraEditorScreen extends Screen {
                             ? "Hide Swatches"
                             : "Swatches"
             ));
+            swatchesButton.setSelected(paletteWindowVisible);
         }
+
+        AnimationTrack selectedTrack =
+                findAnimationTrack(selectedTrackId);
+        if (animationEffectButton != null) {
+            animationEffectButton.active = selectedTrack != null;
+            animationEffectButton.setMessage(Component.literal(
+                    selectedTrack == null
+                            ? "Effect: Select a track"
+                            : "Effect: "
+                                    + selectedTrack.effect().displayName()
+            ));
+        }
+        if (animationAddKeyButton != null) {
+            animationAddKeyButton.active = selectedTrack != null;
+        }
+        if (animationRemoveKeyButton != null) {
+            animationRemoveKeyButton.active =
+                    selectedTrack != null
+                            && selectedTrack.keyframes().size() > 1;
+        }
+        if (animationValueDownButton != null) {
+            animationValueDownButton.active = selectedTrack != null;
+        }
+        if (animationValueUpButton != null) {
+            animationValueUpButton.active = selectedTrack != null;
+        }
+        if (animationValueLabelButton != null) {
+            float value = selectedTrack == null
+                    ? 0.0F
+                    : AnimationEvaluator.valueAt(
+                            selectedTrack,
+                            ClientProjectWorkspace.project().animation(),
+                            timelineTick
+                    );
+            animationValueLabelButton.setMessage(Component.literal(
+                    selectedTrack == null
+                            ? "Value"
+                            : String.format(
+                                    java.util.Locale.ROOT,
+                                    "Value %.2f",
+                                    value
+                            )
+            ));
+        }
+        if (animationSpeedButton != null) {
+            animationSpeedButton.active = selectedTrack != null;
+            animationSpeedButton.setMessage(Component.literal(
+                    selectedTrack == null
+                            ? "Track Speed"
+                            : String.format(
+                                    java.util.Locale.ROOT,
+                                    "Track Speed %.2fx",
+                                    selectedTrack.speed()
+                            )
+            ));
+        }
+        if (animationDeleteButton != null) {
+            animationDeleteButton.active = selectedTrack != null;
+        }
+
         syncLayerName();
+        updateInspectorVisibility();
 
         if (undoButton != null) {
             undoButton.active = ClientProjectWorkspace.session().canUndo();
@@ -2184,80 +2249,113 @@ public final class ElytraEditorScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(
-                shellLeft,
-                shellTop,
-                shellRight,
-                shellBottom,
-                LoomUiTheme.BACKDROP
-        );
-        graphics.fill(
-                shellLeft + 1,
-                shellTop + 1,
-                shellRight - 1,
-                shellBottom - 1,
-                LoomUiTheme.PANEL
+        LoomScreenChrome.renderBackdrop(graphics, width, height);
+        LoomScreenChrome.renderBrandHeader(
+                graphics,
+                width,
+                compactMode
+                        ? "Elytra Editor"
+                        : "Elytra Editor • "
+                                + (linkedMirror
+                                        ? "Linked Mirror"
+                                        : "Separate Wings"),
+                compactMode
         );
 
-        graphics.fill(
-                shellLeft + 7,
-                shellTop + 5,
-                shellRight - 7,
-                contentTop - 5,
-                LoomUiTheme.PANEL_INNER
+        LoomScreenChrome.panel(
+                graphics,
+                toolRailLeft,
+                contentTop,
+                toolRailRight,
+                contentBottom
         );
-        graphics.fill(
-                shellLeft + 7,
-                contentTop - 7,
-                shellRight - 7,
-                contentTop - 5,
-                LoomUiTheme.ACCENT
-        );
-
-        graphics.drawString(
-                this.font,
-                Component.literal("Loom Studios"),
-                shellLeft + 16,
-                shellTop + 12,
-                LoomUiTheme.TEXT,
-                false
-        );
-        graphics.drawString(
-                this.font,
-                Component.literal("Elytra Editor"),
-                shellLeft + 88,
-                shellTop + 12,
-                LoomUiTheme.ACCENT,
-                false
+        LoomScreenChrome.panelHeader(
+                graphics,
+                toolRailLeft,
+                contentTop,
+                toolRailRight,
+                compactMode ? "" : "Tools"
         );
 
-        graphics.drawString(
-                this.font,
-                Component.literal(
-                        linkedMirror
-                                ? "Linked Mirror"
-                                : "Separate Wings"
-                ),
-                shellRight - this.font.width(
-                        linkedMirror ? "Linked Mirror" : "Separate Wings"
-                ) - 16,
-                shellTop + 12,
-                LoomUiTheme.TEXT_MUTED,
-                false
+        LoomScreenChrome.panel(
+                graphics,
+                centerLeft,
+                canvasTop,
+                centerRight,
+                canvasBottom
+        );
+        LoomScreenChrome.panel(
+                graphics,
+                centerLeft,
+                timelineTop,
+                centerRight,
+                timelineBottom
         );
 
-        if (!statusMessage.isBlank()) {
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                previewBottom
+        );
+        LoomScreenChrome.panelHeader(
+                graphics,
+                rightPanelLeft,
+                contentTop,
+                rightPanelRight,
+                "3D Preview"
+        );
+
+        LoomScreenChrome.panel(
+                graphics,
+                rightPanelLeft,
+                inspectorTop - 2,
+                rightPanelRight,
+                inspectorBottom
+        );
+
+        if (inspectorTab == InspectorTab.ANIMATION) {
+            AnimationTrack track = findAnimationTrack(selectedTrackId);
+            String help = track == null
+                    ? "Select layer → + Track → add keyframes"
+                    : "Scrub time → Add Key → change Value / Effect";
             graphics.drawString(
-                    this.font,
-                    Component.literal(statusMessage),
-                    shellLeft + 16,
-                    shellTop + 24,
+                    font,
+                    Component.literal(
+                            font.plainSubstrByWidth(
+                                    help,
+                                    rightPanelRight - rightPanelLeft - 12
+                            )
+                    ),
+                    rightPanelLeft + 6,
+                    Math.max(
+                            inspectorTop + 110,
+                            inspectorBottom - 14
+                    ),
                     LoomUiTheme.TEXT_MUTED,
                     false
             );
         }
 
+        String status = statusMessage.isBlank()
+                ? (ClientProjectWorkspace.isCurrentProjectEquipped()
+                        ? "Saved / Equipped"
+                        : ClientProjectWorkspace.session().isDirty()
+                                ? "Unsaved edits"
+                                : "Saved, not equipped")
+                : statusMessage;
+
+        LoomScreenChrome.footer(
+                graphics,
+                width,
+                height,
+                status,
+                linkedMirror ? "Linked Wings" : "Separate Wings"
+        );
+
         super.render(graphics, mouseX, mouseY, partialTick);
+        updateButtonStates();
     }
 
     private void goBack() {
