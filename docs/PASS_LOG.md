@@ -1,5 +1,44 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Smart Import color reduction + dithering foundation
+
+**Status: CI PASS**
+
+Exact green checkpoint: `7d4efbe75744453ba03142eb61d97c917f79c7bc`  
+GitHub Actions #85: **SUCCESS**
+
+Initial exact head `62d6a4a85322b067a11c79ccec1415b74cd08ab1` failed GitHub Actions #84 in `:compileJava`.
+
+Cause:
+- Java generic inference treated the median-cut comparator lambda parameter as `Object` in a chained `Comparator.comparingInt(...).thenComparingInt(...)` expression.
+
+Correction:
+- explicitly type the comparator lambda parameter as `ColorPoint`;
+- no quantization/dithering behavior changed.
+
+Added deterministic pure-core processing:
+- bounded Reduce Colors palette extraction;
+- 5-bit/channel fixed histogram to avoid unbounded unique-color memory;
+- weighted color-box splitting;
+- nearest-palette RGB mapping with source alpha preservation;
+- Palette Limited mapping primitive;
+- Posterize;
+- Monochrome;
+- Floyd-Steinberg dithering;
+- dithered Reduce Colors.
+
+Transparency behavior:
+- fully transparent source pixels remain byte-for-byte unchanged;
+- Floyd-Steinberg error is not diffused into or through fully transparent pixels;
+- semi-transparent pixels preserve their source alpha.
+
+Automated tests cover determinism, color-count bounds, alpha preservation, palette mapping, posterization, monochrome, transparency barriers, invalid limits and dithered color containment.
+
+No local visual verification is required for this pure common-core slice.
+
+---
+
+
 ## 2026-10-02 — Smart Import transform + color-adjustment foundation
 
 **Status: CI PASS**

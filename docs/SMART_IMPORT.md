@@ -99,16 +99,54 @@ Rules:
 
 The eventual UI may present friendlier slider labels/percentages while mapping to this normalized core.
 
+## Implemented color reduction / import modes
+
+### Reduce Colors
+
+A deterministic bounded median-cut style quantizer now:
+- bins source RGB into a fixed 5-bit-per-channel histogram;
+- weights bins by source pixel frequency;
+- recursively splits color boxes by their widest channel/range;
+- produces at most 256 palette colors;
+- maps source RGB to the nearest generated palette color;
+- preserves the source alpha channel;
+- leaves already-within-limit artwork pixel-stable.
+
+This avoids an unbounded unique-color map for large source images.
+
+### Palette Limited
+
+`mapToPalette(...)` maps visible source pixels to the nearest supplied palette RGB while preserving source alpha.
+
+Palette size is bounded to 1..256 colors.
+
+This is the processing primitive that the eventual Palette Limited Smart Import mode will use with Loom Swatches/custom palettes.
+
+### Dither
+
+Deterministic Floyd-Steinberg error diffusion is implemented.
+
+Rules:
+- RGB error only;
+- source alpha is preserved;
+- fully transparent pixels remain byte-for-byte untouched;
+- error is not diffused into or through fully transparent pixels;
+- output colors remain limited to the supplied/generated palette;
+- dithered Reduce Colors reuses the same bounded palette extractor.
+
+### Posterize
+
+Posterize supports 2..256 levels per RGB channel and preserves alpha.
+
+### Monochrome
+
+Monochrome uses luminance grayscale and preserves alpha.
+
 ## Not implemented yet
 
 ### Processing
-- Reduce Colors / palette quantization;
-- Dither;
-- Posterize;
-- Monochrome mode;
 - Outline Only;
-- Pixel-art mode orchestration;
-- Palette Limited mode;
+- Pixel-art mode orchestration/presets;
 - transparency/background removal workflow;
 - tint.
 
@@ -178,15 +216,24 @@ Current tests cover:
 - zero color-adjustment stability;
 - brightness alpha preservation;
 - full desaturation;
-- adjustment range validation.
+- adjustment range validation;
+- Reduce Colors maximum-color enforcement;
+- deterministic palette extraction/reduction;
+- alpha preservation during reduction;
+- Palette Limited nearest-RGB mapping;
+- Posterize level validation/output;
+- Monochrome luminance behavior;
+- deterministic Floyd-Steinberg output;
+- dithering palette containment;
+- transparent-pixel error-diffusion barriers;
+- dithered Reduce Colors maximum-color enforcement.
 
 ## Next implementation slice
 
 Recommended order:
-1. exact-SHA CI for the current transform/adjustment foundation;
-2. palette quantization;
-3. deterministic dithering;
-4. Posterize / Monochrome / Palette Limited processing primitives;
-5. schema-v2 Image layer design;
-6. PNG decoding/import adapter;
-7. Smart Import UI/reference composition after the data model is stable.
+1. exact-SHA CI for the quantization/dithering slice;
+2. Outline Only / edge-processing primitive;
+3. Pixel-art processing preset/orchestration design;
+4. schema-v2 Image layer design;
+5. PNG decoding/import adapter;
+6. Smart Import UI/reference composition after the data model is stable.

@@ -319,7 +319,14 @@ Implemented pure-core prerequisites:
 - rectangular crop;
 - nearest-neighbor resize;
 - Brightness / Contrast / Saturation with preserved alpha;
-- automated transform/placement/adjustment tests.
+- deterministic bounded Reduce Colors palette extraction;
+- Palette Limited nearest-color mapping;
+- Floyd-Steinberg dithering;
+- Posterize;
+- Monochrome;
+- automated transform/placement/adjustment/quantization/dithering tests.
+
+Exact green quantization/dithering checkpoint: `7d4efbe75744453ba03142eb61d97c917f79c7bc` — GitHub Actions #85 **SUCCESS**.
 
 Already available elsewhere:
 - high-resolution Loom canvases;
@@ -331,9 +338,8 @@ Already available elsewhere:
 - versioned project storage.
 
 Still required:
-- palette quantization / Reduce Colors;
-- dithering;
-- Posterize / Monochrome / Outline / Pixel-art / Palette Limited processing;
+- Outline Only / edge processing;
+- Pixel-art processing orchestration/presets;
 - arbitrary/free image transforms;
 - PNG decode/import adapter;
 - schema-v2 Image layer representation;

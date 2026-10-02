@@ -751,3 +751,36 @@ The first raster transform set is mirror H/V, quarter-turn rotation, crop, neare
 Brightness/Contrast/Saturation use normalized -1..1 controls and preserve alpha.
 
 Schema v2 should store editable source/transform/processing intent and may reuse this core to compile previews/output.
+
+## ADR-068 — Smart Import Reduce Colors uses bounded deterministic histogram quantization
+**Status:** Accepted / implemented foundation
+
+Reduce Colors must remain deterministic and bounded even for the maximum accepted source raster.
+
+The common-core quantizer therefore:
+- uses a fixed 5-bit-per-channel RGB histogram with at most 32,768 occupied bins;
+- ignores fully transparent pixels when deriving the palette;
+- weights histogram bins by source pixel frequency;
+- repeatedly splits the highest-impact color box along its widest RGB channel;
+- produces at most 256 colors;
+- maps visible source RGB to the nearest generated palette color;
+- preserves original source alpha;
+- returns already-within-limit artwork unchanged.
+
+This avoids an unbounded map containing every distinct 24-bit source color while still adapting the palette to image content.
+
+## ADR-069 — Palette Limited and dithering preserve source transparency
+**Status:** Accepted / implemented foundation
+
+Palette Limited processing treats the selected palette as an RGB constraint. Source alpha remains authoritative.
+
+Floyd-Steinberg dithering:
+- diffuses RGB error only;
+- preserves source alpha;
+- leaves fully transparent pixels byte-for-byte unchanged;
+- does not diffuse error into or through fully transparent pixels;
+- remains deterministic for the same source and ordered palette.
+
+This prevents invisible/transparent areas from becoming color bridges during import processing.
+
+Posterize and Monochrome follow the same alpha-preservation rule.

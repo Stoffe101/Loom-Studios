@@ -184,15 +184,20 @@ Implemented pure-core prerequisites:
 - mirror H/V;
 - quarter-turn rotation;
 - crop + nearest-neighbor resize;
-- brightness/contrast/saturation.
+- brightness/contrast/saturation;
+- Reduce Colors;
+- Palette Limited mapping;
+- Floyd-Steinberg Dither;
+- Posterize;
+- Monochrome.
 
 Still missing for reference #03:
 - PNG source adapter;
 - schema-v2 Image layer;
 - free move/scale/arbitrary rotate/aspect-lock authoring;
-- Reduce Colors;
-- Dither;
-- import modes;
+- Outline Only;
+- Pixel-art mode orchestration;
+- transparency/background-removal workflow;
 - original/processed/result/3D workspace UI.
 
 Imported artwork must still become a real editable layer rather than a destructive paste.
