@@ -973,7 +973,7 @@ class LoomProjectCodecTest {
     @Test
     void unsupportedSchemaUsesExplicitMigrationGate() {
         byte[] encoded = LoomProjectFactory.forPlayer(PLAYER_ID).encode();
-        encoded[7] = 2;
+        encoded[7] = 3;
 
         IllegalArgumentException error = assertThrows(
                 IllegalArgumentException.class,
