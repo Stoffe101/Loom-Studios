@@ -211,3 +211,10 @@ Equipped LoomProject snapshot
 ```
 
 Unsaved edits never automatically cross the equip/network boundary.
+
+Current enforcement:
+- editor widgets and scoped 3D preview read `ProjectSession`;
+- world rendering reads the equipped snapshot;
+- `ClientCosmeticSync` announces/uploads the equipped hash/project only;
+- Save updates persistence only;
+- Save + Equip advances the world/network snapshot.
