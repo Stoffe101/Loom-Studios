@@ -13,7 +13,7 @@ import dev.loomstudios.project.LoomProjectCode;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -213,7 +213,17 @@ public final class LoomCodesScreen extends Screen {
                 Component.literal("Paste Portable Code from Clipboard"),
                 this::pastePortableCode
         ));
-        y += 29;
+        y += 27;
+
+        addRenderableWidget(new LoomButton(
+                centerLeft + 8,
+                y,
+                width - 16,
+                20,
+                Component.literal("Import .loom Project File"),
+                this::importProjectFile
+        ));
+        y += 27;
 
         int half = Math.max(70, (width - 20) / 2);
 
@@ -391,6 +401,54 @@ public final class LoomCodesScreen extends Screen {
         }
     }
 
+    private void importProjectFile() {
+        String selected = TinyFileDialogs.tinyfd_openFileDialog(
+                "Loom Studios - Import Project",
+                "",
+                null,
+                "Loom project (*.loom)",
+                false
+        );
+
+        if (selected == null || selected.isBlank()) {
+            return;
+        }
+
+        try {
+            Path path = Path.of(selected);
+            long size = java.nio.file.Files.size(path);
+
+            if (size <= 0
+                    || size > dev.loomstudios.project.LoomProjectCodec.MAX_SERIALIZED_BYTES) {
+                throw new IllegalArgumentException(
+                        "Project file size is outside Loom limits"
+                );
+            }
+
+            incomingProject =
+                    dev.loomstudios.project.LoomProjectCodec.decode(
+                            java.nio.file.Files.readAllBytes(path)
+                    );
+            incomingStatus = "Valid file: "
+                    + incomingProject.name()
+                    + " • "
+                    + LoomProjectCode.designId(incomingProject);
+            selectPreview(incomingProject);
+            status = "Project file decoded safely";
+        } catch (IOException | IllegalArgumentException e) {
+            LoomStudios.LOGGER.warn(
+                    "Rejected imported Loom project file {}",
+                    selected,
+                    e
+            );
+            incomingProject = null;
+            incomingStatus = "Selected .loom file is invalid or unsupported.";
+            status = "Project-file import rejected";
+        }
+
+        updateButtons();
+    }
+
     private void pastePortableCode() {
         String clipboard = readClipboard();
 
@@ -478,16 +536,11 @@ public final class LoomCodesScreen extends Screen {
     }
 
     private void copyToClipboard(String value) {
-        GLFW.glfwSetClipboardString(
-                minecraft.getWindow().getWindow(),
-                value
-        );
+        minecraft.keyboardHandler.setClipboard(value);
     }
 
     private String readClipboard() {
-        return GLFW.glfwGetClipboardString(
-                minecraft.getWindow().getWindow()
-        );
+        return minecraft.keyboardHandler.getClipboard();
     }
 
     private void updateButtons() {
@@ -671,14 +724,14 @@ public final class LoomCodesScreen extends Screen {
                 font,
                 Component.literal(clipped),
                 centerLeft + 8,
-                contentTop + 128,
+                contentTop + 154,
                 incomingProject == null
                         ? LoomUiTheme.TEXT_MUTED
                         : LoomUiTheme.ACCENT,
                 false
         );
 
-        int infoTop = contentTop + 154;
+        int infoTop = contentTop + 178;
         graphics.drawString(
                 font,
                 Component.literal("Visibility & Permissions"),
