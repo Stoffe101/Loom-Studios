@@ -2,7 +2,12 @@
 
 ## 2026-10-02 — Equipped-state hardening + emissive cleanup + Select UI
 
-**Status: IMPLEMENTED / CI + LOCAL VISUAL VERIFICATION PENDING**
+**Status: CI PASS / LOCAL VISUAL VERIFICATION PENDING**
+
+Exact verified checkpoint: `831b1139a14944b643926f67c655db9b46b65c38`  
+GitHub Actions #78: **SUCCESS**
+
+Source-only selection-history checkpoint `01834249405e621691aba2fc9f13525d5ef7f786` also passed GitHub Actions #76.
 
 Runtime/state hardening:
 - local multiplayer publication now reads the explicitly equipped project/hash rather than the dirty editor session;
