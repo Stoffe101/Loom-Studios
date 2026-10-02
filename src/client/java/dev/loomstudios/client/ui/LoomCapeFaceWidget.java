@@ -6,6 +6,7 @@ import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomProject;
+import dev.loomstudios.project.PixelSelection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -38,6 +39,11 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         void apply(int startX, int startY, int endX, int endY);
     }
 
+    @FunctionalInterface
+    public interface SelectionAction {
+        void apply(PixelSelection selection);
+    }
+
     public interface StrokeLifecycle {
         void begin();
 
@@ -48,7 +54,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         BRUSH,
         CLICK,
         LINE,
-        RECTANGLE
+        RECTANGLE,
+        SELECTION
     }
 
     private static final int HEADER_HEIGHT = 24;
@@ -63,6 +70,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
     private final Supplier<CapeUvRegion> regionSupplier;
     private final PixelAction pixelAction;
     private final ShapeAction shapeAction;
+    private final Supplier<PixelSelection> selectionSupplier;
+    private final SelectionAction selectionAction;
     private final StrokeLifecycle strokeLifecycle;
     private final IntSupplier brushSizeSupplier;
     private final Supplier<GestureMode> gestureModeSupplier;
@@ -106,6 +115,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             Supplier<CapeUvRegion> regionSupplier,
             PixelAction pixelAction,
             ShapeAction shapeAction,
+            Supplier<PixelSelection> selectionSupplier,
+            SelectionAction selectionAction,
             StrokeLifecycle strokeLifecycle,
             IntSupplier brushSizeSupplier,
             Supplier<GestureMode> gestureModeSupplier
@@ -116,6 +127,8 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         this.regionSupplier = Objects.requireNonNull(regionSupplier);
         this.pixelAction = Objects.requireNonNull(pixelAction);
         this.shapeAction = Objects.requireNonNull(shapeAction);
+        this.selectionSupplier = Objects.requireNonNull(selectionSupplier);
+        this.selectionAction = Objects.requireNonNull(selectionAction);
         this.strokeLifecycle = Objects.requireNonNull(strokeLifecycle);
         this.brushSizeSupplier = Objects.requireNonNull(brushSizeSupplier);
         this.gestureModeSupplier = Objects.requireNonNull(gestureModeSupplier);
@@ -278,6 +291,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         }
 
         renderCursor(graphics, geometry);
+        renderSelectionOutline(graphics, geometry);
         renderShapePreview(graphics, geometry);
         graphics.disableScissor();
 
@@ -421,7 +435,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             return;
         }
 
-        if (mode == GestureMode.RECTANGLE) {
+        if (mode == GestureMode.RECTANGLE || mode == GestureMode.SELECTION) {
             int left = Math.min(startX, endX);
             int right = Math.max(startX, endX);
             int top = Math.min(startY, endY);
@@ -432,6 +446,28 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             graphics.fill(left, top, left + 2, bottom + 1, LoomUiTheme.ACCENT);
             graphics.fill(right - 1, top, right + 1, bottom + 1, LoomUiTheme.ACCENT);
         }
+    }
+
+    private void renderSelectionOutline(
+            GuiGraphics graphics,
+            CanvasGeometry geometry
+    ) {
+        PixelSelection selection = selectionSupplier.get();
+        if (selection == null) {
+            return;
+        }
+
+        int left = geometry.left + selection.minX() * geometry.pixelScale;
+        int top = geometry.top + selection.minY() * geometry.pixelScale;
+        int right = geometry.left
+                + (selection.maxX() + 1) * geometry.pixelScale;
+        int bottom = geometry.top
+                + (selection.maxY() + 1) * geometry.pixelScale;
+
+        graphics.fill(left, top, right, top + 2, LoomUiTheme.ACCENT_ALT);
+        graphics.fill(left, bottom - 2, right, bottom, LoomUiTheme.ACCENT_ALT);
+        graphics.fill(left, top, left + 2, bottom, LoomUiTheme.ACCENT_ALT);
+        graphics.fill(right - 2, top, right, bottom, LoomUiTheme.ACCENT_ALT);
     }
 
     private static void drawScreenLine(
@@ -640,16 +676,28 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
 
         if (event.button() == 0 && shapeActive) {
             shapeActive = false;
-            shapeAction.apply(
-                    shapeStartX,
-                    shapeStartY,
-                    shapeEndX,
-                    shapeEndY
-            );
 
-            if (strokeActive) {
-                strokeActive = false;
-                strokeLifecycle.end();
+            if (gestureModeSupplier.get() == GestureMode.SELECTION) {
+                selectionAction.apply(
+                        PixelSelection.between(
+                                shapeStartX,
+                                shapeStartY,
+                                shapeEndX,
+                                shapeEndY
+                        )
+                );
+            } else {
+                shapeAction.apply(
+                        shapeStartX,
+                        shapeStartY,
+                        shapeEndX,
+                        shapeEndY
+                );
+
+                if (strokeActive) {
+                    strokeActive = false;
+                    strokeLifecycle.end();
+                }
             }
             return true;
         }
@@ -684,6 +732,15 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         }
 
         GestureMode mode = gestureModeSupplier.get();
+
+        if (mode == GestureMode.SELECTION) {
+            shapeActive = true;
+            shapeStartX = pixel[0];
+            shapeStartY = pixel[1];
+            shapeEndX = pixel[0];
+            shapeEndY = pixel[1];
+            return;
+        }
 
         if (!strokeActive) {
             strokeActive = true;
