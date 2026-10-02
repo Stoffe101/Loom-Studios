@@ -38,6 +38,56 @@ public final class ProjectEdits {
         );
     }
 
+    public static LoomProject addCapeImageLayer(
+            LoomProject project,
+            String name,
+            ImageLayerData data
+    ) {
+        LoomCanvas canvas = project.cape();
+        ensureLayerCapacity(canvas);
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(LoomLayer.image(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                java.util.Objects.requireNonNull(data, "data")
+        ));
+
+        return project.withCape(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
+    public static LoomProject addCapeGradientLayer(
+            LoomProject project,
+            String name,
+            GradientLayerData data
+    ) {
+        LoomCanvas canvas = project.cape();
+        ensureLayerCapacity(canvas);
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(LoomLayer.gradient(
+                UUID.randomUUID(),
+                uniqueLayerName(canvas.layers(), name),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                java.util.Objects.requireNonNull(data, "data")
+        ));
+
+        return project.withCape(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
     public static LoomProject duplicateCapeLayer(
             LoomProject project,
             UUID layerId
@@ -56,17 +106,12 @@ public final class ProjectEdits {
                 continue;
             }
 
-            LoomLayer copy = new LoomLayer(
+            LoomLayer copy = source.duplicate(
                     UUID.randomUUID(),
                     uniqueLayerName(
                             next,
                             source.name() + " Copy"
-                    ),
-                    source.visible(),
-                    source.opacity(),
-                    source.blendMode(),
-                    source.emissive(),
-                    source.pixels()
+                    )
             );
             next.add(i + 1, copy);
 
@@ -203,6 +248,46 @@ public final class ProjectEdits {
         );
     }
 
+    public static LoomProject setCapeLayerLocked(
+            LoomProject project,
+            UUID layerId,
+            boolean locked
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withLocked(locked)
+        );
+    }
+
+    public static LoomProject setCapeImageData(
+            LoomProject project,
+            UUID layerId,
+            ImageLayerData data
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withImageData(
+                        java.util.Objects.requireNonNull(data, "data")
+                )
+        );
+    }
+
+    public static LoomProject setCapeGradientData(
+            LoomProject project,
+            UUID layerId,
+            GradientLayerData data
+    ) {
+        return updateCapeLayer(
+                project,
+                layerId,
+                layer -> layer.withGradientData(
+                        java.util.Objects.requireNonNull(data, "data")
+                )
+        );
+    }
+
     public static LoomProject setCapeLayerBlendMode(
             LoomProject project,
             UUID layerId,
@@ -236,6 +321,40 @@ public final class ProjectEdits {
         return project.withCape(
                 canvas.replaceLayer(layerId, replacement)
         );
+    }
+
+    private static void ensureLayerCapacity(
+            LoomCanvas canvas
+    ) {
+        if (canvas.layers().size() >= LoomProjectCodec.MAX_LAYER_COUNT) {
+            throw new IllegalStateException(
+                    "Cape already has the maximum layer count"
+            );
+        }
+    }
+
+    private static LoomLayer requireEditablePaintLayer(
+            LoomCanvas canvas,
+            UUID layerId
+    ) {
+        LoomLayer layer = canvas.layers().stream()
+                .filter(candidate -> candidate.id().equals(layerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown layer " + layerId
+                ));
+
+        if (layer.kind() != LayerKind.PAINT) {
+            throw new IllegalStateException(
+                    "Paint tools require a paint layer"
+            );
+        }
+
+        if (layer.locked()) {
+            throw new IllegalStateException("Layer is locked");
+        }
+
+        return layer;
     }
 
     private static String uniqueLayerName(
@@ -331,12 +450,10 @@ public final class ProjectEdits {
         int regionWidth = region.width(scale);
         int regionHeight = region.height(scale);
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int[] pixels = layer.pixels();
         boolean changed = false;
@@ -400,12 +517,10 @@ public final class ProjectEdits {
         int regionHeight = region.height(scale);
         validateSelection(selection, regionWidth, regionHeight);
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int[] pixels = layer.pixels();
         int[] captured = new int[selection.width() * selection.height()];
@@ -468,12 +583,10 @@ public final class ProjectEdits {
         int regionHeight = region.height(scale);
         validateSelection(selection, regionWidth, regionHeight);
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int[] pixels = layer.pixels();
         int[] captured = new int[selection.width() * selection.height()];
@@ -683,12 +796,10 @@ public final class ProjectEdits {
         int regionWidth = region.width(scale);
         int regionHeight = region.height(scale);
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int[] pixels = layer.pixels();
         int[] before = pixels.clone();
@@ -784,12 +895,10 @@ public final class ProjectEdits {
             return project;
         }
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int startAtlasX = region.atlasX(localX, scale);
         int startAtlasY = region.atlasY(localY, scale);
@@ -876,12 +985,10 @@ public final class ProjectEdits {
             return project;
         }
 
-        LoomLayer layer = canvas.layers().stream()
-                .filter(candidate -> candidate.id().equals(layerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Unknown layer " + layerId
-                ));
+        LoomLayer layer = requireEditablePaintLayer(
+                canvas,
+                layerId
+        );
 
         int index = y * canvas.width() + x;
         if (layer.pixelAt(index) == argb) {
