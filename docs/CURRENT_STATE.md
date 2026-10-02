@@ -326,6 +326,8 @@ Implemented pure-core prerequisites:
 - Monochrome;
 - automated transform/placement/adjustment/quantization/dithering tests.
 
+Exact green quantization/dithering checkpoint: `7d4efbe75744453ba03142eb61d97c917f79c7bc` — GitHub Actions #85 **SUCCESS**.
+
 Already available elsewhere:
 - high-resolution Loom canvases;
 - alpha;
