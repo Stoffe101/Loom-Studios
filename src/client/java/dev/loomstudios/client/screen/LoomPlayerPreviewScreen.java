@@ -14,6 +14,10 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import dev.loomstudios.project.LoomProject;
+
+import java.util.Objects;
+import java.util.function.Supplier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -37,6 +41,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private static final int MUTED_TEXT_COLOR = 0xFF9CB2BA;
 
     private final Screen parent;
+    private final Supplier<LoomProject> previewProjectSupplier;
 
     private PreviewMode mode = PreviewMode.CAPE;
     private float yaw = 180.0F;
@@ -45,12 +50,23 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private boolean draggingPreview;
 
     public LoomPlayerPreviewScreen() {
-        this(null);
+        this(null, ClientProjectWorkspace::project);
     }
 
     public LoomPlayerPreviewScreen(Screen parent) {
+        this(parent, ClientProjectWorkspace::project);
+    }
+
+    public LoomPlayerPreviewScreen(
+            Screen parent,
+            Supplier<LoomProject> previewProjectSupplier
+    ) {
         super(TITLE);
         this.parent = parent;
+        this.previewProjectSupplier = Objects.requireNonNull(
+                previewProjectSupplier,
+                "previewProjectSupplier"
+        );
     }
 
     @Override
@@ -192,7 +208,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private EntityRenderState extractRenderState(LivingEntity entity) {
         return PlayerCosmeticRenderer.withPreviewProject(
                 this.minecraft,
-                ClientProjectWorkspace.project(),
+                previewProjectSupplier.get(),
                 () -> {
                     EntityRenderDispatcher dispatcher =
                             Minecraft.getInstance().getEntityRenderDispatcher();
