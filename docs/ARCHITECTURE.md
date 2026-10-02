@@ -79,6 +79,8 @@ Use a separate Loom Studios feature pass aligned with the corresponding cape/Ely
 
 The preview renders a synthetic/isolated player state inside the GUI and points it at temporary project output. Unsaved preview state must not alter real equipped multiplayer state.
 
+For timeline authoring, the preview may request a fixed schema-v3 timeline tick. That fixed-tick bundle is isolated under a preview-only hash, updates cached textures in place while scrubbing, and is excluded from normal world-time animation ticking.
+
 ## Multiplayer flow
 
 1. player saves/equips project locally
@@ -92,6 +94,8 @@ The preview renders a synthetic/isolated player state inside the GUI and points 
 9. remote client compiles/renders locally
 
 Animation frames are never streamed continuously.
+
+Schema-v3 animation definitions travel inside the normal content-addressed project blob. Each client evaluates the timeline locally.
 
 ## Persistence
 
@@ -224,3 +228,30 @@ Current enforcement:
 - `ClientCosmeticSync` announces/uploads the equipped hash/project only;
 - Save updates persistence only;
 - Save + Equip advances the world/network snapshot.
+
+## Schema-v3 animation pipeline
+
+```
+LoomAnimation
+  duration / loop / playback speed
+          |
+          v
+  AnimationTrack[]
+ layer UUID + channel + effect
+ enabled + speed + loop
+          |
+          v
+ AnimationKeyframe[]
+      tick + value
+          |
+          v
+   AnimationEvaluator
+          |
+          v
+ LoomTextureCompiler.compileAnimated
+          |
+ RuntimeCosmeticCache
+  Cape / Elytra / emissive textures
+```
+
+Current effects are evaluated deterministically and locally. The legacy runtime hue-cycle flag remains compatibility-only behavior; new authoring uses schema-v3 tracks.

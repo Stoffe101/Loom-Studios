@@ -175,3 +175,27 @@ Questions answered:
 Use:
 - version-specific API behavior inspection and independent Loom Studios implementation.
 - No Minecraft assets are copied into the Loom Studios source.
+
+## Animation / schema v3
+
+Common model:
+- `src/main/java/dev/loomstudios/project/LoomAnimation.java`
+- `src/main/java/dev/loomstudios/project/AnimationTrack.java`
+- `src/main/java/dev/loomstudios/project/AnimationKeyframe.java`
+- `src/main/java/dev/loomstudios/project/AnimationChannel.java`
+- `src/main/java/dev/loomstudios/project/AnimationEffectType.java`
+- `src/main/java/dev/loomstudios/project/AnimationAuthoring.java`
+- `src/main/java/dev/loomstudios/project/AnimationEvaluator.java`
+
+Client authoring/runtime:
+- `src/client/java/dev/loomstudios/client/ui/LoomAnimationTimelineWidget.java`
+- `src/client/java/dev/loomstudios/client/screen/ElytraEditorScreen.java`
+- `src/client/java/dev/loomstudios/client/render/LoomTextureCompiler.java`
+- `src/client/java/dev/loomstudios/client/render/RuntimeCosmeticCache.java`
+- `src/client/java/dev/loomstudios/client/render/PlayerCosmeticRenderer.java`
+- `src/client/java/dev/loomstudios/client/ui/LoomPlayerPreviewWidget.java`
+
+Persistence:
+- `src/main/java/dev/loomstudios/project/LoomProject.java`
+- `src/main/java/dev/loomstudios/project/LoomProjectCodec.java`
+- `src/main/java/dev/loomstudios/project/LoomProjectMigrations.java`

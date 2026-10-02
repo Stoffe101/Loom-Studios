@@ -187,23 +187,35 @@ Still planned:
 - animation timeline/effects;
 - final reference polish.
 
-## Phase 6 — Animation/effects
+## Phase 6 — Animation authoring
+Status: **MVP IMPLEMENTED / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
 
-**Status:** RUNTIME PROOF EXISTS / AUTHORING MODEL NOT STARTED.
+Implemented:
+- schema-v3 project animation;
+- explicit v1 -> v2 -> v3 migration;
+- bounded layer-targeted tracks/keyframes;
+- Cape and Elytra channels;
+- Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow;
+- deterministic local runtime evaluation;
+- Cape + Elytra animated texture updates;
+- authored emissive animation;
+- compact Elytra timeline dock;
+- play/pause and scrub;
+- loop/once, duration and playback speed;
+- per-track speed;
+- add/select/enable/delete track;
+- effect cycling;
+- add/remove keyframe;
+- scalar keyframe value editing;
+- isolated fixed-tick 3D preview;
+- layer-reference validation/pruning.
 
-Planned:
-- timeline;
-- tracks/keyframes;
-- pulse;
-- scroll;
-- hue shift;
-- moving gradient;
-- sparkle;
-- emissive/additive effects;
-- performance controls.
-
-Gate:
-- layer/effect schema design.
+Still planned:
+- standing/open/gliding preview-state controls;
+- direct draggable keyframes;
+- richer effect-specific property panels;
+- Cape Editor animation exposure;
+- final reference fidelity.
 
 ## Phase 7 — Multiplayer library/sharing
 
