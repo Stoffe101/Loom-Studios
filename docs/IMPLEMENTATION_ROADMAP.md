@@ -219,38 +219,34 @@ Still planned:
 
 ## Phase 7 — Multiplayer library/sharing
 
-**Status:** MULTIPLAYER CONTENT-HASH SYNC IMPLEMENTED / PRODUCT SHARING UI NOT STARTED.
+**Status:** LOCAL/OFFLINE SHARING MVP IMPLEMENTED / HOSTED SERVICE NOT IMPLEMENTED / LOCAL VISUAL VERIFICATION PENDING.
 
-Implemented:
+Existing multiplayer infrastructure:
 - server/client project validation;
 - content-hash cache;
 - remote-player sync.
 
-Planned:
-- short Loom Codes;
-- portable codes;
-- private clickable chat result;
-- Copy / Import / Preview / Favorite;
-- permissions/visibility.
+Implemented product sharing:
+- deterministic `LS-XXXX-XXXX-XXXX` design fingerprint;
+- bounded self-contained `LSP1:` portable project codes;
+- clipboard copy/paste;
+- imported-project preview;
+- `.loom` file import;
+- fork-on-import identity safety;
+- Import to Library / Import + Open;
+- editable `.loom` export;
+- portable-code text export;
+- Cape/Elytra PNG export;
+- Reference-05-oriented local/private sharing screen.
 
-## Home reference shell
+Intentionally not faked:
+- hosted short-code resolver;
+- public gallery;
+- friends/public permission backend;
+- clickable chat card service;
+- Favorites/collections backend.
 
-**Status:** FIRST REFERENCE-ORIENTED SHELL CI GREEN / LOCAL VISUAL VERIFICATION PENDING.
-
-Implemented:
-- responsive three-column shell;
-- icon action cards;
-- real recent-project thumbnails;
-- integrated selected-project 3D preview;
-- Blank + Gradient templates;
-- Edit Elytra and Smart Import routing;
-- status/footer treatment.
-
-Still planned:
-- Loom Codes and Settings destinations;
-- additional template packs;
-- final decorative wood/cloth/metal fidelity.
-
+A future hosted service may use the design fingerprint or issue a separate resolver code, but offline import remains `LSP1:`.
 ## Phase 8 — Reference-image fidelity
 
 Reference fidelity is no longer treated as something to remember only at the very end.

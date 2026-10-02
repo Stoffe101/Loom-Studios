@@ -1,5 +1,48 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Loom Codes local/offline sharing MVP
+
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
+
+Merged-main baseline entering the pass:
+- `ccc8fe3ca8c05a7048745daf03c26d7f7940beac` — GitHub Actions #151 **SUCCESS**.
+
+Green checkpoints so far:
+- `bff95cbd5c79ce59b417e97f49cb58917b97d307` — portable-code common core — Actions #152 **SUCCESS**;
+- `709087febc06370df247bdb200d0b988e3f7ea79` — functional sharing screen + mapped clipboard + project-file import — Actions #154 **SUCCESS**;
+- `a34bfddac35d29e175d9bcdce75dff3ac2969365` — canonical sharing documentation head — Actions #156 **SUCCESS**.
+
+Implemented common core:
+- `LSP1:` self-contained compressed portable project code;
+- bounded compression/decompression;
+- normal Loom codec validation after decode;
+- deterministic `LS-XXXX-XXXX-XXXX` design fingerprint;
+- fork-on-import identity protection.
+
+Implemented Reference-05-oriented client workflow:
+- Home Loom Codes destination;
+- Copy Design ID;
+- Copy Portable Code;
+- Save Portable Code;
+- Paste/decode Portable Code;
+- native `.loom` import dialog;
+- imported-design preview before acceptance;
+- Cape/Elytra preview toggle;
+- Import to Library;
+- Import + Open;
+- editable `.loom` export;
+- Cape PNG export;
+- Elytra PNG export;
+- unique export filenames;
+- explicit local/private service wording.
+
+The first sharing UI compile run #153 failed only because the initial implementation reached through Minecraft's Window wrapper using a non-existent native-handle accessor. It was corrected to use the mapped Minecraft keyboardHandler clipboard API; exact corrected head #154 is green.
+
+No hosted resolver/gallery/friends/public backend is claimed or implemented.
+
+Local visual/runtime verification remains pending for clipboard behavior, file picker, exports, imported project opening, preview correctness and Reference 05 layout at all mandatory GUI profiles.
+
+---
 ## 2026-10-02 — Schema v3 + animation timeline MVP
 
 **Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**

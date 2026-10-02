@@ -199,3 +199,19 @@ Persistence:
 - `src/main/java/dev/loomstudios/project/LoomProject.java`
 - `src/main/java/dev/loomstudios/project/LoomProjectCodec.java`
 - `src/main/java/dev/loomstudios/project/LoomProjectMigrations.java`
+
+## Loom Codes / local sharing
+
+Common project-transfer format:
+- `src/main/java/dev/loomstudios/project/LoomProjectCode.java`
+
+Client sharing/export:
+- `src/client/java/dev/loomstudios/client/screen/LoomCodesScreen.java`
+- `src/client/java/dev/loomstudios/client/sharing/LoomShareExportAdapter.java`
+
+Related local project library:
+- `src/client/java/dev/loomstudios/client/project/LocalProjectLibrary.java`
+- `src/client/java/dev/loomstudios/client/project/ProjectLibraryIndex.java`
+- `src/main/java/dev/loomstudios/project/ProjectFileStore.java`
+
+Native project-file picker reuses LWJGL TinyFileDialogs, the same native dialog dependency already used by Smart Import.

@@ -34,6 +34,7 @@ Every meaningful pass must record:
 - `PROJECT_FORMAT.md` — Loom project/code serialization
 - `SMART_IMPORT.md` — Smart Import transform/processing architecture and status
 - `ANIMATION.md` — schema-v3 animation model, runtime evaluation, timeline authoring and preview isolation
+- `LOOM_CODES.md` — local/offline project sharing, portable codes, imports/exports and hosted-service boundary
 - `IMPLEMENTATION_ROADMAP.md` — staged build roadmap
 - `REFERENCE_FIDELITY_ROADMAP.md` — per-reference-screen implementation/status map
 - `TEST_MATRIX.md` — required automated/manual validation
