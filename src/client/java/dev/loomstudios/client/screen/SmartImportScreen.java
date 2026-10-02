@@ -43,8 +43,11 @@ public final class SmartImportScreen extends Screen {
 
     private final Screen parent;
     private final CapeUvRegion targetRegion;
+    private final UUID editingLayerId;
 
     private PngImportAdapter.LoadedImage loaded;
+    private ImageLayerData editingBaseData;
+    private String layerName = "Imported Image";
     private ImagePlacementMode placementMode = ImagePlacementMode.FIT;
     private boolean keepAspect = true;
     private ImageProcessingSettings processing =
@@ -90,11 +93,48 @@ public final class SmartImportScreen extends Screen {
     private int controlPanelHeight;
 
     public SmartImportScreen(Screen parent, CapeUvRegion targetRegion) {
+        this(parent, targetRegion, null, null);
+    }
+
+    public SmartImportScreen(
+            Screen parent,
+            CapeUvRegion targetRegion,
+            UUID editingLayerId,
+            LoomLayer editingLayer
+    ) {
         super(Component.literal("Loom Studios - Smart Import"));
         this.parent = parent;
         this.targetRegion = targetRegion == null
                 ? CapeUvRegion.OUTSIDE
                 : targetRegion;
+        this.editingLayerId = editingLayerId;
+
+        if (editingLayer != null) {
+            if (editingLayer.kind()
+                    != dev.loomstudios.project.LayerKind.IMAGE) {
+                throw new IllegalArgumentException(
+                        "Smart Import can only edit Image layers"
+                );
+            }
+
+            ImageLayerData data = editingLayer.imageData();
+            this.editingBaseData = data;
+            this.processing = data.processing();
+            this.rotationDegrees =
+                    data.transform().rotationDegrees();
+            this.mirrorHorizontal =
+                    data.transform().mirrorHorizontal();
+            this.mirrorVertical =
+                    data.transform().mirrorVertical();
+            this.layerName = editingLayer.name();
+            this.loaded = new PngImportAdapter.LoadedImage(
+                    Path.of(editingLayer.name() + ".png"),
+                    data.source(),
+                    data.source()
+            );
+            this.status = "Editing Image layer: "
+                    + editingLayer.name();
+        }
     }
 
     @Override
@@ -459,8 +499,10 @@ public final class SmartImportScreen extends Screen {
 
         try {
             loaded = PngImportAdapter.load(Path.of(selected));
+            editingBaseData = null;
             resetTransform();
             processing = ImageProcessingSettings.defaults();
+            layerName = loaded.sourcePath().getFileName().toString();
 
             PixelImage original = loaded.original();
             PixelImage embedded = loaded.embedded();
@@ -500,12 +542,15 @@ public final class SmartImportScreen extends Screen {
         placementMode = values[
                 (placementMode.ordinal() + 1) % values.length
         ];
+        editingBaseData = null;
         resetTransform();
         touch();
     }
 
     private void toggleKeepAspect() {
         keepAspect = !keepAspect;
+        editingBaseData = null;
+        resetTransform();
         touch();
     }
 
@@ -664,6 +709,25 @@ public final class SmartImportScreen extends Screen {
                 raster
         );
 
+        if (editingLayerId != null) {
+            LoomLayer current = project.cape().layers().stream()
+                    .filter(layer -> layer.id().equals(editingLayerId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (current != null
+                    && current.kind()
+                    == dev.loomstudios.project.LayerKind.IMAGE) {
+                candidateProjectCache = project.withCape(
+                        project.cape().replaceLayer(
+                                editingLayerId,
+                                current.withImageData(data)
+                        )
+                );
+                return;
+            }
+        }
+
         ArrayList<LoomLayer> layers =
                 new ArrayList<>(project.cape().layers());
         layers.add(previewLayer);
@@ -692,13 +756,15 @@ public final class SmartImportScreen extends Screen {
                         ? ImagePlacementMode.STRETCH
                         : placementMode;
 
-        ImageLayerData base = ImageLayerData.placed(
-                loaded.embedded(),
-                project.cape().width(),
-                project.cape().height(),
-                target,
-                effectiveMode
-        );
+        ImageLayerData base = editingBaseData != null
+                ? editingBaseData
+                : ImageLayerData.placed(
+                        loaded.embedded(),
+                        project.cape().width(),
+                        project.cape().height(),
+                        target,
+                        effectiveMode
+                );
 
         LayerTransform transform = base.transform();
         transform = new LayerTransform(
@@ -756,21 +822,31 @@ public final class SmartImportScreen extends Screen {
         }
 
         ImageLayerData data = buildImageData();
-        String baseName = loaded.sourcePath().getFileName().toString();
+        String baseName = layerName;
         int dot = baseName.lastIndexOf('.');
-        String layerName = dot > 0
+        String normalizedLayerName = dot > 0
                 ? baseName.substring(0, dot)
                 : baseName;
 
-        ClientProjectWorkspace.apply(project ->
-                ProjectEdits.addCapeImageLayer(
-                        project,
-                        layerName,
-                        data
-                )
-        );
-
-        status = "Imported as editable Image layer";
+        if (editingLayerId == null) {
+            ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.addCapeImageLayer(
+                            project,
+                            normalizedLayerName,
+                            data
+                    )
+            );
+            status = "Imported as editable Image layer";
+        } else {
+            ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.setCapeImageData(
+                            project,
+                            editingLayerId,
+                            data
+                    )
+            );
+            status = "Updated editable Image layer";
+        }
 
         if (parent instanceof CapeEditorScreen) {
             this.minecraft.setScreen(parent);
