@@ -195,9 +195,8 @@ public final class LoomHomeScreen extends Screen {
                 Component.literal("Share & redeem designs"),
                 LoomActionCard.Icon.CODE,
                 false,
-                () -> { }
+                this::openLoomCodes
         );
-        codes.active = false;
         addRenderableWidget(codes);
         y += cardHeight + gap;
 
@@ -528,6 +527,48 @@ public final class LoomHomeScreen extends Screen {
                         this,
                         CapeUvRegion.OUTSIDE
                 )
+        );
+    }
+
+    private void openLoomCodes() {
+        ProjectLibraryIndex.selected().ifPresentOrElse(
+                descriptor -> {
+                    try {
+                        LoomProject project = LocalProjectLibrary.load(
+                                descriptor.projectPath()
+                        );
+                        this.minecraft.setScreen(
+                                new LoomCodesScreen(this, project)
+                        );
+                    } catch (IOException | IllegalArgumentException e) {
+                        LoomStudios.LOGGER.error(
+                                "Failed to open selected Loom design for sharing",
+                                e
+                        );
+                    }
+                },
+                () -> {
+                    if (ClientProjectWorkspace.isInitialized()) {
+                        this.minecraft.setScreen(
+                                new LoomCodesScreen(
+                                        this,
+                                        ClientProjectWorkspace.project()
+                                )
+                        );
+                    } else if (this.minecraft.player != null) {
+                        ClientProjectWorkspace.createBlank(
+                                "Untitled Design",
+                                System.currentTimeMillis(),
+                                this.minecraft.player.getUUID()
+                        );
+                        this.minecraft.setScreen(
+                                new LoomCodesScreen(
+                                        this,
+                                        ClientProjectWorkspace.project()
+                                )
+                        );
+                    }
+                }
         );
     }
 
