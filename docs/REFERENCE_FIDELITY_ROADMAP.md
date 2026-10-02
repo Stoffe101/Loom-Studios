@@ -118,7 +118,7 @@ Implemented:
 Missing/reference gap:
 - layer lock;
 - proper icon toolbar;
-- Select/Move/Flip UI (common selection/move/flip engine is now implemented);
+- Select/Move/Flip UI is implemented functionally (local visual verification pending);
 - first-class editable Gradient tool/layer;
 - recent colors;
 - richer tooltips/shortcut help;
@@ -259,8 +259,8 @@ Palette share codes are **not** a substitute for project Loom Codes.
 
 The practical order is:
 
-1. finish Cape Editor functional core;
-2. selection / move / crop / flip;
+1. finish local verification of the current Cape Editor functional core;
+2. reusable transform/image-processing foundations for Smart Import;
 3. layer lock + richer layer metadata in the next project-schema expansion;
 4. editable Gradient architecture;
 5. Recent Project thumbnail cards + Home reference shell;
