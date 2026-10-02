@@ -289,4 +289,52 @@ class ElytraWingEditingTest {
         assertEquals(0xFF44CC88, layer.pixelAt(left));
     }
 
+    @Test
+    void elytraLayerPropertiesAndOrderingAreEditable() {
+        LoomProject project = LoomProjectFactory.blank("Layer Props", 1L);
+        LoomProject withSecond = ProjectEdits.addElytraLayer(
+                project,
+                "Detail"
+        );
+        UUID firstId = withSecond.elytra().layers().getFirst().id();
+        UUID detailId = withSecond.elytra().layers().getLast().id();
+
+        LoomProject edited = ProjectEdits.renameElytraLayer(
+                withSecond,
+                detailId,
+                "Glow Detail"
+        );
+        edited = ProjectEdits.setElytraLayerOpacity(
+                edited,
+                detailId,
+                0.4F
+        );
+        edited = ProjectEdits.setElytraLayerBlendMode(
+                edited,
+                detailId,
+                BlendMode.SCREEN
+        );
+        edited = ProjectEdits.setElytraLayerVisible(
+                edited,
+                detailId,
+                false
+        );
+        edited = ProjectEdits.moveElytraLayer(
+                edited,
+                detailId,
+                -1
+        );
+
+        LoomLayer detail = edited.elytra().layers().getFirst();
+        assertEquals(detailId, detail.id());
+        assertEquals("Glow Detail", detail.name());
+        assertEquals(0.4F, detail.opacity());
+        assertEquals(BlendMode.SCREEN, detail.blendMode());
+        assertFalse(detail.visible());
+        assertEquals(
+                firstId,
+                edited.elytra().layers().getLast().id()
+        );
+    }
+
 }
