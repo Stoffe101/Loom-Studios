@@ -174,12 +174,17 @@ Implemented:
 - project-authored thickness UI 25%–200%;
 - old debug thickness override removed.
 
-Still planned:
+Implemented in the workflow-completion pass:
 - cape-to-Elytra starting conversion;
 - Elytra Smart Import / Image-layer target;
-- richer layer properties and ordering controls;
-- Swatches parity;
+- linked import as two semantic wing Image layers;
+- reopening/editing Elytra Image layers;
+- layer reorder / opacity / rename / blend;
+- shared Swatches parity.
+
+Still planned:
 - standing/open/gliding preview controls;
+- animation timeline/effects;
 - final reference polish.
 
 ## Phase 6 — Animation/effects

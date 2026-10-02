@@ -1,5 +1,50 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Elytra workflow completion
+
+**Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
+
+Exact green implementation checkpoint:
+- `cc55df2ba4b52907595a1d7d7cb7c48849059692` — GitHub Actions #137 **SUCCESS**.
+
+Added cape-to-Elytra conversion:
+- compiles the current cape Outside face;
+- aspect-fits it into the semantic wing face;
+- mirrors the converted artwork into the opposite wing;
+- preserves alpha;
+- creates a new editable Elytra Paint layer rather than flattening/replacing the existing stack.
+
+Added Elytra Smart Import:
+- Smart Import can now target Elytra;
+- linked import creates two semantic Image layers, left + right;
+- the right Image layer mirrors the left transform horizontally;
+- candidate texture/3D preview uses the Elytra canvas;
+- existing Elytra Image layers can be reopened and edited through Smart Import;
+- import continues to validate final project encode bounds before committing.
+
+Expanded Elytra layer authoring:
+- reorder;
+- opacity;
+- rename;
+- blend mode;
+- Edit Image action;
+- shared Swatches/palette window from the Cape workflow.
+
+Automated coverage added for:
+- conversion geometry/mirroring;
+- alpha preservation;
+- 4x conversion;
+- invalid conversion source dimensions;
+- normalized semantic wing rectangles;
+- Elytra Image add/update;
+- Elytra layer property codec round-trip.
+
+No schema or network protocol version changed.
+
+Local visual/runtime verification remains pending for the new layer/property controls, Swatches, conversion result orientation and Elytra Smart Import at the four required GUI profiles.
+
+---
+
 ## 2026-10-02 — Home reference shell + semantic Elytra Editor
 
 **Status: CI PASS / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**

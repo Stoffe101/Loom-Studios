@@ -260,3 +260,20 @@ Still future:
 - transform handles directly on the preview;
 - final reference-image decorative treatment;
 - importing directly into the dedicated Elytra editor once that screen exists.
+
+
+## Elytra target
+
+Smart Import can target Elytra directly.
+
+New linked-wing import:
+- uses the semantic left and right wing-front UV regions;
+- creates two editable Image layers;
+- preserves one embedded source per layer through the normal schema-v2 Image payload;
+- mirrors horizontal placement for the opposite wing;
+- previews the candidate on the Elytra canvas and Elytra 3D player mode;
+- validates the final project encode before committing.
+
+Existing Elytra Image layers can be reopened as a single Image-layer edit.
+
+The two wing fronts are intentionally **not** modeled as one rectangular UV target because the vanilla atlas regions are disjoint.
