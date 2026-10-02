@@ -34,6 +34,9 @@ public final class LoomProjectCodec {
     public static final int MAX_LAYER_NAME_CHARS = 96;
     public static final int MAX_IMAGE_PALETTE_COLORS = 256;
     public static final int MAX_GRADIENT_STOPS = 16;
+    public static final int MAX_ANIMATION_TRACKS = LoomAnimation.MAX_TRACKS;
+    public static final int MAX_ANIMATION_KEYFRAMES =
+            AnimationTrack.MAX_KEYFRAMES;
     private static final int MAX_STRING_BYTES = 512;
 
     private LoomProjectCodec() {
@@ -43,6 +46,7 @@ public final class LoomProjectCodec {
         return switch (project.schemaVersion()) {
             case 1 -> encodeVersion1(project);
             case 2 -> encodeVersion2(project);
+            case 3 -> encodeVersion3(project);
             default -> throw new IllegalArgumentException(
                     "Unsupported Loom project schema "
                             + project.schemaVersion()
@@ -144,8 +148,47 @@ public final class LoomProjectCodec {
         }
     }
 
+    static LoomProject decodeVersion3(byte[] data) {
+        validateEnvelopeSize(data);
+
+        try (DataInputStream in =
+                     new DataInputStream(new ByteArrayInputStream(data))) {
+            requireHeader(in, 3);
+            CommonProjectData common = readCommonProjectData(in);
+            LoomCanvas cape = readCanvasV2(in);
+            LoomCanvas elytra = readCanvasV2(in);
+            LoomAnimation animation = readAnimation(in);
+            rejectTrailingBytes(in);
+
+            return new LoomProject(
+                    3,
+                    common.projectId(),
+                    common.name(),
+                    common.metadata(),
+                    cape,
+                    elytra,
+                    common.runtime(),
+                    animation
+            );
+        } catch (EOFException e) {
+            throw new IllegalArgumentException(
+                    "Truncated Loom project",
+                    e
+            );
+        } catch (IOException | ArithmeticException e) {
+            throw new IllegalArgumentException(
+                    "Malformed Loom project",
+                    e
+            );
+        }
+    }
+
     static byte[] encodeVersion1SnapshotForTest(LoomProject project) {
         return encodeVersion1(project);
+    }
+
+    static byte[] encodeVersion2SnapshotForTest(LoomProject project) {
+        return encodeVersion2(project);
     }
 
     private static byte[] encodeVersion1(LoomProject project) {
@@ -175,6 +218,26 @@ public final class LoomProjectCodec {
                 writeHeaderAndCommon(out, 2, project);
                 writeCanvasV2(out, project.cape());
                 writeCanvasV2(out, project.elytra());
+            }
+
+            return validateEncodedSize(bytes.toByteArray());
+        } catch (IOException impossible) {
+            throw new IllegalStateException(
+                    "Unexpected in-memory serialization failure",
+                    impossible
+            );
+        }
+    }
+
+    private static byte[] encodeVersion3(LoomProject project) {
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+            try (DataOutputStream out = new DataOutputStream(bytes)) {
+                writeHeaderAndCommon(out, 3, project);
+                writeCanvasV2(out, project.cape());
+                writeCanvasV2(out, project.elytra());
+                writeAnimation(out, project.animation());
             }
 
             return validateEncodedSize(bytes.toByteArray());
@@ -617,6 +680,102 @@ public final class LoomProjectCodec {
                 clip,
                 repeat,
                 dither
+        );
+    }
+
+    private static void writeAnimation(
+            DataOutputStream out,
+            LoomAnimation animation
+    ) throws IOException {
+        out.writeInt(animation.durationTicks());
+        out.writeBoolean(animation.loop());
+        out.writeFloat(animation.playbackSpeed());
+        out.writeInt(animation.tracks().size());
+
+        for (AnimationTrack track : animation.tracks()) {
+            writeUuid(out, track.id());
+            writeUuid(out, track.layerId());
+            writeString(out, track.channel().id());
+            writeString(out, track.effect().id());
+            out.writeBoolean(track.enabled());
+            out.writeFloat(track.speed());
+            out.writeBoolean(track.loop());
+            out.writeInt(track.keyframes().size());
+
+            for (AnimationKeyframe keyframe : track.keyframes()) {
+                out.writeInt(keyframe.tick());
+                out.writeFloat(keyframe.value());
+            }
+        }
+    }
+
+    private static LoomAnimation readAnimation(
+            DataInputStream in
+    ) throws IOException {
+        int duration = in.readInt();
+        boolean loop = in.readBoolean();
+        float playbackSpeed = in.readFloat();
+        int trackCount = in.readInt();
+
+        if (trackCount < 0 || trackCount > MAX_ANIMATION_TRACKS) {
+            throw new IllegalArgumentException(
+                    "Animation track count out of range"
+            );
+        }
+
+        List<AnimationTrack> tracks =
+                new ArrayList<>(trackCount);
+
+        for (int trackIndex = 0;
+             trackIndex < trackCount;
+             trackIndex++) {
+            UUID id = readUuid(in);
+            UUID layerId = readUuid(in);
+            AnimationChannel channel = AnimationChannel.fromId(
+                    readString(in, 32)
+            );
+            AnimationEffectType effect =
+                    AnimationEffectType.fromId(
+                            readString(in, 48)
+                    );
+            boolean enabled = in.readBoolean();
+            float speed = in.readFloat();
+            boolean trackLoop = in.readBoolean();
+            int keyframeCount = in.readInt();
+
+            if (keyframeCount < 1
+                    || keyframeCount > MAX_ANIMATION_KEYFRAMES) {
+                throw new IllegalArgumentException(
+                        "Animation keyframe count out of range"
+                );
+            }
+
+            List<AnimationKeyframe> keyframes =
+                    new ArrayList<>(keyframeCount);
+            for (int i = 0; i < keyframeCount; i++) {
+                keyframes.add(new AnimationKeyframe(
+                        in.readInt(),
+                        in.readFloat()
+                ));
+            }
+
+            tracks.add(new AnimationTrack(
+                    id,
+                    layerId,
+                    channel,
+                    effect,
+                    enabled,
+                    speed,
+                    trackLoop,
+                    keyframes
+            ));
+        }
+
+        return new LoomAnimation(
+                duration,
+                loop,
+                playbackSpeed,
+                tracks
         );
     }
 
