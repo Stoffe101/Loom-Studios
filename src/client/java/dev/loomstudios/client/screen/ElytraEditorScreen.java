@@ -8,6 +8,7 @@ import dev.loomstudios.client.ui.LoomElytraCanvasWidget;
 import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomUiTheme;
+import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.LayerKind;
@@ -15,6 +16,7 @@ import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -33,6 +35,8 @@ public final class ElytraEditorScreen extends Screen {
     private int selectedColor = 0xFF22D7E8;
     private int brushSize = 1;
     private boolean linkedMirror = true;
+    private LoomPlayerPreviewWidget.ElytraPose previewPose =
+            LoomPlayerPreviewWidget.ElytraPose.STANDING;
     private UUID selectedLayerId;
 
     private LoomElytraCanvasWidget canvasWidget;
@@ -43,10 +47,22 @@ public final class ElytraEditorScreen extends Screen {
     private LoomButton layerAddButton;
     private LoomButton layerDuplicateButton;
     private LoomButton layerDeleteButton;
+    private LoomButton layerUpButton;
+    private LoomButton layerDownButton;
+    private EditBox layerNameField;
+    private LoomButton layerRenameButton;
+    private LoomButton layerOpacityDownButton;
+    private LoomButton layerOpacityLabelButton;
+    private LoomButton layerOpacityUpButton;
+    private LoomButton layerBlendButton;
+    private LoomButton capeConversionButton;
 
     private LoomButton pencilButton;
     private LoomButton eraserButton;
     private LoomButton linkButton;
+    private LoomButton previewStandingButton;
+    private LoomButton previewOpenButton;
+    private LoomButton previewGlidingButton;
     private LoomButton brushDownButton;
     private LoomButton brushLabelButton;
     private LoomButton brushUpButton;
@@ -171,13 +187,17 @@ public final class ElytraEditorScreen extends Screen {
         int rightWidth = previewRight - previewLeft;
         int rightHeight = shellBottom - contentTop - 7;
         int layerListHeight = Math.max(
-                72,
-                Math.min(96, rightHeight / 3)
+                62,
+                Math.min(82, rightHeight / 4)
         );
-        int actionHeight = 20;
+        int actionHeight = 18;
+        int actionRows = 6;
         int previewHeight = Math.max(
-                84,
-                rightHeight - layerListHeight - actionHeight * 2 - 18
+                72,
+                rightHeight
+                        - layerListHeight
+                        - actionHeight * actionRows
+                        - 30
         );
 
         this.previewWidget = new LoomPlayerPreviewWidget(
@@ -188,6 +208,7 @@ public final class ElytraEditorScreen extends Screen {
                 ClientProjectWorkspace::project,
                 LoomPlayerPreviewWidget.Mode.ELYTRA
         );
+        this.previewWidget.setElytraPose(previewPose);
         addRenderableWidget(this.previewWidget);
 
         int layerTop = contentTop + previewHeight + 6;
@@ -204,8 +225,10 @@ public final class ElytraEditorScreen extends Screen {
         );
         addRenderableWidget(this.layerListWidget);
 
-        int actionsTop = layerTop + layerListHeight + 5;
+        int actionsTop = layerTop + layerListHeight + 4;
+        int rowGap = 4;
         int third = Math.max(38, (rightWidth - 8) / 3);
+
         this.layerAddButton = new LoomButton(
                 previewLeft,
                 actionsTop,
@@ -234,15 +257,105 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(this.layerDuplicateButton);
         addRenderableWidget(this.layerDeleteButton);
 
+        int row = actionsTop + actionHeight + rowGap;
+        int half = Math.max(48, (rightWidth - 4) / 2);
+        this.layerUpButton = new LoomButton(
+                previewLeft,
+                row,
+                half,
+                actionHeight,
+                Component.literal("Layer Up"),
+                () -> moveLayer(1)
+        );
+        this.layerDownButton = new LoomButton(
+                previewLeft + half + 4,
+                row,
+                rightWidth - half - 4,
+                actionHeight,
+                Component.literal("Layer Down"),
+                () -> moveLayer(-1)
+        );
+        addRenderableWidget(this.layerUpButton);
+        addRenderableWidget(this.layerDownButton);
+
+        row += actionHeight + rowGap;
+        int renameWidth = Math.max(48, Math.min(58, rightWidth / 3));
+        this.layerNameField = new EditBox(
+                this.font,
+                previewLeft,
+                row,
+                Math.max(56, rightWidth - renameWidth - 4),
+                actionHeight,
+                Component.literal("Layer name")
+        );
+        this.layerNameField.setMaxLength(
+                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
+        );
+        this.layerNameField.setHint(Component.literal("Layer name"));
+        this.layerRenameButton = new LoomButton(
+                previewLeft + this.layerNameField.getWidth() + 4,
+                row,
+                rightWidth - this.layerNameField.getWidth() - 4,
+                actionHeight,
+                Component.literal("Rename"),
+                this::renameLayer
+        );
+        addRenderableWidget(this.layerNameField);
+        addRenderableWidget(this.layerRenameButton);
+
+        row += actionHeight + rowGap;
+        int small = 34;
+        this.layerOpacityDownButton = new LoomButton(
+                previewLeft,
+                row,
+                small,
+                actionHeight,
+                Component.literal("-"),
+                () -> changeLayerOpacity(-0.1F)
+        );
+        this.layerOpacityLabelButton = new LoomButton(
+                previewLeft + small + 4,
+                row,
+                Math.max(42, rightWidth - small * 2 - 8),
+                actionHeight,
+                Component.literal("Opacity 100%"),
+                () -> { }
+        );
+        this.layerOpacityLabelButton.active = false;
+        this.layerOpacityUpButton = new LoomButton(
+                previewRight - small,
+                row,
+                small,
+                actionHeight,
+                Component.literal("+"),
+                () -> changeLayerOpacity(0.1F)
+        );
+        addRenderableWidget(this.layerOpacityDownButton);
+        addRenderableWidget(this.layerOpacityLabelButton);
+        addRenderableWidget(this.layerOpacityUpButton);
+
+        row += actionHeight + rowGap;
+        this.layerBlendButton = new LoomButton(
+                previewLeft,
+                row,
+                rightWidth,
+                actionHeight,
+                Component.literal("Blend: Normal"),
+                this::cycleLayerBlendMode
+        );
+        addRenderableWidget(this.layerBlendButton);
+
+        row += actionHeight + rowGap;
         addRenderableWidget(new LoomButton(
                 previewLeft,
-                actionsTop + actionHeight + 5,
+                row,
                 rightWidth,
                 actionHeight,
                 Component.literal("Reset 3D View"),
                 this.previewWidget::resetView
         ));
 
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -275,6 +388,53 @@ public final class ElytraEditorScreen extends Screen {
         );
         addRenderableWidget(this.linkButton);
         row += 22 + gap;
+
+        this.capeConversionButton = new LoomButton(
+                x,
+                row,
+                width,
+                20,
+                Component.literal("Cape -> Elytra Layer"),
+                this::convertCapeToElytra
+        );
+        addRenderableWidget(this.capeConversionButton);
+        row += 20 + gap;
+
+        int poseThird = Math.max(32, (width - 8) / 3);
+        this.previewStandingButton = new LoomButton(
+                x,
+                row,
+                poseThird,
+                20,
+                Component.literal("Stand"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.STANDING
+                )
+        );
+        this.previewOpenButton = new LoomButton(
+                x + poseThird + 4,
+                row,
+                poseThird,
+                20,
+                Component.literal("Open"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.OPEN
+                )
+        );
+        this.previewGlidingButton = new LoomButton(
+                x + poseThird * 2 + 8,
+                row,
+                Math.max(32, width - poseThird * 2 - 8),
+                20,
+                Component.literal("Glide"),
+                () -> setPreviewPose(
+                        LoomPlayerPreviewWidget.ElytraPose.GLIDING
+                )
+        );
+        addRenderableWidget(this.previewStandingButton);
+        addRenderableWidget(this.previewOpenButton);
+        addRenderableWidget(this.previewGlidingButton);
+        row += 20 + gap;
 
         int half = Math.max(48, (width - 4) / 2);
         this.pencilButton = new LoomButton(
@@ -466,6 +626,28 @@ public final class ElytraEditorScreen extends Screen {
         );
     }
 
+    private void convertCapeToElytra() {
+        var result = ClientProjectWorkspace.apply(
+                ProjectEdits::addCapeConversionElytraLayer
+        );
+
+        selectedLayerId = result.elytra()
+                .layers()
+                .getLast()
+                .id();
+        updateButtonStates();
+    }
+
+    private void setPreviewPose(
+            LoomPlayerPreviewWidget.ElytraPose pose
+    ) {
+        previewPose = pose;
+        if (previewWidget != null) {
+            previewWidget.setElytraPose(pose);
+        }
+        updateButtonStates();
+    }
+
     private void toggleLinked() {
         linkedMirror = !linkedMirror;
         updateButtonStates();
@@ -566,6 +748,7 @@ public final class ElytraEditorScreen extends Screen {
             return;
         }
         selectedLayerId = layerId;
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -574,6 +757,7 @@ public final class ElytraEditorScreen extends Screen {
                 ProjectEdits.addElytraLayer(project, "Wing Layer")
         );
         selectedLayerId = result.elytra().layers().getLast().id();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -606,6 +790,7 @@ public final class ElytraEditorScreen extends Screen {
                 .layers()
                 .get(originalIndex + 1)
                 .id();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -639,18 +824,112 @@ public final class ElytraEditorScreen extends Screen {
                 .layers()
                 .get(nextIndex)
                 .id();
+        syncLayerFields();
         updateButtonStates();
+    }
+
+    private void moveLayer(int delta) {
+        ensureSelectedLayerExists();
+        if (selectedLayerId == null || delta == 0) {
+            return;
+        }
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.moveElytraLayer(
+                        project,
+                        selectedLayerId,
+                        delta
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void renameLayer() {
+        if (layerNameField == null || selectedLayerId == null) {
+            return;
+        }
+
+        String name = layerNameField.getValue().trim();
+        if (name.isEmpty()) {
+            syncLayerFields();
+            return;
+        }
+
+        try {
+            ClientProjectWorkspace.apply(project ->
+                    ProjectEdits.renameElytraLayer(
+                            project,
+                            selectedLayerId,
+                            name
+                    )
+            );
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        syncLayerFields();
+        updateButtonStates();
+    }
+
+    private void changeLayerOpacity(float delta) {
+        LoomLayer layer = selectedLayer();
+        if (layer == null) {
+            return;
+        }
+
+        float next = Math.max(
+                0.0F,
+                Math.min(1.0F, layer.opacity() + delta)
+        );
+
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setElytraLayerOpacity(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void cycleLayerBlendMode() {
+        LoomLayer layer = selectedLayer();
+        if (layer == null) {
+            return;
+        }
+
+        BlendMode next = layer.blendMode().next();
+        ClientProjectWorkspace.apply(project ->
+                ProjectEdits.setElytraLayerBlendMode(
+                        project,
+                        selectedLayerId,
+                        next
+                )
+        );
+        updateButtonStates();
+    }
+
+    private void syncLayerFields() {
+        if (layerNameField == null) {
+            return;
+        }
+
+        LoomLayer layer = selectedLayer();
+        if (layer != null && !layerNameField.isFocused()) {
+            layerNameField.setValue(layer.name());
+        }
     }
 
     private void undo() {
         ClientProjectWorkspace.undo();
         ensureSelectedLayerExists();
+        syncLayerFields();
         updateButtonStates();
     }
 
     private void redo() {
         ClientProjectWorkspace.redo();
         ensureSelectedLayerExists();
+        syncLayerFields();
         updateButtonStates();
     }
 
@@ -745,10 +1024,17 @@ public final class ElytraEditorScreen extends Screen {
         );
         LoomLayer layer = selectedLayer();
         boolean editable = layer != null && layer.editableAsPaint();
-        int layerCount = ClientProjectWorkspace.project()
+        var layers = ClientProjectWorkspace.project()
                 .elytra()
-                .layers()
-                .size();
+                .layers();
+        int layerCount = layers.size();
+        int selectedIndex = -1;
+        for (int i = 0; i < layers.size(); i++) {
+            if (layers.get(i).id().equals(selectedLayerId)) {
+                selectedIndex = i;
+                break;
+            }
+        }
 
         if (linkButton != null) {
             linkButton.setMessage(Component.literal(
@@ -756,6 +1042,21 @@ public final class ElytraEditorScreen extends Screen {
                             ? "Wings: Linked Mirror"
                             : "Wings: Separate"
             ));
+        }
+        if (previewStandingButton != null) {
+            previewStandingButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.STANDING;
+        }
+        if (previewOpenButton != null) {
+            previewOpenButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.OPEN;
+        }
+        if (previewGlidingButton != null) {
+            previewGlidingButton.active =
+                    previewPose
+                            != LoomPlayerPreviewWidget.ElytraPose.GLIDING;
         }
         if (pencilButton != null) {
             pencilButton.active = editable && tool != Tool.PENCIL;
@@ -811,9 +1112,14 @@ public final class ElytraEditorScreen extends Screen {
                                     : "Off")
             ));
         }
+        boolean hasLayerCapacity =
+                layerCount
+                        < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+        if (capeConversionButton != null) {
+            capeConversionButton.active = hasLayerCapacity;
+        }
         if (layerAddButton != null) {
-            layerAddButton.active =
-                    layerCount < dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_COUNT;
+            layerAddButton.active = hasLayerCapacity;
         }
         if (layerDuplicateButton != null) {
             layerDuplicateButton.active =
@@ -823,6 +1129,42 @@ public final class ElytraEditorScreen extends Screen {
         }
         if (layerDeleteButton != null) {
             layerDeleteButton.active = layer != null && layerCount > 1;
+        }
+        if (layerUpButton != null) {
+            layerUpButton.active =
+                    selectedIndex >= 0 && selectedIndex < layerCount - 1;
+        }
+        if (layerDownButton != null) {
+            layerDownButton.active = selectedIndex > 0;
+        }
+        if (layerRenameButton != null) {
+            layerRenameButton.active = layer != null;
+        }
+        if (layerOpacityDownButton != null) {
+            layerOpacityDownButton.active =
+                    layer != null && layer.opacity() > 0.0F;
+        }
+        if (layerOpacityUpButton != null) {
+            layerOpacityUpButton.active =
+                    layer != null && layer.opacity() < 1.0F;
+        }
+        if (layerOpacityLabelButton != null) {
+            layerOpacityLabelButton.setMessage(Component.literal(
+                    layer == null
+                            ? "Opacity"
+                            : "Opacity "
+                                    + Math.round(layer.opacity() * 100.0F)
+                                    + "%"
+            ));
+        }
+        if (layerBlendButton != null) {
+            layerBlendButton.active = layer != null;
+            layerBlendButton.setMessage(Component.literal(
+                    layer == null
+                            ? "Blend"
+                            : "Blend: "
+                                    + layer.blendMode().displayName()
+            ));
         }
         if (undoButton != null) {
             undoButton.active = ClientProjectWorkspace.session().canUndo();

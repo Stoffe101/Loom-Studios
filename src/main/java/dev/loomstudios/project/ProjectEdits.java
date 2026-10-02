@@ -983,6 +983,34 @@ public final class ProjectEdits {
         return project.withCape(nextCanvas);
     }
 
+    public static LoomProject addCapeConversionElytraLayer(
+            LoomProject project
+    ) {
+        LoomCanvas canvas = project.elytra();
+        ensureLayerCapacity(canvas);
+
+        LoomLayer layer = LoomLayer.paint(
+                UUID.randomUUID(),
+                uniqueLayerName(
+                        canvas.layers(),
+                        "Cape Conversion"
+                ),
+                true,
+                1.0F,
+                BlendMode.NORMAL,
+                false,
+                false,
+                CapeToElytraConversion.rasterize(project)
+        );
+
+        List<LoomLayer> next = new ArrayList<>(canvas.layers());
+        next.add(layer);
+
+        return project.withElytra(
+                new LoomCanvas(canvas.width(), canvas.height(), next)
+        );
+    }
+
     public static LoomProject addElytraLayer(
             LoomProject project,
             String name

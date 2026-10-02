@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -35,8 +36,20 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
         ELYTRA
     }
 
+    public enum ElytraPose {
+        STANDING,
+        OPEN,
+        GLIDING
+    }
+
+    private static final float ELYTRA_STANDING_X = 0.2617994F;
+    private static final float ELYTRA_STANDING_Z = -0.2617994F;
+    private static final float ELYTRA_OPEN_X = 0.34906584F;
+    private static final float ELYTRA_OPEN_Z = -(float)Math.PI / 2.0F;
+
     private final Supplier<LoomProject> projectSupplier;
     private Mode mode;
+    private ElytraPose elytraPose = ElytraPose.STANDING;
 
     private float yaw = 180.0F;
     private float pitch;
@@ -71,6 +84,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
     public void setMode(Mode mode) {
         this.mode = Objects.requireNonNull(mode, "mode");
+    }
+
+    public void setElytraPose(ElytraPose pose) {
+        this.elytraPose = Objects.requireNonNull(pose, "pose");
+    }
+
+    public ElytraPose elytraPose() {
+        return elytraPose;
     }
 
     @Override
@@ -130,6 +151,11 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 }
             }
 
+            if (mode == Mode.ELYTRA
+                    && renderState instanceof HumanoidRenderState humanoidState) {
+                applyElytraPose(humanoidState);
+            }
+
             if (renderState instanceof LivingEntityRenderState livingState) {
                 livingState.bodyRot = 180.0F + yaw;
                 livingState.yRot = yaw;
@@ -187,6 +213,33 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 getBottom() - 12,
                 LoomUiTheme.TEXT_MUTED
         );
+    }
+
+    private void applyElytraPose(HumanoidRenderState state) {
+        state.isCrouching = false;
+        state.elytraRotY = 0.0F;
+
+        switch (elytraPose) {
+            case STANDING -> {
+                state.pose = Pose.STANDING;
+                state.isFallFlying = false;
+                state.elytraRotX = ELYTRA_STANDING_X;
+                state.elytraRotZ = ELYTRA_STANDING_Z;
+            }
+            case OPEN -> {
+                // Editor-only inspection pose: upright body, fully spread wings.
+                state.pose = Pose.STANDING;
+                state.isFallFlying = false;
+                state.elytraRotX = ELYTRA_OPEN_X;
+                state.elytraRotZ = ELYTRA_OPEN_Z;
+            }
+            case GLIDING -> {
+                state.pose = Pose.FALL_FLYING;
+                state.isFallFlying = true;
+                state.elytraRotX = ELYTRA_OPEN_X;
+                state.elytraRotZ = ELYTRA_OPEN_Z;
+            }
+        }
     }
 
     private static EntityRenderState extractRenderState(
