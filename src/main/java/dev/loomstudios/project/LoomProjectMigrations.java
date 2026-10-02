@@ -2,10 +2,6 @@ package dev.loomstudios.project;
 
 /**
  * Single entry point for loading versioned .loom data.
- *
- * <p>Schema v1 is the first pre-release format, so there are no historical
- * migrations yet. New schema versions must be added here explicitly instead
- * of silently changing the meaning of old bytes.</p>
  */
 public final class LoomProjectMigrations {
     private LoomProjectMigrations() {
@@ -15,10 +11,31 @@ public final class LoomProjectMigrations {
         int schemaVersion = LoomProjectCodec.peekSchemaVersion(data);
 
         return switch (schemaVersion) {
-            case 1 -> LoomProjectCodec.decodeVersion1(data);
+            case 1 -> migrateV1ToV2(
+                    LoomProjectCodec.decodeVersion1(data)
+            );
+            case 2 -> LoomProjectCodec.decodeVersion2(data);
             default -> throw new IllegalArgumentException(
                     "Unsupported Loom project schema " + schemaVersion
             );
         };
+    }
+
+    private static LoomProject migrateV1ToV2(LoomProject legacy) {
+        if (legacy.schemaVersion() != 1) {
+            throw new IllegalArgumentException(
+                    "Expected schema-v1 project for migration"
+            );
+        }
+
+        return new LoomProject(
+                2,
+                legacy.projectId(),
+                legacy.name(),
+                legacy.metadata(),
+                legacy.cape(),
+                legacy.elytra(),
+                legacy.runtime()
+        );
     }
 }
