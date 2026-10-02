@@ -221,6 +221,10 @@ public final class SmartImportScreen extends Screen {
 
     @Override
     protected void init() {
+        var previewState = playerPreview == null ? null : playerPreview.viewState();
+        if(originalPreview != null) originalPreview.close();
+        if(processedPreview != null) processedPreview.close();
+        if(texturePreview != null) texturePreview.close();
         placementControls.clear();
         processingControls.clear();
         compactMode = LoomUiTheme.compact(width, height);
@@ -249,6 +253,7 @@ public final class SmartImportScreen extends Screen {
         playerPreview = addRenderableWidget(new LoomPlayerPreviewWidget(
                 rightX,top,rightWidth,bottom-top-48,this::candidateProject,
                 importTarget == ImportTarget.CAPE ? LoomPlayerPreviewWidget.Mode.CAPE : LoomPlayerPreviewWidget.Mode.ELYTRA));
+        playerPreview.restoreViewState(previewState);
         placeAction(null,margin,bottom-20,leftWidth,20,"Choose PNG",LoomButton.Icon.IMAGE,this::choosePng);
         int left = controlPanelX + 5, right = controlPanelX + controlPanelWidth - 5;
         int panelWidth = right-left;

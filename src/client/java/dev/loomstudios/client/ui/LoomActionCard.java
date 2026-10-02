@@ -97,8 +97,8 @@ public final class LoomActionCard extends AbstractButton {
 
         boolean template = switch(icon) { case BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM -> true; default -> false; };
         if (template && getHeight() >= 50) {
-            int ch = Math.min(64,getHeight()-28), cw = ch*10/16;
-            int cx = getX()+(getWidth()-cw)/2, cy = getY()+6;
+            int ch = Math.min(144,Math.min(getHeight()-28,(getWidth()-12)*16/10)), cw = ch*10/16;
+            int cx = getX()+(getWidth()-cw)/2, cy = getY()+Math.max(6,(getHeight()-20-ch)/2);
             graphics.fill(cx-1,cy-1,cx+cw+1,cy+ch+1,LoomUiTheme.BORDER);
             for (int row=0;row<ch;row++) graphics.fill(cx,cy+row,cx+cw,cy+row+1,
                     icon == Icon.BLANK ? 0xFFCBD5E0 : LoomWorkshopArt.mix(LoomUiTheme.ACCENT,LoomUiTheme.ACCENT_ALT,row/(float)ch));

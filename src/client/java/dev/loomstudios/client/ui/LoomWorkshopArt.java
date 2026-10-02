@@ -66,6 +66,7 @@ public final class LoomWorkshopArt {
             "00000000001000110001100011000101111", // u
             "00001000010111110001100011000101111", // d
             "00100000000110000100001000010001110", // i
+            "00000000000111010001100011000101110", // o
             "00000000000111110000011100000111110"  // s
         };
         int l = center - (letters.length * 6 - 1) * unit / 2;
@@ -81,9 +82,10 @@ public final class LoomWorkshopArt {
     }
 
     public static int mix(int a, int b, float amount) {
-        int color = 0xFF000000;
-        for (int shift : new int[]{0,8,16}) color |= Math.round(((a >> shift) & 255) * (1 - amount) + ((b >> shift) & 255) * amount) << shift;
-        return color;
+        int red = Math.round(((a >> 16)&255)*(1-amount)+((b >> 16)&255)*amount);
+        int green = Math.round(((a >> 8)&255)*(1-amount)+((b >> 8)&255)*amount);
+        int blue = Math.round((a&255)*(1-amount)+(b&255)*amount);
+        return 0xFF000000 | red<<16 | green<<8 | blue;
     }
 
     public static void previewScene(GuiGraphics g, int l, int t, int r, int b) {

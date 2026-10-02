@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 42) { System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 42) { verifyWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -94,6 +94,7 @@ public final class LoomUiCapture {
                     call(screen,"updateInspectorVisibility");
                 }
             }
+            if (stage == 17) ClientProjectWorkspace.apply(project -> dev.loomstudios.project.ProjectResizer.resizeCape(project,dev.loomstudios.project.CanvasResolution.STANDARD));
             if (stage >= 12 && stage < 19) {
                 if (stage <= 14 || stage == 17) {
                     CapeEditorScreen screen = new CapeEditorScreen(new LoomHomeScreen()); client.setScreen(screen);
@@ -175,6 +176,38 @@ public final class LoomUiCapture {
                 catch(Exception ex) { ex.printStackTrace(); } finally { image.close(); stage++; wait=5; pending=false; prepared=false; }
             });
         } catch (Exception ex) { ex.printStackTrace(); client.stop(); }
+    }
+    private static void verifyWorkflows(Minecraft client) throws Exception {
+        var projectPath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportProject(fixtureProject);
+        var portablePath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportPortableCode(fixtureProject);
+        var capePath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportCapePng(fixtureProject);
+        var wingPath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportElytraPng(fixtureProject);
+        if(!dev.loomstudios.project.LoomProjectCodec.decode(Files.readAllBytes(projectPath)).hash().equals(fixtureProject.hash())
+                || !dev.loomstudios.project.LoomProjectCode.decodePortable(Files.readString(portablePath)).hash().equals(fixtureProject.hash()))
+            throw new IllegalStateException("Export round-trip changed the project");
+        try(var cape=com.mojang.blaze3d.platform.NativeImage.read(Files.readAllBytes(capePath));
+                var wing=com.mojang.blaze3d.platform.NativeImage.read(Files.readAllBytes(wingPath))) {
+            if(cape.getWidth()!=fixtureProject.cape().width() || cape.getHeight()!=fixtureProject.cape().height()
+                    || wing.getWidth()!=fixtureProject.elytra().width() || wing.getHeight()!=fixtureProject.elytra().height())
+                throw new IllegalStateException("Export texture dimensions changed");
+        }
+        for(boolean processing : new boolean[]{false,true}) {
+            ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+            var screen=new SmartImportScreen(new LoomHomeScreen(),dev.loomstudios.project.CapeUvRegion.OUTSIDE);
+            var source=LoomCaptureFixtures.source(fixtureProject);
+            set(screen,"loaded",new PngImportAdapter.LoadedImage(Path.of("capture-moon.png"),source,source));
+            if(processing) set(screen,"panelTab",enumValue(screen,"panelTab","PROCESSING"));
+            client.setScreen(screen);
+            var candidateMethod=screen.getClass().getDeclaredMethod("candidateProject"); candidateMethod.setAccessible(true);
+            var candidate=(LoomProject)candidateMethod.invoke(screen);
+            call(screen,"applyImport");
+            var actual=ClientProjectWorkspace.project();
+            if(actual.cape().layers().size()!=fixtureProject.cape().layers().size()+1
+                    || !java.util.Arrays.equals(dev.loomstudios.client.render.LoomTextureCompiler.compile(candidate.cape(),0,false,false),
+                            dev.loomstudios.client.render.LoomTextureCompiler.compile(actual.cape(),0,false,false)))
+                throw new IllegalStateException("Applied import differs from candidate preview");
+        }
+        System.out.println("LOOM_UI_WORKFLOWS PASS: project/portable/PNG export and both import pages");
     }
     private static Field field(Object object,String name) throws Exception { Field f=object.getClass().getDeclaredField(name); f.setAccessible(true); return f; }
     private static void set(Object object,String name,Object value) throws Exception { field(object,name).set(object,value); }
