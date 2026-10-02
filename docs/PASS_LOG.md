@@ -23,6 +23,7 @@ Important refactor checkpoints:
 - `007ae2121d835b85aee8ed01259257c735d46288` — Smart Import tabs — Actions #168 **SUCCESS**;
 - `8b338dfd530f41e4b283058b2d078e9beb6b41fb` — compact timeline geometry — Actions #169 **SUCCESS**;
 - `db90568ad8e47b342e3be36419381f4e2c37af66` — corrected combined UI head — Actions #172 **SUCCESS**.
+- `d6407fd5125836969d6dd5c40ecbb65c4069c1b6` — final pre-merge UI/docs cleanup validation — Actions #175 **SUCCESS**.
 
 Implemented:
 - shared `LoomScreenChrome`;

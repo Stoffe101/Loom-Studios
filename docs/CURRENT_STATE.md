@@ -65,6 +65,8 @@ Latest merged-main baseline entering the reference UI refactor: `e3e417ff21f231e
 
 Current UI-refactor implementation checkpoint: `db90568ad8e47b342e3be36419381f4e2c37af66` — GitHub Actions #172 **SUCCESS**.
 
+Pre-merge reference-UI validation checkpoint: `d6407fd5125836969d6dd5c40ecbb65c4069c1b6` — GitHub Actions #175 **SUCCESS**.
+
 Current refactor includes:
 - shared `LoomScreenChrome` and responsive theme primitives;
 - rebuilt responsive Home;
