@@ -104,6 +104,8 @@ Shader-sensitive effects should be checked with at least one representative shad
 - Crop uses centered source crop matching target aspect
 - Center preserves source scale and clips oversized artwork
 - custom placement rejects source windows outside the image
+- crop/source bounds cannot wrap through integer overflow
+- extreme off-screen destination placement clips safely
 - zero brightness/contrast/saturation is pixel-stable
 - Brightness preserves alpha
 - Saturation -1 produces luminance grayscale
