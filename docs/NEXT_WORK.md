@@ -160,6 +160,27 @@ The remaining gate for visual DONE status is local runtime verification because 
 - Pulse / Scroll / Hue Shift / Moving Gradient / Sparkle / Emissive Glow visually;
 - Elytra animation output at 1x / 2x / 4x;
 - compact timeline at all four mandatory GUI profiles.
+### Loom Codes / Sharing
+- Home Loom Codes card opens the sharing screen;
+- short `LS-XXXX-XXXX-XXXX` fingerprint is stable for unchanged content;
+- Copy Design ID;
+- Copy Portable Code;
+- Paste Portable Code from clipboard;
+- malformed/wrong-prefix portable code rejection;
+- `.loom` file picker import;
+- preview imported project before accepting;
+- toggle Cape / Elytra preview;
+- Import to Library forks to a new project UUID;
+- Import + Open enters the imported project;
+- imported animation/layers remain intact;
+- Export Project writes editable `.loom`;
+- Save Portable Code writes `.txt`;
+- Export Cape PNG;
+- Export Elytra PNG;
+- repeated exports receive unique filenames rather than overwriting;
+- exports stay under `.minecraft/loom-studios/exports`;
+- local/private wording does not imply a hosted backend;
+- layout remains usable at all four mandatory GUI profiles.
 ## Next CI-safe product work
 
 Home reference shell and the semantic Elytra Editor MVP are implemented in this pass; local visual verification remains pending.
@@ -170,13 +191,12 @@ Priority order:
    - standing;
    - open;
    - gliding;
-2. project Loom Codes/sharing:
-   - local portable project code first;
-   - copy/paste/import/preview UX;
-   - visibility/permission shell without pretending a hosted service already exists;
-3. Cape animation exposure/refinement where useful;
-4. final Cape/Home/Smart Import/Elytra/Animation reference-fidelity hardening;
+2. Cape animation exposure/refinement where useful;
+3. Settings/product-preferences decision and implementation if retained;
+4. final Cape/Home/Smart Import/Elytra/Animation/Loom Codes reference-fidelity hardening;
 5. final compatibility/performance matrix.
+
+Loom Codes local/offline sharing is implemented. A hosted short-code/gallery/friends/public service remains optional future work and must not be represented as active until a real backend exists.
 
 ## Schema-v3 status
 

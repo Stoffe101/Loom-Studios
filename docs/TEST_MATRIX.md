@@ -264,6 +264,34 @@ Local/runtime verification:
 - scrubbed 3D preview matches exact authored tick;
 - preview remains isolated from equipped/network state;
 - timeline stays usable at all mandatory GUI profiles.
+## Loom Codes / sharing tests
+
+Automated/current CI:
+- schema-v3 project portable-code round trip;
+- portable code preserves animation/layers/runtime;
+- stable short design fingerprint;
+- imported project receives a fresh project UUID;
+- fork import preserves Cape/Elytra/runtime/animation data;
+- wrong prefix rejected;
+- malformed Base64 rejected;
+- whitespace-tolerant portable-code detection;
+- sharing/export/import client sources compile against Minecraft 1.21.11 mappings.
+
+Local/runtime:
+- Copy Design ID clipboard;
+- Copy Portable Code clipboard;
+- Paste Portable Code;
+- `.loom` native file picker import;
+- imported-project Cape/Elytra 3D preview;
+- Import to Library;
+- Import + Open;
+- `.loom` export;
+- portable `.txt` export;
+- Cape PNG export;
+- Elytra PNG export;
+- unique repeated export filenames;
+- all exports remain within Loom Studios exports folder;
+- Reference 05 responsive layout at all mandatory GUI profiles.
 ## Project format tests
 
 - schema-v2 save/load round-trip

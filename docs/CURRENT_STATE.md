@@ -536,21 +536,41 @@ See `ANIMATION.md`.
 
 ## Loom Codes / sharing
 
-Implemented related infrastructure:
-- SHA-256 project identity;
-- project cache-miss network transfer;
-- local `.loom` files;
-- palette-only `LOOMPAL1:` codes.
+**Local/offline sharing MVP is implemented and CI green / local visual-runtime verification pending.**
 
-Not implemented:
-- project short Loom Codes;
-- portable project code;
-- private clickable chat result;
-- Copy / Import / Preview / Favorite project UX;
-- final export/share screen.
+Reference-05-oriented sharing now provides:
+- Home -> Loom Codes navigation;
+- deterministic short design fingerprint: `LS-XXXX-XXXX-XXXX`;
+- self-contained versioned portable project code: `LSP1:`;
+- clipboard Copy Portable Code;
+- clipboard Paste + bounded decode;
+- native `.loom` project-file import;
+- imported-project preview before accepting;
+- Cape / Elytra 3D preview toggle;
+- Import to Library;
+- Import + Open;
+- safe fork-on-import with a fresh project UUID;
+- export editable `.loom`;
+- export portable-code text file;
+- export Cape PNG;
+- export Elytra PNG;
+- dedicated `.minecraft/loom-studios/exports` output directory;
+- explicit local/private visibility messaging.
 
-Palette codes are not project Loom Codes.
+The short `LS-...` value is currently a deterministic **design fingerprint**, not a remotely resolvable cloud code. Loom Studios does not pretend a hosted gallery/share resolver already exists.
 
+The `LSP1:` code is the actual offline project-transfer format and contains a bounded compressed `.loom` project.
+
+Still future:
+- hosted short-code resolver/gallery if a backend is intentionally built;
+- friends/server/public visibility service;
+- clickable chat cards backed by real resolver semantics;
+- Favorites/collections product model;
+- final Reference 05 decorative polish.
+
+Palette `LOOMPAL1:` codes remain a separate palette-only format.
+
+See `LOOM_CODES.md`.
 ## Cape Loom block
 
 The final Cape Loom workstation/block flow is not implemented yet.
@@ -621,10 +641,10 @@ Automated build/test verification is green. The remaining gate for the newest ed
 
 ## Immediate direction
 
-1. locally verify Cape/Gradient/Smart Import/Home/Elytra/Animation at the required GUI profiles when the development PC is available;
+1. locally verify Cape/Gradient/Smart Import/Home/Elytra/Animation/Loom Codes at the required GUI profiles when the development PC is available;
 2. add Elytra preview-state polish for standing/open/gliding;
-3. implement project Loom Codes/sharing;
-4. expose/refine animation authoring where useful in the Cape Editor;
+3. expose/refine animation authoring where useful in the Cape Editor;
+4. decide whether Settings becomes a product screen before release;
 5. finish reference-fidelity and compatibility hardening.
 
 See `NEXT_WORK.md` for the concrete queue.
