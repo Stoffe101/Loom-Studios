@@ -13,7 +13,7 @@ public final class LoomTemplatesScreen extends LoomPointerScreen {
     private LoomProject selected;
     private int page;
     public LoomTemplatesScreen(Screen parent){super(Component.literal("Templates"));this.parent=parent;for(var kind:TemplateCatalog.Kind.values())templates.add(TemplateCatalog.create(kind,System.currentTimeMillis()));selected=templates.getFirst();}
-    @Override protected void init(){for(var c:cards)c.close();cards.clear();int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8,bottom=height-28,right=width-204;
+    @Override protected void init(){for(var c:cards)c.close();cards.clear();int start=page*6,end=Math.min(templates.size(),start+6);if(!templates.subList(start,end).contains(selected))selected=templates.get(start);int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8,bottom=height-28,right=width-204;
         addRenderableWidget(new LoomButton(8,top,70,20,Component.literal("Back"),this::onClose));
         int cw=(right-14)/2,ch=(bottom-top-42)/3;
         for(int i=page*6;i<Math.min(templates.size(),(page+1)*6);i++){LoomProject p=templates.get(i);try{var d=new ProjectDescriptor(p.projectId(),p.name(),p.metadata().createdAtEpochMillis(),p.metadata().modifiedAtEpochMillis(),p.hash(),LocalProjectLibrary.store().pathFor(p.projectId()),ProjectThumbnailCache.ensure(p,p.hash()));int n=i%6;var c=new LoomProjectCard(8+(n%2)*(cw+6),top+27+(n/2)*(ch+4),cw,ch,d,Component.literal("Editable template"),()->selected==p,()->selected=p).setOpenAction(this::useSelected);cards.add(c);addRenderableWidget(c);}catch(java.io.IOException e){dev.loomstudios.LoomStudios.LOGGER.error("Cannot create template preview",e);}}
