@@ -45,6 +45,9 @@ public final class PremiumPaint {
         nvgSave(vg);transform(m);
         try {body.run();}finally{nvgRestore(vg);}
     }
+    public static float measure(String value,float size) {
+        nvgFontSize(vg,size);return nvgTextBounds(vg,0,0,value,(float[])null);
+    }
     public static void fittedText(String value,float x,float y,float width,float size,int color,boolean centered) {
         nvgFontSize(vg,size);
         String text=value;

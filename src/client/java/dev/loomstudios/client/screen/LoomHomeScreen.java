@@ -132,19 +132,14 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
         addRenderableWidget(new LoomButton(centerRight-61,templatesTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomTemplatesScreen(this))));
         addRenderableWidget(new LoomButton(leftPanelLeft,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
-        addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
+        addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Help"),()->minecraft.setScreen(new LoomHelpScreen(this))));
     }
 
     private void buildLeftActions() {
         int width = leftPanelRight - leftPanelLeft;
         int available = contentBottom - contentTop;
         int gap = compactMode ? 4 : 5;
-        int cardHeight = compactMode
-                ? Math.max(28, Math.min(34, (available - gap * 4) / 5))
-                : Math.max(
-                        34,
-                        Math.min(42, (available - gap * 4) / 5)
-                );
+        int cardHeight=Math.max(28,(available-28-gap*5)/6);
         int y = contentTop;
 
         addRenderableWidget(new LoomActionCard(
@@ -223,6 +218,10 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                 this::openLoomCodes
         );
         addRenderableWidget(codes);
+        y+=cardHeight+gap;
+        addRenderableWidget(new LoomActionCard(leftPanelLeft,y,width,cardHeight,
+                Component.literal("Settings"),Component.literal("Editor preferences"),LoomActionCard.Icon.SETTINGS,
+                false,()->minecraft.setScreen(new LoomSettingsScreen(this))));
     }
 
     private void buildCenterContent() {

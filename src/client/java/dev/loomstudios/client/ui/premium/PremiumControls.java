@@ -17,13 +17,14 @@ public final class PremiumControls {
     private static GuiGraphics target;
     private static int previousWidth,previousHeight;
     private static long revision;
+    private static int mouseX,mouseY;
     private PremiumControls() {}
     public static void register() {
         ScreenEvents.AFTER_INIT.register((client,screen,width,height)-> {
             if(!screen.getClass().getPackageName().equals("dev.loomstudios.client.screen")
                     ||screen instanceof LoomPremiumPrototypeScreen)return;
             ScreenEvents.beforeRender(screen).register((s,g,mx,my,dt)-> {
-                owner=s;target=g;pending.clear();
+                owner=s;target=g;mouseX=mx;mouseY=my;pending.clear();
             });
             ScreenEvents.afterRender(screen).register((s,g,mx,my,dt)->finish(g));
             ScreenEvents.remove(screen).register(s-> {
@@ -61,6 +62,9 @@ public final class PremiumControls {
         if(g!=target||owner==null)return false;
         pending.add(new Label(x,y,width,(int)Math.ceil(size+4),"Loom Studios",size,0xFFE7EEF7,true,true,new Matrix3x2f(g.pose())));
         return true;
+    }
+    public static boolean hovered(GuiGraphics g,int x,int y,int width,int height) {
+        return g==target&&mouseX>=x&&mouseX<x+width&&mouseY>=y&&mouseY<y+height;
     }
     public static boolean icon(GuiGraphics g,String name,int x,int y,int size,int ink) {
         if(g!=target||owner==null)return false;
@@ -129,19 +133,33 @@ public final class PremiumControls {
                 PremiumPaint.surface(x,y,w,h,4,surface);
                 PremiumPaint.outline(x,y,w,h,4,edge);
                 if((selected||primary)&&active)PremiumPaint.box(x+1,y+4,2,Math.max(1,h-8),1,accent);
-                int size=Math.max(10,Math.min(subtitle!=null&&h>=34?20:16,h-6));
-                if(icon!=LoomButton.Icon.NONE) {
-                    float ix=iconOnly?x+(w-size)/2f:x+6;
+                int size=Math.max(10,Math.min(subtitle!=null?(h>=60?28:h>=34?20:16):16,h-6));
+                float titleSize=subtitle!=null?(h>=60?12:10):9;
+                boolean only=iconOnly,showIcon=icon!=LoomButton.Icon.NONE;
+                if(subtitle==null&&!only&&showIcon&&PremiumPaint.measure(label,titleSize)>w-size-17) {
+                    if(PremiumPaint.measure(label,titleSize)<=w-10)showIcon=false;
+                    else only=true;
+                }
+                if(showIcon) {
+                    float ix=only?x+(w-size)/2f:x+6;
                     PremiumPaint.icon(iconName(icon),ix,y+(h-size)/2f,size,
                             active&&(selected||hot||primary)?accent:ink);
                 }
-                if(!iconOnly) {
-                    float left=icon==LoomButton.Icon.NONE?x+4:x+size+12;
+                if(!only) {
+                    float left=!showIcon?x+4:x+size+12;
                     float room=Math.max(1,x+w-(subtitle==null?5:20)-left);
                     boolean description=subtitle!=null&&!subtitle.isEmpty()&&h>=34;
-                    PremiumPaint.fittedText(label,left,y+(h-(description?24:10))/2f,room,10,ink,
-                            icon==LoomButton.Icon.NONE);
-                    if(description)PremiumPaint.fittedText(subtitle,left,y+(h-24)/2f+14,room,9,0xFF99ADC4,false);
+                    float block=description?titleSize+14:titleSize;
+                    PremiumPaint.fittedText(label,left,y+(h-block)/2f,room,titleSize,ink,!showIcon);
+                    if(description) {
+                        String detail=subtitle;
+                        if(w<145)detail=switch(icon) {
+                            case CAPE->"Start fresh";case ELYTRA->"Design wings";case FOLDER->"Browse designs";
+                            case IMAGE->"PNG to design";case SHARE->"Files & codes";case SETTINGS->"Preferences";
+                            default->subtitle;
+                        };
+                        PremiumPaint.fittedText(detail,left,y+(h-block)/2f+titleSize+4,room,9,0xFF99ADC4,false);
+                    }
                     if(subtitle!=null)PremiumPaint.icon("chevron-right",x+w-17,y+(h-12)/2f,12,hot?accent:0xFF8199B3);
                 }
             });

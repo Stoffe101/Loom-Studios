@@ -8,20 +8,20 @@ import net.minecraft.network.chat.Component;
 public final class PremiumText {
     private PremiumText() {}
     public static void drawString(GuiGraphics g,Font font,String value,int x,int y,int ink,boolean shadow) {
-        if(!PremiumControls.label(g,value,x,y,Math.max(1,font.width(value)),10,ink,false))
+        if(!PremiumControls.label(g,value,x,y,Math.max(1,(int)Math.ceil(font.width(value)*1.15)),9,ink,false))
             g.drawString(font,value,x,y,ink,shadow);
     }
     public static void drawString(GuiGraphics g,Font font,Component value,int x,int y,int ink,boolean shadow) {
-        if(!PremiumControls.label(g,value.getString(),x,y,Math.max(1,font.width(value)),10,ink,false))
+        if(!PremiumControls.label(g,value.getString(),x,y,Math.max(1,(int)Math.ceil(font.width(value)*1.15)),9,ink,false))
             g.drawString(font,value,x,y,ink,shadow);
     }
     public static void drawCenteredString(GuiGraphics g,Font font,Component value,int x,int y,int ink) {
-        int width=Math.max(1,font.width(value));
-        if(!PremiumControls.label(g,value.getString(),x-width/2,y,width,10,ink,true))
+        int width=Math.max(1,(int)Math.ceil(font.width(value)*1.15));
+        if(!PremiumControls.label(g,value.getString(),x-width/2,y,width,9,ink,true))
             g.drawCenteredString(font,value,x,y,ink);
     }
     public static void drawCenteredString(GuiGraphics g,Font font,String value,int x,int y,int ink) {
-        int width=Math.max(1,font.width(value));
-        if(!PremiumControls.label(g,value,x-width/2,y,width,10,ink,true))g.drawCenteredString(font,value,x,y,ink);
+        int width=Math.max(1,(int)Math.ceil(font.width(value)*1.15));
+        if(!PremiumControls.label(g,value,x-width/2,y,width,9,ink,true))g.drawCenteredString(font,value,x,y,ink);
     }
 }

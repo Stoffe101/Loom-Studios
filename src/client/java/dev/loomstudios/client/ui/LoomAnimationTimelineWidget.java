@@ -639,6 +639,15 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             String text,
             boolean active
     ) {
+        LoomButton.Icon icon=switch(text) {
+            case ">"->LoomButton.Icon.PLAY;case "II"->LoomButton.Icon.PAUSE;
+            case "+"->LoomButton.Icon.PLUS;case "-"->LoomButton.Icon.MINUS;default->LoomButton.Icon.NONE;
+        };
+        boolean loop=text.equals("Loop")||text.equals("Once");
+        if(dev.loomstudios.client.ui.premium.PremiumControls.button(graphics,x,y,width,height,text,icon,
+                icon!=LoomButton.Icon.NONE,active||loop,
+                dev.loomstudios.client.ui.premium.PremiumControls.hovered(graphics,x,y,width,height),false,
+                loop&&active,false,false))return;
         int border = active
                 ? LoomUiTheme.BORDER
                 : 0xFF26313A;

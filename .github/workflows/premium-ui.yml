@@ -28,6 +28,26 @@ jobs:
             start: 0
             end: 8
             count: 8
+          - suite: polish-gui2
+            start: 128
+            end: 140
+            count: 12
+          - suite: polish-gui3
+            start: 140
+            end: 152
+            count: 12
+          - suite: polish-wide-gui2
+            start: 152
+            end: 164
+            count: 12
+          - suite: polish-wide-gui3
+            start: 164
+            end: 176
+            count: 12
+          - suite: compact
+            start: 176
+            end: 182
+            count: 6
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

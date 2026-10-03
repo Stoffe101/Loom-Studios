@@ -90,14 +90,17 @@ public final class LoomWorkshopArt {
 
     private static final net.minecraft.resources.Identifier PREVIEW_SCENE=net.minecraft.resources.Identifier.fromNamespaceAndPath(
             "loom-studios","textures/ui/preview-courtyard.png");
+    private static final net.minecraft.resources.Identifier WIDE_SCENE=net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            "loom-studios","textures/ui/preview-courtyard-wide.png");
     public static void previewScene(GuiGraphics g,int l,int t,int r,int b) {
         if(b<=t||r<=l)return;
         double aspect=(r-l)/(double)(b-t);
-        int sourceW=1024,sourceH=1536;
-        if(aspect>1024/1536.0)sourceH=Math.max(1,(int)Math.round(1024/aspect));
-        else sourceW=Math.max(1,(int)Math.round(1536*aspect));
-        int u=(1024-sourceW)/2,v=1536-sourceH;
-        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,PREVIEW_SCENE,l,t,(float)u,(float)v,
-                r-l,b-t,sourceW,sourceH,1024,1536);
+        boolean wide=aspect>1.35;
+        int fullW=wide?2172:1024,fullH=wide?724:1536,sourceW=fullW,sourceH=fullH;
+        if(aspect>fullW/(double)fullH)sourceH=Math.max(1,(int)Math.round(fullW/aspect));
+        else sourceW=Math.max(1,(int)Math.round(fullH*aspect));
+        int u=(fullW-sourceW)/2,v=fullH-sourceH;
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,wide?WIDE_SCENE:PREVIEW_SCENE,l,t,(float)u,(float)v,
+                r-l,b-t,sourceW,sourceH,fullW,fullH);
     }
 }
