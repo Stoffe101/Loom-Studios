@@ -82,6 +82,10 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private int paletteWindowX = Integer.MIN_VALUE;
     private int paletteWindowY = Integer.MIN_VALUE;
     private String statusMessage = "";
+    private String saveFeedback="";
+    private long saveFeedbackUntil;
+    private LoomProject saveFeedbackProject;
+    private void saveFeedback(String text){statusMessage="";saveFeedback=text;saveFeedbackUntil=System.currentTimeMillis()+5000;saveFeedbackProject=ClientProjectWorkspace.project();}
 
     private LoomButton layerAddButton;
     private LoomButton layerDuplicateButton;
@@ -1561,9 +1565,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void save() {
         try {
             ClientProjectWorkspace.save();
-            statusMessage="Design saved";
+            saveFeedback("Design saved");
         } catch (IOException e) {
-            statusMessage="Save failed; edits are still open";
+            saveFeedback("Save failed; edits are still open");
             LoomStudios.LOGGER.error("Failed to save Loom Elytra project", e);
         }
         updateButtonStates();
@@ -1572,9 +1576,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void saveAndEquip() {
         try {
             ClientProjectWorkspace.saveAndEquip();
-            statusMessage="Design saved and equipped";
+            saveFeedback("Design saved and equipped");
         } catch (IOException | IllegalStateException e) {
-            statusMessage="Save / equip failed; check diagnostics";
+            saveFeedback("Save / equip failed; check diagnostics");
             LoomStudios.LOGGER.error(
                     "Failed to save/equip Loom Elytra project",
                     e
@@ -2003,7 +2007,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                                 ? "Unsaved edits"
                                 : "Saved, not equipped")
                 : statusMessage;
-        status=dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),true,status);
+        status=System.currentTimeMillis()<saveFeedbackUntil&&saveFeedbackProject==ClientProjectWorkspace.project()?saveFeedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),true,status);
 
         LoomScreenChrome.footer(
                 graphics,

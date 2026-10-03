@@ -105,7 +105,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
             ProjectDescriptor d=shown.get(i);int n=i-page*capacity;
             LoomProjectCard card=new LoomProjectCard(left+n%columns*(cw+6),top+53+n/columns*(ch+6),cw,ch,d,
                     Component.literal((LoomPreferences.get().favorite(d.projectId())?"★ ":"")+(tab==1?"Unsaved draft":tab==2?"In Trash":LoomHomeScreen.formatAge(d.modifiedAtEpochMillis()))),
-                    ()->multi.contains(d.projectId())||selected!=null&&selected.projectId().equals(d.projectId()),()->select(d));
+                    ()->multi.isEmpty()?selected!=null&&selected.projectId().equals(d.projectId()):multi.contains(d.projectId()),()->select(d));
             card.setSelectionAction((ctrl,shift)->{if(shift&&anchor!=null){var all=filtered();int from=0,to=all.indexOf(d);for(int j=0;j<all.size();j++)if(all.get(j).projectId().equals(anchor))from=j;for(int j=Math.min(from,to);j<=Math.max(from,to);j++)multi.add(all.get(j).projectId());}else if(ctrl){if(!multi.add(d.projectId()))multi.remove(d.projectId());}else{multi.clear();anchor=d.projectId();}select(d);bulkButton.visible=!multi.isEmpty();message=multi.isEmpty()?"Ctrl-click or Shift-click to select several designs":multi.size()+" selected · Bulk actions";});
             card.setOpenAction(()->{select(d);editSelected();});
             card.setContextAction((x,y)->{select(d);openMenu(d,x,y);});

@@ -2630,8 +2630,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
 
     private String feedback="";
     private long feedbackUntil;
+    private dev.loomstudios.project.LoomProject feedbackProject;
     private void notifyPlayer(String text) {
-        feedback=text;feedbackUntil=System.currentTimeMillis()+5000;
+        feedback=text;feedbackUntil=System.currentTimeMillis()+5000;feedbackProject=ClientProjectWorkspace.project();
         if (this.minecraft.player != null) {
             this.minecraft.player.displayClientMessage(
                     Component.literal(text),
@@ -2719,7 +2720,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 : workspaceState.dirty()
                         ? "Unsaved edits"
                         : "Saved, not equipped";
-        status=System.currentTimeMillis()<feedbackUntil?feedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
+        status=System.currentTimeMillis()<feedbackUntil&&feedbackProject==ClientProjectWorkspace.project()?feedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
 
         LoomScreenChrome.footer(
                 graphics,
