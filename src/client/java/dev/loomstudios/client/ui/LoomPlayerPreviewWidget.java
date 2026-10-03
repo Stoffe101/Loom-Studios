@@ -151,7 +151,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
 
             Vector3f translation = new Vector3f(
                     0.0F,
-                    renderState.boundingBoxHeight / 2.0F + 0.0625F,
+                    mode==Mode.ELYTRA&&pose==dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING?0.2F:renderState.boundingBoxHeight / 2.0F + 0.0625F,
                     0.0F
             );
 

@@ -154,7 +154,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
         Vector3f translation = new Vector3f(
                 0.0F,
-                renderState.boundingBoxHeight / 2.0F + 0.0625F,
+                mode==PreviewMode.ELYTRA&&pose==dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING?0.2F:renderState.boundingBoxHeight / 2.0F + 0.0625F,
                 0.0F
         );
 
