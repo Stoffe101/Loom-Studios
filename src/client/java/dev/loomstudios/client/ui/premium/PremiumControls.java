@@ -91,7 +91,7 @@ public final class PremiumControls {
     private static void cut(List<Command> out,Command source,int x,int y,int w,int h) {
         if(w>0&&h>0)out.add(new Cut(x,y,w,h,source));
     }
-    private static void finish(GuiGraphics g) {
+    public static void finish(GuiGraphics g) {
         if(g!=target)return;
         var snapshot=List.copyOf(pending);
         if(previousOwner!=owner||previousWidth!=g.guiWidth()||previousHeight!=g.guiHeight()

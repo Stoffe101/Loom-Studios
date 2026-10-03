@@ -10,6 +10,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** Preserve native paint order when studio labels/controls are collected for one late overlay. */
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsOcclusionMixin {
+    /** Flush before Minecraft moves deferred tooltips into their higher stratum. */
+    @Inject(method="renderDeferredElements()V",at=@At("HEAD"))
+    private void loom$finishBeforeTooltips(CallbackInfo callback) {
+        PremiumControls.finish((GuiGraphics)(Object)this);
+    }
+
     @Inject(method="fill(IIIII)V",at=@At("HEAD"))
     private void loom$occludeEarlierPaint(int x1,int y1,int x2,int y2,int color,CallbackInfo callback) {
         if((color>>>24)<254)return;
