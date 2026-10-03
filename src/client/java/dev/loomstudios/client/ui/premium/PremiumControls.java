@@ -24,10 +24,14 @@ public final class PremiumControls {
         ScreenEvents.AFTER_INIT.register((client,screen,width,height)-> {
             if(!screen.getClass().getPackageName().equals("dev.loomstudios.client.screen")
                     ||screen instanceof LoomPremiumPrototypeScreen)return;
+            if(screen instanceof dev.loomstudios.client.screen.LoomPointerScreen pointer)pointer.dismissChoices();
             ScreenEvents.beforeRender(screen).register((s,g,mx,my,dt)-> {
                 owner=s;target=g;mouseX=mx;mouseY=my;pending.clear();clips.clear();
             });
-            ScreenEvents.afterRender(screen).register((s,g,mx,my,dt)->finish(g));
+            ScreenEvents.afterRender(screen).register((s,g,mx,my,dt)-> {
+                if(s instanceof dev.loomstudios.client.screen.LoomPointerScreen pointer)pointer.renderChoices(g,mx,my);
+                finish(g);
+            });
             ScreenEvents.remove(screen).register(s-> {
                 if(owner==s){owner=null;target=null;pending.clear();}
                 if(previousOwner==s){previousOwner=null;previous=List.of();}

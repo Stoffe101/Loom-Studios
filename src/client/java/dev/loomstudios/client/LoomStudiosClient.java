@@ -29,7 +29,6 @@ public final class LoomStudiosClient implements ClientModInitializer {
         LoomStudios.LOGGER.info("Loom Studios client initialization complete.");
         OptionalModSupport.logDetectedMods();
         dev.loomstudios.client.ui.premium.PremiumGuiRenderer.register();
-        dev.loomstudios.client.screen.LoomPointerScreen.registerChoices();
         dev.loomstudios.client.ui.premium.PremiumControls.register();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> dev.loomstudios.client.ui.LoomUiTextureCache.clear());
         ClientCosmeticSync.register();
