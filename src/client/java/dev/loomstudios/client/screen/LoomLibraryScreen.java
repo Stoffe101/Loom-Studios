@@ -38,7 +38,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private LibraryOrganization organization(){return new LibraryOrganization(LoomPreferences.get());}
     private boolean homeAction;
     private void finishHomeAction(){if(homeAction){homeAction=false;minecraft.setScreen(parent);}}
-    public void executeAction(ProjectDescriptor d,int action){homeAction=true;minecraft.setScreen(this);menu=d;act(action);}
+    public void executeAction(ProjectDescriptor d,int action){homeAction=action==2||action==3||action==6;minecraft.setScreen(this);menu=d;act(action);}
     public LoomLibraryScreen(Screen parent) { super(Component.literal("Design library"));this.parent=parent; }
     public LoomLibraryScreen(Screen parent,UUID menuId) { this(parent);initialMenu=menuId; }
     @Override protected void init() {
