@@ -1,10 +1,12 @@
 # Loom Studios — Next Work
 
-## Active user-feedback pass — IN PROGRESS (2026-10-03)
+## User-feedback pass — DONE (2026-10-03)
 
-The previous workshop acceptance below is historical. The user’s nine new screenshots exposed gaps: rear cosmetic visibility/player preview pose, ambiguous icons, selected double borders, frame/footer overlap, missing palette close, Screen-level middle pan, and windowed GUI3 below 350 logical pixels. All nine screenshots and all five references were individually inspected. See [image analysis](verification/editor-feedback/ANALYSIS.md).
+All nine feedback screenshots and five approved references were inspected. Implemented clearer native icons/labels, one selected outline, consistent panel/frame clearance, Circle/ellipse outline/filled mode, palette close/Escape, functional windowed GUI3 down to 600×320 logical pixels, rear-facing visible Cape/Elytra previews with a labeled preview-only transparency guide, expand/full preview, and Screen-level middle pan on both canvases and all five inline/expanded 3D previews. Immutable hash and separate skin-patch caches remove repeated preview work; fixed-tick animation updates only changed animated channels. Circle follows paint-layer/lock eligibility.
 
-Branch `codex/preview-tools-compact-fixes` starts from main `55b56570d75909c80466f3557d57a9c61e3dc74b`. Implementation is in progress: circle raster/gesture, isolated rear-facing preview state and immutable hash cache, preview-only transparency guide, 600×320 minimum with adaptive inspector/timeline, screen pointer capture, clearer icons and single outlines, palette close/Escape. Verification expands from 42 to 68 actual Minecraft captures including decorated windowed GUI3, live/committed circle, middle pan and transparent cosmetics. Build/runtime results are not yet claimed. Optional Sodium/Iris/shader interaction and subjective real-user frame rate remain unverified.
+Verified source `b7f7212388858109b96f3e8fc8a7175bc3ef8c45`: [Actions #191](https://github.com/Stoffe101/Loom-Studios/actions/runs/37090332364) passed Java21 build and **103 tests (0 failures/errors/skips)** plus **68 fresh actual Minecraft captures** at 2026-10-03 02:40 UTC. Environment: Minecraft 1.21.11, Fabric Loader 0.18.4, Fabric API 0.141.1+1.21.11, Temurin21, software Mesa/Xvfb. All screenshots decode and are reviewed in contact sheets, with critical previews/compact controls inspected at full size. [Verification index](verification/editor-feedback/README.md) and [fourteen-image analysis](verification/editor-feedback/ANALYSIS.md). Runtime assertions cover canvas/3D/expanded middle pan, palette close, locked Circle, independent snapshots, twenty interleaved world/preview frames with hash/skin reuse, both-channel alpha isolation, and export/import equivalence.
+
+Delivery: [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) targets main with the verified implementation and retained evidence. Compiled mod SHA-256: `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea`. Next: interactive testing on the user's hardware/modpack, including optional Sodium/Iris/shaders and multiplayer. Those integrations and absolute FPS are not claimed by the Mesa smoke run. The prior workshop acceptance below is historical and superseded by this feedback pass.
 
 ## Completed workshop pass
 
@@ -14,9 +16,9 @@ Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d
 
 ## Next concrete work
 
-PR #14 is merged into `main`; the requested styling/alignment gate is complete. Next: test the real interactive workflows from `main` and report issues with a screenshot, physical resolution, GUI scale, and reproduction steps. Before a release, run the optional-mod/shader/multiplayer checks below. Screenshot automation does not replace this broader release testing.
+Test the integrated feedback build from main: first windowed 1920×1080 GUI3, then the four full-screen resolution/scale profiles. Exercise Circle outline/filled/undo and locked/gradient-layer eligibility, middle pan on texture and 3D views, palette close/pin/drag, alpha-guide versus exported transparency, expanded preview, and normal Save/Equip/import/export workflows. Check the actual modpack/shaders/FPS and multiplayer separately.
 
-Run `./gradlew runClient -PuiCapture` to reproduce the isolated development flow: 42 actual screenshots, visible-control bounds/nonoverlap, project/portable/PNG exports, and import candidate/apply equivalence on both pages. Packaged clients and ordinary development launches never invoke it.
+Reproduce the automated smoke run with `./gradlew runClient -PuiCapture`: 68 real screenshots, frame/footer bounds and nonoverlap (excluding intentional floating palettes), project/portable/PNG exports, import candidate/apply equivalence, routed input and preview isolation/cache assertions. Packaged/ordinary launches never run this harness.
 
 ## Full in-game test from main
 

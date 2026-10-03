@@ -1,6 +1,6 @@
 # 2026-10-03 feedback image analysis
 
-Status: IN PROGRESS. All fourteen originals were viewed individually. New captures, not the historical acceptance, determine pass status.
+Status: DONE. All fourteen originals were viewed individually. Final source b7f7212388858109b96f3e8fc8a7175bc3ef8c45 passed 103 tests and 68 actual captures in Actions #191; see README.md.
 
 | Supplied screenshot | Observed issue and action |
 | --- | --- |
@@ -22,4 +22,6 @@ Status: IN PROGRESS. All fourteen originals were viewed individually. New captur
 | 04 Smart Import | Source and result separated from placement controls; visible preview, legible transform symbols, strong Apply action. Compact tabs remain intentional. |
 | 05 Cape | Distinct drawing tools, clear selected state, framed canvas and visible back-facing garment. Circle/ellipse is added within existing tool rail; palettes float with close. |
 
-Acceptance adds 1920×1000 GUI3 (640×334 logical) and 1904×960 GUI3 (635×320) to the four mandatory 1920×1080/3440×1440 GUI2/3 profiles. Tests must include visible controls and shell clearance, property/animation pages, both palette overlays/close routing, actual Screen middle pan, live/committed circle, blank alpha and authored cosmetic preview. Optional mods and real hardware frame-rate claims need separate evidence.
+Acceptance adds 1920×1000 GUI3 (640×334 logical) and 1904×960 GUI3 (635×320) to the four mandatory 1920×1080/3440×1440 GUI2/3 profiles. Verified tests include visible controls and shell clearance, property/animation pages, both palette overlays/close routing, actual Screen middle pan, live/committed circle, blank alpha and authored cosmetic preview. Optional mods and real hardware frame-rate claims need separate evidence.
+
+Final judgement: the five-screen timber/steel/navy hierarchy remains aligned with the approved references. Selected controls have one perimeter and readable silhouettes; layered/hover/focus states are distinct. Panels clear the shell/footer, small inspectors remain bounded, and rear garment previews show authored designs or an explicitly labeled alpha guide. Compact previews intentionally remain small to preserve editor controls; the header expand button/double click opens a workshop-framed larger preview. Middle pan works in both canvas and 3D contexts. The mandatory profiles and decorated-window GUI3 cases pass; actual hardware/modpack testing remains the next release step.

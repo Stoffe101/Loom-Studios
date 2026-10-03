@@ -867,6 +867,20 @@ Environment: MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 / Temurin 21.0.12+
 
 PR #14 merge: `1e2bc6d2e800e4217d9243e21e61f00a44966a2a`, verified PR head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83`. Both Actions #183 jobs passed at that head, with 42 actual screenshots and export/import workflow markers. This handoff changes documentation only; the previously accepted production source and screenshot pixels are unchanged. Main push CI uses the same Java 21 build and isolated Mesa capture jobs; inspect the exact main commit's checks in GitHub Actions. The full interactive release queue in NEXT_WORK remains manual, including OS picker/clipboard, optional mods/shaders and multiplayer.
 
-## 2026-10-03 feedback regression — IN PROGRESS
+## 2026-10-03 feedback regression — DONE
 
-Required four full-screen profiles plus decorated window GUI3 1920×1000 and 1904×960; 68 fresh capture targets. Expanded assertions: frame/footer clearance, nonoverlap excluding intentional floating palette, Screen middle-button pan/release on both canvases, palette close updating parent visibility, isolated preview snapshots and actual cosmetic assets, pixel ellipse symmetry/degenerate/fill. Minecraft 1.21.11 / Loader 0.18.4 / Fabric API 0.141.1+1.21.11 / Java21 CI / software Mesa. No current-run results claimed yet.
+Exact source `b7f7212388858109b96f3e8fc8a7175bc3ef8c45`, [Actions #191](https://github.com/Stoffe101/Loom-Studios/actions/runs/37090332364), 02:40 UTC. `./gradlew --no-daemon build`: 103 tests, 0 failures/errors/skips. `./gradlew --no-daemon runClient -PuiCapture`: 68 captures, complete/workflow/input markers, frame/footer and nonoverlap checks passed (floating palette is an intentional overlay).
+
+| Physical profile | GUI scale | Logical size | Result |
+| --- | --- | --- | --- |
+| 1920×1080 | 2 | 960×540 | PASS |
+| 1920×1080 | 3 | 640×360 | PASS |
+| 3440×1440 | 2 | 1720×720 | PASS |
+| 3440×1440 | 3 | 1147×480 | PASS |
+| 1920×1000 windowed | 3 | 640×334 | PASS; editor, properties, animation, Home/Share/Import, palettes, shapes and texture pan |
+| 1904×960 windowed | 3 | 635×320 | PASS; editors/properties, expanded previews, filled circles and all five 3D pans |
+| 854×480 below minimum | 2 | 427×240 | PASS; bounded guidance only, not advertised editor support |
+
+Input assertions: actual Screen pan/release on both texture canvases, all inline/expanded 3D viewports, palette close updating parent flag, locked Circle disabling, independent render snapshots, twenty interleaved world/preview extractions without rehash/skin-patch reconstruction, and alpha guide isolated from both actual runtime textures/project data. Pixel ellipse tests cover symmetry, reverse drag, hollow/fill, thin/single-pixel drags and UV preservation. Existing one-pixel selection and workflow/export/import regressions remain included.
+
+Environment: Minecraft1.21.11 / Loader0.18.4 / FabricAPI0.141.1+1.21.11 / Temurin21 / Mesa software GL and Xvfb; no optional mods/shaders. No absolute FPS or exhaustive interactive release acceptance is claimed. Evidence: [68-capture index](verification/editor-feedback/README.md).

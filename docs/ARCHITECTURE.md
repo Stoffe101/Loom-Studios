@@ -269,7 +269,7 @@ Cape and both semantic Elytra wings use revision-cached textures; layer rows cac
 
 `LoomWorkshopArt` draws deterministic code-native pixel artwork inside shared chrome and preview bounds. `LoomScreenChrome` owns the reserved brand header and bounded status footer. `LoomWorkspaceLayout` reserves 36/56 header units and expands tool labels only in spacious profiles. Smart Import owns source, settings, processed/atlas and candidate-player regions separately. `LoomCaptureFixtures` is called only by the opt-in development capture runner; it exercises real projects, thumbnails, conversion and image processing without adding production templates.
 
-## Feedback preview/input ownership (2026-10-03, in progress)
+## Feedback preview/input ownership (2026-10-03, verified)
 
 LoomPreviewState owns a fresh Mojang-mapped renderer snapshot; widget and expanded screen share orientation/extraction. PreviewOverride scopes the local cosmetic supplier, uses a distinct content-hash namespace and restores nested overrides. PlayerCosmeticRenderer caches codec/hash work by immutable project identity; RuntimeCosmeticCache applies checkerboard only to preview bundle base images, preserving exported/equipped alpha and emissive masks. Fixed-tick playback recompiles only channels with enabled tracks. Small inline previews open the full player preview through their header expand affordance or double click, preserving the timeline supplier.
 
@@ -278,3 +278,5 @@ Screen captures middle-button drag/release on both canvases and gives floating p
 LoomPointerScreen now captures the middle-button pointer for marked canvas/3D widgets on all five workspace screens. This also enables the user’s middle-pan expectation in the 3D viewport, with scissored screen-space offsets and view-state preservation. Expanded preview owns the same pan gesture directly and uses workshop chrome/scenery. Capture targets include five inline preview pans, expanded input and both filled circle gesture phases (68 total).
 
 Preview skin patches use a separate UUID cache from equipped/world skin patches, preventing both render passes from invalidating each other every frame. The capture harness alternates world/preview extraction twenty times and asserts identical preview skin object plus zero additional codec hashes. Alpha-guide isolation is verified for both Cape and Elytra images.
+
+Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in Actions #191; fresh snapshots, explicit GUI rear-view quaternion, separate preview namespaces/cache, alpha isolation and routed input passed. No schema/network change.
