@@ -22,18 +22,21 @@ import org.lwjgl.opengl.GL33C;
  * One canvas submission per screen, no timer-based stale-frame reuse.
  */
 public final class PremiumGuiRenderer extends PictureInPictureRenderer<PremiumGuiRenderer.State> {
+    private long paintedRevision=Long.MIN_VALUE;
+    private static long paints;
+    public static long paints() {return paints;}
     public PremiumGuiRenderer(MultiBufferSource.BufferSource buffer) { super(buffer); }
     public static void register() {
         SpecialGuiElementRegistry.register(context -> new PremiumGuiRenderer(context.vertexConsumers()));
     }
-    public static void submit(GuiGraphics graphics, Runnable paint) {
+    public static void submit(GuiGraphics graphics,long revision, Runnable paint) {
         int w = graphics.guiWidth(), h = graphics.guiHeight();
         var matrix = new Matrix3x2f(graphics.pose());
         var bounds = new ScreenRectangle(0, 0, w, h).transformMaxBounds(matrix);
         ((GuiGraphicsAccessor) graphics).loom$getGuiRenderState().submitPicturesInPictureState(
-                new State(w, h, matrix, bounds, paint));
+                new State(w, h, matrix, bounds, revision,paint));
     }
-    @Override protected boolean textureIsReadyToBlit(State state) { return false; }
+    @Override protected boolean textureIsReadyToBlit(State state) { return state.revision()==paintedRevision; }
     @Override protected float getTranslateY(int height, int scale) { return height / 2f; }
     @Override public Class<State> getRenderStateClass() { return State.class; }
     @Override protected String getTextureLabel() { return "loom-premium-ui"; }
@@ -54,6 +57,7 @@ public final class PremiumGuiRenderer extends PictureInPictureRenderer<PremiumGu
             state.paint().run();
         } finally {
             PremiumPaint.end();
+            paintedRevision=state.revision();paints++;
             GlStateManager._disableDepthTest();
             GlStateManager._disableCull();
             GlStateManager._enableBlend();
@@ -61,7 +65,7 @@ public final class PremiumGuiRenderer extends PictureInPictureRenderer<PremiumGu
         }
     }
     public record State(int width, int height, Matrix3x2f matrix, ScreenRectangle bounds,
-                        Runnable paint) implements PictureInPictureRenderState {
+                        long revision,Runnable paint) implements PictureInPictureRenderState {
         @Override public int x0() { return 0; }
         @Override public int y0() { return 0; }
         @Override public int x1() { return width; }

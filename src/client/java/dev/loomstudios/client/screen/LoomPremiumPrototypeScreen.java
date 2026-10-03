@@ -22,6 +22,10 @@ public final class LoomPremiumPrototypeScreen extends Screen {
     private final List<Control> controls=new ArrayList<>();
     private String selected="Pencil";
     private boolean previewVisible=true;
+    private boolean initialLayout=true,benchmark;
+    private static long nextRevision;
+    private long paintRevision;
+    private int lastHoverMask=Integer.MIN_VALUE;
     private int inspectorX, canvasX, canvasW, bodyY, bodyH, inspectorW;
     public LoomPremiumPrototypeScreen(boolean smooth) { super(Component.literal("Loom UI prototype")); this.smooth=smooth; }
     @Override protected void init() {
@@ -29,25 +33,28 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         PremiumPaint.resetMetrics();
         if(minecraft.player!=null) ClientProjectWorkspace.ensure(minecraft.player.getUUID());
         boolean compact=width<800;
+        if(initialLayout){previewVisible=!compact;initialLayout=false;}
+        paintRevision=++nextRevision;lastHoverMask=Integer.MIN_VALUE;
         bodyY=65;bodyH=height-bodyY-33;
         int rail=compact?36:112; inspectorW=compact?158:216;
         inspectorX=width-inspectorW-12;canvasX=rail+20;canvasW=inspectorX-canvasX-10;
         addControl(12,35,70,22,"Home","house",()->minecraft.setScreen(new LoomHomeScreen()));
         addControl(88,35,96,22,"Open editor","pencil",()->minecraft.setScreen(new CapeEditorScreen(this)));
         addControl(190,35,92,22,smooth?"Native UI":"Smooth UI","layers",()->minecraft.setScreen(new LoomPremiumPrototypeScreen(!smooth)));
-        addControl(width-160,35,70,22,"Preview","eye",()->{previewVisible=!previewVisible;rebuildWidgets();});
+        addControl(288,35,82,22,benchmark?"Live paint":"Cached UI","layers",()->{benchmark=!benchmark;rebuildWidgets();});
+        addControl(width-160,35,70,22,compact&&previewVisible?"Layers":"Preview","eye",()->{previewVisible=!previewVisible;rebuildWidgets();});
         addControl(width-84,35,72,22,"Close","x",this::onClose);
         String[] tools={"Pencil","Eraser","Fill","Eyedropper","Select","Line","Rectangle","Circle"};
         String[] icons={"pencil","eraser","paint-bucket","pipette","square-dashed","minus","square","circle"};
         for(int i=0;i<tools.length;i++){
             String tool=tools[i];
-            addControl(12,bodyY+12+i*27,rail,23,compact?"":tool,icons[i],()->selected=tool).setTooltip(Tooltip.create(Component.literal(tool)));
+            addControl(12,bodyY+12+i*27,rail,23,compact?"":tool,icons[i],()->{selected=tool;paintRevision=++nextRevision;}).setTooltip(Tooltip.create(Component.literal(tool)));
         }
         addControl(inspectorX+10,height-58,inspectorW-20,22,"Layer manager","layers",
                 ()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,null)));
         if(previewVisible) {
             var preview=new LoomPlayerPreviewWidget(inspectorX+8,bodyY+30,inspectorW-16,
-                    Math.min(compact?105:165,bodyH/2), ClientProjectWorkspace::project);
+                    compact?bodyH-65:Math.min(165,bodyH/2), ClientProjectWorkspace::project);
             addRenderableWidget(preview);
         }
     }
@@ -57,7 +64,13 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         return addRenderableWidget(new LoomButton(x,y,w,h,Component.literal(label.isEmpty()?icon:label),action));
     }
     @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float delta) {
-        if(smooth) PremiumGuiRenderer.submit(graphics,()->paint(mouseX,mouseY));
+        if(smooth) {
+            int mask=0;
+            for(int i=0;i<controls.size();i++){Control c=controls.get(i);
+                if(c.isFocused()||mouseX>=c.getX()&&mouseX<c.getRight()&&mouseY>=c.getY()&&mouseY<c.getBottom())mask|=1<<i;}
+            if(mask!=lastHoverMask||benchmark){lastHoverMask=mask;paintRevision=++nextRevision;}
+            PremiumGuiRenderer.submit(graphics,paintRevision,()->paint(mouseX,mouseY));
+        }
         else {
             graphics.fill(0,0,width,height,0xFF0B121D);
             graphics.fill(canvasX,bodyY,canvasX+canvasW,height-33,0xFF172437);
@@ -72,7 +85,7 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         PremiumPaint.text("LOOM",12,6,16,CYAN);
         PremiumPaint.text("STUDIOS",62,7,13,TEXT);
         PremiumPaint.text("Design workspace",138,8,11,MUTED);
-        panel(10,bodyY,canvasX-20,bodyH);
+        panel(8,bodyY,canvasX-12,bodyH);
         panel(canvasX,bodyY,canvasW,bodyH);
         panel(inspectorX,bodyY,inspectorW,bodyH);
         PremiumPaint.text("Cape canvas",canvasX+12,bodyY+10,13,TEXT);
@@ -95,7 +108,8 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         });
         PremiumPaint.text(selected+"  ·  1 px  ·  Symmetry off",canvasX+12,height-55,10,MUTED);
         PremiumPaint.text("Preview & layers",inspectorX+12,bodyY+10,12,TEXT);
-        int layerY=bodyY+34+(previewVisible?Math.min(width<800?105:165,bodyH/2)+10:0);
+        int layerY=bodyY+34+(previewVisible?width<800?bodyH:Math.min(165,bodyH/2)+10:0);
+        if(!previewVisible||width>=800) {
         PremiumPaint.text("LAYERS",inspectorX+12,layerY,9,MUTED);
         String[] layers={"Moon","Starlight","Border","Base gradient"};
         int visible=Math.max(1,Math.min(layers.length,(height-68-layerY-17)/24));
@@ -106,9 +120,10 @@ public final class LoomPremiumPrototypeScreen extends Screen {
             PremiumPaint.text(layers[i],inspectorX+33,ly+5,10,TEXT);
             PremiumPaint.text("100%",inspectorX+inspectorW-40,ly+6,9,MUTED);
         }
+        }
         for(Control control:controls) control.paint(mouseX,mouseY);
         PremiumPaint.text("Renderer prototype · artwork shown here is a sample",12,height-20,9,MUTED);
-        PremiumPaint.text(PremiumPaint.metrics(),Math.max(12,width-290),height-9,8,MUTED);
+        PremiumPaint.text(benchmark?PremiumPaint.metrics():"Cached UI · redraws on interaction",Math.max(12,width-290),height-9,8,MUTED);
     }
     private static void panel(int x,int y,int w,int h) {
         PremiumPaint.box(x,y+3,w,h,7,0x55000000);

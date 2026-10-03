@@ -1,5 +1,7 @@
 # Loom Studios — Pass Log
 
+Actions#220 source71d3d02:125 tests and190 captures pass; all images decode and eight renderer comparisons were inspected. Smooth icons/text/3D interleaving work, but continuous painting had high Mesa CPU tails and compact layers/rail needed changes. Latest fixes cache the vector surface by interaction revision and use a compact layers/preview switch; verification pending. See PREMIUM_PROTOTYPE.md. Full workshop art and production-screen migration remain TODO.
+
 Prototype follow-up verification is pending:32-entry cached template/picker textures, correct selected-tool/tinted icons, per-profile warm CPU samples and actual-client idle-upload reuse assertions at Home/color-picker captures. Initial source71d3d02 build/125 tests passed; the full capture job is still running. Next validate the follow-up source and inspect the eight renderer comparisons before choosing the production renderer.
 
 ## NanoVG prototype — IN PROGRESS (2026-10-03)
