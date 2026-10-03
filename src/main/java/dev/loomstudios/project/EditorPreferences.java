@@ -10,7 +10,7 @@ public final class EditorPreferences {
     private final Properties values = new Properties();
     public EditorPreferences(Path file) throws IOException {
         this.file=file;
-        if (Files.isRegularFile(file) && Files.size(file)<=65536)
+        if (Files.isRegularFile(file) && Files.size(file)<=1048576)
             try (InputStream stream=Files.newInputStream(file)) { values.load(stream); }
     }
     private EditorPreferences(Path file,boolean empty){this.file=file;}
@@ -20,17 +20,21 @@ public final class EditorPreferences {
     }
     public String choice(String key,String fallback) { return values.getProperty(key,fallback); }
     public void set(String key,String value) throws IOException {
-        values.setProperty(key,value); save();
+        setAll(Map.of(key,value));
+    }
+    public void setAll(Map<String,String> updates) throws IOException {
+        Properties previous=new Properties();previous.putAll(values);updates.forEach(values::setProperty);
+        try{save();}catch(IOException e){values.clear();values.putAll(previous);throw e;}
     }
     public boolean favorite(UUID id) { return enabled("favorite."+id,false); }
     public void toggleFavorite(UUID id) throws IOException {
-        if(favorite(id)) values.remove("favorite."+id); else values.setProperty("favorite."+id,"true");
-        save();
+        set("favorite."+id,Boolean.toString(!favorite(id)));
     }
     private void save() throws IOException {
         Files.createDirectories(file.toAbsolutePath().getParent());
         Path temp=file.resolveSibling(file.getFileName()+".tmp");
         try(OutputStream stream=Files.newOutputStream(temp)) { values.store(stream,"Loom Studios editor preferences"); }
+        if(Files.size(temp)>1048576){Files.deleteIfExists(temp);throw new IOException("Organization storage limit reached");}
         try { Files.move(temp,file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE); }
         catch(AtomicMoveNotSupportedException e) { Files.move(temp,file,StandardCopyOption.REPLACE_EXISTING); }
     }

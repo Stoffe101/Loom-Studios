@@ -18,6 +18,17 @@ public final class ProjectLibraryIndex {
     private static List<ProjectDescriptor> entries = List.of();
     private static int rejectedFiles;
     private static UUID selectedProjectId;
+    private record Cached(java.nio.file.attribute.FileTime modified,long size,ProjectDescriptor descriptor){}
+    private static final java.util.Map<Path,Cached> cache=new java.util.HashMap<>();
+    private static final java.util.Map<Path,LoomProject> artwork=new java.util.LinkedHashMap<>(16,.75F,true);
+    private static void remember(Path path,LoomProject project){artwork.put(path,project);while(artwork.size()>8)artwork.remove(artwork.keySet().iterator().next());}
+    public static LoomProject load(ProjectDescriptor descriptor)throws IOException{
+        var attributes=java.nio.file.Files.readAttributes(descriptor.projectPath(),java.nio.file.attribute.BasicFileAttributes.class);
+        Cached c=cache.get(descriptor.projectPath());
+        LoomProject p=artwork.get(descriptor.projectPath());
+        if(p!=null&&c!=null&&c.modified().equals(attributes.lastModifiedTime())&&c.size()==attributes.size())return p;
+        p=LocalProjectLibrary.load(descriptor.projectPath());remember(descriptor.projectPath(),p);return p;
+    }
 
     private ProjectLibraryIndex() {
     }
@@ -29,6 +40,9 @@ public final class ProjectLibraryIndex {
         try {
             for (Path path : LocalProjectLibrary.list()) {
                 try {
+                    var attributes=java.nio.file.Files.readAttributes(path,java.nio.file.attribute.BasicFileAttributes.class);
+                    Cached cached=cache.get(path);
+                    if(cached!=null&&cached.modified().equals(attributes.lastModifiedTime())&&cached.size()==attributes.size()&&java.nio.file.Files.isRegularFile(cached.descriptor().thumbnailPath())){next.add(cached.descriptor());continue;}
                     LoomProject project = LocalProjectLibrary.load(path);
                     String hash = project.hash();
                     Path thumbnail = ProjectThumbnailCache.ensure(project, hash);
@@ -42,6 +56,7 @@ public final class ProjectLibraryIndex {
                             path,
                             thumbnail
                     ));
+                    cache.put(path,new Cached(attributes.lastModifiedTime(),attributes.size(),next.getLast()));remember(path,project);
                 } catch (IOException | IllegalArgumentException e) {
                     rejected++;
                     LoomStudios.LOGGER.warn(
@@ -62,6 +77,8 @@ public final class ProjectLibraryIndex {
         );
 
         entries = List.copyOf(next);
+        cache.keySet().retainAll(next.stream().map(ProjectDescriptor::projectPath).toList());
+        artwork.keySet().retainAll(cache.keySet());
         rejectedFiles = rejected;
 
         if (selectedProjectId != null && find(selectedProjectId).isEmpty()) {

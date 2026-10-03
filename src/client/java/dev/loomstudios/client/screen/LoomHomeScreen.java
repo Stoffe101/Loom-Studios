@@ -9,6 +9,7 @@ import dev.loomstudios.client.ui.LoomActionCard;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomProjectCard;
+import dev.loomstudios.client.ui.LoomProjectMenu;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.CapeUvRegion;
@@ -242,6 +243,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
 
         List<ProjectDescriptor> recent = ProjectLibraryIndex.entries()
                 .stream()
+                .sorted(java.util.Comparator.comparing((ProjectDescriptor d)->!dev.loomstudios.client.project.LoomPreferences.get().favorite(d.projectId())))
                 .limit(4)
                 .toList();
 
@@ -287,7 +289,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                         () -> selectProject(descriptor)
                 );
                 card.setOpenAction(this::openSelected);
-                card.setContextAction((x,y)->minecraft.setScreen(new LoomLibraryScreen(this,descriptor.projectId())));
+                card.setContextAction((x,y)->{selectProject(descriptor);projectMenu=descriptor;menuX=Math.max(8,Math.min(width-166,x.intValue()));menuY=Math.max(contentTop,Math.min(height-28-207,y.intValue()));});
+                card.setDecorated(true);
                 projectCards.add(card);
                 addRenderableWidget(card);
             }
@@ -381,8 +384,15 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                 action
         );
         card.active = enabled;
+        if(!primaryTemplateTitle(title).isEmpty())card.setTemplate(dev.loomstudios.project.TemplateCatalog.Kind.valueOf(primaryTemplateTitle(title)));
         addRenderableWidget(card);
     }
+
+    private static String primaryTemplateTitle(String title){return switch(title){case "Blank"->"BLANK";case "Gradient"->"GRADIENT";case "Nature"->"NATURE";case "Space"->"SPACE";case "Fantasy"->"FANTASY";case "Emblems"->"EMBLEM";default->"";};}
+    private ProjectDescriptor projectMenu;
+    private int menuX,menuY;
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(projectMenu!=null&&e.key()==256){projectMenu=null;return true;}return super.keyPressed(e);}
+    @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent e,boolean twice){if(projectMenu!=null){var d=projectMenu;projectMenu=null;if(e.button()==0&&e.x()>=menuX&&e.x()<menuX+158&&e.y()>=menuY&&e.y()<menuY+207){int action=(int)(e.y()-menuY)/23;if(action!=5){var lib=new LoomLibraryScreen(this);lib.executeAction(d,action);}}return true;}return super.mouseClicked(e,twice);}
 
     private void buildPreviewPanel() {
         int width = previewRight - previewLeft;
@@ -442,7 +452,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         ProjectLibraryIndex.selected().ifPresent(descriptor -> {
             try {
                 selectedPreviewProject =
-                        LocalProjectLibrary.load(descriptor.projectPath());
+                        ProjectLibraryIndex.load(descriptor);
             } catch (IOException | IllegalArgumentException e) {
                 LoomStudios.LOGGER.warn(
                         "Failed to load selected Loom preview {}",
@@ -469,7 +479,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
     }
 
     private void createTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->{if(minecraft.player==null)return;ClientProjectWorkspace.replaceWith(dev.loomstudios.project.TemplateCatalog.create(kind,System.currentTimeMillis()),minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(this));});}
-    private void createGradientTemplate() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::createGradientTemplateNow); }
+    private void createGradientTemplate() { createTemplate(dev.loomstudios.project.TemplateCatalog.Kind.GRADIENT); }
     private void createGradientTemplateNow() {
         if (this.minecraft.player == null) {
             return;
@@ -663,6 +673,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
 
         super.render(graphics, mouseX, mouseY, partialTick);
+        if(projectMenu!=null)LoomProjectMenu.render(graphics,font,menuX,menuY,mouseX,mouseY,new String[]{"Edit","Rename…",dev.loomstudios.client.project.LoomPreferences.get().favorite(projectMenu.projectId())?"Unfavorite":"Favorite","Duplicate","Delete to Trash","Close","Equip","Folder / tags","Backup / versions"},4);
     }
 
     private void renderSectionPanels(GuiGraphics graphics) {

@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 128) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 182) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -62,13 +62,13 @@ public final class LoomUiCapture {
             int profile = Math.min(stage / 2, 3);
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
-                int[] target = stage == 21 ? new int[]{854,480,2} : stage>=124?new int[]{1904,960,3}:stage>=100?PROFILES[(stage-100)/6]:stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
+                int[] target = stage == 21 ? new int[]{854,480,2} : stage>=176?new int[]{1904,960,3}:stage>=128?PROFILES[(stage-128)/12]:stage>=124?new int[]{1904,960,3}:stage>=100?PROFILES[(stage-100)/6]:stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
                 client.options.guiScale().set(target[2]);
                 org.lwjgl.glfw.GLFW.glfwSetWindowSize(client.getWindow().handle(), target[0], target[1]);
                 client.resizeDisplay(); prepared = true; wait = 10; return;
             }
             if (stage != 20) {
-                client.options.guiScale().set(stage == 21 ? 2 : stage>=124?3:stage>=100?PROFILES[(stage-100)/6][2]:stage >= 96 ? 3 : stage >= 68 ? PROFILES[(stage-68)/7][2] : stage >= 42 ? 3 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
+                client.options.guiScale().set(stage == 21 ? 2 : stage>=176?3:stage>=128?PROFILES[(stage-128)/12][2]:stage>=124?3:stage>=100?PROFILES[(stage-100)/6][2]:stage >= 96 ? 3 : stage >= 68 ? PROFILES[(stage-68)/7][2] : stage >= 42 ? 3 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
                 client.resizeDisplay();
             }
             if (stage < 8) {
@@ -195,9 +195,11 @@ public final class LoomUiCapture {
                 client.setScreen(screen);verifyPreviewPan(screen);
             }
             if(stage>=68&&stage<100) prepareMilestone(client);
-            if(stage>=100) prepareSafety(client);
+            if(stage>=100&&stage<128) prepareSafety(client);
+            if(stage>=128) preparePolish(client);
             client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
+            if(stage>=128&&stage<176&&(stage-128)%12==0){double scale=client.getWindow().getGuiScale();org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),(field(client.screen,"menuX").getInt(client.screen)+60)*scale,(field(client.screen,"menuY").getInt(client.screen)+11)*scale);}
             pending = true;
             int captureStage = stage;
             // Allow several complete render frames after window resize and widget initialization.
@@ -230,7 +232,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index>=100?safetyCaptureName(index):index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+            String name = index>=128?polishCaptureName(index):index>=100?safetyCaptureName(index):index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
@@ -416,6 +418,51 @@ public final class LoomUiCapture {
         ClientProjectWorkspace.undo();if(!ClientProjectWorkspace.project().animation().equals(original))throw new IllegalStateException("Keyframe drag did not undo as one edit");
         System.out.println("LOOM_UI_ANIMATION PASS: Screen keyframe dragging and single-step undo");
         System.out.println("LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit, isolated draft recovery and explicit save cleanup");
+    }
+    private static final String[] POLISH_NAMES={"home-menu-hover","templates-cool","templates-cute","library-favorites-folders","library-bulk","library-organize","library-versions","cape-layers-dense","elytra-layers-dense","cape-layer-groups","elytra-layer-groups","layer-group-name"};
+    private static String polishCaptureName(int index){if(index>=176)return "polish-"+new String[]{"bulk-compact","organize-compact","versions-compact","cape-layer-manager-compact","elytra-layer-manager-compact","templates-cute-compact"}[index-176];int[] p=PROFILES[(index-128)/12];return "polish-"+POLISH_NAMES[(index-128)%12]+"-"+p[0]+"x"+p[1]+"-gui"+p[2];}
+    private static void preparePolish(Minecraft client)throws Exception{
+        if(!Files.exists(fixturePath))LocalProjectLibrary.store().restore(fixtureProject.projectId());
+        dev.loomstudios.client.project.LoomPreferences.get().set("previewBackground","SCENIC");
+        ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+        var org=new dev.loomstudios.project.LibraryOrganization(dev.loomstudios.client.project.LoomPreferences.get());
+        org.organize(java.util.List.of(fixtureProject.projectId()),"Moon collection","space, moon");
+        if(!dev.loomstudios.client.project.LoomPreferences.get().favorite(fixtureProject.projectId()))dev.loomstudios.client.project.LoomPreferences.get().toggleFavorite(fixtureProject.projectId());
+        dev.loomstudios.client.project.ProjectLibraryIndex.refresh();
+        var descriptor=dev.loomstudios.client.project.ProjectLibraryIndex.find(fixtureProject.projectId()).orElseThrow();
+        int view=stage>=176?new int[]{4,5,6,9,10,2}[stage-176]:(stage-128)%12;
+        var home=new LoomHomeScreen();
+        if(view==0){client.setScreen(home);var card=home.children().stream().filter(c->c instanceof dev.loomstudios.client.ui.LoomProjectCard).map(c->(AbstractWidget)c).findFirst().orElseThrow();home.mouseClicked(mouse(card.getX()+12,card.getY()+12,1),false);if(client.screen!=home||field(home,"projectMenu").get(home)==null)throw new IllegalStateException("Home right-click did not open inline menu");}
+        else if(view==1||view==2){var screen=new dev.loomstudios.client.screen.LoomTemplatesScreen(home);set(screen,"page",view);client.setScreen(screen);}
+        else if(view==3){var screen=new dev.loomstudios.client.screen.LoomLibraryScreen(home);set(screen,"folderFilter","Moon collection");client.setScreen(screen);}
+        else if(view==4)client.setScreen(new dev.loomstudios.client.screen.LoomBulkScreen(home,dev.loomstudios.client.project.ProjectLibraryIndex.entries().stream().limit(3).toList(),false));
+        else if(view==5)client.setScreen(new dev.loomstudios.client.screen.LoomOrganizeScreen(home,java.util.List.of(descriptor)));
+        else if(view==6){var history=new dev.loomstudios.project.ProjectVersions(LocalProjectLibrary.store());for(int i=0;i<3;i++)history.backup(fixtureProject.withName("Moonlit backup "+i));client.setScreen(new dev.loomstudios.client.screen.LoomVersionsScreen(home,descriptor));}
+        else if(view==11)client.setScreen(new dev.loomstudios.client.screen.LoomRenameScreen(home,"Layer group","Group name","Assign group","Moon & stars",name->{}));
+        else{
+            boolean wing=view==8||view==10;
+            for(int i=0;i<(wing?6:3);i++){final int n=i;ClientProjectWorkspace.apply(p->wing?dev.loomstudios.project.ProjectEdits.addElytraLayer(p,"Detail "+n):dev.loomstudios.project.ProjectEdits.addCapeLayer(p,"Detail "+n));}
+            var layers=(wing?ClientProjectWorkspace.project().elytra():ClientProjectWorkspace.project().cape()).layers();var selected=layers.subList(layers.size()-3,layers.size()).stream().map(dev.loomstudios.project.LoomLayer::id).toList();
+            org.group(fixtureProject.projectId(),selected,"Details");
+            if(view==9||view==10){var screen=new dev.loomstudios.client.screen.LoomLayerManagerScreen(home,wing,layers.getLast().id());@SuppressWarnings("unchecked") var multi=(java.util.Set<java.util.UUID>)field(screen,"multi").get(screen);multi.addAll(selected);client.setScreen(screen);}
+            else{Screen screen=wing?new ElytraEditorScreen(home):new CapeEditorScreen(home);client.setScreen(screen);var list=(AbstractWidget)field(screen,"layerListWidget").get(screen);if(stage<176&&(stage-128)/12==1&&list.getHeight()<92)throw new IllegalStateException("GUI3 layer panel shows fewer than four rows");}
+        }
+    }
+    private static void verifyPolishWorkflows(Minecraft client)throws Exception{
+        LocalProjectLibrary.save(fixtureProject);ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+        var home=new LoomHomeScreen();client.setScreen(home);var card=home.children().stream().filter(c->c instanceof dev.loomstudios.client.ui.LoomProjectCard).map(c->(AbstractWidget)c).findFirst().orElseThrow();home.mouseClicked(mouse(card.getX()+12,card.getY()+12,1),false);
+        if(client.screen!=home)throw new IllegalStateException("Home context actions navigate prematurely");
+        home.keyPressed(new net.minecraft.client.input.KeyEvent(256,0,0));if(field(home,"projectMenu").get(home)!=null)throw new IllegalStateException("Home Escape does not dismiss menu");
+        call(home,"createGradientTemplate");if(!java.util.Arrays.equals(dev.loomstudios.client.render.LoomTextureCompiler.compile(ClientProjectWorkspace.project().cape(),0,false,false),dev.loomstudios.client.render.LoomTextureCompiler.compile(dev.loomstudios.project.TemplateCatalog.create(dev.loomstudios.project.TemplateCatalog.Kind.GRADIENT,0).cape(),0,false,false)))throw new IllegalStateException("Home gradient action differs from catalog artwork");ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+        var lib=new dev.loomstudios.client.screen.LoomLibraryScreen(home);client.setScreen(lib);Method filtered=lib.getClass().getDeclaredMethod("filtered");filtered.setAccessible(true);@SuppressWarnings("unchecked") var list=(java.util.List<dev.loomstudios.client.project.ProjectDescriptor>)filtered.invoke(lib);
+        boolean nonFavorite=false;for(var d:list){boolean favorite=dev.loomstudios.client.project.LoomPreferences.get().favorite(d.projectId());if(favorite&&nonFavorite)throw new IllegalStateException("Favorites are not first");if(!favorite)nonFavorite=true;}
+        var cards=lib.children().stream().filter(c->c instanceof dev.loomstudios.client.ui.LoomProjectCard).map(c->(AbstractWidget)c).limit(2).toList();for(var c:cards)lib.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(c.getX()+10,c.getY()+10,new net.minecraft.client.input.MouseButtonInfo(0,2)),false);
+        if(((java.util.Set<?>)field(lib,"multi").get(lib)).size()!=2)throw new IllegalStateException("Ctrl-click bulk selection failed");
+        call(lib,"bulkActions");if(!(client.screen instanceof dev.loomstudios.client.screen.LoomBulkScreen))throw new IllegalStateException("Bulk action navigation failed");
+        var manager=new dev.loomstudios.client.screen.LoomLayerManagerScreen(home,false,fixtureProject.cape().layers().getFirst().id());client.setScreen(manager);
+        Method act=manager.getClass().getDeclaredMethod("act",int.class);act.setAccessible(true);act.invoke(manager,0);act.invoke(manager,3);if(ClientProjectWorkspace.project().cape().layers().stream().anyMatch(dev.loomstudios.project.LoomLayer::visible))throw new IllegalStateException("Layer batch hide failed");manager.keyPressed(new net.minecraft.client.input.KeyEvent(90,0,2));if(!ClientProjectWorkspace.project().cape().equals(fixtureProject.cape()))throw new IllegalStateException("Layer batch undo failed");
+        var descriptor=dev.loomstudios.client.project.ProjectLibraryIndex.find(fixtureProject.projectId()).orElseThrow();lib.executeAction(descriptor,6);if(!ClientProjectWorkspace.isCurrentProjectEquipped())throw new IllegalStateException("Library Equip failed");
+        System.out.println("LOOM_UI_POLISH PASS: inline Home menu/Escape, Home/catalog artwork equivalence, favorites-first, Ctrl bulk selection, batch hide/undo, library Equip");
     }
     private static String safetyCaptureName(int index){if(index>=124)return new String[]{"safety-settings-compact","safety-unsaved-compact","safety-undo-delete-compact","safety-palette-management-compact"}[index-124];int[] p=PROFILES[(index-100)/6];return "safety-"+new String[]{"unsaved","delete","recent-design-colors","preview-light","preview-dark","preview-checker"}[(index-100)%6]+"-"+p[0]+"x"+p[1]+"-gui"+p[2];}
     private static void choose(Minecraft client,int index){var w=client.screen.children().stream().filter(c->c instanceof AbstractWidget).map(c->(AbstractWidget)c).toList().get(index);client.screen.mouseClicked(mouse(w.getX()+5,w.getY()+8,0),false);}

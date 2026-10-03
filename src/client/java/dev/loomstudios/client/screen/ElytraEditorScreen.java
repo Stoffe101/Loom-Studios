@@ -38,6 +38,7 @@ import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.LoomAnimation;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -82,6 +83,10 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private int paletteWindowX = Integer.MIN_VALUE;
     private int paletteWindowY = Integer.MIN_VALUE;
     private String statusMessage = "";
+    private String saveFeedback="";
+    private long saveFeedbackUntil;
+    private LoomProject saveFeedbackProject;
+    private void saveFeedback(String text){statusMessage="";saveFeedback=text;saveFeedbackUntil=System.currentTimeMillis()+5000;saveFeedbackProject=ClientProjectWorkspace.project();}
 
     private LoomButton layerAddButton;
     private LoomButton layerDuplicateButton;
@@ -489,9 +494,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void buildLayerInspector() {
         int start = children().size(); var rows = inspectorRows();
         int count = ClientProjectWorkspace.project().elytra().layers().size();
-        var r = rows.row(Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64));
+        var r = rows.row(Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4)));
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
-                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true));
+                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,true,selectedLayerId))));
         r = rows.row(22);
         layerAddButton = cellButton(r, 0, 3, "Add layer", LoomButton.Icon.PLUS, this::addLayer);
         layerDuplicateButton = cellButton(r, 1, 3, "Duplicate layer", LoomButton.Icon.COPY, this::duplicateLayer);
@@ -714,7 +719,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void updateInspectorVisibility() {
         if (layerListWidget != null) {
             int count = ClientProjectWorkspace.project().elytra().layers().size();
-            int target = Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64);
+            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4));
             int delta = target - layerListWidget.getHeight();
             if (delta != 0) {
                 layerListWidget.setHeight(target);
@@ -1561,7 +1566,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void save() {
         try {
             ClientProjectWorkspace.save();
+            saveFeedback("Design saved");
         } catch (IOException e) {
+            saveFeedback("Save failed; edits are still open");
             LoomStudios.LOGGER.error("Failed to save Loom Elytra project", e);
         }
         updateButtonStates();
@@ -1570,7 +1577,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void saveAndEquip() {
         try {
             ClientProjectWorkspace.saveAndEquip();
+            saveFeedback("Design saved and equipped");
         } catch (IOException | IllegalStateException e) {
+            saveFeedback("Save / equip failed; check diagnostics");
             LoomStudios.LOGGER.error(
                     "Failed to save/equip Loom Elytra project",
                     e
@@ -1999,7 +2008,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                                 ? "Unsaved edits"
                                 : "Saved, not equipped")
                 : statusMessage;
-        status=dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),true,status);
+        status=System.currentTimeMillis()<saveFeedbackUntil&&saveFeedbackProject==ClientProjectWorkspace.project()?saveFeedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),true,status);
 
         LoomScreenChrome.footer(
                 graphics,

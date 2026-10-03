@@ -33,6 +33,10 @@ public final class LoomProjectCard extends AbstractButton {
     private final Identifier textureId;
 
     private Runnable openAction;
+    private java.util.function.BiConsumer<Boolean,Boolean> selectionAction;
+    public LoomProjectCard setSelectionAction(java.util.function.BiConsumer<Boolean,Boolean> action){selectionAction=action;return this;}
+    private boolean decorated;
+    public LoomProjectCard setDecorated(boolean value){decorated=value;return this;}
     private java.util.function.BiConsumer<Double,Double> contextAction;
     public LoomProjectCard setOpenAction(Runnable action) { openAction=action;return this; }
     public LoomProjectCard setContextAction(java.util.function.BiConsumer<Double,Double> action) { contextAction=action;return this; }
@@ -41,7 +45,7 @@ public final class LoomProjectCard extends AbstractButton {
         return super.mouseClicked(event,doubleClick);
     }
     @Override public void onClick(net.minecraft.client.input.MouseButtonEvent event,boolean doubleClick) {
-        action.run();if(doubleClick&&openAction!=null)openAction.run();
+        if(selectionAction!=null)selectionAction.accept(event.hasControlDown(),event.hasShiftDown());else action.run();if(doubleClick&&openAction!=null)openAction.run();
     }
 
     private DynamicTexture texture;
@@ -105,7 +109,7 @@ public final class LoomProjectCard extends AbstractButton {
         int imageRight = getRight() - 4;
         int imageBottom = getBottom() - FOOTER_HEIGHT;
 
-        renderChecker(graphics, imageLeft, imageTop, imageRight, imageBottom);
+        if(decorated){LoomWorkshopArt.previewScene(graphics,imageLeft,imageTop,imageRight,imageBottom);}else renderChecker(graphics, imageLeft, imageTop, imageRight, imageBottom);
         ensureTexture();
 
         if (texture != null && image != null) {
@@ -122,6 +126,7 @@ public final class LoomProjectCard extends AbstractButton {
             int drawHeight = Math.max(1, (int)Math.floor(sourceHeight * scale));
             int left = imageLeft + (availableWidth - drawWidth) / 2;
             int top = imageTop + (availableHeight - drawHeight) / 2;
+            if(decorated){graphics.fill(left+2,top+2,left+drawWidth+3,top+drawHeight+3,0x66304054);graphics.fill(left-1,top-1,left+drawWidth+1,top+drawHeight+1,0xFF1E3447);}
 
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
@@ -139,6 +144,8 @@ public final class LoomProjectCard extends AbstractButton {
             );
         }
 
+        if(decorated){String badge=dev.loomstudios.client.project.ClientProjectWorkspace.isInitialized()&&dev.loomstudios.client.project.ClientProjectWorkspace.project().projectId().equals(descriptor.projectId())&&dev.loomstudios.client.project.ClientProjectWorkspace.isCurrentProjectEquipped()?"Equipped":dev.loomstudios.client.project.LoomPreferences.get().favorite(descriptor.projectId())?"Favorite":"Saved";int bw=Minecraft.getInstance().font.width(badge)+8;graphics.fill(imageLeft+3,imageTop+3,imageLeft+3+bw,imageTop+15,0xDF152639);graphics.drawString(Minecraft.getInstance().font,badge,imageLeft+7,imageTop+5,LoomUiTheme.ACCENT,false);}
+
         String title = Minecraft.getInstance().font.plainSubstrByWidth(
                 descriptor.name(),
                 Math.max(20, getWidth() - 10)
@@ -153,7 +160,7 @@ public final class LoomProjectCard extends AbstractButton {
         );
         graphics.drawString(
                 Minecraft.getInstance().font,
-                ageText,
+                Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(ageText.getString(),Math.max(20,getWidth()-10))),
                 getX() + 5,
                 getBottom() - 12,
                 LoomUiTheme.TEXT_MUTED,

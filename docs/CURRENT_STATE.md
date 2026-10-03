@@ -1,5 +1,11 @@
 # Loom Studios — Current State
 
+## Library / layer polish — IN PROGRESS (2026-10-03)
+
+User feedback screenshots 121206, 121353, 121438, 121637 and 122234 and all five original reference JPEGs were viewed. Targets: Home, Cape and Elytra workshop references; native Minecraft fonts and code-native motifs remain intentional adaptations. Implementing shared hover menus with Equip, favorite-first library sorting, real Home template thumbnails and eight additional motifs, scenic recent cards, folder/tag organization and bulk actions, bounded project backups, and local layer groups/multi-selection. Compact layer rows use 18 logical pixels and a dedicated manager. No portable project schema or multiplayer payload changes.
+
+Verification is pending for this branch; earlier pass results below do not verify these edits. Next: compile and unit tests, actual Minecraft/Mesa interaction/capture checks at 1920×1080 and 3440×1440 GUI2/GUI3 plus compact 635×320; visually review new screens, correct failures, then merge the exact verified source. Backups retain 20 snapshots per design; organization/group metadata is local to this installation. Hardware FPS and optional mod/shader/multiplayer acceptance remain separate.
+
 ## Editor safety/usability — DONE (2026-10-03)
 
 All six requested additions are implemented and verified: unsaved Save/Keep draft/Discard/Cancel, named delete confirmation + immediate Undo, selected-tool/shortcut/disabled-reason guidance, persistent recent colors and saved design palettes, Scenic/Light/Dark/Checker GUI preview backgrounds, and opt-in privacy-filtered diagnostics. All five original references were viewed again; existing workshop styling and compact layouts are retained. No schema/network change.

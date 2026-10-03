@@ -18,8 +18,13 @@ import java.util.UUID;
  */
 public final class ProjectFileStore {
     private final Path root;
+    private final boolean keepHistory;
 
     public ProjectFileStore(Path root) {
+        this(root,true);
+    }
+    public ProjectFileStore(Path root,boolean keepHistory) {
+        this.keepHistory=keepHistory;
         this.root = Objects.requireNonNull(root, "root")
                 .toAbsolutePath()
                 .normalize();
@@ -38,6 +43,10 @@ public final class ProjectFileStore {
         Files.createDirectories(root);
 
         Path target = pathFor(project.projectId());
+        if(keepHistory&&Files.isRegularFile(target,java.nio.file.LinkOption.NOFOLLOW_LINKS)){
+            LoomProject previous=load(target);
+            if(!previous.hash().equals(project.hash()))new ProjectVersions(this).backup(previous);
+        }
         Path temporary = root.resolve(project.projectId() + ".loom.tmp");
         Files.write(temporary, project.encode());
 

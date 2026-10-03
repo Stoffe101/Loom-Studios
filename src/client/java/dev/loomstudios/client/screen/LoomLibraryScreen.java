@@ -26,11 +26,19 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private UUID initialMenu;
     private int tab,page,left,right,top,bottom,menuX,menuY;
     private boolean favorites,nameSort;
-    private String query="",message="Single click: preview · Double click: edit · Right click: actions";
+    private String query="",message="Double click: edit · Right click: actions · Ctrl/Shift: select several";
     private LoomButton previous,next;
     private ProjectFileStore undoStore;
     private UUID undoId;
     private LoomButton undoDelete;
+    private final Set<UUID> multi=new LinkedHashSet<>();
+    private UUID anchor;
+    private LoomButton bulkButton;
+    private String folderFilter="";
+    private LibraryOrganization organization(){return new LibraryOrganization(LoomPreferences.get());}
+    private boolean homeAction;
+    private void finishHomeAction(){if(homeAction){homeAction=false;minecraft.setScreen(parent);}}
+    public void executeAction(ProjectDescriptor d,int action){homeAction=action==2||action==3||action==6;minecraft.setScreen(this);menu=d;act(action);}
     public LoomLibraryScreen(Screen parent) { super(Component.literal("Design library"));this.parent=parent; }
     public LoomLibraryScreen(Screen parent,UUID menuId) { this(parent);initialMenu=menuId; }
     @Override protected void init() {
@@ -39,8 +47,9 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         top=header+8;bottom=height-28;left=8;right=Math.max(260,width-184);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
         String[] tabs={"Designs","Drafts","Trash"};
-        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;rebuildWidgets();}).setSelected(tab==t));}
-        addRenderableWidget(new LoomButton(width-176,top,168,20,Component.literal("Editor settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
+        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;multi.clear();folderFilter="";rebuildWidgets();}).setSelected(tab==t));}
+        addRenderableWidget(new LoomButton(width-176,top,84,20,Component.literal(folderFilter.isEmpty()?"All folders":folderFilter),()->{var folders=new ArrayList<String>();folders.add("");entries.stream().map(d->organization().folder(d.projectId())).filter(s->!s.isEmpty()).distinct().sorted().forEach(folders::add);folderFilter=folders.get((folders.indexOf(folderFilter)+1)%folders.size());page=0;rebuildWidgets();}));
+        addRenderableWidget(new LoomButton(width-88,top,80,20,Component.literal("Settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
         search=addRenderableWidget(new EditBox(font,left,top+26,Math.max(100,(right-left)/2),20,Component.literal("Search designs")));
         search.setMaxLength(80);search.setValue(query);search.setHint(Component.literal("Search designs…"));
         search.setResponder(value->{query=value;page=0;buildCards();});
@@ -49,6 +58,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         previous=addRenderableWidget(new LoomButton(left,bottom-22,56,20,Component.literal("Previous"),()->{page--;buildCards();}));
         next=addRenderableWidget(new LoomButton(right-56,bottom-22,56,20,Component.literal("Next"),()->{page++;buildCards();}));
         undoDelete=addRenderableWidget(new LoomButton(left+60,bottom-22,92,20,Component.literal("Undo delete"),this::undoDelete));undoDelete.visible=undoId!=null;
+        bulkButton=addRenderableWidget(new LoomButton(right-150,bottom-22,90,20,Component.literal("Bulk actions"),this::bulkActions));bulkButton.visible=!multi.isEmpty();
         preview=addRenderableWidget(new LoomPlayerPreviewWidget(width-176,top+26,168,Math.max(90,bottom-top-52),()->previewProject));
         addRenderableWidget(new LoomButton(width-176,bottom-22,80,20,Component.literal("Edit"),()->editSelected()));
         addRenderableWidget(new LoomButton(width-92,bottom-22,84,20,Component.literal("Actions"),()->openMenu(selected,right-135,top+53)));
@@ -70,15 +80,18 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
             catch(IOException e){message="Could not read library: "+e.getMessage();}
             entries=List.copyOf(list);
         }
+        multi.retainAll(entries.stream().map(ProjectDescriptor::projectId).toList());
+        bulkButton.visible=!multi.isEmpty();
         if(selected!=null)selected=entries.stream().filter(d->d.projectId().equals(selected.projectId())).findFirst().orElse(null);
         if(selected==null&&!entries.isEmpty())selected=entries.getFirst();
         if(selected!=null)select(selected);else previewProject=null;
         buildCards();
     }
     private List<ProjectDescriptor> filtered() {
-        var stream=entries.stream().filter(d->d.name().toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT)))
+        var stream=entries.stream().filter(d->organization().matches(d.projectId(),d.name(),query)).filter(d->folderFilter.isEmpty()||organization().folder(d.projectId()).equals(folderFilter))
                 .filter(d->!favorites||LoomPreferences.get().favorite(d.projectId()));
-        return stream.sorted(nameSort?Comparator.comparing(ProjectDescriptor::name,String.CASE_INSENSITIVE_ORDER):Comparator.comparingLong(ProjectDescriptor::modifiedAtEpochMillis).reversed()).toList();
+        Comparator<ProjectDescriptor> order=nameSort?Comparator.comparing(ProjectDescriptor::name,String.CASE_INSENSITIVE_ORDER):Comparator.comparingLong(ProjectDescriptor::modifiedAtEpochMillis).reversed();
+        return stream.sorted(Comparator.comparing((ProjectDescriptor d)->!LoomPreferences.get().favorite(d.projectId())).thenComparing(order)).toList();
     }
     private void buildCards() {
         for(var card:cards){removeWidget(card);card.close();}cards.clear();descriptors.clear();
@@ -92,14 +105,15 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
             ProjectDescriptor d=shown.get(i);int n=i-page*capacity;
             LoomProjectCard card=new LoomProjectCard(left+n%columns*(cw+6),top+53+n/columns*(ch+6),cw,ch,d,
                     Component.literal((LoomPreferences.get().favorite(d.projectId())?"★ ":"")+(tab==1?"Unsaved draft":tab==2?"In Trash":LoomHomeScreen.formatAge(d.modifiedAtEpochMillis()))),
-                    ()->selected!=null&&selected.projectId().equals(d.projectId()),()->select(d));
+                    ()->multi.isEmpty()?selected!=null&&selected.projectId().equals(d.projectId()):multi.contains(d.projectId()),()->select(d));
+            card.setSelectionAction((ctrl,shift)->{if(shift&&anchor!=null){var all=filtered();int from=0,to=all.indexOf(d);for(int j=0;j<all.size();j++)if(all.get(j).projectId().equals(anchor))from=j;for(int j=Math.min(from,to);j<=Math.max(from,to);j++)multi.add(all.get(j).projectId());}else if(ctrl){if(!multi.add(d.projectId()))multi.remove(d.projectId());}else{multi.clear();anchor=d.projectId();}select(d);bulkButton.visible=!multi.isEmpty();message=multi.isEmpty()?"Ctrl-click or Shift-click to select several designs":multi.size()+" selected · Bulk actions";});
             card.setOpenAction(()->{select(d);editSelected();});
             card.setContextAction((x,y)->{select(d);openMenu(d,x,y);});
             cards.add(card);descriptors.put(card,d);addRenderableWidget(card);
         }
     }
     private LoomProject load(ProjectDescriptor d) throws IOException {
-        return new ProjectFileStore(d.projectPath().getParent()).load(d.projectPath());
+        return tab==0?ProjectLibraryIndex.load(d):new ProjectFileStore(d.projectPath().getParent()).load(d.projectPath());
     }
     private void select(ProjectDescriptor d) {
         selected=d;
@@ -122,10 +136,10 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     }
     private void openMenu(ProjectDescriptor d,double x,double y) {
         if(d==null)return;menu=d;
-        menuX=Math.max(8,Math.min(width-150,(int)x));menuY=Math.max(top,Math.min(bottom-146,(int)y));
+        menuX=Math.max(8,Math.min(width-166,(int)x));menuY=Math.max(top,Math.min(bottom-actions().length*23,(int)y));
     }
     private String[] actions() {return tab==2?new String[]{"Restore","Rename…","Favorite","Duplicate","Close"}:
-            new String[]{tab==1?"Recover & edit":"Edit","Rename…",LoomPreferences.get().favorite(menu.projectId())?"Unfavorite":"Favorite","Duplicate",tab==1?"Discard to Trash":"Delete to Trash","Close"};}
+            new String[]{tab==1?"Recover & edit":"Edit","Rename…",LoomPreferences.get().favorite(menu.projectId())?"Unfavorite":"Favorite","Duplicate",tab==1?"Discard to Trash":"Delete to Trash","Close",tab==1?"Save + equip":"Equip","Folder / tags","Backup / versions"};}
     private void act(int index) {
         if(index==4&&tab!=2&&menu!=null){ProjectDescriptor d=menu;menu=null;
             minecraft.setScreen(new LoomDecisionScreen(this,"Delete design?",d.name()+" · can be restored from Trash",List.of(
@@ -143,20 +157,23 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
                     if(ClientProjectWorkspace.isInitialized()&&ClientProjectWorkspace.project().projectId().equals(d.projectId()))ClientProjectWorkspace.apply(current->current.withName(name));
                     message="Renamed design";
                 }));
-                case 2 -> {LoomPreferences.get().toggleFavorite(d.projectId());refresh();}
-                case 3 -> {LoomProject p=load(d);LoomProject copy=new LoomProject(p.schemaVersion(),UUID.randomUUID(),p.name().substring(0,Math.min(p.name().length(),LoomProjectCodec.MAX_PROJECT_NAME_CHARS-5))+" copy",LoomProjectMetadata.now(System.currentTimeMillis()),p.cape(),p.elytra(),p.runtime(),p.animation());LocalProjectLibrary.save(copy);message="Created independent copy";refresh();}
+                case 2 -> {LoomPreferences.get().toggleFavorite(d.projectId());refresh();finishHomeAction();}
+                case 3 -> {LoomProject p=load(d);LoomProject copy=new LoomProject(p.schemaVersion(),UUID.randomUUID(),p.name().substring(0,Math.min(p.name().length(),LoomProjectCodec.MAX_PROJECT_NAME_CHARS-5))+" copy",LoomProjectMetadata.now(System.currentTimeMillis()),p.cape(),p.elytra(),p.runtime(),p.animation());LocalProjectLibrary.save(copy);message="Created independent copy";refresh();finishHomeAction();}
                 case 4 -> {if(tab==2)return;
                     ProjectFileStore owner=tab==1?WorkspaceRecovery.STORE:LocalProjectLibrary.store();owner.trash(d.projectId());undoStore=owner;undoId=d.projectId();undoDelete.visible=true;
                     message="Moved to Trash · Undo delete is available";
                     refresh();
                 }
+                case 6 -> WorkspaceNavigation.request(this,()->{try{if(minecraft.player==null)return;if(tab==1){ClientProjectWorkspace.recover(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.saveAndEquip();}else{ClientProjectWorkspace.open(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.equipCurrent();}message="Equipped: "+d.name();minecraft.player.displayClientMessage(Component.literal(message),true);refresh();finishHomeAction();}catch(IOException|IllegalArgumentException|IllegalStateException e){message="Could not equip this design";LoomDiagnostics.record("Library equip",e);}});
+                case 7 -> minecraft.setScreen(new LoomOrganizeScreen(this,List.of(d)));
+                case 8 -> minecraft.setScreen(new LoomVersionsScreen(this,d));
                 default -> { }
             }
         }catch(IOException|IllegalArgumentException e){message="Action failed: "+e.getMessage();}
     }
     private void undoDelete(){if(undoId==null)return;try{undoStore.restore(undoId);tab=undoStore==WorkspaceRecovery.STORE?1:0;undoId=null;message="Deletion undone";rebuildWidgets();}catch(IOException e){message="Restore failed; the design remains in Trash";LoomDiagnostics.record("Undo delete",e);}}
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
-        if(menu!=null){String[] actions=actions();boolean inside=event.x()>=menuX&&event.x()<menuX+142&&event.y()>=menuY&&event.y()<menuY+actions.length*23;
+        if(menu!=null){String[] actions=actions();boolean inside=event.x()>=menuX&&event.x()<menuX+158&&event.y()>=menuY&&event.y()<menuY+actions.length*23;
             if(inside&&event.button()==0){act((int)(event.y()-menuY)/23);return true;}menu=null;return true;}
         return super.mouseClicked(event,doubleClick);
     }
@@ -167,12 +184,11 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         LoomScreenChrome.panel(g,left-1,top+51,right+1,bottom-25);
         super.render(g,mx,my,delta);
         if(cards.isEmpty())g.drawCenteredString(font,Component.literal(query.isEmpty()?"No designs here yet":"No matching designs"),(left+right)/2,top+85,LoomUiTheme.TEXT_MUTED);
-        g.drawCenteredString(font,Component.literal("Page "+(page+1)+" · "+filtered().size()+" designs"),(left+right)/2,bottom-16,LoomUiTheme.TEXT_MUTED);
+        if(multi.isEmpty())g.drawCenteredString(font,Component.literal("Page "+(page+1)+" · "+filtered().size()+" designs"),(left+right)/2,bottom-16,LoomUiTheme.TEXT_MUTED);
         LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-160),tab==1?"Recovery drafts":tab==2?"Trash":"Local library");
-        if(menu!=null){String[] a=actions();LoomScreenChrome.panel(g,menuX,menuY,menuX+142,menuY+a.length*23);
-            for(int i=0;i<a.length;i++){int y=menuY+i*23;if(mx>=menuX&&mx<menuX+142&&my>=y&&my<y+23)g.fill(menuX+1,y+1,menuX+141,y+22,LoomUiTheme.PANEL_INNER);
-                g.drawString(font,a[i],menuX+9,y+8,i==4&&tab!=2?0xFFFF718B:LoomUiTheme.TEXT,false);}}
+        if(menu!=null)LoomProjectMenu.render(g,font,menuX,menuY,mx,my,actions(),tab==2?-1:4);
     }
+    private void bulkActions(){var chosen=entries.stream().filter(d->multi.contains(d.projectId())).toList();if(!chosen.isEmpty())minecraft.setScreen(new LoomBulkScreen(this,chosen,tab==2));}
     private void closeCards(){for(var card:cards)card.close();cards.clear();descriptors.clear();}
     @Override public void removed(){closeCards();super.removed();}
     @Override public void onClose(){minecraft.setScreen(parent);}
