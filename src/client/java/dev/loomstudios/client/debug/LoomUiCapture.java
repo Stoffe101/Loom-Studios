@@ -564,5 +564,5 @@ public final class LoomUiCapture {
     private static Field field(Object object,String name) throws Exception { Field f=object.getClass().getDeclaredField(name); f.setAccessible(true); return f; }
     private static void set(Object object,String name,Object value) throws Exception { field(object,name).set(object,value); }
     @SuppressWarnings({"unchecked","rawtypes"}) private static Object enumValue(Object object,String name,String value) throws Exception { return Enum.valueOf((Class)field(object,name).getType(),value); }
-    private static void call(Object object,String name) throws Exception { Method m=object.getClass().getDeclaredMethod(name);m.setAccessible(true);m.invoke(object); }
+    private static void call(Object object,String name) throws Exception { Class<?> type=object.getClass();while(type!=null){try{Method m=type.getDeclaredMethod(name);m.setAccessible(true);m.invoke(object);return;}catch(NoSuchMethodException e){type=type.getSuperclass();}}throw new NoSuchMethodException(name); }
 }

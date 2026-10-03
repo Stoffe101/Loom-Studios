@@ -104,7 +104,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             int mouseY,
             float partialTick
     ) {
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(mouseX>=getRight()-39&&mouseX<getRight()-25&&mouseY<getY()+19?"Toggle character · "+(characterVisible?"Hide player to inspect the design":"Show player"):"Drag: rotate · Middle drag: pan · Wheel: zoom · Double-click: full preview")));
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(mouseX>=getRight()-39&&mouseX<getRight()-25&&mouseY<getY()+19?"Toggle character (H) · "+(characterVisible?"Hide player to inspect the design":"Show player"):"Drag: rotate · Middle drag: pan · Wheel: zoom · Double-click: full preview")));
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
         LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · "+(mode==Mode.ELYTRA?pose.label():"Cape"));
         int toggleX=getRight()-39,toggleY=getY()+3;
@@ -231,6 +231,8 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                         action
                 );
     }
+
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent event){if(isFocused()&&event.key()==72){characterVisible=!characterVisible;return true;}return super.keyPressed(event);}
 
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
         if(event.button()==0&&event.x()>=getRight()-39&&event.x()<getRight()-25&&event.y()>=getY()+3&&event.y()<getY()+17){characterVisible=!characterVisible;playDownSound(Minecraft.getInstance().getSoundManager());return true;}

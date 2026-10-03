@@ -16,4 +16,6 @@ Additional artifact finding: animation properties can overflow footer at GUI3. R
 
 References inspected: Home, Cape, Elytra, Smart Import, Sharing. Preserve workshop timber, cyan/violet hierarchy, smooth controls and scenic preview. Compact adaptation reserves readable editing space rather than copying reference proportions literally.
 
+Additional scissor correction: native opaque fills intersect the active clip before occluding earlier vector commands, so scrolled group headers cannot erase pinned controls. Clipped commands retain their actual label/control bounds to avoid fragmentation from unrelated pixel fills.
+
 Evidence pending: CI build/tests; full 218 captures; fast suites including 28 new feedback-specific captures; body/cape retention visual review; scrolled palette clipping; animation preset undo and control bounds. Environment: MC1.21.11, Loader0.18.4, API0.141.1, Java21, Linux/Mesa/Xvfb. Optional mods and target hardware are separate manual acceptance.

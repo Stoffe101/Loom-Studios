@@ -120,7 +120,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
         if(minecraft.player!=null)renderPreviewEntity(graphics,x0,y0,x1,y1,
                 Math.max(20,Math.min((y1-y0)*0.45F,(x1-x0)*0.35F)*zoom),minecraft.player);
         dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font,Component.literal(font.plainSubstrByWidth(
-                "Drag: rotate · Middle: pan · Wheel: zoom · C: mode · R: reset · Esc: close",panelWidth()-16)),width/2,bottom-26,MUTED_TEXT_COLOR);
+                "Drag: rotate · Middle: pan · Wheel: zoom · H: character · C: mode · R: reset · Esc: close",panelWidth()-16)),width/2,bottom-26,MUTED_TEXT_COLOR);
         dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font,Component.literal(font.plainSubstrByWidth(
                 "Checkerboard = transparency. Exports keep authored pixels.",panelWidth()-16)),width/2,bottom-12,MUTED_TEXT_COLOR);
         dev.loomstudios.client.ui.LoomScreenChrome.footer(graphics,width,height,"3D preview",mode==PreviewMode.CAPE?"Cape":"Elytra");
@@ -246,6 +246,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if(event.key()==72){characterVisible=!characterVisible;return true;}
         if (event.key() == 67) { // GLFW_KEY_C
             this.mode = this.mode == PreviewMode.CAPE
                     ? PreviewMode.ELYTRA

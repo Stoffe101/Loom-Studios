@@ -84,7 +84,17 @@ public final class PremiumControls {
     public static void popClip(GuiGraphics g){if(g==target&&!clips.isEmpty())clips.pop();}
     private static void collect(Command command) {
         if(clips.isEmpty())pending.add(command);
-        else {var c=clips.peek();if(c.width()>0&&c.height()>0)pending.add(new Cut(c.left(),c.top(),c.width(),c.height(),command));}
+        else {
+            var c=clips.peek();
+            Matrix3x2f pose=command instanceof Label label?label.pose():command instanceof Button button?button.pose():((Symbol)command).pose();
+            var a=pose.transformPosition(command.x(),command.y(),new org.joml.Vector2f());
+            var b=pose.transformPosition(command.x()+command.w(),command.y()+command.h(),new org.joml.Vector2f());
+            int x=Math.max(c.left(),(int)Math.floor(Math.min(a.x,b.x))),y=Math.max(c.top(),(int)Math.floor(Math.min(a.y,b.y)));
+            int right=Math.min(c.right(),(int)Math.ceil(Math.max(a.x,b.x))),bottom=Math.min(c.bottom(),(int)Math.ceil(Math.max(a.y,b.y)));
+            // Keep the command's actual bounds, not the whole viewport: pixel fills must not
+            // repeatedly split unrelated clipped labels into thousands of fragments.
+            if(right>x&&bottom>y)pending.add(new Cut(x,y,right-x,bottom-y,command));
+        }
     }
     public static boolean icon(GuiGraphics g,LoomButton.Icon icon,int x,int y,int size,int ink) {
         return icon!=LoomButton.Icon.NONE&&icon(g,iconName(icon),x,y,size,ink);
@@ -92,6 +102,11 @@ public final class PremiumControls {
     /** Clip earlier paint around a later native popup, preserving visible portions outside it. */
     public static void occlude(GuiGraphics g,int x,int y,int w,int h) {
         if(g!=target||w<=0||h<=0||pending.isEmpty())return;
+        if(!clips.isEmpty()) {
+            var clip=clips.peek();int right=Math.min(x+w,clip.right()),bottom=Math.min(y+h,clip.bottom());
+            x=Math.max(x,clip.left());y=Math.max(y,clip.top());w=right-x;h=bottom-y;
+            if(w<=0||h<=0)return;
+        }
         // Most opaque fills are canvas pixels, well away from collected controls.
         // Do not allocate/copy the entire paint list for each non-overlapping pixel.
         boolean overlaps=false;
