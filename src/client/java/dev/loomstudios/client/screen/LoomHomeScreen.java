@@ -184,7 +184,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                 false,
                 ()->minecraft.setScreen(new LoomLibraryScreen(this))
         );
-        load.active = ProjectLibraryIndex.selected().isPresent();
+        load.active = true;
         addRenderableWidget(load);
         this.openSelectedButton = new LoomButton(
                 previewLeft,

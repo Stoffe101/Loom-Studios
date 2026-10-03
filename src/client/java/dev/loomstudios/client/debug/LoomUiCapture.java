@@ -28,7 +28,7 @@ public final class LoomUiCapture {
             && Boolean.getBoolean("loom.uiCapture");
     private static final int[][] PROFILES = {{1920,1080,2}, {1920,1080,3}, {3440,1440,2}, {3440,1440,3}};
     private static int ticks, stage = -2, wait;
-    private static boolean pending, prepared, fixturesPrepared;
+    private static boolean pending, prepared, fixturesPrepared, importHandleChecked;
     private static Path fixturePath;
     private static LoomProject fixtureProject;
     private LoomUiCapture() {}
@@ -208,6 +208,15 @@ public final class LoomUiCapture {
     }
     private static void capture(Minecraft client, int index) {
         try {
+            if(index==66&&!importHandleChecked){
+                var widget=(AbstractWidget)field(client.screen,"texturePreview").get(client.screen);
+                var before=(LoomProject)invokeCandidate(client.screen);
+                var press=mouse(widget.getX()+widget.getWidth()/2.0,widget.getY()+widget.getHeight()/2.0,0);
+                client.screen.mouseClicked(press,false);client.screen.mouseDragged(mouse(press.x()+6,press.y()+3,0),6,3);client.screen.mouseReleased(mouse(press.x()+6,press.y()+3,0));
+                if(before.hash().equals(((LoomProject)invokeCandidate(client.screen)).hash()))throw new IllegalStateException("Import artwork drag did not change candidate");
+                importHandleChecked=true;System.out.println("LOOM_UI_IMPORT_HANDLES PASS: Screen drag changes the rendered import candidate");
+                new Thread(()->{try{Thread.sleep(400);client.execute(()->capture(client,index));}catch(InterruptedException e){Thread.currentThread().interrupt();}},"loom-handle-capture").start();return;
+            }
             for (var child : client.screen.children()) if (child instanceof AbstractWidget w && w.visible) {
                 if (w.getX() < 0 || w.getY() < 0 || w.getRight() > client.screen.width || w.getBottom() > client.screen.height - 28)
                     throw new IllegalStateException("Out of bounds: " + w.getClass().getSimpleName() + " " + w.getMessage().getString());
@@ -404,6 +413,7 @@ public final class LoomUiCapture {
         System.out.println("LOOM_UI_ANIMATION PASS: Screen keyframe dragging and single-step undo");
         System.out.println("LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit, isolated draft recovery and explicit save cleanup");
     }
+    private static Object invokeCandidate(Object screen) throws Exception {Method m=screen.getClass().getDeclaredMethod("candidateProject");m.setAccessible(true);return m.invoke(screen);}
     private static Field field(Object object,String name) throws Exception { Field f=object.getClass().getDeclaredField(name); f.setAccessible(true); return f; }
     private static void set(Object object,String name,Object value) throws Exception { field(object,name).set(object,value); }
     @SuppressWarnings({"unchecked","rawtypes"}) private static Object enumValue(Object object,String name,String value) throws Exception { return Enum.valueOf((Class)field(object,name).getType(),value); }
