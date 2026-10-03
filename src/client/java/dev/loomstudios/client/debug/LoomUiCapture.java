@@ -441,7 +441,7 @@ public final class LoomUiCapture {
         else if(view==11)client.setScreen(new dev.loomstudios.client.screen.LoomRenameScreen(home,"Layer group","Group name","Assign group","Moon & stars",name->{}));
         else{
             boolean wing=view==8||view==10;
-            for(int i=0;i<6;i++){final int n=i;ClientProjectWorkspace.apply(p->wing?dev.loomstudios.project.ProjectEdits.addElytraLayer(p,"Detail "+n):dev.loomstudios.project.ProjectEdits.addCapeLayer(p,"Detail "+n));}
+            for(int i=0;i<(wing?6:3);i++){final int n=i;ClientProjectWorkspace.apply(p->wing?dev.loomstudios.project.ProjectEdits.addElytraLayer(p,"Detail "+n):dev.loomstudios.project.ProjectEdits.addCapeLayer(p,"Detail "+n));}
             var layers=(wing?ClientProjectWorkspace.project().elytra():ClientProjectWorkspace.project().cape()).layers();var selected=layers.subList(layers.size()-3,layers.size()).stream().map(dev.loomstudios.project.LoomLayer::id).toList();
             org.group(fixtureProject.projectId(),selected,"Details");
             if(view==9||view==10){var screen=new dev.loomstudios.client.screen.LoomLayerManagerScreen(home,wing,layers.getLast().id());@SuppressWarnings("unchecked") var multi=(java.util.Set<java.util.UUID>)field(screen,"multi").get(screen);multi.addAll(selected);client.setScreen(screen);}

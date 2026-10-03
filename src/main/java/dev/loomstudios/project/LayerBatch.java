@@ -14,6 +14,6 @@ public final class LayerBatch {
             case DUPLICATE->wing?ProjectEdits.duplicateElytraLayer(p,layer.id()):ProjectEdits.duplicateCapeLayer(p,layer.id());
             case DELETE->wing?ProjectEdits.removeElytraLayer(p,layer.id()):ProjectEdits.removeCapeLayer(p,layer.id());
             case UP,DOWN->{int index=0;var list=(wing?p.elytra():p.cape()).layers();for(int i=0;i<list.size();i++)if(list.get(i).id().equals(layer.id()))index=i;int next=index+(action==Action.UP?1:-1);if(next>=0&&next<list.size()&&!valid.contains(list.get(next).id()))yield wing?ProjectEdits.moveElytraLayer(p,layer.id(),action==Action.UP?1:-1):ProjectEdits.moveCapeLayer(p,layer.id(),action==Action.UP?1:-1);yield p;}
-        };return p;
+        };p.encode();return p;
     }
 }
