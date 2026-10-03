@@ -38,6 +38,7 @@ import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.LoomAnimation;
 import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
 import net.minecraft.client.gui.GuiGraphics;
