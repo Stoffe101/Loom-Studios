@@ -489,7 +489,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void buildLayerInspector() {
         int start = children().size(); var rows = inspectorRows();
         int count = ClientProjectWorkspace.project().elytra().layers().size();
-        var r = rows.row(Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58));
+        var r = rows.row(Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4)));
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
                 () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,true,selectedLayerId))));
         r = rows.row(22);
@@ -714,7 +714,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void updateInspectorVisibility() {
         if (layerListWidget != null) {
             int count = ClientProjectWorkspace.project().elytra().layers().size();
-            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
+            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4));
             int delta = target - layerListWidget.getHeight();
             if (delta != 0) {
                 layerListWidget.setHeight(target);

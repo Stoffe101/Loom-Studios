@@ -16,7 +16,7 @@ public final class ProjectVersions {
     }
     public Path backup(LoomProject p) throws IOException {
         Path d=directory(p.projectId());Files.createDirectories(d);String suffix="-"+p.hash()+".loom";
-        for(Path existing:list(p.projectId()))if(existing.getFileName().toString().endsWith(suffix))return existing;
+        for(Path existing:list(p.projectId()))if(existing.getFileName().toString().endsWith(suffix)){read(p.projectId(),existing);return existing;}
         Path path=d.resolve(System.currentTimeMillis()+suffix),temp=path.resolveSibling(path.getFileName()+".tmp");Files.write(temp,p.encode());
         try{Files.move(temp,path,StandardCopyOption.ATOMIC_MOVE);}catch(AtomicMoveNotSupportedException e){Files.move(temp,path);}
         var versions=list(p.projectId());for(int i=LIMIT;i<versions.size();i++)Files.delete(versions.get(i));return path;

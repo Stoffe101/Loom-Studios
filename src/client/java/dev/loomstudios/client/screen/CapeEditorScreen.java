@@ -521,7 +521,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         int start = children().size();
         var rows = inspectorRows();
         int count = workspaceState.project().cape().layers().size();
-        int listHeight = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
+        int listHeight = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4));
         var r = rows.row(listHeight);
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
                 () -> workspaceState.project().cape(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,selectedLayerId))));
@@ -646,7 +646,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
     private void updateInspectorVisibility() {
         if (layerListWidget != null) {
             int count = workspaceState.project().cape().layers().size();
-            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
+            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4));
             int delta = target - layerListWidget.getHeight();
             if (delta != 0) {
                 layerListWidget.setHeight(target);

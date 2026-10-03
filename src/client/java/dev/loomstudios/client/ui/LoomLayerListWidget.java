@@ -101,7 +101,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
         );
 
         List<LoomLayer> layers = canvasSupplier.get().layers();
-        if(manage!=null)graphics.drawString(Minecraft.getInstance().font,"Manage",getRight()-46,getY()+5,LoomUiTheme.ACCENT,false);
+        if(manage!=null){boolean hot=mouseX>=getRight()-52&&mouseX<getRight()-3&&mouseY>=getY()+2&&mouseY<getY()+17;graphics.fill(getRight()-52,getY()+2,getRight()-3,getY()+17,hot?0xFF244353:0xFF1B3044);graphics.drawString(Minecraft.getInstance().font,"Manage",getRight()-46,getY()+5,LoomUiTheme.ACCENT,false);}
         thumbnails.keySet().removeIf(id -> layers.stream().noneMatch(layer -> layer.id().equals(id)));
         clampScroll(layers.size());
 

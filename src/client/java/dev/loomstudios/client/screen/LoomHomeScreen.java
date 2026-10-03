@@ -452,7 +452,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         ProjectLibraryIndex.selected().ifPresent(descriptor -> {
             try {
                 selectedPreviewProject =
-                        LocalProjectLibrary.load(descriptor.projectPath());
+                        ProjectLibraryIndex.load(descriptor);
             } catch (IOException | IllegalArgumentException e) {
                 LoomStudios.LOGGER.warn(
                         "Failed to load selected Loom preview {}",

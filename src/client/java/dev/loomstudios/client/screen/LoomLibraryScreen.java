@@ -164,7 +164,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
                     message="Moved to Trash · Undo delete is available";
                     refresh();
                 }
-                case 6 -> WorkspaceNavigation.request(this,()->{try{if(minecraft.player==null)return;if(tab==1){ClientProjectWorkspace.recover(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.saveAndEquip();}else{ClientProjectWorkspace.open(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.equipCurrent();}message="Equipped: "+d.name();minecraft.player.displayClientMessage(Component.literal(message),true);refresh();}catch(IOException|IllegalArgumentException|IllegalStateException e){message="Could not equip this design";LoomDiagnostics.record("Library equip",e);}});
+                case 6 -> WorkspaceNavigation.request(this,()->{try{if(minecraft.player==null)return;if(tab==1){ClientProjectWorkspace.recover(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.saveAndEquip();}else{ClientProjectWorkspace.open(d.projectPath(),minecraft.player.getUUID());ClientProjectWorkspace.equipCurrent();}message="Equipped: "+d.name();minecraft.player.displayClientMessage(Component.literal(message),true);refresh();finishHomeAction();}catch(IOException|IllegalArgumentException|IllegalStateException e){message="Could not equip this design";LoomDiagnostics.record("Library equip",e);}});
                 case 7 -> minecraft.setScreen(new LoomOrganizeScreen(this,List.of(d)));
                 case 8 -> minecraft.setScreen(new LoomVersionsScreen(this,d));
                 default -> { }
