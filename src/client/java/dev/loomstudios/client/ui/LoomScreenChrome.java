@@ -10,13 +10,7 @@ public final class LoomScreenChrome {
 
     public static void renderBackdrop(GuiGraphics g, int width, int height) {
         g.fill(0, 0, width, height, LoomUiTheme.BACKDROP);
-        LoomWorkshopArt.timber(g, 0, 0, 7, height - 18);
-        LoomWorkshopArt.timber(g, width - 7, 0, width, height - 18);
-        LoomWorkshopArt.timber(g, 0, height - 25, width, height - 18);
-        for (int y : new int[]{headerHeight(LoomUiTheme.compact(width,height))-4, height-32}) {
-            LoomWorkshopArt.bracket(g,0,y,7);
-            LoomWorkshopArt.bracket(g,width-7,y,7);
-        }
+        LoomWorkshopFrame.draw(g,width,height);
     }
 
     public static void workSurface(GuiGraphics g, int l, int t, int r, int b) {
@@ -34,6 +28,12 @@ public final class LoomScreenChrome {
 
     public static void renderBrandHeader(GuiGraphics g, int width, String subtitle, boolean compact) {
         int h = headerHeight(compact), center = width / 2;
+        int wordWidth=Math.min(width-120,compact?250:390);
+        if(dev.loomstudios.client.ui.premium.PremiumControls.brand(g,center-wordWidth/2,compact?4:7,wordWidth,compact?18:27)) {
+            dev.loomstudios.client.ui.premium.PremiumControls.label(g,subtitle==null?"":subtitle,
+                    center-wordWidth/2,compact?25:40,wordWidth,compact?9:10,LoomUiTheme.TEXT,true);
+            return;
+        }
         LoomWorkshopArt.timber(g, 0, 0, width, h);
         // Recessed sign, steel corners, stitched pennants and two warm lanterns.
         int signWidth = Math.min(width - 96, compact ? 250 : 390);
@@ -57,7 +57,7 @@ public final class LoomScreenChrome {
         var font = Minecraft.getInstance().font;
         String sub = font.plainSubstrByWidth(subtitle == null ? "" : subtitle,signWidth-64);
         int y = compact ? 24 : 41;
-        g.drawCenteredString(font,Component.literal(sub),center,y,LoomUiTheme.TEXT);
+        dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(g,font,Component.literal(sub),center,y,LoomUiTheme.TEXT);
         g.fill(l+20,y+4,center-font.width(sub)/2-8,y+5,LoomUiTheme.GOLD);
         g.fill(center+font.width(sub)/2+8,y+4,r-20,y+5,LoomUiTheme.GOLD);
     }
@@ -71,7 +71,7 @@ public final class LoomScreenChrome {
     public static void panelHeader(GuiGraphics g, int l, int t, int r, String title) {
         g.fill(l+2,t+2,r-2,t+19,LoomUiTheme.PANEL_HEADER);
         g.fill(l+3,t+18,r-3,t+19,LoomUiTheme.BORDER_SOFT);
-        g.drawString(Minecraft.getInstance().font,Component.literal(title),l+7,t+6,LoomUiTheme.TEXT,false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,Minecraft.getInstance().font,Component.literal(title),l+7,t+6,LoomUiTheme.TEXT,false);
     }
 
     public static void footer(GuiGraphics g, int width, int height, String status, String rightText) {
@@ -83,11 +83,11 @@ public final class LoomScreenChrome {
         int rw = font.width(right);
         int plaqueWidth = Math.min(184,width/3), plaqueLeft = (width-plaqueWidth)/2;
         String left = font.plainSubstrByWidth(status == null ? "" : status,plaqueLeft-16);
-        g.drawString(font,Component.literal(left),8,top+5,LoomUiTheme.TEXT_MUTED,false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font,Component.literal(left),8,top+5,LoomUiTheme.TEXT_MUTED,false);
         g.fill(plaqueLeft,top+1,plaqueLeft+plaqueWidth, height-1,0xFF9A7544);
         g.fill(plaqueLeft+2,top+2,plaqueLeft+plaqueWidth-2,height-2,0xFFE4C897);
         g.fill(plaqueLeft+4,top+3,plaqueLeft+plaqueWidth-4,top+4,0xFFF5DFB4);
-        g.drawCenteredString(font,Component.literal("Weave higher stories."),width/2,top+5,0xFF51361F);
-        g.drawString(font,Component.literal(right),width-rw-8,top+5,LoomUiTheme.ACCENT_ALT,false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(g,font,Component.literal("Weave higher stories."),width/2,top+5,0xFF51361F);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font,Component.literal(right),width-rw-8,top+5,LoomUiTheme.ACCENT_ALT,false);
     }
 }

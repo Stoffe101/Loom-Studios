@@ -98,7 +98,7 @@ public final class LoomImagePreviewWidget extends AbstractWidget {
                 ? "No image"
                 : current.width() + "×" + current.height();
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 title,
                 getX() + 6,
@@ -108,7 +108,7 @@ public final class LoomImagePreviewWidget extends AbstractWidget {
         );
 
         int dimWidth = Minecraft.getInstance().font.width(dimensions);
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(dimensions),
                 getRight() - dimWidth - 6,

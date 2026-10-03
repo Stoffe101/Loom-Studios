@@ -88,26 +88,19 @@ public final class LoomWorkshopArt {
         return 0xFF000000 | red<<16 | green<<8 | blue;
     }
 
-    public static void previewScene(GuiGraphics g, int l, int t, int r, int b) {
-        if (b <= t || r <= l) return;
-        for (int y = t; y < b; y += 6) g.fill(l,y,r,Math.min(b,y+6),mix(0xFF111C49,0xFF394D6C,(y-t)/(float)(b-t)));
-        int moon = Math.min(14, Math.max(5,(b-t)/6));
-        int mx = r - (r-l)/5 - moon, my = t + Math.max(3,(b-t)/10);
-        g.fill(mx-2,my-2,mx+moon+2,my+moon+2,0x224B73B3);
-        g.fill(mx,my,mx+moon,my+moon,0xFFBBDCF1);
-        g.fill(mx+2,my+2,mx+moon-2,my+moon-2,0xFFDBEBF3);
-        for (int x = l + 7; x < r - 4; x += 19) {
-            int ground = b - Math.max(5,(b-t)/7);
-            int th = Math.min((b-t)*2/3,17 + ((x-l)*7)%39);
-            g.fill(x,ground-th,x+2,ground,0xFF0B1C30);
-            for (int row=0;row<4;row++) {
-                int yy=ground-th+row*th/5, half=3+row*2;
-                g.fill(Math.max(l,x-half),yy,Math.min(r,x+half+2),Math.min(ground,yy+th/5+3),0xFF10263A);
-            }
-        }
-        int ground = b - Math.max(5,(b-t)/7);
-        g.fill(l,ground,r,b,0xFF39404C);
-        for(int x=l;x<r;x+=17)g.fill(x,ground+2,Math.min(r,x+14),Math.min(b,ground+3),0xFF57606A);
-        if(b-t>100) lantern(g,l+7,ground-25,1);
+    private static final net.minecraft.resources.Identifier PREVIEW_SCENE=net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            "loom-studios","textures/ui/preview-courtyard.png");
+    private static final net.minecraft.resources.Identifier WIDE_SCENE=net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            "loom-studios","textures/ui/preview-courtyard-wide.png");
+    public static void previewScene(GuiGraphics g,int l,int t,int r,int b) {
+        if(b<=t||r<=l)return;
+        double aspect=(r-l)/(double)(b-t);
+        boolean wide=aspect>1.35;
+        int fullW=wide?2172:1024,fullH=wide?724:1536,sourceW=fullW,sourceH=fullH;
+        if(aspect>fullW/(double)fullH)sourceH=Math.max(1,(int)Math.round(fullW/aspect));
+        else sourceW=Math.max(1,(int)Math.round(fullH*aspect));
+        int u=(fullW-sourceW)/2,v=fullH-sourceH;
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,wide?WIDE_SCENE:PREVIEW_SCENE,l,t,(float)u,(float)v,
+                r-l,b-t,sourceW,sourceH,fullW,fullH);
     }
 }

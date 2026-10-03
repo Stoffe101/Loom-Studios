@@ -192,7 +192,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         int visibleRows = visibleRows();
 
         if (tracks.isEmpty()) {
-            graphics.drawString(Minecraft.getInstance().font, Component.literal("Select a layer, then + Track"),
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,Minecraft.getInstance().font, Component.literal("Select a layer, then + Track"),
                     getX() + 8, rowTop + 8, LoomUiTheme.TEXT_MUTED, false);
         } else {
             UUID selected = selectedTrackSupplier.get();
@@ -253,7 +253,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         String time = formatTime(timelineTickSupplier.getAsInt())
                 + " / "
                 + formatTime(animation.durationTicks());
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(time),
                 getX() + 72,
@@ -382,7 +382,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                             x - textWidth / 2
                     )
             );
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(text),
                     textX,
@@ -448,7 +448,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 Math.max(20, timelineLeft() - (left + 18) - 6)
         );
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(clipped),
                 left + 18,
@@ -514,7 +514,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                     ? "Select a track to edit it in the Animation panel"
                     : selected.effect().displayName()
                             + " • edit effect, speed and keyframes on the right";
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(
                             Minecraft.getInstance().font.plainSubstrByWidth(
@@ -531,7 +531,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         }
 
         if (selected == null) {
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(
                             "Select a track to edit its effect and keyframes"
@@ -639,6 +639,15 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
             String text,
             boolean active
     ) {
+        LoomButton.Icon icon=switch(text) {
+            case ">"->LoomButton.Icon.PLAY;case "II"->LoomButton.Icon.PAUSE;
+            case "+"->LoomButton.Icon.PLUS;case "-"->LoomButton.Icon.MINUS;default->LoomButton.Icon.NONE;
+        };
+        boolean loop=text.equals("Loop")||text.equals("Once");
+        if(dev.loomstudios.client.ui.premium.PremiumControls.button(graphics,x,y,width,height,text,icon,
+                icon!=LoomButton.Icon.NONE,active||loop,
+                dev.loomstudios.client.ui.premium.PremiumControls.hovered(graphics,x,y,width,height),false,
+                loop&&active,false,false))return;
         int border = active
                 ? LoomUiTheme.BORDER
                 : 0xFF26313A;
@@ -656,7 +665,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         );
 
         int textWidth = Minecraft.getInstance().font.width(text);
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(text),
                 x + Math.max(2, (width - textWidth) / 2),

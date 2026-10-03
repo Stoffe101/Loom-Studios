@@ -183,8 +183,8 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,"Design library",LoomUiTheme.compact(width,height));
         LoomScreenChrome.panel(g,left-1,top+51,right+1,bottom-25);
         super.render(g,mx,my,delta);
-        if(cards.isEmpty())g.drawCenteredString(font,Component.literal(query.isEmpty()?"No designs here yet":"No matching designs"),(left+right)/2,top+85,LoomUiTheme.TEXT_MUTED);
-        if(multi.isEmpty())g.drawCenteredString(font,Component.literal("Page "+(page+1)+" · "+filtered().size()+" designs"),(left+right)/2,bottom-16,LoomUiTheme.TEXT_MUTED);
+        if(cards.isEmpty())dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(g,font,Component.literal(query.isEmpty()?"No designs here yet":"No matching designs"),(left+right)/2,top+85,LoomUiTheme.TEXT_MUTED);
+        if(multi.isEmpty())dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(g,font,Component.literal("Page "+(page+1)+" · "+filtered().size()+" designs"),(left+right)/2,bottom-16,LoomUiTheme.TEXT_MUTED);
         LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-160),tab==1?"Recovery drafts":tab==2?"Trash":"Local library");
         if(menu!=null)LoomProjectMenu.render(g,font,menuX,menuY,mx,my,actions(),tab==2?-1:4);
     }

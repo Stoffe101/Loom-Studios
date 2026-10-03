@@ -91,7 +91,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                 LoomUiTheme.PANEL
         );
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal("Layers"),
                 getX() + 7,
@@ -101,7 +101,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
         );
 
         List<LoomLayer> layers = canvasSupplier.get().layers();
-        if(manage!=null){boolean hot=mouseX>=getRight()-52&&mouseX<getRight()-3&&mouseY>=getY()+2&&mouseY<getY()+17;graphics.fill(getRight()-52,getY()+2,getRight()-3,getY()+17,hot?0xFF244353:0xFF1B3044);graphics.drawString(Minecraft.getInstance().font,"Manage",getRight()-46,getY()+5,LoomUiTheme.ACCENT,false);}
+        if(manage!=null){boolean hot=mouseX>=getRight()-52&&mouseX<getRight()-3&&mouseY>=getY()+2&&mouseY<getY()+17;graphics.fill(getRight()-52,getY()+2,getRight()-3,getY()+17,hot?0xFF244353:0xFF1B3044);dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,Minecraft.getInstance().font,"Manage",getRight()-46,getY()+5,LoomUiTheme.ACCENT,false);}
         thumbnails.keySet().removeIf(id -> layers.stream().noneMatch(layer -> layer.id().equals(id)));
         clampScroll(layers.size());
 
@@ -119,13 +119,14 @@ public final class LoomLayerListWidget extends AbstractWidget {
             LoomLayer layer = layers.get(layerIndex);
             int y = getY() + HEADER_HEIGHT + row * ROW_HEIGHT;
             boolean isSelected = layer.id().equals(selected)||multi.contains(layer.id());
+            boolean rowHot=mouseX>=getX()+2&&mouseX<getRight()-2&&mouseY>=y&&mouseY<y+ROW_HEIGHT;
 
             graphics.fill(
                     getX() + 2,
                     y,
                     getRight() - 2,
                     y + ROW_HEIGHT - 1,
-                    isSelected ? 0xFF213744 : LoomUiTheme.PANEL_INNER
+                    isSelected ? 0xFF213744 : rowHot ? 0xFF1B2E42 : LoomUiTheme.PANEL_INNER
             );
             if (isSelected) {
                 graphics.fill(
@@ -163,7 +164,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     Math.max(18, opacityX - (getX() + 52) - 4)
             );
 
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(name),
                     getX() + 52,
@@ -172,7 +173,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     false
             );
 
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(opacity),
                     opacityX,
@@ -258,6 +259,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
 
     private static void drawVisibilityIcon(GuiGraphics g, int x, int y, boolean visible) {
         int color = visible ? LoomUiTheme.ACCENT : LoomUiTheme.TEXT_FAINT;
+        if(dev.loomstudios.client.ui.premium.PremiumControls.icon(g,visible?"eye":"eye-off",x-1,y-1,11,color))return;
         g.fill(x+2,y+1,x+7,y+2,color); g.fill(x+2,y+6,x+7,y+7,color);
         g.fill(x,y+3,x+2,y+5,color); g.fill(x+7,y+3,x+9,y+5,color);
         g.fill(x+1,y+2,x+3,y+3,color); g.fill(x+6,y+2,x+8,y+3,color);
@@ -272,6 +274,8 @@ public final class LoomLayerListWidget extends AbstractWidget {
             int y,
             LayerKind kind
     ) {
+        if(dev.loomstudios.client.ui.premium.PremiumControls.icon(graphics,
+                switch(kind){case PAINT->"pencil";case IMAGE->"image";case GRADIENT->"blend";},x,y,10,LoomUiTheme.TEXT_MUTED))return;
         switch (kind) {
             case PAINT -> {
                 graphics.fill(x + 1, y + 6, x + 7, y + 8, LoomUiTheme.TEXT);
@@ -300,6 +304,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
             boolean locked
     ) {
         int color = locked ? LoomUiTheme.ACCENT_ALT : LoomUiTheme.TEXT_MUTED;
+        if(dev.loomstudios.client.ui.premium.PremiumControls.icon(graphics,locked?"lock":"lock-open",x-1,y-1,11,color))return;
 
         graphics.fill(x + 2, y + 4, x + 8, y + 9, color);
         if (locked) {

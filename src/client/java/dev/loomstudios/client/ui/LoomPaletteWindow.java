@@ -357,6 +357,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             int mouseY,
             float partialTick
     ) {
+        dev.loomstudios.client.ui.premium.PremiumControls.occlude(graphics,getX(),getY(),getWidth(),getHeight());
         graphics.fill(
                 getX(),
                 getY(),
@@ -386,7 +387,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                 pinned ? LoomUiTheme.ACCENT_ALT : LoomUiTheme.ACCENT
         );
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal("Swatches"),
                 getX() + 8,
@@ -407,7 +408,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         int top = labelY + 13;
         int bottom = getBottom() - 7;
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal("Recent · Design · Saved palettes"),
                 getX() + 8,
@@ -447,7 +448,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                         y + GROUP_HEADER_HEIGHT - 1,
                         isSelected ? 0xFF213744 : 0xFF111820
                 );
-                graphics.drawString(
+                dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                         Minecraft.getInstance().font,
                         Component.literal(
                                 palette.name()
@@ -513,7 +514,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         }
 
         if (EditorColors.groups().isEmpty()) {
-            graphics.drawCenteredString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(
                             compactMode

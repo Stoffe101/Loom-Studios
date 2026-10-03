@@ -1,0 +1,125 @@
+name: Premium renderer comparison
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/client/java/dev/loomstudios/client/ui/**"
+      - "src/client/resources/assets/loom-studios/**"
+      - "src/client/java/dev/loomstudios/client/screen/LoomPremiumPrototypeScreen.java"
+      - ".github/workflows/premium-ui.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: renderer
+            start: 182
+            end: 190
+            count: 8
+          - suite: production
+            start: 22
+            end: 42
+            count: 20
+          - suite: editors
+            start: 0
+            end: 8
+            count: 8
+          - suite: polish-gui2
+            start: 128
+            end: 140
+            count: 12
+          - suite: polish-gui3
+            start: 140
+            end: 152
+            count: 12
+          - suite: polish-wide-gui2
+            start: 152
+            end: 164
+            count: 12
+          - suite: polish-wide-gui3
+            start: 164
+            end: 176
+            count: 12
+          - suite: compact
+            start: 176
+            end: 182
+            count: 6
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare display
+        run: |
+          sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1 python3-pil
+          mkdir -p run-ui-capture
+          rm -f docs/verification/editor-workspace/*.png
+          cat > run-ui-capture/options.txt <<'OPTIONS'
+          version:4671
+          enableVsync:false
+          renderDistance:2
+          simulationDistance:2
+          maxFps:30
+          mipmapLevels:0
+          tutorialStep:none
+          onboardAccessibility:false
+          startedCleanly:true
+          OPTIONS
+      - name: Compare renderers and verify input workflows
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          ALSOFT_DRIVERS: "null"
+        run: |
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=${{ matrix.start }} -PuiCaptureEnd=${{ matrix.end }} | tee premium-capture.log
+          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq ${{ matrix.count }}
+          grep -q 'LOOM_UI_CAPTURE COMPLETE' premium-capture.log
+          if [ '${{ matrix.suite }}' = renderer ]; then
+            test "$(grep -c 'LOOM_UI_TEXTURE_CACHE_REUSE PASS' premium-capture.log)" -eq 4
+          fi
+      - name: Decode captures and publish visual review previews
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import base64, io
+          files=sorted(Path('docs/verification/editor-workspace').glob('*.png'))
+          for path in files:
+              image=Image.open(path);image.load()
+          print('LOOM_CAPTURE_DECODE PASS count='+str(len(files)))
+          groups={}
+          for path in files:
+              profile=(path.stem.split('-')[-2]+'-'+path.stem.split('-')[-1]) if '-gui' in path.stem else 'compact'
+              groups.setdefault(profile,[]).append(path)
+          def emit(name,image):
+              data=io.BytesIO();image.convert('RGB').save(data,format='JPEG',quality=92)
+              print('LOOM_REVIEW_IMAGE '+name+' '+base64.b64encode(data.getvalue()).decode('ascii'))
+          for profile,paths in groups.items():
+              sheet=Image.new('RGB',(1920,((len(paths)+1)//2)*575),'#080f1a')
+              draw=ImageDraw.Draw(sheet)
+              for index,path in enumerate(paths):
+                  image=Image.open(path).convert('RGB');image.thumbnail((950,540))
+                  x=(index%2)*960;y=(index//2)*575
+                  sheet.paste(image,(x,y+28));draw.text((x+8,y+8),path.name,fill='white')
+              emit('contact-'+profile,sheet)
+          for path in files:
+              if path.name in ('home-1920x1080-gui3.png','cape-1920x1080-gui3.png','elytra-1920x1080-gui3.png','home-3440x1440-gui3.png'):
+                  image=Image.open(path);emit(path.stem,image)
+                  if path.name.startswith(('cape-','elytra-')):
+                      emit(path.stem+'-inspector',image.crop((image.width//2,140,image.width,image.height-40)))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loom-premium-${{ matrix.suite }}
+          path: |
+            docs/verification/editor-workspace/*.png
+            premium-capture.log
+            run-ui-capture/logs/latest.log

@@ -26,7 +26,7 @@ public final class LoomDecisionScreen extends Screen {
         LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,title.getString(),LoomUiTheme.compact(width,height));
         int x=(width-380)/2,y=Math.max(LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+20,height/2-54);
         LoomScreenChrome.panel(g,x,y,x+380,y+choices.size()*25+88);
-        g.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(detail,360)),width/2,y+8,LoomUiTheme.TEXT);
+        dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(g,font,Component.literal(font.plainSubstrByWidth(detail,360)),width/2,y+8,LoomUiTheme.TEXT);
         super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,error,"Choose before leaving");
     }
     @Override public void onClose(){minecraft.setScreen(parent);}

@@ -37,6 +37,7 @@ loom {
                 systemProperties.put("loom.uiCapture", "true")
                 vmArgs "-Xms256M", "-Xmx1024M"
                 if (project.hasProperty("uiCaptureStart")) systemProperties.put("loom.uiCaptureStart", project.property("uiCaptureStart").toString())
+                if (project.hasProperty("uiCaptureEnd")) systemProperties.put("loom.uiCaptureEnd", project.property("uiCaptureEnd").toString())
                 systemProperties.put("fabric.log.level", "info")
             }
         }
@@ -123,6 +124,11 @@ if (devModsDir.exists()) {
 }
 
 dependencies {
+    // Smooth UI prototype. Minecraft owns LWJGL core; only NanoVG is added.
+    implementation include("org.lwjgl:lwjgl-nanovg:3.3.3")
+    ["windows", "linux", "macos", "macos-arm64"].each { platform ->
+        runtimeOnly include("org.lwjgl:lwjgl-nanovg:3.3.3:natives-${platform}")
+    }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"

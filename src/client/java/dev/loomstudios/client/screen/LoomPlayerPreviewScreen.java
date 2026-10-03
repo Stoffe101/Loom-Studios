@@ -114,9 +114,9 @@ public final class LoomPlayerPreviewScreen extends Screen {
         dev.loomstudios.client.ui.LoomPreviewBackground.render(graphics,x0,y0,x1,y1);
         if(minecraft.player!=null)renderPreviewEntity(graphics,x0,y0,x1,y1,
                 Math.max(20,Math.min((y1-y0)*0.45F,(x1-x0)*0.35F)*zoom),minecraft.player);
-        graphics.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(
+        dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font,Component.literal(font.plainSubstrByWidth(
                 "Drag: rotate · Middle: pan · Wheel: zoom · C: mode · R: reset · Esc: close",panelWidth()-16)),width/2,bottom-26,MUTED_TEXT_COLOR);
-        graphics.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(
+        dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font,Component.literal(font.plainSubstrByWidth(
                 "Checkerboard = transparency. Exports keep authored pixels.",panelWidth()-16)),width/2,bottom-12,MUTED_TEXT_COLOR);
         dev.loomstudios.client.ui.LoomScreenChrome.footer(graphics,width,height,"3D preview",mode==PreviewMode.CAPE?"Cape":"Elytra");
         super.render(graphics,mouseX,mouseY,partialTick);

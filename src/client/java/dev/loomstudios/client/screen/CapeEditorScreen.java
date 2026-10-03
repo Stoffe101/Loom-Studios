@@ -2650,8 +2650,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
     ) {
         if (workspaceTooSmall) {
             LoomScreenChrome.renderBackdrop(graphics, width, height);
-            graphics.drawCenteredString(font, title, width / 2, height / 2 - 24, LoomUiTheme.TEXT);
-            graphics.drawCenteredString(font, Component.literal("Increase window size or reduce GUI scale"), width / 2, height / 2, LoomUiTheme.TEXT_MUTED);
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font, title, width / 2, height / 2 - 24, LoomUiTheme.TEXT);
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font, Component.literal("Increase window size or reduce GUI scale"), width / 2, height / 2, LoomUiTheme.TEXT_MUTED);
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
@@ -2713,7 +2713,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         );
 
         if (tool == Tool.FILL || tool == Tool.EYEDROPPER) {
-            graphics.drawString(font, Component.literal(tool == Tool.FILL ? "Click a pixel to fill its area" : "Click a pixel to pick its color"), canvasLeft + 8, contextTop + 9, LoomUiTheme.TEXT_MUTED, false);
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font, Component.literal(tool == Tool.FILL ? "Click a pixel to fill its area" : "Click a pixel to pick its color"), canvasLeft + 8, contextTop + 9, LoomUiTheme.TEXT_MUTED, false);
         }
         String status = ClientProjectWorkspace.isCurrentProjectEquipped()
                 ? "Saved / Equipped"

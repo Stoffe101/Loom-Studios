@@ -81,7 +81,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
                 LoomUiTheme.PANEL
         );
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal("Colors"),
                 getX() + 8,
@@ -98,33 +98,19 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int hueX = svX + svW + 5;
         int hueW = 9;
 
-        for (int y = 0; y < svH; y += 2) {
-            float v = 1.0F - y / (float)Math.max(1, svH - 1);
-
-            for (int x = 0; x < svW; x += 2) {
-                float s = x / (float)Math.max(1, svW - 1);
-                int rgb = Color.HSBtoRGB(hue, s, v);
-                graphics.fill(
-                        svX + x,
-                        svY + y,
-                        Math.min(svX + svW, svX + x + 2),
-                        Math.min(svY + svH, svY + y + 2),
-                        0xFF000000 | (rgb & 0x00FFFFFF)
-                );
-            }
-        }
-
-        for (int y = 0; y < svH; y++) {
-            float h = y / (float)Math.max(1, svH - 1);
-            int rgb = Color.HSBtoRGB(h, 1.0F, 1.0F);
-            graphics.fill(
-                    hueX,
-                    svY + y,
-                    hueX + hueW,
-                    svY + y + 1,
-                    0xFF000000 | (rgb & 0x00FFFFFF)
-            );
-        }
+        float displayedHue=hue;
+        LoomUiTextureCache.draw(graphics,"sv/"+Float.floatToIntBits(displayedHue)+"/"+svW+"/"+svH,
+                svX,svY,svW,svH,()-> {
+                    var image=new com.mojang.blaze3d.platform.NativeImage(svW,svH,false);
+                    for(int y=0;y<svH;y++)for(int x=0;x<svW;x++)
+                        image.setPixel(x,y,0xFF000000|Color.HSBtoRGB(displayedHue,x/(float)Math.max(1,svW-1),1-y/(float)Math.max(1,svH-1)));
+                    return image;
+                });
+        LoomUiTextureCache.draw(graphics,"hue/"+svH,hueX,svY,hueW,svH,()-> {
+            var image=new com.mojang.blaze3d.platform.NativeImage(1,svH,false);
+            for(int y=0;y<svH;y++)image.setPixel(0,y,0xFF000000|Color.HSBtoRGB(y/(float)Math.max(1,svH-1),1,1));
+            return image;
+        });
 
         int markerX = svX + Math.round(saturation * (svW - 1));
         int markerY = svY + Math.round((1.0F - brightness) * (svH - 1));
@@ -163,7 +149,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
                     svY + 18,
                     LoomUiTheme.PANEL_INNER
             );
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(
                             String.format("#%06X", color & 0xFFFFFF)
@@ -209,7 +195,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
                     "#%06X",
                     color & 0xFFFFFF
             );
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(hex, rightW)),
                     rightX,
@@ -250,7 +236,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int barX = x + labelWidth;
         int barW = Math.max(20, width - labelWidth - valueWidth - 2);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(String.valueOf(label)),
                 x,
@@ -272,7 +258,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int marker = barX + Math.round(value / 255.0F * Math.max(1, barW - 1));
         graphics.fill(marker - 1, y, marker + 1, y + 13, 0xFFFFFFFF);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(Integer.toString(value)),
                 barX + barW + 4,
@@ -294,7 +280,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int barX = x + labelWidth;
         int barW = Math.max(20, width - labelWidth - valueWidth - 2);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal("A"),
                 x,
@@ -319,7 +305,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int marker = barX + Math.round(alpha / 255.0F * Math.max(1, barW - 1));
         graphics.fill(marker - 1, y, marker + 1, y + 13, 0xFFFFFFFF);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(Integer.toString(alpha)),
                 barX + barW + 4,
