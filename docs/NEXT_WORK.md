@@ -1,5 +1,19 @@
 # Loom Studios — Next Work
 
+## NanoVG prototype — IN PROGRESS (2026-10-03)
+
+Implemented an isolated F9 renderer comparison with smooth Inter typography, cached Lucide SVG textures, rounded panels, compact layouts, normal widget input/narration, actual 3D preview interleaving and CPU submission counters. Added LWJGL NanoVG module/native packaging and third-party notices; no Kotlin runtime is needed. Eight smooth/native captures extend the regression suite to190. Build/runtime/image verification is pending; local existing Fabric Loom resolution failed. The main UI overhaul is not done. [Prototype scope and verification](PREMIUM_PROTOTYPE.md).
+
+Next: compile and capture on GitHub Actions, resolve integration failures, compare all four profiles, then choose the renderer and migrate production screens. Hardware FPS/shaders remain unverified.
+
+2026-10-03 follow-up research: NanoVG through NVGRenderer explicitly targets Fabric1.21.11 and is now a rendering-spike candidate for smooth shapes/text/SVGs; Kotlin/native packaging and actual Loom compatibility remain untested. Next compare a small NanoVG prototype with cached Fabric assets before adoption; owo-ui layout evaluation is separate. YACL is settings-oriented and ImGui is developer-tool-oriented. No dependencies/code added or runtime tests run. See PREMIUM_UI_AUDIT.md for primary sources and requirements.
+
+## Premium UI/performance audit — research complete; overhaul TODO (2026-10-03)
+
+Inspected the recovered Actions #217 archive: all182 PNGs decoded, eleven contact sheets reviewed and selected GUI3 originals inspected; latest150225 feedback and all five references viewed individually. The HTTP503 archive-access blocker is resolved. Visual quality is still below the references and performance is unmeasured. No rendering code or dependency changed in this pass. [Audit, primary sources and implementation sequence](PREMIUM_UI_AUDIT.md).
+
+Next: instrument frame-time/render costs, cache template/picker/scenery rendering, then build an asset/icon/font-based Home/Cape vertical slice and responsive640×360 editor. Existing125 tests are prior evidence only; no new game/FPS run this pass. Optional mods, hardware and multiplayer acceptance remain outstanding.
+
 ## Library / layer polish — implementation verified; visual acceptance PARTIAL (2026-10-03)
 
 Merged through [PR #18](https://github.com/Stoffe101/Loom-Studios/pull/18) at `7f9800e399e487ae59e5ba0f3b2c24fec6e697fb`, 2026-10-03 13:36 UTC. Merge tree equals the exact tested source tree `01d530366a0f25ff89265eef27ec286c0d545d2f`. Implemented: hover menus with action icons and Equip, favorite-first Designs, Home thumbnails matching catalog artwork/creation, eight new cool/cute motifs (14 total), scenic recent cards with status badges, atomic local folders/tags with search/filter, Ctrl/Shift selection and bulk actions, twenty checksum-verified saved-design snapshots with pre-restore backups, accurate transient save/equip feedback, bounded library artwork reuse, compact eighteen-pixel layer rows, and Cape/Elytra managers with named groups and batch selection/visibility/locking/duplication/reordering/deletion. Oversized batches fail before editing document/history. No portable project or network schema change.

@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 182) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 190) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -62,7 +62,7 @@ public final class LoomUiCapture {
             int profile = Math.min(stage / 2, 3);
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
-                int[] target = stage == 21 ? new int[]{854,480,2} : stage>=176?new int[]{1904,960,3}:stage>=128?PROFILES[(stage-128)/12]:stage>=124?new int[]{1904,960,3}:stage>=100?PROFILES[(stage-100)/6]:stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
+                int[] target = stage>=182?PROFILES[(stage-182)/2]:stage == 21 ? new int[]{854,480,2} : stage>=176?new int[]{1904,960,3}:stage>=128?PROFILES[(stage-128)/12]:stage>=124?new int[]{1904,960,3}:stage>=100?PROFILES[(stage-100)/6]:stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
                 client.options.guiScale().set(target[2]);
                 org.lwjgl.glfw.GLFW.glfwSetWindowSize(client.getWindow().handle(), target[0], target[1]);
                 client.resizeDisplay(); prepared = true; wait = 10; return;
@@ -196,7 +196,11 @@ public final class LoomUiCapture {
             }
             if(stage>=68&&stage<100) prepareMilestone(client);
             if(stage>=100&&stage<128) prepareSafety(client);
-            if(stage>=128) preparePolish(client);
+            if(stage>=128 && stage<182) preparePolish(client);
+            if(stage>=182) {
+                client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
+                client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
+            }
             client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
             if(stage>=128&&stage<176&&(stage-128)%12==0){double scale=client.getWindow().getGuiScale();org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),(field(client.screen,"menuX").getInt(client.screen)+60)*scale,(field(client.screen,"menuY").getInt(client.screen)+11)*scale);}
@@ -232,7 +236,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index>=128?polishCaptureName(index):index>=100?safetyCaptureName(index):index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+            String name = index>=182?"premium-"+(index%2==0?"smooth":"native")+"-"+PROFILES[(index-182)/2][0]+"x"+PROFILES[(index-182)/2][1]+"-gui"+PROFILES[(index-182)/2][2]:index>=128?polishCaptureName(index):index>=100?safetyCaptureName(index):index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {

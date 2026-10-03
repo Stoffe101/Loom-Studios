@@ -123,6 +123,11 @@ if (devModsDir.exists()) {
 }
 
 dependencies {
+    // Smooth UI prototype. Minecraft owns LWJGL core; only NanoVG is added.
+    implementation include("org.lwjgl:lwjgl-nanovg:3.3.3")
+    ["windows", "linux", "macos", "macos-arm64"].each { platform ->
+        runtimeOnly include("org.lwjgl:lwjgl-nanovg:3.3.3:natives-${platform}")
+    }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"

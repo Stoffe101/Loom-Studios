@@ -22,11 +22,13 @@ public final class LoomStudiosClient implements ClientModInitializer {
     private static KeyMapping openPreview;
     private static KeyMapping openStudio;
     private static KeyMapping toggleEmissive;
+    private static KeyMapping premiumPrototype;
 
     @Override
     public void onInitializeClient() {
         LoomStudios.LOGGER.info("Loom Studios client initialization complete.");
         OptionalModSupport.logDetectedMods();
+        dev.loomstudios.client.ui.premium.PremiumGuiRenderer.register();
         ClientCosmeticSync.register();
         ProjectLibraryIndex.refresh();
 
@@ -69,7 +71,13 @@ public final class LoomStudiosClient implements ClientModInitializer {
                 debugCategory
         ));
 
+        premiumPrototype=KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.loom-studios.premium_prototype",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F9,debugCategory));
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> dev.loomstudios.client.ui.premium.PremiumPaint.close());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while(premiumPrototype.consumeClick()) {
+                if(client.player!=null)client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(true));
+            }
             while (openPreview.consumeClick()) {
                 if (client.player != null && client.level != null) {
                     client.setScreen(new LoomPlayerPreviewScreen());

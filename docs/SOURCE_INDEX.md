@@ -1,5 +1,9 @@
 # Loom Studios — Source Index
 
+2026-10-03 follow-up research: NanoVG through NVGRenderer explicitly targets Fabric1.21.11 and is now a rendering-spike candidate for smooth shapes/text/SVGs; Kotlin/native packaging and actual Loom compatibility remain untested. Next compare a small NanoVG prototype with cached Fabric assets before adoption; owo-ui layout evaluation is separate. YACL is settings-oriented and ImGui is developer-tool-oriented. No dependencies/code added or runtime tests run. See PREMIUM_UI_AUDIT.md for primary sources and requirements.
+
+2026-10-03 premium UI research: version-specific Fabric GUI docs, Lucide ISC/Feather MIT sources, Inter OFL1.1, official owo-ui docs/release0.13.0+1.21.11 and ModernUI compatibility matrix are recorded with URLs and adoption limits in PREMIUM_UI_AUDIT.md. No third-party assets or dependencies added yet.
+
 This file records external technical sources consulted for Loom Studios and the license/usage implications where relevant.
 
 ## Fabric documentation
