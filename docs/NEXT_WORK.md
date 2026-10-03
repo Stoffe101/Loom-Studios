@@ -4,13 +4,24 @@
 
 **DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.
 
-Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). PR #14 remains unmerged.
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). [PR #14](https://github.com/Stoffe101/Loom-Studios/pull/14) was merged into `main` on 2026-10-03 at `1e2bc6d2e800e4217d9243e21e61f00a44966a2a` after the user explicitly authorized the merge. Verified PR head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83` passed both jobs in [Actions #183](https://github.com/Stoffe101/Loom-Studios/actions/runs/37074274210); all 42 captures and export/import workflow markers passed again.
 
 ## Next concrete work
 
-PR #14 is ready for review; review/merge remains separate from this implementation pass. The requested styling/alignment gate is complete. Before a release, run the optional-mod/shader/multiplayer and exhaustive interactive feature checks below; do not treat these broader product checks as completed by screenshots.
+PR #14 is merged into `main`; the requested styling/alignment gate is complete. Next: test the real interactive workflows from `main` and report issues with a screenshot, physical resolution, GUI scale, and reproduction steps. Before a release, run the optional-mod/shader/multiplayer checks below. Screenshot automation does not replace this broader release testing.
 
 Run `./gradlew runClient -PuiCapture` to reproduce the isolated development flow: 42 actual screenshots, visible-control bounds/nonoverlap, project/portable/PNG exports, and import candidate/apply equivalence on both pages. Packaged clients and ordinary development launches never invoke it.
+
+## Full in-game test from main
+
+Update your checkout with `git switch main` then `git pull --ff-only origin main`; launch the normal Gradle/IntelliJ client (`./gradlew runClient`, without `-PuiCapture`). A packaged main build is available through the GitHub Actions `loom-studios-dev` artifact.
+
+- Home and all work screens at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3.
+- Cape Paint/Erase/Fill/Select, move/flip, zoom/pan/grid, 1x/2x/4x, Layers/Color/Gradient properties, undo/redo, Save and Save + Equip.
+- Elytra Linked/Separate wings, thickness, layers, timeline/effects/keyframes, playback and equipped preview.
+- Smart Import file picker, Placement/Processing adjustments, candidate preview, Apply, save/reopen and Image layer editing.
+- Share editable/portable/PNG exports, clipboard/file imports, preview and import-to-library/open.
+- Sodium/Sodium Extra/Iris/3D Skin Layers, shaders off/on, and a second multiplayer client.
 
 ## Runtime verification queue
 

@@ -1,6 +1,6 @@
 # Loom Studios — Current State
 
-**Checkpoint:** 2026-10-02  
+**Checkpoint:** 2026-10-03
 **Target:** Minecraft Java Edition 1.21.11 / Fabric  
 **Active product phase:** Phase 2–5 — editor productization
 
@@ -8,7 +8,11 @@
 
 **DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.
 
-Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). PR #14 remains unmerged.
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). [PR #14](https://github.com/Stoffe101/Loom-Studios/pull/14) was merged into `main` on 2026-10-03 at `1e2bc6d2e800e4217d9243e21e61f00a44966a2a` after the user explicitly authorized the merge. Verified PR head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83` passed both jobs in [Actions #183](https://github.com/Stoffe101/Loom-Studios/actions/runs/37074274210); all 42 captures and export/import workflow markers passed again.
+
+## Main test handoff
+
+**DONE — the verified UI implementation and screenshot evidence are on `main`.** Merge parent/head were checked before merging; the expected PR head was pinned in the merge request. No additional source/schema/network changes were made for this handoff. The documentation follow-up records integration and replaces the previous review-only next step. Main push CI runs the same clean build and 42-capture workflow; current results are attached to each exact main commit in GitHub Actions. Next: the user performs the full interactive/optional-mod/shader/multiplayer test pass from `main`.
 
 ## Overall status
 
@@ -419,7 +423,7 @@ Additional Elytra workflow implemented in the current pass:
 
 Still missing for the full reference target:
 - standing/open/gliding preview-state controls;
-- final reference-layout polish.
+- separate future preview-state UX enhancements; workshop style/profile acceptance is complete.
 
 The semantic wing-link mode is editor state, not serialized project state.
 

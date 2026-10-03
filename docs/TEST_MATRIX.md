@@ -862,3 +862,7 @@ All 42 fresh PNGs decode fully and were inspected against the five approved refe
 Runtime workflow checks PASS: editable/portable export hash round-trips, Cape/Elytra PNG dimensions, both Smart Import pages add an Image layer whose compiled pixels equal the candidate. Capture completion and workflow markers occur once. Focus tooltips are transient expected overlays in some editor captures. Optional mods, shader packs, multiplayer, OS picker/clipboard and exhaustive manual feature interactions were not exercised here.
 
 Environment: MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 / Temurin 21.0.12+1 / Loom 1.17.21 / Gradle 9.6.1 / clean Ubuntu-Mesa llvmpipe-Xvfb. Build/tests PASS; capture job PASS. Retained evidence: [index](verification/editor-workspace/README.md).
+
+## 2026-10-03 main integration and user test handoff
+
+PR #14 merge: `1e2bc6d2e800e4217d9243e21e61f00a44966a2a`, verified PR head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83`. Both Actions #183 jobs passed at that head, with 42 actual screenshots and export/import workflow markers. This handoff changes documentation only; the previously accepted production source and screenshot pixels are unchanged. Main push CI uses the same Java 21 build and isolated Mesa capture jobs; inspect the exact main commit's checks in GitHub Actions. The full interactive release queue in NEXT_WORK remains manual, including OS picker/clipboard, optional mods/shaders and multiplayer.

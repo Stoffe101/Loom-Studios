@@ -1,5 +1,17 @@
 # Loom Studios — Pass Log
 
+## 2026-10-03 — Main merge and full-test handoff
+
+**State: DONE — verified UI implementation merged to main; manual release testing is the next step.**
+
+The user explicitly authorized finishing and merging PR #14 into `main` so they can fully test the mod. Confirmed the PR was ready/mergeable, its base was `f49ddb2e9727e16d3e6438772534f278d0520a38`, and its exact head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83` had successful Java 21 build/tests and real Minecraft screenshot checks. Actions #183 produced 42 captures plus workflow/completion markers. The merge API pinned that head to prevent merging a changed revision.
+
+[PR #14](https://github.com/Stoffe101/Loom-Studios/pull/14) merged successfully at `1e2bc6d2e800e4217d9243e21e61f00a44966a2a`. Updated CURRENT_STATE/NEXT_WORK/reference-roadmap/test-matrix from review-only/unmerged wording to the actual main integration and an interactive test handoff. This is a documentation/integration pass: no production source, project format, network protocol or approved style contract changed. The five references and four GUI profiles were already accepted by the previous verified pass.
+
+Testing/evidence: Actions #182 and #183 passed clean build/tests, bounded/nonoverlapping controls, all 42 actual captures, one-pixel release alignment, editable/portable round-trips, both PNG dimensions and both import-page candidate/apply pixel equivalence. Environment remains MC 1.21.11 / Fabric Loader 0.18.4 / API 0.141.1+1.21.11 / Java 21.0.12+1 / Loom 1.17.21 / Gradle 9.6.1 / clean Ubuntu-Mesa-Xvfb. Main pushes run the same two jobs; exact commit results remain attached in GitHub Actions. Source-build SHA-256 remains `6ca0e36d8c749bbc6df56e090348374d845b641bf9d843be45f9b78722d7aedf`.
+
+Next: user tests normal `main` client with OS file picker/clipboard, full editing/save/equip/animation flows, optional mods/shaders and multiplayer. These broader checks are not claimed complete by the automated captures. Report any defect with its display/GUI scale and reproduction steps. No new architecture/decision change was introduced by the merge.
+
 ## 2026-10-02 — Five-screen workshop styling and profile acceptance
 
 **State: DONE — five-screen reference styling and mandatory profile alignment verified.**

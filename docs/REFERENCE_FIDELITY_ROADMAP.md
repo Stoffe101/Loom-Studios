@@ -36,4 +36,4 @@ Required profiles: 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Additional evidenc
 
 This completed styling pass does not add recent-color history, import tint/background-removal/direct handles, a Settings product, additional template packs, a hosted sharing service or standing/open/gliding preview presets. These are separate scope decisions, not blockers for the requested workshop-style/profile fix. Optional-mod/shader/multiplayer compatibility, OS picker/clipboard and exhaustive manual feature checks remain release work.
 
-PR #14 remains unmerged. Next concrete step: review the verified implementation/evidence; merge only when authorized. The prior failed/partial checkpoints and their fixes remain documented in PASS_LOG.md.
+PR #14 was merged to `main` with explicit user authorization on 2026-10-03 at `1e2bc6d2e800e4217d9243e21e61f00a44966a2a`. Next concrete step: full interactive testing from `main`, including optional-mod/shader/multiplayer compatibility. The prior failed/partial checkpoints and their fixes remain documented in PASS_LOG.md.
