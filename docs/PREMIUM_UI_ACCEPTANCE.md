@@ -1,4 +1,4 @@
-# Premium UI renderer and developer comparison
+# Premium UI acceptance and test handoff
 
 ## Premium studio presentation — DONE: UI/layout and Linux client verification (2026-10-03)
 
@@ -20,21 +20,8 @@ Verification evidence is attached to the exact runtime source above. The subsequ
 
 Primary tooltip/render-order research: https://docs.neoforged.net/primer/docs/1.21.9/ (renderDeferredElements rename), https://docs.neoforged.net/docs/1.21.8/gui/screens/ (deferred tooltip strata), and exact Minecraft 1.21.11 method descriptors checked before compilation. Linux/X11 missing narrator/cursor-shape and offline Realms messages are capture-environment limitations; rendering/input assertions still pass. They do not establish optional-mod or cross-platform acceptance.
 
-## Renderer ownership
+## Next manual test
 
-Fabric ScreenEvents beforeRender/afterRender collect actual widgets and labels into an immutable paint list. Geometry, copied pose transforms, content and interaction state determine revision changes. PremiumGuiRenderer draws through Fabric's registered special-element picture-in-picture path and reuses the surface at an unchanged revision. PremiumPaint owns NanoVG, Inter and rasterized SVG resources and frees them at client shutdown. Opaque native fills clip preceding commands through GuiGraphicsOcclusionMixin; later native panels/popups do not expose stale labels.
+Use the normal studio screens, not the F9 renderer sample. At each required profile, edit a multi-layer cape and elytra, open the palette, zoom and middle-drag both canvas and expanded preview, hover compact tool icons, save and equip, and reopen the design. Check the library menu, Trash restore and version restore with disposable designs. Compare idle and active-edit frame times with the previous build on the same hardware/world/settings.
 
-The adapter derives from the Unlicensed NVGRenderer commit f4e8272a83964a3760e6d8a739c70e8274cc14b7. Only LWJGL NanoVG 3.3.3 and platform natives are added; Minecraft owns LWJGL core. No Kotlin, webview, remote rendering API or additional UI framework is needed. Resource-backed frame/scene images are ordinary Minecraft textures.
-
-F9 compares smooth/native controls at identical bounds. Its sample canvas/layers are illustrative; Open editor and layer manager route to the real workflows. CPU submission p50/p95 excludes GPU and entity/frame cost. The Live paint toggle is diagnostic, not the production policy.
-
-## Sources and licenses
-
-- Fabric 1.21.11 GUI rendering: https://docs.fabricmc.net/1.21.11/develop/rendering/gui-graphics
-- ScreenEvents source shipped by Fabric API 0.141.1: https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-screen-api-v1/3.1.7+4ebb5c083e/fabric-screen-api-v1-3.1.7+4ebb5c083e-sources.jar
-- LWJGL NanoVG API: https://javadoc.lwjgl.org/org/lwjgl/nanovg/package-summary.html
-- Java PIP adapter upstream: https://github.com/Noamm9/NVGRenderer
-- Inter, OFL 1.1: https://rsms.me/inter/
-- Lucide, ISC/Feather MIT: https://lucide.dev/license
-
-The first 12 controls and most later Lucide assets came from upstream main; flip, trash, visibility-off and open-lock additions use 0.468.0. The bundled files/notices are the durable source. owo-ui remains an unadopted layout option; official ModernUI 1.21.11 compatibility was not established. See PREMIUM_UI_AUDIT.md for the earlier research.
+Then verify Windows/macOS native loading, resource reload, repeated screen changes/resizing and optional Sodium/Iris/shaders. Report screen, resolution/GUI scale, mod list and frame-time evidence for any regression. More work should follow observed issues: first responsiveness/compatibility, then smoother native text-field styling and richer ancillary task-page composition.
