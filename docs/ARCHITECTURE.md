@@ -268,3 +268,9 @@ Cape and both semantic Elytra wings use revision-cached textures; layer rows cac
 ### Workshop shell (2026-10-03)
 
 `LoomWorkshopArt` draws deterministic code-native pixel artwork inside shared chrome and preview bounds. `LoomScreenChrome` owns the reserved brand header and bounded status footer. `LoomWorkspaceLayout` reserves 36/56 header units and expands tool labels only in spacious profiles. Smart Import owns source, settings, processed/atlas and candidate-player regions separately. `LoomCaptureFixtures` is called only by the opt-in development capture runner; it exercises real projects, thumbnails, conversion and image processing without adding production templates.
+
+## Feedback preview/input ownership (2026-10-03, in progress)
+
+LoomPreviewState owns a fresh Mojang-mapped renderer snapshot; widget and expanded screen share orientation/extraction. PreviewOverride scopes the local cosmetic supplier, uses a distinct content-hash namespace and restores nested overrides. PlayerCosmeticRenderer caches codec/hash work by immutable project identity; RuntimeCosmeticCache applies checkerboard only to preview bundle base images, preserving exported/equipped alpha and emissive masks. Fixed-tick playback recompiles only channels with enabled tracks. Small inline previews open the full player preview through their header expand affordance or double click, preserving the timeline supplier.
+
+Screen captures middle-button drag/release on both canvases and gives floating palettes pointer priority. Palette close/Escape updates the parent visibility flag. WorkspaceLayout reserves the shell boundary and adaptive inspector/timeline budgets down to 600×320; PixelShapes shares ellipse pixels across live feedback and ProjectEdits commit/history. No schema or wire-protocol change.

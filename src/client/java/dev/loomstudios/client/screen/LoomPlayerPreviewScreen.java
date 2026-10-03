@@ -48,6 +48,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private float pitch = 0.0F;
     private float zoom = 1.0F;
     private boolean draggingPreview;
+    private java.util.function.IntSupplier timelineTickSupplier;
+    public void setTimelineTickSupplier(java.util.function.IntSupplier supplier) { timelineTickSupplier=supplier; }
 
     public LoomPlayerPreviewScreen() {
         this(null, ClientProjectWorkspace::project);
@@ -147,7 +149,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
         graphics.drawCenteredString(
                 this.font,
-                Component.literal("Preview state is render-only. Your real equipment is not changed."),
+                Component.literal("Alpha guide: checkerboard shows transparency; exports keep authored pixels."),
                 this.width / 2,
                 bottom - 13,
                 MUTED_TEXT_COLOR
@@ -179,7 +181,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
         dev.loomstudios.client.render.LoomPreviewState.orient(renderState,this.yaw);
 
-        Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI);
+        Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI)
+                    .rotateY((float)Math.PI + this.yaw * ((float)Math.PI / 180.0F));
         Quaternionf xRotation = new Quaternionf().rotateX(
                 this.pitch * ((float)Math.PI / 180.0F)
         );
@@ -205,23 +208,10 @@ public final class LoomPlayerPreviewScreen extends Screen {
     }
 
     private EntityRenderState extractRenderState(LivingEntity entity) {
-        return PlayerCosmeticRenderer.withPreviewProject(
-                this.minecraft,
-                previewProjectSupplier.get(),
-                () -> {
-                    EntityRenderDispatcher dispatcher =
-                            Minecraft.getInstance().getEntityRenderDispatcher();
-                    EntityRenderer<? super LivingEntity, ?> renderer =
-                            dispatcher.getRenderer((Entity)entity);
-
-                    EntityRenderState renderState =
-                            dev.loomstudios.client.render.LoomPreviewState.extract(entity);
-                    renderState.lightCoords = 15728880;
-                    renderState.shadowPieces.clear();
-                    renderState.outlineColor = 0;
-                    return renderState;
-                }
-        );
+        Supplier<EntityRenderState> snapshot=() -> dev.loomstudios.client.render.LoomPreviewState.extract(entity);
+        return timelineTickSupplier==null
+                ? PlayerCosmeticRenderer.withPreviewProject(minecraft,previewProjectSupplier.get(),snapshot)
+                : PlayerCosmeticRenderer.withPreviewProjectAtTick(minecraft,previewProjectSupplier.get(),timelineTickSupplier.getAsInt(),snapshot);
     }
 
     @Override

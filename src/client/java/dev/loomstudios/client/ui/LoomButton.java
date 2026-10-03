@@ -165,9 +165,9 @@ public class LoomButton extends AbstractButton {
 
         int border = danger && this.active
                 ? (hot ? 0xFFFF7180 : LoomUiTheme.DANGER)
-                : (selected || primary || hot)
-                        ? LoomUiTheme.ACCENT
-                        : LoomUiTheme.BORDER_SOFT;
+                : (selected || primary) ? LoomUiTheme.ACCENT
+                        : isFocused() ? LoomUiTheme.ACCENT_ALT
+                        : hot ? LoomUiTheme.TEXT_MUTED : LoomUiTheme.BORDER_SOFT;
 
         graphics.fill(
                 getX(),

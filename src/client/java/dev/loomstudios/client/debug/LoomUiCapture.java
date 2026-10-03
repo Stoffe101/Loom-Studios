@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 59) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 61) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -156,7 +156,7 @@ public final class LoomUiCapture {
                     var source=LoomCaptureFixtures.source(fixtureProject);
                     set(screen,"loaded",new PngImportAdapter.LoadedImage(Path.of("capture-moon.png"),source,source)); client.setScreen(screen);
                 } else {
-                    boolean wing=stage==43||stage==45||stage==50||stage==54||stage==56||stage==58;
+                    boolean wing=stage==43||stage==45||stage==50||stage==54||stage==56||stage==58||stage==60;
                     Screen screen=wing?new ElytraEditorScreen(new LoomHomeScreen()):new CapeEditorScreen(new LoomHomeScreen());client.setScreen(screen);
                     if((boolean)field(screen,"workspaceTooSmall").get(screen))throw new IllegalStateException("Windowed GUI3 rejected");
                     if(stage==44||stage==58) {set(screen,"inspectorTab",enumValue(screen,"inspectorTab","PROPERTIES"));call(screen,"updateInspectorVisibility");}
@@ -174,8 +174,14 @@ public final class LoomUiCapture {
                         if(stage==52) screen.mouseReleased(end);
                     }
                     if(stage==53||stage==54) verifyPan(screen);
+                    if(stage==59||stage==60) {
+                        var preview=(AbstractWidget)field(screen,"previewWidget").get(screen);
+                        screen.mouseClicked(mouse(preview.getRight()-12,preview.getY()+9,0),false);
+                        if(!(client.screen instanceof dev.loomstudios.client.screen.LoomPlayerPreviewScreen))throw new IllegalStateException("Expand preview unavailable");
+                    }
                 }
             }
+            client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
             pending = true;
             int captureStage = stage;
@@ -200,7 +206,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+            String name = index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
@@ -214,7 +220,7 @@ public final class LoomUiCapture {
     }
     private static void verifyPan(Screen screen) throws Exception {
         var canvas=(AbstractWidget)field(screen,"canvasWidget").get(screen);
-        var zoom=canvas.getClass().getMethod("zoomIn"); for(int i=0;i<4;i++)zoom.invoke(canvas);
+        for(int i=0;i<4;i++) canvas.mouseScrolled(canvas.getX()+canvas.getWidth()/2.0,canvas.getY()+canvas.getHeight()/2.0,0,1);
         var view=canvas.getClass().getMethod("viewState");Object before=view.invoke(canvas);
         var press=mouse(canvas.getX()+canvas.getWidth()/2.0,canvas.getY()+canvas.getHeight()/2.0,2);
         if(!screen.mouseClicked(press,false)||!screen.mouseDragged(mouse(press.x()+12,press.y()+8,2),12,8)
@@ -233,12 +239,25 @@ public final class LoomUiCapture {
         }
         var first=dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,fixtureProject,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
         var second=dev.loomstudios.client.render.LoomPreviewState.extract(client.player);
+        var counter=dev.loomstudios.client.render.PlayerCosmeticRenderer.class.getDeclaredField("previewHashComputations");counter.setAccessible(true);
+        long beforeHashes=counter.getLong(null);
+        for(int i=0;i<20;i++) dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,fixtureProject,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
+        if(counter.getLong(null)!=beforeHashes)throw new IllegalStateException("Immutable preview rehashes every frame");
         if(first==second)throw new IllegalStateException("Preview shares mutable state");
         var avatar=(net.minecraft.client.renderer.entity.state.AvatarRenderState)first;
         if(avatar.skin.cape()==null||avatar.skin.elytra()==null)throw new IllegalStateException("Preview has no cosmetic assets");
         dev.loomstudios.client.render.LoomPreviewState.orient(first,25);
-        if(avatar.yRot!=0||avatar.bodyRot!=205)throw new IllegalStateException("Preview head/body orientation diverged");
-        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen middle pan, palette close, isolated snapshot and cosmetic assets");
+        if(avatar.yRot!=0||avatar.bodyRot!=180)throw new IllegalStateException("Preview head/body orientation diverged");
+        var blank=dev.loomstudios.project.LoomProjectFactory.blank("Alpha isolation",1L);
+        var blankState=(net.minecraft.client.renderer.entity.state.AvatarRenderState)dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,blank,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
+        var guide=dev.loomstudios.client.render.RuntimeCosmeticCache.byCapeTexture(blankState.skin.cape().texturePath());
+        var actual=dev.loomstudios.client.render.RuntimeCosmeticCache.getOrCompile(client,blank.hash(),blank);
+        var imageField=guide.getClass().getDeclaredField("capeImage");imageField.setAccessible(true);
+        int guided=((com.mojang.blaze3d.platform.NativeImage)imageField.get(guide)).getPixel(1,1);
+        int authored=((com.mojang.blaze3d.platform.NativeImage)imageField.get(actual)).getPixel(1,1);
+        if(guided>>>24!=255 || authored!=0 || blank.cape().layers().getFirst().pixelAt(65)!=0)throw new IllegalStateException("Alpha guide leaked into runtime/project");
+        dev.loomstudios.client.render.RuntimeCosmeticCache.release(client,blank.hash());
+        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash reuse and alpha isolation");
     }
     private static void verifyWorkflows(Minecraft client) throws Exception {
         var projectPath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportProject(fixtureProject);

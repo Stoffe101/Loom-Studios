@@ -59,12 +59,13 @@ public final class RuntimeCosmeticCache {
                 existing.capeTimelineTick = fixedTimelineTick;
                 existing.elytraTimelineTick = fixedTimelineTick;
                 existing.legacyPhase = 0;
-                redrawCape(existing, fixedTimelineTick);
-                redrawElytra(existing, fixedTimelineTick);
-                redrawEmissive(existing, fixedTimelineTick);
-                existing.capeTexture.upload();
-                existing.elytraTexture.upload();
-                existing.emissiveTexture.upload();
+                if(existing.project.animation().hasEnabledTracks(AnimationChannel.CAPE)) {
+                    redrawCape(existing,fixedTimelineTick); redrawEmissive(existing,fixedTimelineTick);
+                    existing.capeTexture.upload(); existing.emissiveTexture.upload();
+                }
+                if(existing.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)) {
+                    redrawElytra(existing,fixedTimelineTick); existing.elytraTexture.upload();
+                }
             }
             return existing;
         }

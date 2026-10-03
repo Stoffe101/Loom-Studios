@@ -30,6 +30,7 @@ public final class PlayerCosmeticRenderer {
     private static String lastLocalProjectHash;
     private static String previewProjectHash;
     private static LoomProject hashedPreviewProject;
+    private static long previewHashComputations;
     private static String cachedPreviewHash, cachedTimelineHash;
     private static final ThreadLocal<PreviewOverride> PREVIEW_OVERRIDE = new ThreadLocal<>();
 
@@ -209,6 +210,7 @@ public final class PlayerCosmeticRenderer {
             Supplier<T> action
     ) {
         if (hashedPreviewProject != project) {
+            previewHashComputations++;
             hashedPreviewProject = project;
             cachedPreviewHash = ClientProjectWorkspace.isInitialized() && ClientProjectWorkspace.project() == project
                     ? ClientProjectWorkspace.projectHash() : project.hash();

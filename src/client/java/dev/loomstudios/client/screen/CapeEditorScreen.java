@@ -373,8 +373,9 @@ public final class CapeEditorScreen extends Screen {
         );
         rectangleButton.setIconOnly(compactMode);
         y += buttonHeight + gap;
-        circleButton = iconButton(x,y,buttonWidth,buttonHeight,"Circle / ellipse (C)",LoomButton.Icon.CIRCLE,() -> setTool(Tool.CIRCLE));
+        circleButton = iconButton(x,y,buttonWidth,buttonHeight,"Circle",LoomButton.Icon.CIRCLE,() -> setTool(Tool.CIRCLE));
         circleButton.setIconOnly(compactMode);
+        circleButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Circle / ellipse (C) · drag bounds · Outline or Filled")));
     }
 
     private void buildCanvasToolbar(int toolbarHeight) {

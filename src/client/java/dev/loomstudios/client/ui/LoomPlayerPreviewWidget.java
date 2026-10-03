@@ -69,7 +69,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Drag to rotate · Wheel to zoom")));
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag to rotate · Wheel to zoom")));
     }
 
     public record ViewState(float yaw, float pitch, float zoom) { }
@@ -95,6 +95,13 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     ) {
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
         LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · Alpha guide");
+        // Small, native expand affordance stays inside the preview header.
+        int ex=getRight()-18, ey=getY()+4;
+        graphics.fill(ex,ey+5,ex+1,ey+11,LoomUiTheme.TEXT_MUTED);
+        graphics.fill(ex,ey+10,ex+7,ey+11,LoomUiTheme.TEXT_MUTED);
+        graphics.fill(ex+5,ey,ex+11,ey+1,LoomUiTheme.ACCENT);
+        graphics.fill(ex+10,ey,ex+11,ey+6,LoomUiTheme.ACCENT);
+        for(int i=0;i<7;i++) graphics.fill(ex+4+i,ey+6-i,ex+5+i,ey+7-i,LoomUiTheme.ACCENT);
         int contentLeft = getX() + 4;
         int contentTop = getY() + 19;
         int contentRight = getRight() - 4;
@@ -126,7 +133,8 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
             dev.loomstudios.client.render.LoomPreviewState.orient(renderState,yaw);
 
-            Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI);
+            Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI)
+                    .rotateY((float)Math.PI + yaw * ((float)Math.PI / 180.0F));
             Quaternionf xRotation = new Quaternionf().rotateX(
                     pitch * ((float)Math.PI / 180.0F)
             );
@@ -208,6 +216,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() == 0) {
+            if(doubleClick || (event.x()>=getRight()-22 && event.y()<getY()+19)) {
+                var preview=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(
+                        Minecraft.getInstance().screen,projectSupplier,mode==Mode.ELYTRA);
+                preview.setTimelineTickSupplier(timelineTickSupplier);
+                Minecraft.getInstance().setScreen(preview); return;
+            }
             dragging = true;
         }
     }

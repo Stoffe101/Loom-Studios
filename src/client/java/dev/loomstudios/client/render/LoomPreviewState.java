@@ -21,7 +21,7 @@ public final class LoomPreviewState {
     }
     public static void orient(EntityRenderState state, float yaw) {
         if (state instanceof LivingEntityRenderState living) {
-            living.bodyRot = 180.0F + yaw;
+            living.bodyRot = 180.0F;
             living.yRot = 0.0F; living.xRot = 0.0F;
             living.pose = Pose.STANDING;
             living.boundingBoxWidth /= living.scale;
