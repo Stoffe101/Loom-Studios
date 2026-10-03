@@ -56,6 +56,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
         CLICK,
         LINE,
         RECTANGLE,
+        CIRCLE,
         SELECTION
     }
 
@@ -102,6 +103,9 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
     private boolean gridVisible = true;
     public void toggleGrid() { gridVisible = !gridVisible; }
     public boolean gridVisible() { return gridVisible; }
+
+    private java.util.function.BooleanSupplier shapeFilledSupplier = () -> false;
+    public void setShapeFilledSupplier(java.util.function.BooleanSupplier supplier) { shapeFilledSupplier = supplier; }
 
     private boolean panning;
     private int zoomIndex;
@@ -411,6 +415,10 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
                     geometry.screenY(shapeStartY) + geometry.pixelScale() / 2,
                     geometry.screenX(shapeEndX) + geometry.pixelScale() / 2,
                     geometry.screenY(shapeEndY) + geometry.pixelScale() / 2, LoomUiTheme.ACCENT);
+        } else if (mode == GestureMode.CIRCLE) {
+            dev.loomstudios.project.PixelShapes.ellipse(shapeStartX,shapeStartY,shapeEndX,shapeEndY,shapeFilledSupplier.getAsBoolean(),
+                    (x,y) -> graphics.fill(geometry.screenX(x),geometry.screenY(y),
+                            geometry.screenX(x+1),geometry.screenY(y+1),0xAA58D8ED));
         } else {
             drawPixelOutline(graphics, geometry.selection(PixelSelection.between(
                     shapeStartX, shapeStartY, shapeEndX, shapeEndY)), LoomUiTheme.ACCENT);
@@ -713,7 +721,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget {
             strokeLifecycle.begin();
         }
 
-        if (mode == GestureMode.LINE || mode == GestureMode.RECTANGLE) {
+        if (mode == GestureMode.LINE || (mode == GestureMode.RECTANGLE || mode == GestureMode.CIRCLE)) {
             shapeActive = true;
             shapeStartX = pixel[0];
             shapeStartY = pixel[1];

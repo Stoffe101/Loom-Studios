@@ -1,5 +1,11 @@
 # Loom Studios — Next Work
 
+## Active user-feedback pass — IN PROGRESS (2026-10-03)
+
+The previous workshop acceptance below is historical. The user’s nine new screenshots exposed gaps: rear cosmetic visibility/player preview pose, ambiguous icons, selected double borders, frame/footer overlap, missing palette close, Screen-level middle pan, and windowed GUI3 below 350 logical pixels. All nine screenshots and all five references were individually inspected. See [image analysis](verification/editor-feedback/ANALYSIS.md).
+
+Branch `codex/preview-tools-compact-fixes` starts from main `55b56570d75909c80466f3557d57a9c61e3dc74b`. Implementation is in progress: circle raster/gesture, isolated rear-facing preview state and immutable hash cache, preview-only transparency guide, 600×320 minimum with adaptive inspector/timeline, screen pointer capture, clearer icons and single outlines, palette close/Escape. Verification expands from 42 to 59 actual Minecraft captures including decorated windowed GUI3, live/committed circle, middle pan and transparent cosmetics. Build/runtime results are not yet claimed. Optional Sodium/Iris/shader interaction and subjective real-user frame rate remain unverified.
+
 ## Completed workshop pass
 
 **DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.

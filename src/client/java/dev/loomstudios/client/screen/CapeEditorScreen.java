@@ -72,6 +72,7 @@ public final class CapeEditorScreen extends Screen {
     private LoomButton selectButton;
     private LoomButton lineButton;
     private LoomButton rectangleButton;
+    private LoomButton circleButton;
     private LoomButton rectangleModeButton;
     private LoomButton faceButton;
     private LoomButton resolutionDownButton;
@@ -201,7 +202,7 @@ public final class CapeEditorScreen extends Screen {
         LoomCapeFaceWidget.ViewState viewState = canvasWidget == null ? null : canvasWidget.viewState();
         LoomPlayerPreviewWidget.ViewState previewState = previewWidget == null ? null : previewWidget.viewState();
         if (canvasWidget != null) canvasWidget.close();
-        workspaceTooSmall = width < 600 || height < 350;
+        workspaceTooSmall = width < 600 || height < 320;
         if (workspaceTooSmall) {
             ClientProjectWorkspace.endCompoundEdit();
             addRenderableWidget(new LoomButton(Math.max(0, (width - 100) / 2), height / 2 + 24, 100, 22,
@@ -221,9 +222,10 @@ public final class CapeEditorScreen extends Screen {
         inspectorTop = layout.inspector().top(); inspectorBottom = layout.inspector().bottom();
         toolPanelX = rightPanelLeft; toolPanelY = inspectorTop;
         toolPanelWidth = rightPanelRight - rightPanelLeft; toolPanelHeight = inspectorBottom - inspectorTop;
-        buildTopNavigation(layout.headerHeight(), layout.navHeight(), compactMode ? 4 : 8);
+        buildTopNavigation(layout.headerHeight(), layout.navHeight(), 8);
         buildToolRail(); buildCanvasToolbar(22); buildCanvas(); buildContextBar();
         buildRightPanel(layout.preview().height(), 22);
+        canvasWidget.setShapeFilledSupplier(() -> rectangleFilled);
         canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
         restoreOrCreatePaletteWindow(); syncColorFields(); syncLayerFields();
         updateButtonStates(); updateInspectorVisibility();
@@ -312,7 +314,7 @@ public final class CapeEditorScreen extends Screen {
     private void buildToolRail() {
         int x = toolRailLeft + 2;
         int buttonWidth = toolRailRight - toolRailLeft - 4;
-        int buttonHeight = compactMode ? 25 : 30;
+        int buttonHeight = compactMode ? Math.min(25,(contentBottom-contentTop-10-7*3)/8) : 30;
         int gap = compactMode ? 3 : 4;
         int y = contentTop + 5;
 
@@ -370,6 +372,9 @@ public final class CapeEditorScreen extends Screen {
                 () -> setTool(Tool.RECTANGLE)
         );
         rectangleButton.setIconOnly(compactMode);
+        y += buttonHeight + gap;
+        circleButton = iconButton(x,y,buttonWidth,buttonHeight,"Circle / ellipse (C)",LoomButton.Icon.CIRCLE,() -> setTool(Tool.CIRCLE));
+        circleButton.setIconOnly(compactMode);
     }
 
     private void buildCanvasToolbar(int toolbarHeight) {
@@ -546,11 +551,11 @@ public final class CapeEditorScreen extends Screen {
     private void buildPropertyInspector() {
         int start = children().size();
         var rows = inspectorRows(); var r = rows.row(22);
-        layerNameField = new EditBox(font, r.left(), r.top(), r.width() - 27, 22, Component.literal("Layer name"));
+        layerNameField = new EditBox(font, r.left(), r.top(), r.width() - 27, r.height(), Component.literal("Layer name"));
         layerNameField.setMaxLength(dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS); addRenderableWidget(layerNameField);
-        layerRenameButton = iconButton(r.right() - 24, r.top(), 24, 22, "Rename layer", LoomButton.Icon.PENCIL, this::renameLayer).setIconOnly(true);
+        layerRenameButton = iconButton(r.right() - 24, r.top(), 24, r.height(), "Rename layer", LoomButton.Icon.PENCIL, this::renameLayer).setIconOnly(true);
         r = rows.row(22);
-        opacitySlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Opacity", () -> selectedLayer().opacity(), value -> changeLayerOpacity((float)value - selectedLayer().opacity())));
+        opacitySlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Opacity", () -> selectedLayer().opacity(), value -> changeLayerOpacity((float)value - selectedLayer().opacity()))); opacitySlider.setHeight(r.height());
         r = rows.row(22);
         layerBlendButton = rowButton(r, "Blend: Normal", LoomButton.Icon.LAYERS, this::cycleLayerBlendMode);
         r = rows.row(22);
@@ -560,10 +565,10 @@ public final class CapeEditorScreen extends Screen {
         rowButton(r, "Edit image", LoomButton.Icon.IMAGE, this::openSmartImport).setIconOnly(false);
         propertyWidgets = widgetsSince(start);
         // One explicit page selector. Layer / Gradient / Transform / Stops.
-        r = new LoomWorkspaceLayout.Rect(rightPanelLeft + 6, inspectorTop + 6, rightPanelRight - 6, inspectorTop + 28);
+        r = new LoomWorkspaceLayout.Rect(rightPanelLeft + rows.padding(), inspectorTop + rows.padding(), rightPanelRight - rows.padding(), inspectorTop + rows.padding() + rows.controlHeight());
         propertyPageButton = rowButton(r, "Layer properties", LoomButton.Icon.SETTINGS, () -> { propertyPage = (propertyPage + 1) % (selectedLayer().kind() == LayerKind.GRADIENT ? 4 : 1); updateInspectorVisibility(); });
         // Move the layer rows below the page selector.
-        for (AbstractWidget widget : propertyWidgets) widget.setY(widget.getY() + 26);
+        for (AbstractWidget widget : propertyWidgets) widget.setY(widget.getY() + rows.stride());
         start = children().size(); rows = inspectorRows(); rows.row(22); r = rows.row(22);
         gradientTypeButton = rowButton(r, "Gradient: Linear", LoomButton.Icon.GRADIENT, this::cycleGradientType);
         r = rows.row(22);
@@ -661,11 +666,11 @@ public final class CapeEditorScreen extends Screen {
 
     private void updateContextVisibility() {
         boolean selectionTool = tool == Tool.SELECT;
-        boolean rectangleTool = tool == Tool.RECTANGLE;
+        boolean rectangleTool = (tool == Tool.RECTANGLE || tool == Tool.CIRCLE);
         boolean brushTool = tool == Tool.PENCIL
                 || tool == Tool.ERASER
                 || tool == Tool.LINE
-                || tool == Tool.RECTANGLE;
+                || (tool == Tool.RECTANGLE || tool == Tool.CIRCLE);
 
         if (brushDownButton != null) brushDownButton.visible = brushTool;
         if (brushLabelButton != null) brushLabelButton.visible = brushTool;
@@ -796,7 +801,8 @@ public final class CapeEditorScreen extends Screen {
         this.paletteWindowVisible = !this.paletteWindowVisible;
 
         if (this.paletteWindow != null) {
-            this.paletteWindow.visible = this.paletteWindowVisible;
+            this.paletteWindow.setOnClose(this::closePaletteWindow);
+        this.paletteWindow.visible = this.paletteWindowVisible;
         }
     }
 
@@ -841,6 +847,7 @@ public final class CapeEditorScreen extends Screen {
                 () -> this.width,
                 () -> this.height
         );
+        this.paletteWindow.setOnClose(this::closePaletteWindow);
         this.paletteWindow.visible = this.paletteWindowVisible;
         addRenderableWidget(this.paletteWindow);
         this.paletteWindow.moveTo(x, y);
@@ -1014,6 +1021,7 @@ public final class CapeEditorScreen extends Screen {
             case PENCIL, ERASER -> LoomCapeFaceWidget.GestureMode.BRUSH;
             case LINE -> LoomCapeFaceWidget.GestureMode.LINE;
             case RECTANGLE -> LoomCapeFaceWidget.GestureMode.RECTANGLE;
+            case CIRCLE -> LoomCapeFaceWidget.GestureMode.CIRCLE;
             case SELECT -> LoomCapeFaceWidget.GestureMode.SELECTION;
             case FILL, EYEDROPPER -> LoomCapeFaceWidget.GestureMode.CLICK;
         };
@@ -1055,6 +1063,8 @@ public final class CapeEditorScreen extends Screen {
             rectangleButton.setMessage(Component.literal("Rectangle"));
             rectangleButton.setSelected(tool == Tool.RECTANGLE);
         }
+
+        if (circleButton != null) circleButton.setSelected(tool == Tool.CIRCLE);
 
         if (selectButton != null) {
             selectButton.setMessage(Component.literal("Select"));
@@ -1192,7 +1202,9 @@ public final class CapeEditorScreen extends Screen {
             if (rectangleModeButton != null) {
                 rectangleModeButton.active = editablePaint;
             }
-            if (selectButton != null) {
+            if (circleButton != null) circleButton.setSelected(tool == Tool.CIRCLE);
+
+        if (selectButton != null) {
                 selectButton.active = editablePaint;
             }
             if (symmetryButton != null) {
@@ -2272,7 +2284,7 @@ public final class CapeEditorScreen extends Screen {
                     )
             );
             case EYEDROPPER -> sampleVisibleColor(x, y);
-            case LINE, RECTANGLE, SELECT -> {
+            case LINE, RECTANGLE, CIRCLE, SELECT -> {
             }
         }
 
@@ -2299,7 +2311,7 @@ public final class CapeEditorScreen extends Screen {
                             endY
                     )
             );
-            case RECTANGLE -> ClientProjectWorkspace.apply(project ->
+            case RECTANGLE, CIRCLE -> ClientProjectWorkspace.apply(project ->
                     paintRectangleWithSymmetry(
                             project,
                             startX,
@@ -2424,7 +2436,9 @@ public final class CapeEditorScreen extends Screen {
             int ex = (mask & 1) != 0 ? width - 1 - endX : endX;
             int ey = (mask & 2) != 0 ? height - 1 - endY : endY;
 
-            result = ProjectEdits.paintCapeRegionRectangle(
+            result = tool == Tool.CIRCLE
+                    ? ProjectEdits.paintCapeRegionEllipse(result, selectedLayerId, capeRegion, sx, sy, ex, ey, brushSize, selectedColor, rectangleFilled)
+                    : ProjectEdits.paintCapeRegionRectangle(
                     result,
                     selectedLayerId,
                     capeRegion,
@@ -2706,6 +2720,14 @@ public final class CapeEditorScreen extends Screen {
         updateButtonStates();
     }
 
+    private boolean canvasPanning;
+    private void closePaletteWindow() {
+        paletteWindowVisible = false;
+        if (paletteWindow != null) paletteWindow.visible = false;
+        if (getFocused() == paletteWindow) setFocused(null);
+        updateButtonStates();
+    }
+
     @Override
     public boolean mouseClicked(
             MouseButtonEvent event,
@@ -2720,6 +2742,8 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
+        if (event.button() == 2 && canvasWidget != null && canvasWidget.isMouseOver(event.x(),event.y())
+                && canvasWidget.mouseClicked(event,doubleClick)) { canvasPanning = true; return true; }
         return super.mouseClicked(event, doubleClick);
     }
 
@@ -2736,6 +2760,7 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
+        if (canvasPanning && event.button() == 2) return canvasWidget.mouseDragged(event,dx,dy);
         return super.mouseDragged(event, dx, dy);
     }
 
@@ -2748,6 +2773,7 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
+        if (canvasPanning && event.button() == 2) { canvasPanning = false; return canvasWidget.mouseReleased(event); }
         return super.mouseReleased(event);
     }
 
@@ -2776,6 +2802,7 @@ public final class CapeEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (event.key() == 256 && paletteWindowVisible) { closePaletteWindow(); return true; }
         if (workspaceTooSmall) return super.keyPressed(event);
         if (isEditingText()) {
             return super.keyPressed(event);
@@ -2847,6 +2874,7 @@ public final class CapeEditorScreen extends Screen {
                     setTool(Tool.LINE);
                     return true;
                 }
+                case 67 -> { setTool(Tool.CIRCLE); return true; }
                 case 82 -> {
                     setTool(Tool.RECTANGLE);
                     return true;
@@ -2905,7 +2933,8 @@ public final class CapeEditorScreen extends Screen {
         EYEDROPPER,
         SELECT,
         LINE,
-        RECTANGLE
+        RECTANGLE,
+        CIRCLE
     }
 
     private enum InspectorTab {

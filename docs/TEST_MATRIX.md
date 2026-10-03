@@ -866,3 +866,7 @@ Environment: MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 / Temurin 21.0.12+
 ## 2026-10-03 main integration and user test handoff
 
 PR #14 merge: `1e2bc6d2e800e4217d9243e21e61f00a44966a2a`, verified PR head `356d063028eb7eef392fff3d1d8e7adc9d4d4c83`. Both Actions #183 jobs passed at that head, with 42 actual screenshots and export/import workflow markers. This handoff changes documentation only; the previously accepted production source and screenshot pixels are unchanged. Main push CI uses the same Java 21 build and isolated Mesa capture jobs; inspect the exact main commit's checks in GitHub Actions. The full interactive release queue in NEXT_WORK remains manual, including OS picker/clipboard, optional mods/shaders and multiplayer.
+
+## 2026-10-03 feedback regression — IN PROGRESS
+
+Required four full-screen profiles plus decorated window GUI3 1920×1000 and 1904×960; 59 fresh capture targets. Expanded assertions: frame/footer clearance, nonoverlap excluding intentional floating palette, Screen middle-button pan/release on both canvases, palette close updating parent visibility, isolated preview snapshots and actual cosmetic assets, pixel ellipse symmetry/degenerate/fill. Minecraft 1.21.11 / Loader 0.18.4 / Fabric API 0.141.1+1.21.11 / Java21 CI / software Mesa. No current-run results claimed yet.

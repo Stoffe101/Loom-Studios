@@ -56,6 +56,9 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     private final LoomButton manageButton;
     private final LoomButton pinButton;
 
+    private Runnable onClose = () -> visible = false;
+    public void setOnClose(Runnable onClose) { this.onClose = onClose; }
+
     private boolean pinned;
     private boolean managementExpanded;
     private boolean moving;
@@ -86,11 +89,11 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
 
         ColorPaletteLibrary.refresh();
 
-        int pinWidth = 44;
-        int manageWidth = compactMode ? 42 : 52;
+        int pinWidth = 40;
+        int manageWidth = 38;
 
         this.pinButton = button(
-                x + width - pinWidth - 6,
+                x + width - pinWidth - 28,
                 y + 2,
                 pinWidth,
                 pinned ? "Pinned" : "Pin",
@@ -98,12 +101,16 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         );
 
         this.manageButton = button(
-                x + width - pinWidth - manageWidth - 10,
+                x + width - pinWidth - manageWidth - 32,
                 y + 2,
                 manageWidth,
                 managementExpanded ? "Done" : "Edit",
                 this::toggleManagement
         );
+
+        LoomButton close = new LoomButton(x+width-24,y+2,18,18,Component.literal("Close swatches"),LoomButton.Icon.CLOSE,true,() -> this.onClose.run());
+        close.setDanger(true);
+        children.add(close);
 
         this.nameBox = new EditBox(
                 Minecraft.getInstance().font,
@@ -743,11 +750,11 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
     }
 
     public void moveTo(int requestedX, int requestedY) {
-        int maxX = Math.max(0, screenWidth.getAsInt() - getWidth());
-        int maxY = Math.max(0, screenHeight.getAsInt() - getHeight());
+        int maxX = Math.max(8, screenWidth.getAsInt() - 8 - getWidth());
+        int maxY = Math.max(8, screenHeight.getAsInt() - 28 - getHeight());
 
-        int nextX = Math.max(0, Math.min(maxX, requestedX));
-        int nextY = Math.max(0, Math.min(maxY, requestedY));
+        int nextX = Math.max(8, Math.min(maxX, requestedX));
+        int nextY = Math.max(8, Math.min(maxY, requestedY));
 
         int dx = nextX - getX();
         int dy = nextY - getY();

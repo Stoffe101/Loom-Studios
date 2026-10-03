@@ -44,7 +44,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private final Supplier<LoomProject> previewProjectSupplier;
 
     private PreviewMode mode = PreviewMode.CAPE;
-    private float yaw = 180.0F;
+    private float yaw = 25.0F;
     private float pitch = 0.0F;
     private float zoom = 1.0F;
     private boolean draggingPreview;
@@ -177,19 +177,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
             }
         }
 
-        if (renderState instanceof LivingEntityRenderState livingState) {
-            livingState.bodyRot = 180.0F + this.yaw;
-            livingState.yRot = this.yaw;
-            if (livingState.pose != Pose.FALL_FLYING) {
-                livingState.xRot = -this.pitch;
-            } else {
-                livingState.xRot = 0.0F;
-            }
-
-            livingState.boundingBoxWidth /= livingState.scale;
-            livingState.boundingBoxHeight /= livingState.scale;
-            livingState.scale = 1.0F;
-        }
+        dev.loomstudios.client.render.LoomPreviewState.orient(renderState,this.yaw);
 
         Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI);
         Quaternionf xRotation = new Quaternionf().rotateX(
@@ -227,7 +215,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
                             dispatcher.getRenderer((Entity)entity);
 
                     EntityRenderState renderState =
-                            renderer.createRenderState(entity, 1.0F);
+                            dev.loomstudios.client.render.LoomPreviewState.extract(entity);
                     renderState.lightCoords = 15728880;
                     renderState.shadowPieces.clear();
                     renderState.outlineColor = 0;
@@ -296,7 +284,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
         }
 
         if (event.key() == 82) { // GLFW_KEY_R
-            this.yaw = 180.0F;
+            this.yaw = 25.0F;
             this.pitch = 0.0F;
             this.zoom = 1.0F;
             return true;

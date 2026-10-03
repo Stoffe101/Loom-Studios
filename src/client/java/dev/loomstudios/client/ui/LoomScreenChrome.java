@@ -64,11 +64,8 @@ public final class LoomScreenChrome {
 
     public static void panel(GuiGraphics g, int l, int t, int r, int b) {
         if(r<=l || b<=t) return;
-        g.fill(l,t,r,b,0xFF090F18);
-        g.fill(l+1,t+1,r-1,b-1,LoomUiTheme.BORDER);
-        g.fill(l+2,t+2,r-2,b-2,LoomUiTheme.PANEL_INNER);
-        g.fill(l+2,t+2,r-2,t+3,0xFF536075);
-        g.fill(l+2,b-3,r-2,b-2,0xFF09131E);
+        g.fill(l,t,r,b,LoomUiTheme.BORDER);
+        g.fill(l+1,t+1,r-1,b-1,LoomUiTheme.PANEL_INNER);
     }
 
     public static void panelHeader(GuiGraphics g, int l, int t, int r, String title) {

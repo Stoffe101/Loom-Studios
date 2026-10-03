@@ -44,6 +44,11 @@ public final class RuntimeCosmeticCache {
             LoomProject project,
             Integer fixedTimelineTick
     ) {
+        return getOrCompile(client,projectHash,project,fixedTimelineTick,false);
+    }
+
+    public static RuntimeBundle getOrCompile(Minecraft client,String projectHash,LoomProject project,
+            Integer fixedTimelineTick,boolean alphaGuide) {
         RuntimeBundle existing = BUNDLES.get(projectHash);
         if (existing != null) {
             if (fixedTimelineTick != null
@@ -125,6 +130,7 @@ public final class RuntimeCosmeticCache {
         bundle.legacyPhase = 0;
         bundle.capeTimelineTick = initialTimelineTick;
         bundle.elytraTimelineTick = initialTimelineTick;
+        bundle.alphaGuide = alphaGuide;
         redrawCape(bundle, initialTimelineTick);
         redrawElytra(bundle, initialTimelineTick);
         redrawEmissive(bundle, initialTimelineTick);
@@ -263,6 +269,7 @@ public final class RuntimeCosmeticCache {
                         false
                 )
         );
+        if (bundle.alphaGuide) applyAlphaGuide(bundle.capeImage);
     }
 
     private static void redrawElytra(
@@ -279,6 +286,7 @@ public final class RuntimeCosmeticCache {
                         false
                 )
         );
+        if (bundle.alphaGuide) applyAlphaGuide(bundle.elytraImage);
     }
 
     private static void redrawEmissive(
@@ -331,6 +339,20 @@ public final class RuntimeCosmeticCache {
         }
     }
 
+    private static void applyAlphaGuide(NativeImage image) {
+        for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++) {
+            int color=image.getPixel(x,y), alpha=color>>>24;
+            if(alpha==255)continue;
+            int checker=((x/2+y/2)&1)==0 ? 0xFF697B91 : 0xFF3E4D65;
+            int result=0xFF000000;
+            for(int shift:new int[]{0,8,16}) {
+                int channel=(((color>>>shift)&255)*alpha+((checker>>>shift)&255)*(255-alpha)+127)/255;
+                result|=channel<<shift;
+            }
+            image.setPixel(x,y,result);
+        }
+    }
+
     private static void clear(NativeImage target) {
         for (int y = 0; y < target.getHeight(); y++) {
             for (int x = 0; x < target.getWidth(); x++) {
@@ -351,6 +373,7 @@ public final class RuntimeCosmeticCache {
         final NativeImage elytraImage;
         final NativeImage emissiveImage;
 
+        boolean alphaGuide;
         DynamicTexture capeTexture;
         DynamicTexture elytraTexture;
         DynamicTexture emissiveTexture;

@@ -29,6 +29,8 @@ public final class PlayerCosmeticRenderer {
     private static boolean emissivePassEnabled = true;
     private static String lastLocalProjectHash;
     private static String previewProjectHash;
+    private static LoomProject hashedPreviewProject;
+    private static String cachedPreviewHash, cachedTimelineHash;
     private static final ThreadLocal<PreviewOverride> PREVIEW_OVERRIDE = new ThreadLocal<>();
 
     private PlayerCosmeticRenderer() {
@@ -87,7 +89,8 @@ public final class PlayerCosmeticRenderer {
                         project,
                         preview == null
                                 ? null
-                                : preview.timelineTick()
+                                : preview.timelineTick(),
+                        preview != null
                 );
 
         CachedSkin cached = SKINS.get(playerId);
@@ -205,17 +208,14 @@ public final class PlayerCosmeticRenderer {
             Integer timelineTick,
             Supplier<T> action
     ) {
-        String baseHash = ClientProjectWorkspace.isInitialized()
-                && ClientProjectWorkspace.project() == project
-                ? ClientProjectWorkspace.projectHash()
-                : project.hash();
-
-        String hash = timelineTick == null
-                ? baseHash
-                : LoomProjectCodec.sha256(
-                        (baseHash + "#timeline-preview")
-                                .getBytes(StandardCharsets.UTF_8)
-                );
+        if (hashedPreviewProject != project) {
+            hashedPreviewProject = project;
+            cachedPreviewHash = ClientProjectWorkspace.isInitialized() && ClientProjectWorkspace.project() == project
+                    ? ClientProjectWorkspace.projectHash() : project.hash();
+            cachedPreviewHash = LoomProjectCodec.sha256((cachedPreviewHash + "#alpha-guide-preview").getBytes(StandardCharsets.UTF_8));
+            cachedTimelineHash = LoomProjectCodec.sha256((cachedPreviewHash + "#timeline-preview").getBytes(StandardCharsets.UTF_8));
+        }
+        String hash = timelineTick == null ? cachedPreviewHash : cachedTimelineHash;
 
         if (previewProjectHash != null
                 && !previewProjectHash.equals(hash)
@@ -227,6 +227,7 @@ public final class PlayerCosmeticRenderer {
         }
 
         previewProjectHash = hash;
+        PreviewOverride previous = PREVIEW_OVERRIDE.get();
         PREVIEW_OVERRIDE.set(new PreviewOverride(
                 project,
                 hash,
@@ -236,7 +237,7 @@ public final class PlayerCosmeticRenderer {
         try {
             return action.get();
         } finally {
-            PREVIEW_OVERRIDE.remove();
+            if (previous == null) PREVIEW_OVERRIDE.remove(); else PREVIEW_OVERRIDE.set(previous);
         }
     }
 
@@ -252,6 +253,7 @@ public final class PlayerCosmeticRenderer {
         }
 
         previewProjectHash = null;
+        hashedPreviewProject = null; cachedPreviewHash = null; cachedTimelineHash = null;
     }
 
     public static void toggleEmissivePass(Minecraft client) {

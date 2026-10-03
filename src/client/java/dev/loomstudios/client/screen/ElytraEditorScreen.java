@@ -166,7 +166,7 @@ public final class ElytraEditorScreen extends Screen {
         LoomElytraCanvasWidget.ViewState viewState = canvasWidget == null ? null : canvasWidget.viewState();
         LoomPlayerPreviewWidget.ViewState previewState = previewWidget == null ? null : previewWidget.viewState();
         if (canvasWidget != null) canvasWidget.close();
-        workspaceTooSmall = width < 600 || height < 350;
+        workspaceTooSmall = width < 600 || height < 320;
         if (workspaceTooSmall) {
             ClientProjectWorkspace.endCompoundEdit();
             addRenderableWidget(new LoomButton(Math.max(0, (width - 100) / 2), height / 2 + 24, 100, 22,
@@ -186,7 +186,7 @@ public final class ElytraEditorScreen extends Screen {
         timelineTop = layout.timeline().top(); timelineBottom = layout.timeline().bottom();
         rightPanelLeft = layout.preview().left(); rightPanelRight = layout.preview().right();
         previewBottom = layout.preview().bottom(); inspectorTop = layout.inspector().top(); inspectorBottom = layout.inspector().bottom();
-        buildTopNavigation(layout.headerHeight(), layout.navHeight(), compactMode ? 4 : 8);
+        buildTopNavigation(layout.headerHeight(), layout.navHeight(), 8);
         buildToolRail(); buildCanvasToolbar(); buildCanvasAndTimeline();
         buildRightPanel(layout.preview().height(), 22); buildPaletteWindow(centerRight, contentTop);
         canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
@@ -485,11 +485,11 @@ public final class ElytraEditorScreen extends Screen {
 
     private void buildPropertyInspector() {
         int start = children().size(); var rows = inspectorRows(); var r = rows.row(22);
-        layerNameField = addRenderableWidget(new EditBox(font, r.left(), r.top(), r.width() - 27, 22, Component.literal("Layer name")));
+        layerNameField = addRenderableWidget(new EditBox(font, r.left(), r.top(), r.width() - 27, r.height(), Component.literal("Layer name")));
         layerNameField.setMaxLength(dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS);
-        layerRenameButton = iconButton(r.right() - 24, r.top(), 24, 22, "Rename layer", LoomButton.Icon.PENCIL, this::renameLayer).setIconOnly(true);
+        layerRenameButton = iconButton(r.right() - 24, r.top(), 24, r.height(), "Rename layer", LoomButton.Icon.PENCIL, this::renameLayer).setIconOnly(true);
         r = rows.row(22);
-        opacitySlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Opacity", () -> selectedLayer().opacity(), value -> changeLayerOpacity((float)value - selectedLayer().opacity())));
+        opacitySlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Opacity", () -> selectedLayer().opacity(), value -> changeLayerOpacity((float)value - selectedLayer().opacity()))); opacitySlider.setHeight(r.height());
         r = rows.row(22); layerBlendButton = rowButton(r, "Blend: Normal", LoomButton.Icon.LAYERS, this::cycleLayerBlendMode);
         r = rows.row(22);
         lockButton = cellButton(r, 0, 2, "Lock layer", LoomButton.Icon.LOCK, this::toggleLock);
@@ -508,9 +508,10 @@ public final class ElytraEditorScreen extends Screen {
         var r = rows.row(Math.min(110, workspaceLayout.inspector().height() - 62));
         colorPicker = addRenderableWidget(new LoomColorPickerWidget(r.left(), r.top(), r.width(), r.height(), selectedColor, this::setSelectedColor));
         r = rows.row(22);
-        addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Color alpha",
+        LoomSlider colorAlphaSlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Color alpha",
                 () -> (selectedColor >>> 24) / 255.0,
                 value -> setSelectedColor(((int)Math.round(value * 255) << 24) | (selectedColor & 0xFFFFFF))));
+        colorAlphaSlider.setHeight(r.height());
         r = rows.row(22); swatchesButton = rowButton(r, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches);
         colorWidgets = widgetsSince(start);
     }
@@ -520,9 +521,10 @@ public final class ElytraEditorScreen extends Screen {
         int start = children().size();
         int left = rightPanelLeft + 6;
         int width = rightPanelRight - rightPanelLeft - 12;
-        int y = inspectorTop + 6;
-        int h = 22;
-        int gap = 4;
+        var compactRows = inspectorRows();
+        int y = inspectorTop + compactRows.padding();
+        int h = compactRows.controlHeight();
+        int gap = compactRows.gap();
 
         animationEffectButton = iconButton(
                 left,
@@ -639,12 +641,12 @@ public final class ElytraEditorScreen extends Screen {
         );
         animationDeleteButton.setDanger(true).setIconOnly(false);
         animationWidgets = widgetsSince(start).stream().filter(widget -> widget != animationSpeedButton).toList();
-        for (AbstractWidget widget : animationWidgets) widget.setY(widget.getY() + 26);
-        animationDeleteButton.setY(animationDeleteButton.getY() - 26);
+        for (AbstractWidget widget : animationWidgets) widget.setY(widget.getY() + compactRows.stride());
+        animationDeleteButton.setY(animationDeleteButton.getY() - compactRows.stride());
         var rows = inspectorRows(); var r = rows.row(22);
         animationPageButton = rowButton(r, "Keyframes  ›", LoomButton.Icon.PLAY, () -> { animationPage = 1 - animationPage; updateInspectorVisibility(); });
         start = children().size(); rows.row(22); r = rows.row(22);
-        animationSpeedButton.setY(inspectorTop + 32);
+        animationSpeedButton.setY(inspectorTop + compactRows.padding() + compactRows.stride());
         trackLoopButton = rowButton(r, "Track loop", LoomButton.Icon.LOOP, () -> withSelectedTrack(track -> ClientProjectWorkspace.apply(project -> project.withAnimation(AnimationAuthoring.replaceTrack(project.animation(), track.withLoop(!track.loop()))))));
         r = rows.row(22);
         cellButton(r,0,3,"Playback speed -",LoomButton.Icon.MINUS,() -> changeTimelinePlaybackSpeed(-0.25F));
@@ -1480,6 +1482,7 @@ public final class ElytraEditorScreen extends Screen {
                 () -> this.width,
                 () -> this.height
         );
+        this.paletteWindow.setOnClose(this::closePaletteWindow);
         this.paletteWindow.visible = paletteWindowVisible;
         addRenderableWidget(this.paletteWindow);
         this.paletteWindow.moveTo(x, y);
@@ -1978,7 +1981,41 @@ public final class ElytraEditorScreen extends Screen {
         updateButtonStates();
     }
 
+    private boolean canvasPanning;
+    private void closePaletteWindow() {
+        paletteWindowVisible = false;
+        if (paletteWindow != null) paletteWindow.visible = false;
+        if (getFocused() == paletteWindow) setFocused(null);
+        updateButtonStates();
+    }
+    @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(event.x(),event.y())) {
+            if (paletteWindow.mouseClicked(event,doubleClick)) setFocused(paletteWindow);
+            return true;
+        }
+        if (event.button() == 2 && canvasWidget != null && canvasWidget.isMouseOver(event.x(),event.y())
+                && canvasWidget.mouseClicked(event,doubleClick)) { canvasPanning = true; return true; }
+        return super.mouseClicked(event,doubleClick);
+    }
+    @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
+        if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseDragged(event,dx,dy)) return true;
+        if (canvasPanning && event.button() == 2) return canvasWidget.mouseDragged(event,dx,dy);
+        return super.mouseDragged(event,dx,dy);
+    }
+    @Override public boolean mouseReleased(MouseButtonEvent event) {
+        if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseReleased(event)) return true;
+        if (canvasPanning && event.button() == 2) { canvasPanning = false; return canvasWidget.mouseReleased(event); }
+        return super.mouseReleased(event);
+    }
+    @Override public boolean mouseScrolled(double x,double y,double dx,double dy) {
+        if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(x,y)) {
+            paletteWindow.mouseScrolled(x,y,dx,dy); return true;
+        }
+        return super.mouseScrolled(x,y,dx,dy);
+    }
+
     @Override public boolean keyPressed(KeyEvent event) {
+        if (event.key() == 256 && paletteWindowVisible) { closePaletteWindow(); return true; }
         if (workspaceTooSmall) return super.keyPressed(event);
         if (getFocused() instanceof EditBox) return super.keyPressed(event);
         if (event.hasControlDownWithQuirk()) {

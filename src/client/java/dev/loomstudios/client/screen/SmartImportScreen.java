@@ -230,9 +230,9 @@ public final class SmartImportScreen extends Screen {
         compactMode = LoomUiTheme.compact(width, height);
 
         int margin = compactMode ? 8 : 12;
-        int gap = compactMode ? 5 : 8;
+        int gap = compactMode ? 8 : 8;
         int top = LoomScreenChrome.headerHeight(compactMode) + 6;
-        int bottom = height - 24;
+        int bottom = height - 28;
         int leftWidth = compactMode ? 140 : Math.min(230,width / 5);
         int rightWidth = compactMode ? 164 : Math.min(280,width / 4);
         int rightX = width - margin - rightWidth;

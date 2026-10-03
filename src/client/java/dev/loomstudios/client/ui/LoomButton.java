@@ -21,6 +21,8 @@ public class LoomButton extends AbstractButton {
         SELECT,
         LINE,
         RECTANGLE,
+        CIRCLE,
+        CLOSE,
         MOVE,
         FLIP_H,
         FLIP_V,
@@ -180,23 +182,6 @@ public class LoomButton extends AbstractButton {
                 background
         );
 
-        if (selected || primary || hot) {
-            graphics.fill(getX()+2,getY()+2,getRight()-2,getY()+3,0xAA58D8ED);
-            graphics.fill(getX()+2,getBottom()-3,getRight()-2,getBottom()-2,0x663BB9DD);
-        }
-        graphics.fill(getX()+2,getBottom()-2,getRight()-2,getBottom()-1,0xFF101A2A);
-        // Raised top edge is quiet; active edges alone carry colour.
-        graphics.fill(getX() + 1, getY() + 1, getRight() - 1, getY() + 2, hot || selected || primary ? 0x5545CADA : 0x223E5878);
-        if (selected) {
-            graphics.fill(
-                    getX() + 1,
-                    getY() + 1,
-                    getX() + 3,
-                    getBottom() - 1,
-                    LoomUiTheme.ACCENT
-            );
-        }
-
         int color = this.active
                 ? LoomUiTheme.TEXT
                 : LoomUiTheme.TEXT_MUTED;
@@ -204,7 +189,7 @@ public class LoomButton extends AbstractButton {
         if (icon != Icon.NONE) {
             int iconSize = Math.max(
                     10,
-                    Math.min(14, getHeight() - 6)
+                    Math.min(16, getHeight() - 2)
             );
             int iconX;
             if (effectiveIconOnly) {
