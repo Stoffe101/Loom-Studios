@@ -1,6 +1,6 @@
 # Loom Studios — Architecture
 
-2026-10-03 safety pass (source awaiting checks): WorkspaceNavigation owns explicit Screen-level unsaved choices; ProjectSession.discardChanges restores a saved/initial immutable baseline without writing. Explicit keepDraft propagates failures; draft discard precedes history reset. Library confirmation wraps reversible store moves with one immediate undo target. Pure RecentColors/DesignColors feed cached virtual palette groups; explicit saving writes existing-format palettes. Background preferences and diagnostics stay local, outside artwork/network state.
+2026-10-03 safety pass (DONE, source `5c6b68d`, Actions #204; PR #17 merged): WorkspaceNavigation owns explicit Screen-level unsaved choices; ProjectSession.discardChanges restores a saved/initial immutable baseline without writing. Explicit keepDraft propagates failures; draft discard precedes history reset. Library confirmation wraps reversible store moves with one immediate undo target. Pure RecentColors/DesignColors feed cached virtual palette groups; explicit saving writes existing-format palettes. Background preferences and diagnostics stay local, outside artwork/network state.
 
 ## Principles
 

@@ -1,5 +1,9 @@
 # Loom Studios — Test Matrix
 
+## Editor safety/usability — DONE (2026-10-03)
+
+Exact source `5c6b68d82e1b878e48872a3ddb881e26056232ae`, Actions #204/run37097790670: Java21 build and 117 tests, zero failures/errors/skips; 128 real Minecraft/Mesa screenshots decode and were visually reviewed. All four resolution/GUI profiles plus compact 635×320 logical safety screens pass visible-widget bounds/nonoverlap. Actual Screen unsaved Cancel/Keep draft/Discard/Save, delete Cancel/Undo, design-palette persistence, background/artwork isolation and private diagnostics pass. Prior input/preview/animation/import/library/export checks remain green. Packaged JAR classes/dependencies verified. [Environment, evidence and manual limits](verification/editor-safety/README.md). PR #17 merge `c8a6b31d0f513a1ca04d47c16614ae77d8b21136` has the exact tested tree; later main push results are not implied by this record.
+
 ## Toolchain
 
 SPIKE-00 must record exact versions for:

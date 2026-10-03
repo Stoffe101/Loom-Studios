@@ -1,10 +1,14 @@
 # Loom Studios — Pass Log
 
-## 2026-10-03 — Editor safety/usability implementation (IN PROGRESS)
+## Editor safety/usability — DONE (2026-10-03)
 
-First checkpoint `84b977a725fcde442c7cd1872dbb62b0aeb26276`, Actions #203, compiles and passes the pure build suite. Extended captures are still running. Increase only the development runner's timeout budget for 128 profiles; keep explicit source-path/save eligibility when equipping after a new-design discard, and handle clipboard unavailability without leaving Settings. These follow-up checks remain pending exact-SHA runtime verification.
+All six requested additions are implemented and verified: unsaved Save/Keep draft/Discard/Cancel, named delete confirmation + immediate Undo, selected-tool/shortcut/disabled-reason guidance, persistent recent colors and saved design palettes, Scenic/Light/Dark/Checker GUI preview backgrounds, and opt-in privacy-filtered diagnostics. All five original references were viewed again; existing workshop styling and compact layouts are retained. No schema/network change.
 
-User authorized all six additions; all five references viewed. Added guarded unsaved choices with write-failure blocking, pure no-write history discard, named delete confirmation + immediate non-overwriting Undo, selected-tool/locked/typed-layer guidance, persistent bounded MRU colors, cached visible design-color palette saving, four local GUI backgrounds and opt-in diagnostics without raw logs/account/paths/artwork. Added six pure tests and 28 actual profile captures/runtime safety assertions (128 total). Base `d038b23ea10570a193299157617570b5d5122212`; build/runtime/visual results pending. Next: verify and fix, then canonical status/delivery. No schema/protocol change; hardware/modpack acceptance remains external.
+Exact source `5c6b68d82e1b878e48872a3ddb881e26056232ae`, [Actions #204](https://github.com/Stoffe101/Loom-Studios/actions/runs/37097790670), passes Java21 build, **117 tests (zero failures/errors/skips)** and **128 actual Minecraft/Mesa captures**. All PNGs decode and were visually reviewed, including all four mandatory profiles and compact 635×320 logical screens. Real Screen unsaved choices/delete Cancel/Undo, palette persistence, background isolation and filtered diagnostics assertions pass alongside existing canvas/3D/animation/import/library/export regressions. [Evidence and manual checklist](verification/editor-safety/README.md).
+
+Merged through [PR #17](https://github.com/Stoffe101/Loom-Studios/pull/17) at `c8a6b31d0f513a1ca04d47c16614ae77d8b21136`, 2026-10-03 04:59 UTC. Merge tree equals the tested source tree. This follow-up records only documentation/evidence; subsequent main push checks may still be running and are not claimed passed. Packaged classes/dependencies verified, JAR SHA-256 `2b48032b4713d1e35c04a7137b183a9dfccc0e929591d646e9c64bf6d9bb25bd`.
+
+Next: ordinary-client/OS clipboard and filesystem-failure acceptance, actual hardware FPS, optional Sodium/Sodium Extra/Iris/3D Skin Layers, shaders off/on and live two-client multiplayer. Software Mesa does not verify those integrations; broader release acceptance remains PARTIAL. No known failing automated checks in this pass.
 
 ## Library and authoring milestone — DONE (2026-10-03)
 

@@ -1,5 +1,9 @@
 # Loom Studios — Implementation Roadmap
 
+## 2026-10-03 safety/usability milestone (DONE)
+
+All six requested pre-test additions are delivered: explicit unsaved decisions, named recoverable deletion/Undo, tool guidance, recent/design palettes, GUI preview backgrounds and private copyable diagnostics. Exact source `5c6b68d`, Actions #204: 117 tests and 128 actual captures/runtime assertions pass; all images decoded and reviewed against the five reference screens. PR #17 merged at `c8a6b31d0f513a1ca04d47c16614ae77d8b21136`, identical tested tree. Next is manual hardware/OS/modpack/shader/multiplayer acceptance, not further scope expansion. No schema/protocol changes.
+
 ## 2026-10-03 authoring milestone (DONE)
 
 Source implemented: design browser/actions/Trash, isolated draft autosave and recovery, favorites/search/sort, six layered templates, local editor preferences and help, semantic-face clipboard/rotation, Elytra drawing parity, Cape/Elytra animation studio with keyframe dragging and per-effect controls, preview camera presets/standing/open/gliding/facing, and direct Smart Import move/scale/rotation handles. Project schema-v3 and multiplayer protocol remain unchanged. Actions #200 at 9b22438db8c8aea42a10ee5800000c56415ac4e7 passes 111 tests, 100 real captures and new library/animation/import input assertions; screenshots reviewed. Hardware/modpack shader and multiplayer acceptance remains a separate release step.
