@@ -2,7 +2,7 @@
 
 ## 2026-10-03 — Dropdowns and cosmetic-only preview — IN PROGRESS
 
-Initial runtime attempt at `69d509d` failed before Home init: the new popup callback was registered in the screen constructor. Corrected by registering via Fabric AFTER_INIT, before the premium flush callback; resize also dismisses stale popup bounds. Build passed on that attempt; no runtime/visual acceptance is claimed for it.
+Initial runtime attempt at `69d509d` failed before Home init: the new popup callback was registered in the screen constructor. Corrected by registering via Fabric AFTER_INIT, before the premium flush callback; resize also dismisses stale popup bounds. Build passed on that attempt; no runtime/visual acceptance is claimed for it. The corrected lifecycle run `d2376f4` then reached the workflow assertions but exposed a capture-only reflection helper that searched only the concrete class for inherited choicePopup. It now walks superclasses. No production behavior changed for that harness correction.
 
 Reviewed both new feedback crops and all five approved references. Implemented bounded modal effect/preset/rate dropdowns with descriptions, selected/focused rows, wheel scrolling, keyboard arrows/Home/End/Enter and Escape/outside cancellation. Home actions and Browse/Help now have six-pixel horizontal panel gutters. Preview snapshots clear both held items without changing inventory; hidden character snapshots also clear armor/head attachments/parrots/arrows while retaining cape/Elytra. Effect-specific value labels/help finish a documented animation usability task. No project/export/network format change.
 
