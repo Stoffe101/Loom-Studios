@@ -49,6 +49,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
     public void setView(float yaw,float pitch,float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing){this.yaw=yaw;this.pitch=pitch;this.zoom=zoom;this.panX=panX;this.panY=panY;this.pose=pose;this.facing=facing;}
     @Override protected void init(){
         int left=(width-panelWidth())/2+8,top=panelTop()+23,total=panelWidth()-16;
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total-148,panelTop()+3,148,16,Component.literal(dev.loomstudios.client.ui.LoomPreviewBackground.current().label()),()->{dev.loomstudios.client.ui.LoomPreviewBackground.cycle();rebuildWidgets();}));
         String[] views={"Back","Front","Left","Right"};float[] angles={25,180,90,270};
         for(int i=0;i<4;i++){final float angle=angles[i];addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+i*(total/4),top,total/4-3,19,Component.literal(views[i]),()->{yaw=angle;pitch=0;panX=0;panY=0;}));}
         top+=23;
@@ -110,7 +111,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
         dev.loomstudios.client.ui.LoomScreenChrome.panelHeader(graphics,left,top,right,
                 (mode==PreviewMode.CAPE?"Cape":"Elytra")+" · Alpha guide");
         int x0=left+8,y0=top+72,x1=right-8,y1=bottom-38;
-        dev.loomstudios.client.ui.LoomWorkshopArt.previewScene(graphics,x0,y0,x1,y1);
+        dev.loomstudios.client.ui.LoomPreviewBackground.render(graphics,x0,y0,x1,y1);
         if(minecraft.player!=null)renderPreviewEntity(graphics,x0,y0,x1,y1,
                 Math.max(20,Math.min((y1-y0)*0.45F,(x1-x0)*0.35F)*zoom),minecraft.player);
         graphics.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(

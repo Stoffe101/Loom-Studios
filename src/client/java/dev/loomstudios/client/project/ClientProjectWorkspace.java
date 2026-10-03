@@ -152,6 +152,15 @@ public final class ClientProjectWorkspace {
         return saved;
     }
 
+    public static void discardChanges() throws IOException {
+        java.util.UUID id=project().projectId();
+        ProjectSession restored=session;
+        Path canonical=LocalProjectLibrary.store().pathFor(id);
+        if(session.sourcePath()==null&&java.nio.file.Files.isRegularFile(canonical))restored=ProjectSession.load(canonical,LocalProjectLibrary.store());
+        WorkspaceRecovery.discardDraft(id);
+        session=restored;session.discardChanges();notifyListeners();
+    }
+
     public static void equipCurrent() {
         if (session().isDirty()) {
             throw new IllegalStateException(

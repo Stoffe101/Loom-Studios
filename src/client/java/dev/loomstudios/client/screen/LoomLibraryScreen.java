@@ -28,6 +28,9 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private boolean favorites,nameSort;
     private String query="",message="Single click: preview · Double click: edit · Right click: actions";
     private LoomButton previous,next;
+    private ProjectFileStore undoStore;
+    private UUID undoId;
+    private LoomButton undoDelete;
     public LoomLibraryScreen(Screen parent) { super(Component.literal("Design library"));this.parent=parent; }
     public LoomLibraryScreen(Screen parent,UUID menuId) { this(parent);initialMenu=menuId; }
     @Override protected void init() {
@@ -45,6 +48,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         addRenderableWidget(new LoomButton(search.getRight()+84,top+26,Math.max(66,right-search.getRight()-84),20,Component.literal(nameSort?"Name A–Z":"Latest first"),()->{nameSort=!nameSort;page=0;rebuild();}));
         previous=addRenderableWidget(new LoomButton(left,bottom-22,56,20,Component.literal("Previous"),()->{page--;buildCards();}));
         next=addRenderableWidget(new LoomButton(right-56,bottom-22,56,20,Component.literal("Next"),()->{page++;buildCards();}));
+        undoDelete=addRenderableWidget(new LoomButton(left+60,bottom-22,92,20,Component.literal("Undo delete"),this::undoDelete));undoDelete.visible=undoId!=null;
         preview=addRenderableWidget(new LoomPlayerPreviewWidget(width-176,top+26,168,Math.max(90,bottom-top-52),()->previewProject));
         addRenderableWidget(new LoomButton(width-176,bottom-22,80,20,Component.literal("Edit"),()->editSelected()));
         addRenderableWidget(new LoomButton(width-92,bottom-22,84,20,Component.literal("Actions"),()->openMenu(selected,right-135,top+53)));
@@ -106,7 +110,8 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         boolean draft=d.projectPath().getParent().equals(WorkspaceRecovery.STORE.root().resolve("trash"));
         (draft?WorkspaceRecovery.STORE:LocalProjectLibrary.store()).restore(d.projectId());tab=draft?1:0;
     }
-    private void editSelected() {
+    private void editSelected(){WorkspaceNavigation.request(this,this::editSelectedNow);}
+    private void editSelectedNow() {
         if(selected==null||minecraft.player==null)return;
         try {
             if(tab==2){restore(selected);refresh();}
@@ -122,6 +127,12 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private String[] actions() {return tab==2?new String[]{"Restore","Rename…","Favorite","Duplicate","Close"}:
             new String[]{tab==1?"Recover & edit":"Edit","Rename…",LoomPreferences.get().favorite(menu.projectId())?"Unfavorite":"Favorite","Duplicate",tab==1?"Discard to Trash":"Delete to Trash","Close"};}
     private void act(int index) {
+        if(index==4&&tab!=2&&menu!=null){ProjectDescriptor d=menu;menu=null;
+            minecraft.setScreen(new LoomDecisionScreen(this,"Delete design?",d.name()+" · can be restored from Trash",List.of(
+                new LoomDecisionScreen.Choice("Move to Trash",()->{minecraft.setScreen(this);menu=d;actNow(4);},true))));return;}
+        actNow(index);
+    }
+    private void actNow(int index) {
         ProjectDescriptor d=menu;menu=null;if(d==null)return;select(d);
         try {
             switch(index){
@@ -135,14 +146,15 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
                 case 2 -> {LoomPreferences.get().toggleFavorite(d.projectId());refresh();}
                 case 3 -> {LoomProject p=load(d);LoomProject copy=new LoomProject(p.schemaVersion(),UUID.randomUUID(),p.name().substring(0,Math.min(p.name().length(),LoomProjectCodec.MAX_PROJECT_NAME_CHARS-5))+" copy",LoomProjectMetadata.now(System.currentTimeMillis()),p.cape(),p.elytra(),p.runtime(),p.animation());LocalProjectLibrary.save(copy);message="Created independent copy";refresh();}
                 case 4 -> {if(tab==2)return;
-                    if(tab==1){WorkspaceRecovery.STORE.trash(d.projectId());message="Draft moved to draft Trash";}
-                    else {LocalProjectLibrary.store().trash(d.projectId());message="Moved to Trash · select Trash to restore";}
+                    ProjectFileStore owner=tab==1?WorkspaceRecovery.STORE:LocalProjectLibrary.store();owner.trash(d.projectId());undoStore=owner;undoId=d.projectId();undoDelete.visible=true;
+                    message="Moved to Trash · Undo delete is available";
                     refresh();
                 }
                 default -> { }
             }
         }catch(IOException|IllegalArgumentException e){message="Action failed: "+e.getMessage();}
     }
+    private void undoDelete(){if(undoId==null)return;try{undoStore.restore(undoId);tab=undoStore==WorkspaceRecovery.STORE?1:0;undoId=null;message="Deletion undone";rebuildWidgets();}catch(IOException e){message="Restore failed; the design remains in Trash";LoomDiagnostics.record("Undo delete",e);}}
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
         if(menu!=null){String[] actions=actions();boolean inside=event.x()>=menuX&&event.x()<menuX+142&&event.y()>=menuY&&event.y()<menuY+actions.length*23;
             if(inside&&event.button()==0){act((int)(event.y()-menuY)/23);return true;}menu=null;return true;}

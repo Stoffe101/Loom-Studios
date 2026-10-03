@@ -1,5 +1,9 @@
 # Loom Studios — Pass Log
 
+## 2026-10-03 — Editor safety/usability implementation (IN PROGRESS)
+
+User authorized all six additions; all five references viewed. Added guarded unsaved choices with write-failure blocking, pure no-write history discard, named delete confirmation + immediate non-overwriting Undo, selected-tool/locked/typed-layer guidance, persistent bounded MRU colors, cached visible design-color palette saving, four local GUI backgrounds and opt-in diagnostics without raw logs/account/paths/artwork. Added six pure tests and 28 actual profile captures/runtime safety assertions (128 total). Base `d038b23ea10570a193299157617570b5d5122212`; build/runtime/visual results pending. Next: verify and fix, then canonical status/delivery. No schema/protocol change; hardware/modpack acceptance remains external.
+
 ## Library and authoring milestone — DONE (2026-10-03)
 
 Merged to main through [PR #16](https://github.com/Stoffe101/Loom-Studios/pull/16), merge `ece5ec7a69e727390d61f22f631c7a59dac0e09f`, 2026-10-03 04:14 UTC. Merge tree equals the exact Actions #200 tested tree. This subsequent commit records documentation/evidence only; main push checks may still be running and are not claimed passed.

@@ -1,6 +1,7 @@
 package dev.loomstudios.client.ui;
 
 import dev.loomstudios.client.palette.ColorPaletteLibrary;
+import dev.loomstudios.client.palette.EditorColors;
 import dev.loomstudios.palette.ColorPalette;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -408,7 +409,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
 
         graphics.drawString(
                 Minecraft.getInstance().font,
-                Component.literal("Saved palettes"),
+                Component.literal("Recent · Design · Saved palettes"),
                 getX() + 8,
                 labelY,
                 LoomUiTheme.TEXT_MUTED,
@@ -425,7 +426,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         int columns = swatchColumns();
         Optional<ColorPalette> selected = ColorPaletteLibrary.selected();
 
-        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+        for (ColorPalette palette : EditorColors.groups()) {
             int rows = Math.max(
                     1,
                     (palette.colors().size() + columns - 1) / columns
@@ -511,7 +512,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             );
         }
 
-        if (ColorPaletteLibrary.palettes().isEmpty()) {
+        if (EditorColors.groups().isEmpty()) {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
                     Component.literal(
@@ -574,7 +575,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         int columns = swatchColumns();
         int height = 0;
 
-        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+        for (ColorPalette palette : EditorColors.groups()) {
             int rows = Math.max(
                     1,
                     (palette.colors().size() + columns - 1) / columns
@@ -650,7 +651,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
         int y = top - swatchesScroll;
         int columns = swatchColumns();
 
-        for (ColorPalette palette : ColorPaletteLibrary.palettes()) {
+        for (ColorPalette palette : EditorColors.groups()) {
             int rows = Math.max(
                     1,
                     (palette.colors().size() + columns - 1) / columns
@@ -662,6 +663,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             if (event.y() >= y
                     && event.y() < y + GROUP_HEADER_HEIGHT) {
                 if (event.button() == 0) {
+                    if(EditorColors.virtual(palette)){if(palette.id().equals(EditorColors.DESIGN_ID))try{EditorColors.saveDesign();syncSelectedPalette();notifier.accept("Saved design colors as a palette");}catch(IOException|RuntimeException e){notifier.accept("Could not save design palette");}return true;}
                     ColorPaletteLibrary.select(palette.id());
                     syncSelectedPalette();
                 }
@@ -680,10 +682,10 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
                         && event.x() < x + SWATCH
                         && event.y() >= sy
                         && event.y() < sy + SWATCH) {
-                    ColorPaletteLibrary.select(palette.id());
-                    syncSelectedPalette();
+                    if(!EditorColors.virtual(palette)){ColorPaletteLibrary.select(palette.id());syncSelectedPalette();}
 
                     if (event.button() == 1) {
+                        if(EditorColors.virtual(palette))return true;
                         try {
                             ColorPaletteLibrary.removeColorFromSelected(i);
                         } catch (IOException ignored) {
