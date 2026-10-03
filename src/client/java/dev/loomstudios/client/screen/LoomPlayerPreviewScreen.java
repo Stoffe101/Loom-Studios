@@ -148,7 +148,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
             }
         }
 
-        ((dev.loomstudios.client.render.LoomPreviewVisibility)renderState).loom$characterHidden(!characterVisible);
+        dev.loomstudios.client.render.LoomPreviewState.visibility(renderState,characterVisible);
         dev.loomstudios.client.render.LoomPreviewState.orient(renderState,this.yaw);
         dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==PreviewMode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 

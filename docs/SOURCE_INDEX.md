@@ -251,3 +251,7 @@ Fabric Yarn 1.21.11 API documents BipedEntityRenderState isGliding/leftWingPitch
 ## 2026-10-03 — Follow-up API checks
 
 Version-specific questions: suppress preview body without hiding cosmetic layers; match the Minecraft 1.21.11 wing-model API. Checked against the exact Mojang-mapped distribution compiled/run by repository CI: LivingEntityRenderer.getRenderType takes LivingEntityRenderState plus three booleans; ElytraModel is non-generic and accepts a baked ELYTRA ModelPart. Initial incorrect generic usage failed compile and was corrected. Acceptance requires actual client rendering, not signature assumptions. Capture assertions check unflagged world snapshots and animated Elytra emissive-mask selection. Runtime/reference source: the repository's Fabric Loom build uses official Minecraft 1.21.11 mappings; no third-party renderer dependency added.
+
+### 2026-10-03 held-item preview API check
+
+Exact Mojang-mapped MC1.21.11 client jar from repository Fabric Loom cache inspected: ArmedEntityRenderState exposes left/rightHandItemState and left/rightHandItemStack; ItemStackRenderState has clear/isEmpty; HumanoidRenderState exposes head/chest/legs/feet equipment; AvatarRenderState exposes heldOnHead, shoulder parrots, arrows/stingers. Clearing extracted snapshot fields avoids ItemInHand/armor/head feature leaks without touching player inventory. ScreenEvents.afterRender uses the established Fabric screen event API already used by PremiumControls. CI compilation/runtime remains required evidence.

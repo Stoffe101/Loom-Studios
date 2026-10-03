@@ -1,5 +1,12 @@
 # Loom Studios — Current State
 
+## 2026-10-03 — Dropdowns and cosmetic-only preview — IN PROGRESS
+
+Reviewed both new feedback crops and all five approved references. Implemented bounded modal effect/preset/rate dropdowns with descriptions, selected/focused rows, wheel scrolling, keyboard arrows/Home/End/Enter and Escape/outside cancellation. Home actions and Browse/Help now have six-pixel horizontal panel gutters. Preview snapshots clear both held items without changing inventory; hidden character snapshots also clear armor/head attachments/parrots/arrows while retaining cape/Elytra. Effect-specific value labels/help finish a documented animation usability task. No project/export/network format change.
+
+Exact-source CI build and 238 full captures pending, including20 new dropdown/inset/held-item views at1920×1080 and3440×1440 GUI2/3. Runtime assertions cover cancellation, keyboard selection, popup bounds, clean render-state hands/armor, unchanged real inventory and existing regressions. Docs audit distinguishes completed historical TODOs from optional future schema/backend work; hardware/OS/shader/performance acceptance remains manual. Do not claim DONE before runtime and visual acceptance.
+
+
 ## 2026-10-03 — Usability and animation follow-up — DONE: Linux runtime and visual verification
 
 Exact runtime source `b447e7add4cf12ded65d477ad4f5c01bfc95c6fe`, accepted 2026-10-03 21:08 UTC. [Build #241](https://github.com/Stoffe101/Loom-Studios/actions/runs/37153029252) passes both jobs: **128 tests, zero failures/errors/skips**, and **218 actual Minecraft screenshots**. All original PNGs downloaded and decoded locally. [Comparison #19](https://github.com/Stoffe101/Loom-Studios/actions/runs/37153029222) passes all twelve jobs and decodes **118 screenshots**, including 28 feedback-specific usability views. MC1.21.11, Loader0.18.4, Fabric API0.141.1, Temurin Java21, Linux/Mesa/Xvfb; no Sodium/Iris/shaders.

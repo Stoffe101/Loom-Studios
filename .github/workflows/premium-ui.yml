@@ -16,6 +16,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - suite: choices-gui2
+            start: 218
+            end: 223
+            count: 5
+          - suite: choices-gui3
+            start: 223
+            end: 228
+            count: 5
+          - suite: choices-wide-gui2
+            start: 228
+            end: 233
+            count: 5
+          - suite: choices-wide-gui3
+            start: 233
+            end: 238
+            count: 5
           - suite: usability-gui2
             start: 190
             end: 197

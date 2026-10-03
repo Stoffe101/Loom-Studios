@@ -1,5 +1,11 @@
 # Loom Studios — Implementation Roadmap
 
+## Current roadmap audit — 2026-10-03
+
+The phase lists below are historical implementation checkpoints, not a fresh backlog. Current delivery through PR20 includes all drawing/selection/rotation tools, fourteen templates, library folders/tags/bulk/versions, grouping/multi-selection, editor preferences/help, standing/open/gliding previews, draggable keys, Cape/Elytra studios, guided recipes, local portable sharing and premium component migration. UI/runtime verified at all four profiles. This pass finishes direct effect/preset/rate choices and effect-specific scalar labels/help, plus cosmetic-only preview cleanup. Validation pending.
+
+Remaining release work is target-hardware frame-time/OS/modpack/shader/multiplayer acceptance. Future optional scope: richer schema-versioned effect parameters/reference layers/onion skin, image tint/background removal, and a real hosted resolver/gallery service. Those require their own data-model/service design; historical already-delivered pose/keyframe/import-handle tasks must not be reimplemented. No fake network service or undocumented format change is introduced.
+
 ## 2026-10-03 safety/usability milestone (DONE)
 
 All six requested pre-test additions are delivered: explicit unsaved decisions, named recoverable deletion/Undo, tool guidance, recent/design palettes, GUI preview backgrounds and private copyable diagnostics. Exact source `5c6b68d`, Actions #204: 117 tests and 128 actual captures/runtime assertions pass; all images decoded and reviewed against the five reference screens. PR #17 merged at `c8a6b31d0f513a1ca04d47c16614ae77d8b21136`, identical tested tree. Next is manual hardware/OS/modpack/shader/multiplayer acceptance, not further scope expansion. No schema/protocol changes.
@@ -189,10 +195,7 @@ Implemented in the workflow-completion pass:
 - layer reorder / opacity / rename / blend;
 - shared Swatches parity.
 
-Still planned:
-- standing/open/gliding preview controls;
-- animation timeline/effects;
-- final reference polish.
+Delivered since this checkpoint: standing/open/gliding controls and animation timeline/effects. See current audit and canonical state for visual evidence.
 
 ## Phase 6 — Animation authoring
 Status: **MVP IMPLEMENTED / LOCAL VISUAL-RUNTIME VERIFICATION PENDING**
@@ -217,12 +220,7 @@ Implemented:
 - isolated fixed-tick 3D preview;
 - layer-reference validation/pruning.
 
-Still planned:
-- standing/open/gliding preview-state controls;
-- direct draggable keyframes;
-- richer effect-specific property panels;
-- Cape Editor animation exposure;
-- final reference fidelity.
+Delivered since this checkpoint: pose controls, draggable keyframes, Cape animation studio and guided recipes. This pass adds effect-specific scalar labels/help and direct effect dropdowns. Richer parameter payloads remain optional schema-versioned work.
 
 ## Phase 7 — Multiplayer library/sharing
 

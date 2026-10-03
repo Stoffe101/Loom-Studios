@@ -1,5 +1,9 @@
 # Loom Studios — Architectural Decisions
 
+## 2026-10-03 — Modal choices and clean preview snapshots
+
+Choice popups are screen-owned overlays rendered after widgets and before premium paint finishes. They clamp to screen/footer bounds, intercept input while open, suppress underlying widget hover/tooltips and cancel without mutation. Preview extraction clears hand render states/stacks, and hidden-character presentation clears equipment/attachments from the isolated render snapshot; chest Elytra remains available to the wing layer. Real inventory and world renderer state are untouched. No new dependency or schema added. MC1.21.11 Mojang-mapped class signatures were inspected locally before editing.
+
 ## 2026-10-03 — Preview visibility and guided animations
 
 Character visibility belongs to isolated preview render snapshots, not player state. A body-only getRenderType override leaves cape/Elytra feature layers enabled and cannot hide a world player. The player-head control retains state when expanding/rebuilding the preview. Presets produce existing editable tracks, with one undo entry and bounded cycle counts; no new project/network format. Elytra glow uses vanilla baked wing geometry and an authored-pixel-only cached emissive mask; fixed-tick previews and live animation update existing textures rather than allocate new identities per frame. Native nested scissors are captured at command collection and applied during deferred studio rendering; occlusion uses the same clipped bounds. Decorative header caps and center face preserve source aspect, with repeated undecorated timber rather than stretching lanterns. Acceptance evidence is in USABILITY_ANIMATION_AUDIT.md.

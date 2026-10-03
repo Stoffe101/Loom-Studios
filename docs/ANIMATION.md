@@ -75,7 +75,7 @@ Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project stat
 ## Next animation work
 
 - Hardware frame-time measurements while scrubbing and playing dense designs.
-- Effect-specific controls for gradient direction, shimmer density and intensity.
+- Future schema-versioned controls for gradient direction and shimmer density. Existing scalar controls now use effect-specific labels and descriptions.
 - Optional onion-skin/reference frames and a visual preset picker.
 - Cross-platform and Sodium/Iris/shader acceptance with real equipped designs.
 
@@ -90,3 +90,7 @@ Open the animation studio, choose the layer, choose a preset and rate, then clic
 Draw stars/highlights on their own layer, keeping the base design solid. Blinking stars fades that detail layer on/off; Shimmer twinkles its existing pixels; Glow creates an emissive highlight track. Color cycle, horizontal scroll and vertical wave work on the selected layer. **Advanced** exposes effect, key value, add/remove key and track speed. Drag timeline keys to change their timing. Presets preserve the existing project format.
 
 Elytra Glow follow-up: a separate cached emissive wing mask and fullbright ElytraModel pass now mirror cape highlights. Masks contain authored pixels only (no alpha-guide checkerboard); update at changed timeline ticks and release with their runtime bundle. Verification includes a wing-only glow capture plus mask presence/change assertions.
+
+## Direct choice menus
+
+Preset, rate and effect controls open bounded dropdowns rather than cycle through unseen choices. Each row names the choice and its purpose. Up/Down, Home/End and Enter work; Escape or clicking outside cancels without editing. Selecting an effect preserves track identity/keyframes and is one undoable edit. Scalar key controls describe Opacity, Horizontal/Vertical offset, Hue rotation, Shimmer strength or Glow intensity. Those are existing effect values, not new parameter fields.

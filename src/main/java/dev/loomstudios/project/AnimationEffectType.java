@@ -24,6 +24,9 @@ public enum AnimationEffectType {
         return displayName;
     }
 
+    public String valueLabel(){return switch(this){case PULSE->"Opacity";case SCROLL->"Horizontal offset";case HUE_SHIFT->"Hue rotation";case MOVING_GRADIENT->"Vertical offset";case SPARKLE->"Shimmer strength";case EMISSIVE_GLOW->"Glow intensity";};}
+    public String description(){return switch(this){case PULSE->"Fade this layer in and out";case SCROLL->"Wrap the pattern horizontally";case HUE_SHIFT->"Rotate this layer's colors";case MOVING_GRADIENT->"Wrap the pattern vertically";case SPARKLE->"Twinkle existing highlight pixels";case EMISSIVE_GLOW->"Light up this layer's highlights";};}
+
     public AnimationEffectType next() {
         AnimationEffectType[] values = values();
         return values[(ordinal() + 1) % values.length];

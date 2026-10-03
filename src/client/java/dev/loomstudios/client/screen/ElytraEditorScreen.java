@@ -557,9 +557,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                 width,
                 h,
                 "Effect: Select a track",
-                LoomButton.Icon.EMISSIVE,
+                LoomButton.Icon.DOWN,
                 () -> withSelectedTrack(
-                        track -> cycleAnimationEffect(track.id())
+                        track -> showChoices(animationEffectButton,"Animation effect",java.util.Arrays.stream(AnimationEffectType.values()).map(e->new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(e,e.displayName(),e.description())).toList(),track.effect(),e->setAnimationEffect(track.id(),e))
                 )
         );
         animationEffectButton.setIconOnly(false);
@@ -878,7 +878,11 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
             return;
         }
 
-        AnimationEffectType next = track.effect().next();
+        setAnimationEffect(trackId,track.effect().next());
+    }
+
+    private void setAnimationEffect(UUID trackId,AnimationEffectType next){
+        AnimationTrack track=findAnimationTrack(trackId);if(track==null)return;
         ClientProjectWorkspace.apply(project ->
                 project.withAnimation(
                         AnimationAuthoring.replaceTrack(
@@ -2029,6 +2033,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         updateButtonStates();
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if(hasChoices())return super.mouseClicked(event,doubleClick);
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(event.x(),event.y())) {
             boolean handled=paletteWindow.mouseClicked(event,doubleClick);
             if(handled && paletteWindow.visible)setFocused(paletteWindow);
@@ -2045,6 +2050,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         return super.mouseReleased(event);
     }
     @Override public boolean mouseScrolled(double x,double y,double dx,double dy) {
+        if(hasChoices())return super.mouseScrolled(x,y,dx,dy);
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(x,y)) {
             paletteWindow.mouseScrolled(x,y,dx,dy); return true;
         }
@@ -2052,6 +2058,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     @Override public boolean keyPressed(KeyEvent event) {
+        if(hasChoices())return super.keyPressed(event);
         if (event.key() == 256 && paletteWindowVisible) { closePaletteWindow(); return true; }
         if (workspaceTooSmall) return super.keyPressed(event);
         if (getFocused() instanceof EditBox) return super.keyPressed(event);

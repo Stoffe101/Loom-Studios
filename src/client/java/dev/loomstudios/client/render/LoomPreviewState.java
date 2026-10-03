@@ -30,7 +30,19 @@ public final class LoomPreviewState {
         renderer.extractRenderState(entity,state,1.0F);
         state.lightCoords = 15728880; state.shadowPieces.clear(); state.outlineColor = 0;
         if (state instanceof LivingEntityRenderState living) living.isInvisible = false;
+        if(state instanceof net.minecraft.client.renderer.entity.state.ArmedEntityRenderState armed){
+            armed.leftHandItemState.clear();armed.rightHandItemState.clear();
+            armed.leftHandItemStack=net.minecraft.world.item.ItemStack.EMPTY;armed.rightHandItemStack=net.minecraft.world.item.ItemStack.EMPTY;
+        }
         return state;
+    }
+    public static void visibility(EntityRenderState state,boolean visible){
+        ((LoomPreviewVisibility)state).loom$characterHidden(!visible);
+        if(!visible&&state instanceof net.minecraft.client.renderer.entity.state.AvatarRenderState avatar){
+            avatar.headItem.clear();avatar.heldOnHead.clear();avatar.wornHeadType=null;avatar.wornHeadProfile=null;
+            avatar.headEquipment=net.minecraft.world.item.ItemStack.EMPTY;avatar.legsEquipment=net.minecraft.world.item.ItemStack.EMPTY;avatar.feetEquipment=net.minecraft.world.item.ItemStack.EMPTY;
+            avatar.parrotOnLeftShoulder=null;avatar.parrotOnRightShoulder=null;avatar.arrowCount=0;avatar.stingerCount=0;
+        }
     }
     public static void orient(EntityRenderState state, float yaw) {
         if (state instanceof LivingEntityRenderState living) {
