@@ -162,7 +162,7 @@ public final class ClientProjectWorkspace {
     }
 
     public static void equipCurrent() {
-        if (session().isDirty()) {
+        if (session().isDirty() || session().sourcePath()==null) {
             throw new IllegalStateException(
                     "Save the Loom project before equipping it"
             );

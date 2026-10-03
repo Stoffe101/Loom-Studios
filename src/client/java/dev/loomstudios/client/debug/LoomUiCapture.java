@@ -35,7 +35,7 @@ public final class LoomUiCapture {
     public static void tick(Minecraft client) {
         if (!ENABLED || pending) return;
         try {
-            if (++ticks > 6000) throw new IllegalStateException("Capture timed out");
+            if (++ticks > 12000) throw new IllegalStateException("Capture timed out");
             if (stage == -2 && (client.screen instanceof TitleScreen || (client.screen != null && client.screen.getClass().getSimpleName().equals("AccessibilityOnboardingScreen")))) {
                 stage = -1;
                 CreateWorldScreen.testWorld(client, () -> {});
