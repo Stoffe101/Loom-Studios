@@ -2,7 +2,7 @@ package dev.loomstudios.project;
 import java.util.*;
 /** Original layered pixel templates, not copied raster assets from the illustrated references. */
 public final class TemplateCatalog {
-    public enum Kind {BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM;
+    public enum Kind {BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM,AURORA,DRAGON,PHOENIX,CRYSTAL,CAT,FOX,FROG,HEART;
         public String label(){return name().substring(0,1)+name().substring(1).toLowerCase(java.util.Locale.ROOT);}}
     private TemplateCatalog(){}
     public static LoomProject create(Kind kind,long now){
@@ -22,6 +22,12 @@ public final class TemplateCatalog {
                 if(kind==Kind.SPACE){if((x-18)*(x-18)+(y-24)*(y-24)<81&&(x-23)*(x-23)+(y-21)*(y-21)>75)color=0xFF7DEAF4;}
                 if(kind==Kind.FANTASY){int diamond=Math.abs(x-20)+Math.abs(y-31);if(diamond>=14&&diamond<=16||Math.abs(x-20)<=1&&Math.abs(y-31)<23)color=0xFFFFCC77;}
                 if(kind==Kind.EMBLEM){if(Math.abs(x-20)<=1&&y>=14&&y<=48||Math.abs(x-20)+Math.abs(y-30)>=11&&Math.abs(x-20)+Math.abs(y-30)<=13)color=0xFFB7EFFF;}
+                if(kind==Kind.AURORA){double band=21+Math.sin(x*.18)*9;if(Math.abs(y-band)<7)color=y<band?0xFF70FFC6:0xFF54B9EE;if(y>49+Math.abs(x-24)*.4)color=0xFF142F40;}
+                if(kind==Kind.DRAGON){if(y>15&&y<46&&Math.abs(x-(19+Math.sin(y*.17)*7))<4)color=0xFFE65469;if(y>24&&y<39&&Math.abs(x-20)>5&&Math.abs(x-20)<18-(y-24)*.8)color=0xFFB52D58;if(y>=16&&y<=23&&x>=23&&x<=30)color=0xFFFFB655;if(y==18&&x==28)color=0xFFFFFFFF;}
+                if(kind==Kind.PHOENIX){int d=Math.abs(x-20);if(y>17&&y<47&&d<3||y>23&&y<39&&d<19-(y-23)*.75)color=y%5<2?0xFFFFDF75:0xFFFF794A;if(y>40&&y<56&&d<3+(y-40)/3&&d>(y-40)/4)color=0xFFFFAC4B;}
+                if(kind==Kind.CRYSTAL){int d=Math.abs(x-20);if(y>11&&y<51&&d<Math.min((y-11)*.6,(51-y)*.7))color=x<20?0xFF8EF2FF:0xFFAD83FF;if(Math.abs(x-20)<1&&y>11&&y<51)color=0xFFF4F4FF;}
+                if(kind==Kind.CAT||kind==Kind.FOX||kind==Kind.FROG){int cx=x-20,cy=y-31;boolean face=cx*cx/1.3+cy*cy<110;boolean ears=y>=16&&y<=26&&((x>=9&&x<=16&&y>16+Math.abs(x-12))||(x>=24&&x<=31&&y>16+Math.abs(x-28)));if(face||ears)color=kind==Kind.CAT?0xFFF2CAE0:kind==Kind.FOX?0xFFFFAB62:0xFF93E8AB;if(kind==Kind.FROG&&(Math.pow(x-13,2)+Math.pow(y-22,2)<20||Math.pow(x-27,2)+Math.pow(y-22,2)<20))color=0xFF93E8AB;if((Math.abs(cx-5)<=1||Math.abs(cx+5)<=1)&&Math.abs(cy+1)<=1)color=0xFF263049;if(Math.abs(cx)<=1&&cy>=3&&cy<=4)color=0xFFE77FA4;if(cy==5&&Math.abs(cx)<4)color=0xFF263049;}
+                if(kind==Kind.HEART){double hx=(x-20)/11.0,hy=(31-y)/11.0;double a=hx*hx+hy*hy-1;if(a*a*a-hx*hx*hy*hy*hy<0)color=x<20?0xFFFF8CBD:0xFFEC5A9A;}
                 if(color!=0)data[y*w+x]=color;
             }
             return new PixelPatch(w,h,data);});

@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  */
 public final class LoomLayerListWidget extends AbstractWidget {
     private static final int HEADER_HEIGHT = 18;
-    private static final int ROW_HEIGHT = 24;
+    private static final int ROW_HEIGHT = 18;
     private static final int VISIBILITY_HIT_WIDTH = 18;
     private static final int LOCK_HIT_WIDTH = 20;
 
@@ -37,6 +37,11 @@ public final class LoomLayerListWidget extends AbstractWidget {
     private final Consumer<UUID> onToggleLock;
 
     private int scrollRows;
+    private Runnable manage;
+    private java.util.Set<UUID> multi=java.util.Set.of();
+    private java.util.function.BiConsumer<UUID,net.minecraft.client.input.MouseButtonEvent> selectionHandler;
+    public LoomLayerListWidget setManage(Runnable action){manage=action;return this;}
+    public LoomLayerListWidget setMultiSelection(java.util.Set<UUID> ids,java.util.function.BiConsumer<UUID,net.minecraft.client.input.MouseButtonEvent> handler){multi=ids;selectionHandler=handler;return this;}
     private boolean elytraThumbnails;
     public LoomLayerListWidget setElytraThumbnails(boolean elytra) { elytraThumbnails = elytra; return this; }
     private boolean draggingScrollbar;
@@ -94,6 +99,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
         );
 
         List<LoomLayer> layers = canvasSupplier.get().layers();
+        if(manage!=null)graphics.drawString(Minecraft.getInstance().font,"Manage",getRight()-46,getY()+5,LoomUiTheme.ACCENT,false);
         thumbnails.keySet().removeIf(id -> layers.stream().noneMatch(layer -> layer.id().equals(id)));
         clampScroll(layers.size());
 
@@ -110,7 +116,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
 
             LoomLayer layer = layers.get(layerIndex);
             int y = getY() + HEADER_HEIGHT + row * ROW_HEIGHT;
-            boolean isSelected = layer.id().equals(selected);
+            boolean isSelected = layer.id().equals(selected)||multi.contains(layer.id());
 
             graphics.fill(
                     getX() + 2,
@@ -135,8 +141,8 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     y + 5,
                     layer.visible()
             );
-            drawThumbnail(graphics, getX() + 21, y + 3, layer);
-            drawKindIcon(graphics, getX() + 39, y + 7, layer.kind());
+            drawThumbnail(graphics, getX() + 21, y + 1, layer);
+            drawKindIcon(graphics, getX() + 39, y + 4, layer.kind());
 
             int lockX = getRight() - 15;
             drawLockIcon(
@@ -159,7 +165,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     Minecraft.getInstance().font,
                     Component.literal(name),
                     getX() + 52,
-                    y + 8,
+                    y + 5,
                     isSelected ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED,
                     false
             );
@@ -168,7 +174,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
                     Minecraft.getInstance().font,
                     Component.literal(opacity),
                     opacityX,
-                    y + 8,
+                    y + 5,
                     LoomUiTheme.TEXT_MUTED,
                     false
             );
@@ -227,6 +233,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if(manage!=null&&event.button()==0&&isMouseOver(event.x(),event.y())&&event.y()<getY()+HEADER_HEIGHT&&event.x()>getRight()-52){manage.run();return true;}
         if (isMouseOver(event.x(), event.y()) && event.x() >= getRight() - 6
                 && canvasSupplier.get().layers().size() > visibleRows()) {
             draggingScrollbar = true; scrollTo(event.y()); return true;
@@ -327,7 +334,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
         } else if (event.x() >= getRight() - LOCK_HIT_WIDTH) {
             onToggleLock.accept(layer.id());
         } else {
-            onSelect.accept(layer.id());
+            if(selectionHandler!=null)selectionHandler.accept(layer.id(),event);else onSelect.accept(layer.id());
         }
     }
 

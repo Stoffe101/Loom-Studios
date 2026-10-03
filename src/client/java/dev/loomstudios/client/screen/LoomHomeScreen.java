@@ -9,6 +9,7 @@ import dev.loomstudios.client.ui.LoomActionCard;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomProjectCard;
+import dev.loomstudios.client.ui.LoomProjectMenu;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.CapeUvRegion;
@@ -287,7 +288,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                         () -> selectProject(descriptor)
                 );
                 card.setOpenAction(this::openSelected);
-                card.setContextAction((x,y)->minecraft.setScreen(new LoomLibraryScreen(this,descriptor.projectId())));
+                card.setContextAction((x,y)->{selectProject(descriptor);projectMenu=descriptor;menuX=Math.max(8,Math.min(width-166,x.intValue()));menuY=Math.max(contentTop,Math.min(height-28-207,y.intValue()));});
+                card.setDecorated(true);
                 projectCards.add(card);
                 addRenderableWidget(card);
             }
@@ -381,8 +383,14 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                 action
         );
         card.active = enabled;
+        if(!primaryTemplateTitle(title).isEmpty())card.setTemplate(dev.loomstudios.project.TemplateCatalog.Kind.valueOf(primaryTemplateTitle(title)));
         addRenderableWidget(card);
     }
+
+    private static String primaryTemplateTitle(String title){return switch(title){case "Blank"->"BLANK";case "Gradient"->"GRADIENT";case "Nature"->"NATURE";case "Space"->"SPACE";case "Fantasy"->"FANTASY";case "Emblems"->"EMBLEM";default->"";};}
+    private ProjectDescriptor projectMenu;
+    private int menuX,menuY;
+    @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent e,boolean twice){if(projectMenu!=null){var d=projectMenu;projectMenu=null;if(e.button()==0&&e.x()>=menuX&&e.x()<menuX+158&&e.y()>=menuY&&e.y()<menuY+207){int action=(int)(e.y()-menuY)/23;if(action!=5){var lib=new LoomLibraryScreen(this);lib.executeAction(d,action);}}return true;}return super.mouseClicked(e,twice);}
 
     private void buildPreviewPanel() {
         int width = previewRight - previewLeft;
@@ -663,6 +671,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
 
         super.render(graphics, mouseX, mouseY, partialTick);
+        if(projectMenu!=null)LoomProjectMenu.render(graphics,font,menuX,menuY,mouseX,mouseY,new String[]{"Edit","Rename…",dev.loomstudios.client.project.LoomPreferences.get().favorite(projectMenu.projectId())?"Unfavorite":"Favorite","Duplicate","Delete to Trash","Close","Equip","Folder / tags","Backup / versions"},4);
     }
 
     private void renderSectionPanels(GuiGraphics graphics) {

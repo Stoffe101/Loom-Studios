@@ -489,9 +489,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void buildLayerInspector() {
         int start = children().size(); var rows = inspectorRows();
         int count = ClientProjectWorkspace.project().elytra().layers().size();
-        var r = rows.row(Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64));
+        var r = rows.row(Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58));
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
-                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true));
+                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,true,selectedLayerId))));
         r = rows.row(22);
         layerAddButton = cellButton(r, 0, 3, "Add layer", LoomButton.Icon.PLUS, this::addLayer);
         layerDuplicateButton = cellButton(r, 1, 3, "Duplicate layer", LoomButton.Icon.COPY, this::duplicateLayer);
@@ -714,7 +714,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void updateInspectorVisibility() {
         if (layerListWidget != null) {
             int count = ClientProjectWorkspace.project().elytra().layers().size();
-            int target = Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64);
+            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
             int delta = target - layerListWidget.getHeight();
             if (delta != 0) {
                 layerListWidget.setHeight(target);
@@ -1561,7 +1561,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void save() {
         try {
             ClientProjectWorkspace.save();
+            statusMessage="Design saved";
         } catch (IOException e) {
+            statusMessage="Save failed; edits are still open";
             LoomStudios.LOGGER.error("Failed to save Loom Elytra project", e);
         }
         updateButtonStates();
@@ -1570,7 +1572,9 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void saveAndEquip() {
         try {
             ClientProjectWorkspace.saveAndEquip();
+            statusMessage="Design saved and equipped";
         } catch (IOException | IllegalStateException e) {
+            statusMessage="Save / equip failed; check diagnostics";
             LoomStudios.LOGGER.error(
                     "Failed to save/equip Loom Elytra project",
                     e

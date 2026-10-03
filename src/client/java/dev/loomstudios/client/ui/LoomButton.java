@@ -9,6 +9,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 
 public class LoomButton extends AbstractButton {
+    public LoomButton setActive(boolean value){active=value;return this;}
     public enum Icon {
         NONE,
         HOME,

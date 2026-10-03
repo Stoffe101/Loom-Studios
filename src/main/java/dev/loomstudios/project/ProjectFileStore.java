@@ -38,6 +38,10 @@ public final class ProjectFileStore {
         Files.createDirectories(root);
 
         Path target = pathFor(project.projectId());
+        if(Files.isRegularFile(target,java.nio.file.LinkOption.NOFOLLOW_LINKS)){
+            LoomProject previous=load(target);
+            if(!previous.hash().equals(project.hash()))new ProjectVersions(this).backup(previous);
+        }
         Path temporary = root.resolve(project.projectId() + ".loom.tmp");
         Files.write(temporary, project.encode());
 

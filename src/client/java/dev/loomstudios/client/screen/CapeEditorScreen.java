@@ -521,10 +521,10 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         int start = children().size();
         var rows = inspectorRows();
         int count = workspaceState.project().cape().layers().size();
-        int listHeight = Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64);
+        int listHeight = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
         var r = rows.row(listHeight);
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
-                () -> workspaceState.project().cape(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock));
+                () -> workspaceState.project().cape(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,selectedLayerId))));
         r = rows.row(22);
         layerAddButton = cellButton(r, 0, 3, "Add paint layer", LoomButton.Icon.PLUS, this::addLayer);
         layerGradientAddButton = cellButton(r, 1, 3, "Add gradient layer", LoomButton.Icon.GRADIENT, this::addGradientLayer);
@@ -646,7 +646,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
     private void updateInspectorVisibility() {
         if (layerListWidget != null) {
             int count = workspaceState.project().cape().layers().size();
-            int target = Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64);
+            int target = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - 58);
             int delta = target - layerListWidget.getHeight();
             if (delta != 0) {
                 layerListWidget.setHeight(target);
@@ -2628,7 +2628,10 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         updateButtonStates();
     }
 
+    private String feedback="";
+    private long feedbackUntil;
     private void notifyPlayer(String text) {
+        feedback=text;feedbackUntil=System.currentTimeMillis()+5000;
         if (this.minecraft.player != null) {
             this.minecraft.player.displayClientMessage(
                     Component.literal(text),
@@ -2716,7 +2719,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 : workspaceState.dirty()
                         ? "Unsaved edits"
                         : "Saved, not equipped";
-        status=dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
+        status=System.currentTimeMillis()<feedbackUntil?feedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
 
         LoomScreenChrome.footer(
                 graphics,

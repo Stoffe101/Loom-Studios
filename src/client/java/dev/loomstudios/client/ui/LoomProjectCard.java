@@ -33,6 +33,10 @@ public final class LoomProjectCard extends AbstractButton {
     private final Identifier textureId;
 
     private Runnable openAction;
+    private java.util.function.BiConsumer<Boolean,Boolean> selectionAction;
+    public LoomProjectCard setSelectionAction(java.util.function.BiConsumer<Boolean,Boolean> action){selectionAction=action;return this;}
+    private boolean decorated;
+    public LoomProjectCard setDecorated(boolean value){decorated=value;return this;}
     private java.util.function.BiConsumer<Double,Double> contextAction;
     public LoomProjectCard setOpenAction(Runnable action) { openAction=action;return this; }
     public LoomProjectCard setContextAction(java.util.function.BiConsumer<Double,Double> action) { contextAction=action;return this; }
@@ -41,7 +45,7 @@ public final class LoomProjectCard extends AbstractButton {
         return super.mouseClicked(event,doubleClick);
     }
     @Override public void onClick(net.minecraft.client.input.MouseButtonEvent event,boolean doubleClick) {
-        action.run();if(doubleClick&&openAction!=null)openAction.run();
+        if(selectionAction!=null)selectionAction.accept(event.hasControlDown(),event.hasShiftDown());else action.run();if(doubleClick&&openAction!=null)openAction.run();
     }
 
     private DynamicTexture texture;
@@ -105,7 +109,7 @@ public final class LoomProjectCard extends AbstractButton {
         int imageRight = getRight() - 4;
         int imageBottom = getBottom() - FOOTER_HEIGHT;
 
-        renderChecker(graphics, imageLeft, imageTop, imageRight, imageBottom);
+        if(decorated){LoomWorkshopArt.previewScene(graphics,imageLeft,imageTop,imageRight,imageBottom);}else renderChecker(graphics, imageLeft, imageTop, imageRight, imageBottom);
         ensureTexture();
 
         if (texture != null && image != null) {
