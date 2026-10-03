@@ -458,7 +458,7 @@ public final class LoomUiCapture {
             }
             var editor=new CapeEditorScreen(home);client.setScreen(editor);call(editor,"togglePaletteWindow");
             var palette=(dev.loomstudios.client.ui.LoomPaletteWindow)field(editor,"paletteWindow").get(editor);
-            call(palette,"toggleManagement");set(palette,"swatchesScroll",40);
+            set(palette,"managementExpanded",true);call(palette,"applyManagementVisibility");set(palette,"swatchesScroll",40);
         }else if(view==2||view==3){
             if(view==3)ClientProjectWorkspace.apply(p->{var recipe=dev.loomstudios.project.AnimationPreset.GLOW.create(p.elytra().layers().getLast().id(),dev.loomstudios.project.AnimationChannel.ELYTRA,p.animation().durationTicks(),.5F);var tracks=new java.util.ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(p.animation().withTracks(tracks));});
             Screen editor=view==2?new CapeEditorScreen(home):new ElytraEditorScreen(home);client.setScreen(editor);

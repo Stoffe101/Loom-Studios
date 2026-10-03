@@ -19,7 +19,8 @@ final class LoomWorkshopFrame {
         int tile=Math.max(1,Math.round(40.0F*head/TOP));
         for(int x=0;x<width;x+=tile)slice(g,x,0,Math.min(tile,width-x),head,270,0,40,TOP);
         slice(g,left-cap,0,cap,head,0,0,560,TOP);
-        slice(g,left,0,sign,head,560,0,552,TOP);
+        int faceTile=Math.max(1,Math.round(552.0F*head/TOP));
+        for(int x=left;x<left+sign;x+=faceTile){int w=Math.min(faceTile,left+sign-x);slice(g,x,0,w,head,560,0,Math.round(w*(float)TOP/head),TOP);}
         slice(g,left+sign,0,cap,head,1112,0,560,TOP);
         slice(g,0,head,7,mid,0,TOP,SIDE,HEIGHT-TOP-BOTTOM);
         slice(g,width-7,head,7,mid,WIDTH-SIDE,TOP,SIDE,HEIGHT-TOP-BOTTOM);

@@ -51,7 +51,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             button(right+8,y+72,188,"Effect: "+(track()==null?chosen:track().effect()).displayName(),()->{chosen=(track()==null?chosen:track().effect()).next();if(track()!=null)changeTrack(t->t.withEffect(chosen));rebuildWidgets();});
             LoomSlider value=addRenderableWidget(new LoomSlider(right+8,y+96,188,"Key value",()->track()==null?0:AnimationEvaluator.valueAt(track(),ClientProjectWorkspace.project().animation(),tick),v->{if(track()!=null)changeTrack(t->AnimationAuthoring.addOrReplaceKeyframe(t,tick,(float)v));}));value.active=track()!=null;
             button(right+8,y+120,60,"+ Key",()->{if(track()!=null)addKeyframe(trackId);});
-            button(right+72,y+120,60,"− Key",()->{if(track()!=null)removeKeyframe(trackId);});
+            button(right+72,y+120,60,"- Key",()->{if(track()!=null)removeKeyframe(trackId);});
             button(right+136,y+120,60,"Speed",()->{if(track()!=null)cycleTrackSpeed(trackId);});
         }
         guideTop=workTop;guideWidth=right-24;

@@ -257,7 +257,7 @@ public final class RuntimeCosmeticCache {
             client.getTextureManager().release(bundle.capeTextureId);
             client.getTextureManager().release(bundle.elytraTextureId);
             client.getTextureManager().release(bundle.emissiveTextureId);
-        client.getTextureManager().release(bundle.elytraEmissiveTextureId);
+            client.getTextureManager().release(bundle.elytraEmissiveTextureId);
         }
 
         BUNDLES.clear();
