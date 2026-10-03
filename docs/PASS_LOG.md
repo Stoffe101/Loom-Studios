@@ -1583,3 +1583,7 @@ Actions #188 on `6142af02e1b2b5089cf22b8e9301ccf9c5eb5c0c` passed Java21 build/t
 ### Preview cache finalization
 
 Separated preview/world skin-patch caches to remove per-frame patch churn when both render passes alternate. Strengthened actual-runtime assertions for twenty interleaved frames (no rehash/skin reconstruction) and preview-only alpha isolation on both cosmetic channels. CI now prints the exact XML test totals. Final source validation is pending; local javac is unavailable, so Java21 validation remains in GitHub Actions.
+
+### Final tool eligibility check
+
+Actions #190 on `cb755d4c72b741832c2bfd80a886c98258a5ff3e` passed 103 tests (zero failures/errors/skips) and all 68 capture/workflow/input assertions, including interleaved world/preview skin reuse and both-channel alpha isolation. Final review found Circle’s enabled state did not follow other paint tools for locked/non-paint layers. Aligned that state and added a actual-screen locked-layer assertion. This final eligibility delta is pending CI; all other scope is verified.

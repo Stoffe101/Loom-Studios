@@ -259,6 +259,12 @@ public final class LoomUiCapture {
             var close=(AbstractWidget)palette.children().stream().filter(c->c instanceof AbstractWidget w && w.getMessage().getString().equals("Close swatches")).findFirst().orElseThrow();
             screen.mouseClicked(mouse(close.getX()+8,close.getY()+8,0),false);
             if(palette.visible||(boolean)field(screen,"paletteWindowVisible").get(screen))throw new IllegalStateException("Palette close did not update editor state");
+            if(!wing) {
+                var layerId=(java.util.UUID)field(screen,"selectedLayerId").get(screen);
+                ClientProjectWorkspace.apply(project -> dev.loomstudios.project.ProjectEdits.setCapeLayerLocked(project,layerId,true));
+                set(screen,"workspaceState",ClientProjectWorkspace.state());call(screen,"updateButtonStates");
+                if(((AbstractWidget)field(screen,"circleButton").get(screen)).active)throw new IllegalStateException("Circle remains enabled for a locked layer");
+            }
         }
         var expanded=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(client.screen,ClientProjectWorkspace::project);
         client.setScreen(expanded);var center=mouse(expanded.width/2.0,expanded.height/2.0,2);

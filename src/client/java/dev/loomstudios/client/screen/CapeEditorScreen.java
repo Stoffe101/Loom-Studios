@@ -1203,9 +1203,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             if (rectangleModeButton != null) {
                 rectangleModeButton.active = editablePaint;
             }
-            if (circleButton != null) circleButton.setSelected(tool == Tool.CIRCLE);
+            if (circleButton != null) circleButton.active = editablePaint;
 
-        if (selectButton != null) {
+            if (selectButton != null) {
                 selectButton.active = editablePaint;
             }
             if (symmetryButton != null) {
