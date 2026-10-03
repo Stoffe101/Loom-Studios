@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public final class LoomHomeScreen extends Screen {
+public final class LoomHomeScreen extends LoomPointerScreen {
     private static final Component TITLE = Component.literal("Loom Studios");
     private static final Component SUBTITLE =
             Component.literal("Cape & Elytra Design Studio");
@@ -65,7 +65,7 @@ public final class LoomHomeScreen extends Screen {
 
         this.compactMode = LoomUiTheme.compact(width, height);
 
-        int margin = compactMode ? 5 : Math.max(8, Math.min(14, width / 72));
+        int margin = compactMode ? 8 : Math.max(8, Math.min(14, width / 72));
         int headerHeight = LoomScreenChrome.headerHeight(compactMode);
         int footerHeight = 18;
 
@@ -74,11 +74,11 @@ public final class LoomHomeScreen extends Screen {
         shellTop = 0;
         shellBottom = height;
 
-        contentTop = headerHeight + (compactMode ? 5 : 8);
-        contentBottom = height - footerHeight - (compactMode ? 4 : 7);
+        contentTop = headerHeight + (compactMode ? 8 : 8);
+        contentBottom = height - 28;
 
         int totalWidth = shellRight - shellLeft;
-        int gap = compactMode ? 5 : 8;
+        int gap = compactMode ? 8 : 8;
 
         int leftWidth = compactMode
                 ? Math.max(102, Math.min(118, totalWidth / 5))

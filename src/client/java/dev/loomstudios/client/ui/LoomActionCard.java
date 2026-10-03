@@ -181,7 +181,7 @@ public final class LoomActionCard extends AbstractButton {
             case CODE -> LoomButton.Icon.SHARE;
             case SETTINGS -> LoomButton.Icon.SETTINGS;
             case GRADIENT -> LoomButton.Icon.GRADIENT;
-            case FOLDER -> LoomButton.Icon.SAVE;
+            case FOLDER -> LoomButton.Icon.FOLDER;
             case NATURE, SPACE, FANTASY, EMBLEM -> LoomButton.Icon.GRADIENT;
         };
         LoomButton.drawIcon(graphics, x, y, size, mapped, main);

@@ -1114,3 +1114,11 @@ Add an opt-in development capture runner to obtain actual Minecraft evidence. Bu
 ## 2026-10-03 — Shared workshop artwork and reserved chrome
 
 Use code-native pixel artwork for the timber shell, steel fasteners, lanterns, pennants, brand wordmark and scenic preview. It scales with Minecraft GUI coordinates and needs no stretched screenshot backdrop. The 36/56-unit header is part of the layout contract; inset highlights never enlarge control bounds. Smart Import uses source/settings/result/live-preview ownership with fixed bottom actions. All five screens must pass the four physical-resolution/GUI-scale profiles, including visible-control bounds and nonoverlap, before visual acceptance.
+
+## 2026-10-03 — preview and windowed input/layout ownership
+
+A GUI preview owns a fresh entity snapshot and sets a coherent rear three-quarter body/head angle; the live player is never rotated/equipped for the preview. Immutable project identity caches the expensive codec hash and separate preview namespace; exported/equipped textures keep authored alpha. Preview-only checkerboard makes blank/transparent garment geometry judgeable and is labeled Alpha guide. Render-state reuse was investigated using Fabric renderer API and NeoForge issue #2500 (older Minecraft versions); it remains a candidate until current-version captures establish the visible outcome.
+
+Screen owns middle-button capture until release because container drag routing is left-button oriented. Circle live feedback and commit share PixelShapes’ inclusive pixel-centre ellipse; existing editable-layer/brush/lock/symmetry/history contracts apply. At 600×320 logical pixels controls page/scroll in bounded regions, rows compress to 19 pixels, timeline height reserves a 90-pixel canvas, outer margin is eight and bottom content ends 28 pixels above the window edge. UI selection uses one outline. Floating palette is an intentional overlay with explicit close/Escape and pointer priority. Native pixel icons and compact paged inspectors remain reference adaptations.
+
+Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in Actions #191; fresh snapshots, explicit GUI rear-view quaternion, separate preview namespaces/cache, alpha isolation and routed input passed. No schema/network change.

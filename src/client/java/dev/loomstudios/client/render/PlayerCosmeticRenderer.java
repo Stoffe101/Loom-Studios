@@ -25,10 +25,14 @@ public final class PlayerCosmeticRenderer {
     public static final float ELYTRA_VISUAL_BASELINE_Z_SCALE = 0.5F;
 
     private static final Map<UUID, CachedSkin> SKINS = new HashMap<>();
+    private static final Map<UUID, CachedSkin> PREVIEW_SKINS = new HashMap<>();
 
     private static boolean emissivePassEnabled = true;
     private static String lastLocalProjectHash;
     private static String previewProjectHash;
+    private static LoomProject hashedPreviewProject;
+    private static long previewHashComputations;
+    private static String cachedPreviewHash, cachedTimelineHash;
     private static final ThreadLocal<PreviewOverride> PREVIEW_OVERRIDE = new ThreadLocal<>();
 
     private PlayerCosmeticRenderer() {
@@ -68,7 +72,8 @@ public final class PlayerCosmeticRenderer {
         LoomProject project;
         String projectHash;
 
-        if (preview != null && ClientProjectWorkspace.isLocalPlayer(playerId)) {
+        boolean previewingLocal=preview != null && ClientProjectWorkspace.isLocalPlayer(playerId);
+        if (previewingLocal) {
             project = preview.project();
             projectHash = preview.projectHash();
         } else {
@@ -85,12 +90,12 @@ public final class PlayerCosmeticRenderer {
                         client,
                         projectHash,
                         project,
-                        preview == null
-                                ? null
-                                : preview.timelineTick()
+                        previewingLocal ? preview.timelineTick() : null,
+                        previewingLocal
                 );
 
-        CachedSkin cached = SKINS.get(playerId);
+        Map<UUID,CachedSkin> skins=previewingLocal?PREVIEW_SKINS:SKINS;
+        CachedSkin cached = skins.get(playerId);
 
         if (cached == null
                 || cached.source != state.skin
@@ -103,7 +108,7 @@ public final class PlayerCosmeticRenderer {
             ));
 
             cached = new CachedSkin(state.skin, projectHash, patched);
-            SKINS.put(playerId, cached);
+            skins.put(playerId, cached);
         }
 
         state.skin = cached.patched;
@@ -205,17 +210,15 @@ public final class PlayerCosmeticRenderer {
             Integer timelineTick,
             Supplier<T> action
     ) {
-        String baseHash = ClientProjectWorkspace.isInitialized()
-                && ClientProjectWorkspace.project() == project
-                ? ClientProjectWorkspace.projectHash()
-                : project.hash();
-
-        String hash = timelineTick == null
-                ? baseHash
-                : LoomProjectCodec.sha256(
-                        (baseHash + "#timeline-preview")
-                                .getBytes(StandardCharsets.UTF_8)
-                );
+        if (hashedPreviewProject != project) {
+            previewHashComputations++;
+            hashedPreviewProject = project;
+            cachedPreviewHash = ClientProjectWorkspace.isInitialized() && ClientProjectWorkspace.project() == project
+                    ? ClientProjectWorkspace.projectHash() : project.hash();
+            cachedPreviewHash = LoomProjectCodec.sha256((cachedPreviewHash + "#alpha-guide-preview").getBytes(StandardCharsets.UTF_8));
+            cachedTimelineHash = LoomProjectCodec.sha256((cachedPreviewHash + "#timeline-preview").getBytes(StandardCharsets.UTF_8));
+        }
+        String hash = timelineTick == null ? cachedPreviewHash : cachedTimelineHash;
 
         if (previewProjectHash != null
                 && !previewProjectHash.equals(hash)
@@ -227,6 +230,7 @@ public final class PlayerCosmeticRenderer {
         }
 
         previewProjectHash = hash;
+        PreviewOverride previous = PREVIEW_OVERRIDE.get();
         PREVIEW_OVERRIDE.set(new PreviewOverride(
                 project,
                 hash,
@@ -236,12 +240,13 @@ public final class PlayerCosmeticRenderer {
         try {
             return action.get();
         } finally {
-            PREVIEW_OVERRIDE.remove();
+            if (previous == null) PREVIEW_OVERRIDE.remove(); else PREVIEW_OVERRIDE.set(previous);
         }
     }
 
     public static void clearPreviewProject(Minecraft client) {
         PREVIEW_OVERRIDE.remove();
+        PREVIEW_SKINS.clear();
 
         if (previewProjectHash != null
                 && (!ClientProjectWorkspace.isInitialized()
@@ -252,6 +257,7 @@ public final class PlayerCosmeticRenderer {
         }
 
         previewProjectHash = null;
+        hashedPreviewProject = null; cachedPreviewHash = null; cachedTimelineHash = null;
     }
 
     public static void toggleEmissivePass(Minecraft client) {

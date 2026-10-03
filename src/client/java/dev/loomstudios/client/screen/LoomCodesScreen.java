@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class LoomCodesScreen extends Screen {
+public final class LoomCodesScreen extends LoomPointerScreen {
     private static final Component TITLE =
             Component.literal("Loom Studios - Share / Export");
 
@@ -99,17 +99,17 @@ public final class LoomCodesScreen extends Screen {
         importControls.clear();
         compactMode = LoomUiTheme.compact(width, height);
 
-        int margin = compactMode ? 5 : 9;
+        int margin = compactMode ? 8 : 9;
         int headerHeight = LoomScreenChrome.headerHeight(compactMode);
         int footerHeight = 18;
-        int gap = compactMode ? 5 : 8;
+        int gap = compactMode ? 8 : 8;
 
         shellLeft = margin;
         shellRight = width - margin;
         shellTop = 0;
         shellBottom = height;
         contentTop = headerHeight + 5;
-        contentBottom = height - footerHeight - 4;
+        contentBottom = height - 28;
 
         int previewWidth = compactMode
                 ? Math.max(152, Math.min(178, width / 3))

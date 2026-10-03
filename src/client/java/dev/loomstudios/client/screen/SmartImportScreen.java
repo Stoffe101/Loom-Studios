@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public final class SmartImportScreen extends Screen {
+public final class SmartImportScreen extends LoomPointerScreen {
     private static final UUID PREVIEW_LAYER_ID =
             UUID.fromString("00000000-0000-4000-8000-00000000a11e");
     private static final UUID PREVIEW_LAYER_ID_RIGHT =
@@ -230,9 +230,9 @@ public final class SmartImportScreen extends Screen {
         compactMode = LoomUiTheme.compact(width, height);
 
         int margin = compactMode ? 8 : 12;
-        int gap = compactMode ? 5 : 8;
+        int gap = compactMode ? 8 : 8;
         int top = LoomScreenChrome.headerHeight(compactMode) + 6;
-        int bottom = height - 24;
+        int bottom = height - 28;
         int leftWidth = compactMode ? 140 : Math.min(230,width / 5);
         int rightWidth = compactMode ? 164 : Math.min(280,width / 4);
         int rightX = width - margin - rightWidth;
@@ -395,8 +395,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Rotation",
-                LoomButton.Icon.BACK,
-                LoomButton.Icon.PLAY,
+                LoomButton.Icon.ROTATE_LEFT,
+                LoomButton.Icon.ROTATE_RIGHT,
                 () -> rotate(-15.0),
                 () -> rotate(15.0)
         );

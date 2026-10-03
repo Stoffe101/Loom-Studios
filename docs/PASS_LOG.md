@@ -1561,3 +1561,41 @@ Next: finish SPIKE-00, then static cape.
 **Result: PASS**
 
 No blocker found for the planned core architecture.
+
+## Active user-feedback pass — IN PROGRESS (2026-10-03)
+
+The previous workshop acceptance below is historical. The user’s nine new screenshots exposed gaps: rear cosmetic visibility/player preview pose, ambiguous icons, selected double borders, frame/footer overlap, missing palette close, Screen-level middle pan, and windowed GUI3 below 350 logical pixels. All nine screenshots and all five references were individually inspected. See [image analysis](verification/editor-feedback/ANALYSIS.md).
+
+Branch `codex/preview-tools-compact-fixes` starts from main `55b56570d75909c80466f3557d57a9c61e3dc74b`. Implementation is in progress: circle raster/gesture, isolated rear-facing preview state and immutable hash cache, preview-only transparency guide, 600×320 minimum with adaptive inspector/timeline, screen pointer capture, clearer icons and single outlines, palette close/Escape. Verification expands from 42 to 68 actual Minecraft captures including decorated windowed GUI3, live/committed circle, middle pan and transparent cosmetics. Build/runtime results are not yet claimed. Optional Sodium/Iris/shader interaction and subjective real-user frame rate remain unverified.
+
+### First validation correction
+
+Actions #186 on source `056b3a0ffab656389496d0bbd55721823c7cda30` failed client compilation due to a missing MouseButtonEvent import in ElytraEditorScreen; no screenshots were accepted. Added the import and bounded shortened slider thumbs inside their actual row. Distinct curved rotation icons replace generic Back/Play arrows in import controls. Verification remains IN PROGRESS.
+
+### Capture refinement
+
+Actions #187 on `6cf317a1d9856ca8d924ae3800ffb97099983d85`: Java21 build/tests pass; 54 screenshots reached actual runtime. Capture stopped on a harness-only reflection call to Elytra zoomIn (which does not exist); switched both canvas checks to their real wheel zoom path. Four inspected captures confirmed frame clearance/windowed property usability and whole player geometry, but still front-facing cosmetic occlusion; rotation is now explicit in the GUI model quaternion, with coherent head/body state. Added inline expand/double-click, channel-specific fixed-tick updates, repeated-frame hash and guide isolation assertions; capture target expands to 61. Not accepted until final captures pass.
+
+### Rear-view verification and 3D pointer coverage
+
+Actions #188 on `6142af02e1b2b5089cf22b8e9301ccf9c5eb5c0c` passed Java21 build/tests and all 61 Minecraft captures/input/export assertions. Individually inspected Home ultrawide, Cape windowed, Elytra ultrawide and expanded Cape: actual garment is visible on the back and whole player is intact. The added preview camera quaternion resolves the observed occlusion. Follow-up broadens middle pan to the 3D widget on all screens and expanded view (not just the texture canvas); updates expanded workshop framing, folder/share/lock symbols and labeled glow/lock states. Final 68-capture validation remains IN PROGRESS.
+
+### Preview cache finalization
+
+Separated preview/world skin-patch caches to remove per-frame patch churn when both render passes alternate. Strengthened actual-runtime assertions for twenty interleaved frames (no rehash/skin reconstruction) and preview-only alpha isolation on both cosmetic channels. CI now prints the exact XML test totals. Final source validation is pending; local javac is unavailable, so Java21 validation remains in GitHub Actions.
+
+### Final tool eligibility check
+
+Actions #190 on `cb755d4c72b741832c2bfd80a886c98258a5ff3e` passed 103 tests (zero failures/errors/skips) and all 68 capture/workflow/input assertions, including interleaved world/preview skin reuse and both-channel alpha isolation. Final review found Circle’s enabled state did not follow other paint tools for locked/non-paint layers. Aligned that state and added a actual-screen locked-layer assertion. This final eligibility delta is pending CI; all other scope is verified.
+
+## User-feedback pass — DONE (2026-10-03)
+
+All nine feedback screenshots and five approved references were inspected. Implemented clearer native icons/labels, one selected outline, consistent panel/frame clearance, Circle/ellipse outline/filled mode, palette close/Escape, functional windowed GUI3 down to 600×320 logical pixels, rear-facing visible Cape/Elytra previews with a labeled preview-only transparency guide, expand/full preview, and Screen-level middle pan on both canvases and all five inline/expanded 3D previews. Immutable hash and separate skin-patch caches remove repeated preview work; fixed-tick animation updates only changed animated channels. Circle follows paint-layer/lock eligibility.
+
+Verified source `b7f7212388858109b96f3e8fc8a7175bc3ef8c45`: [Actions #191](https://github.com/Stoffe101/Loom-Studios/actions/runs/37090332364) passed Java21 build and **103 tests (0 failures/errors/skips)** plus **68 fresh actual Minecraft captures** at 2026-10-03 02:40 UTC. Environment: Minecraft 1.21.11, Fabric Loader 0.18.4, Fabric API 0.141.1+1.21.11, Temurin21, software Mesa/Xvfb. All screenshots decode and are reviewed in contact sheets, with critical previews/compact controls inspected at full size. [Verification index](verification/editor-feedback/README.md) and [fourteen-image analysis](verification/editor-feedback/ANALYSIS.md). Runtime assertions cover canvas/3D/expanded middle pan, palette close, locked Circle, independent snapshots, twenty interleaved world/preview frames with hash/skin reuse, both-channel alpha isolation, and export/import equivalence.
+
+Delivery: [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) targets main with the verified implementation and retained evidence. Compiled mod SHA-256: `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea`. Next: interactive testing on the user's hardware/modpack, including optional Sodium/Iris/shaders and multiplayer. Those integrations and absolute FPS are not claimed by the Mesa smoke run. The prior workshop acceptance below is historical and superseded by this feedback pass.
+
+### Completion evidence
+
+Final source #191 supersedes earlier partial runs #186/#187 and intermediate successes #188/#189/#190. Retained PNGs are copied without changing pixels. Latest documentation/evidence-only follow-up does not modify implementation, schema, protocol or the verified mod artifact. Next work is actual hardware/optional-mod/multiplayer testing.

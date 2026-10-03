@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 /**
  * Reusable in-screen player preview for Loom showcase/editor layouts.
  */
-public final class LoomPlayerPreviewWidget extends AbstractWidget {
+public final class LoomPlayerPreviewWidget extends AbstractWidget implements LoomMiddlePanTarget {
     public enum Mode {
         CAPE,
         ELYTRA
@@ -40,10 +40,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     private Mode mode;
     private IntSupplier timelineTickSupplier;
 
-    private float yaw = 180.0F;
+    private float yaw = 25.0F;
     private float pitch;
     private float zoom = 1.0F;
     private boolean dragging;
+    private boolean panning;
+    private int panX,panY;
 
     public LoomPlayerPreviewWidget(
             int x,
@@ -69,12 +71,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Drag to rotate · Wheel to zoom")));
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag: rotate · Middle drag: pan · Wheel: zoom")));
     }
 
-    public record ViewState(float yaw, float pitch, float zoom) { }
-    public ViewState viewState() { return new ViewState(yaw, pitch, zoom); }
-    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; } }
+    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY) {
+        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0); }
+    }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier
@@ -94,7 +98,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             float partialTick
     ) {
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
-        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D Preview");
+        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · Alpha guide");
+        // Small, native expand affordance stays inside the preview header.
+        int ex=getRight()-18, ey=getY()+4;
+        graphics.fill(ex,ey+5,ex+1,ey+11,LoomUiTheme.TEXT_MUTED);
+        graphics.fill(ex,ey+10,ex+7,ey+11,LoomUiTheme.TEXT_MUTED);
+        graphics.fill(ex+5,ey,ex+11,ey+1,LoomUiTheme.ACCENT);
+        graphics.fill(ex+10,ey,ex+11,ey+6,LoomUiTheme.ACCENT);
+        for(int i=0;i<7;i++) graphics.fill(ex+4+i,ey+6-i,ex+5+i,ey+7-i,LoomUiTheme.ACCENT);
         int contentLeft = getX() + 4;
         int contentTop = getY() + 19;
         int contentRight = getRight() - 4;
@@ -124,21 +135,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 }
             }
 
-            if (renderState instanceof LivingEntityRenderState livingState) {
-                livingState.bodyRot = 180.0F + yaw;
-                livingState.yRot = yaw;
-                if (livingState.pose != Pose.FALL_FLYING) {
-                    livingState.xRot = -pitch;
-                } else {
-                    livingState.xRot = 0.0F;
-                }
+            dev.loomstudios.client.render.LoomPreviewState.orient(renderState,yaw);
 
-                livingState.boundingBoxWidth /= livingState.scale;
-                livingState.boundingBoxHeight /= livingState.scale;
-                livingState.scale = 1.0F;
-            }
-
-            Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI);
+            Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI)
+                    .rotateY((float)Math.PI + yaw * ((float)Math.PI / 180.0F));
             Quaternionf xRotation = new Quaternionf().rotateX(
                     pitch * ((float)Math.PI / 180.0F)
             );
@@ -150,6 +150,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     0.0F
             );
 
+            graphics.enableScissor(contentLeft,contentTop,contentRight,contentBottom);
             graphics.submitEntityRenderState(
                     renderState,
                     Math.max(
@@ -159,11 +160,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     translation,
                     rotation,
                     xRotation,
-                    contentLeft,
-                    contentTop,
-                    contentRight,
-                    contentBottom
+                    contentLeft+panX,
+                    contentTop+panY,
+                    contentRight+panX,
+                    contentBottom+panY
             );
+            graphics.disableScissor();
         } else {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
@@ -177,7 +179,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
         if (getHeight() > 140) graphics.drawCenteredString(
                 Minecraft.getInstance().font,
                 Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(
-                        getWidth() < 190 ? "Drag · Scroll to zoom" : "Drag to rotate · Scroll to zoom",getWidth()-12)),
+                        getWidth() < 190 ? "Drag · Scroll to zoom" : "Alpha guide · Drag / wheel",getWidth()-12)),
                 getX() + getWidth() / 2,
                 getBottom() - 12,
                 LoomUiTheme.TEXT_MUTED
@@ -196,7 +198,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                             dispatcher.getRenderer((Entity)entity);
 
                     EntityRenderState renderState =
-                            renderer.createRenderState(entity, 1.0F);
+                            dev.loomstudios.client.render.LoomPreviewState.extract(entity);
                     renderState.lightCoords = 15728880;
                     renderState.shadowPieces.clear();
                     renderState.outlineColor = 0;
@@ -217,15 +219,33 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 );
     }
 
+    @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
+        if(event.button()==2 && isMouseOver(event.x(),event.y())) { panning=true;return true; }
+        return super.mouseClicked(event,doubleClick);
+    }
+    @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
+        if(event.button()==2 && panning) {
+            panX=Mth.clamp(panX+(int)Math.round(dx),-getWidth()/2,getWidth()/2);
+            panY=Mth.clamp(panY+(int)Math.round(dy),-getHeight()/2,getHeight()/2);return true;
+        }
+        return super.mouseDragged(event,dx,dy);
+    }
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() == 0) {
+            if(doubleClick || (event.x()>=getRight()-22 && event.y()<getY()+19)) {
+                var preview=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(
+                        Minecraft.getInstance().screen,projectSupplier,mode==Mode.ELYTRA);
+                preview.setTimelineTickSupplier(timelineTickSupplier);
+                Minecraft.getInstance().setScreen(preview); return;
+            }
             dragging = true;
         }
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button()==2 && panning) { panning=false;return true; }
         if (event.button() == 0 && dragging) {
             dragging = false;
             return true;
@@ -261,7 +281,8 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     }
 
     public void resetView() {
-        yaw = 180.0F;
+        panX=0;panY=0;
+        yaw = 25.0F;
         pitch = 0.0F;
         zoom = 1.0F;
     }

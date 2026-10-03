@@ -807,6 +807,16 @@ public final class ProjectEdits {
         );
     }
 
+    public static LoomProject paintCapeRegionEllipse(LoomProject project, UUID layerId,
+            CapeUvRegion region, int startX, int startY, int endX, int endY,
+            int brushSize, int argb, boolean filled) {
+        return paintCapeRegionShape(project, layerId, region, brushSize, argb,
+                (pixels, canvas, scale, regionWidth, regionHeight) ->
+                        PixelShapes.ellipse(startX,startY,endX,endY,filled,(x,y) ->
+                                paintBrushInto(pixels,canvas,region,scale,regionWidth,regionHeight,
+                                        x,y,filled ? 1 : brushSize,argb)));
+    }
+
     private static LoomProject paintCapeRegionShape(
             LoomProject project,
             UUID layerId,

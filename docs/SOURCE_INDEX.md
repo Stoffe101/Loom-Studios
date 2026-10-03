@@ -215,3 +215,9 @@ Related local project library:
 - `src/main/java/dev/loomstudios/project/ProjectFileStore.java`
 
 Native project-file picker reuses LWJGL TinyFileDialogs, the same native dialog dependency already used by Smart Import.
+
+### 2026-10-03 preview snapshot research
+
+- https://docs.fabricmc.net/develop/rendering/basic-concepts — official extraction/submission rendering explanation; used to evaluate GUI snapshot ownership.
+- https://maven.fabricmc.net/docs/yarn-1.21.11+build.1/net/minecraft/client/render/entity/EntityRenderer.html — official Fabric API mappings for fresh createRenderState/updateRenderState methods. Implementation uses the project’s Mojang-mapped createRenderState()/extractRenderState().
+- https://github.com/neoforged/NeoForge/issues/2500 — upstream report of GUI state reuse in 1.21.6+ (not proof of identical 1.21.11 behavior); fresh snapshot avoids depending on that reuse contract. Runtime validation remains required.

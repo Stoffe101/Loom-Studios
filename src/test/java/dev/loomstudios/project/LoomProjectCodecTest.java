@@ -319,6 +319,22 @@ class LoomProjectCodecTest {
     }
 
     @Test
+    void circleCommitUsesTheSameRasterAndDoesNotModifyOtherUvFaces() {
+        LoomProject blank = LoomProjectFactory.blank("Circle",1L);
+        UUID layerId = blank.cape().layers().getFirst().id();
+        for (boolean filled : new boolean[]{false,true}) {
+            LoomProject painted = ProjectEdits.paintCapeRegionEllipse(blank,layerId,CapeUvRegion.OUTSIDE,
+                    1,2,8,13,1,0xFF24DBF0,filled);
+            java.util.Set<Integer> expected = new java.util.HashSet<>();
+            PixelShapes.ellipse(1,2,8,13,filled,(x,y)->expected.add(
+                    CapeUvRegion.OUTSIDE.atlasY(y)*blank.cape().width()+CapeUvRegion.OUTSIDE.atlasX(x)));
+            for(int i=0;i<blank.cape().width()*blank.cape().height();i++)
+                assertEquals(expected.contains(i)?0xFF24DBF0:0,painted.cape().layers().getFirst().pixelAt(i));
+            assertEquals(0,blank.cape().layers().getFirst().pixelAt(expected.iterator().next()));
+        }
+    }
+
+    @Test
     void capeLayerOperationsPreserveEditableStackRules() {
         LoomProject project = LoomProjectFactory.blank("Layers", 1L);
         UUID baseId = project.cape().layers().getFirst().id();
