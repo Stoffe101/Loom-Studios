@@ -139,6 +139,7 @@ public final class ClientProjectWorkspace {
 
     public static Path save() throws IOException {
         Path saved = session().save();
+        WorkspaceRecovery.saved(project());
         ProjectLibraryIndex.refresh();
         notifyListeners();
         return saved;
@@ -168,6 +169,7 @@ public final class ClientProjectWorkspace {
             UUID localPlayerId
     ) {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
+        WorkspaceRecovery.checkpoint();
         playerId = localPlayerId;
         session = new ProjectSession(
                 LoomProjectFactory.blank(name, nowEpochMillis),
@@ -178,10 +180,17 @@ public final class ClientProjectWorkspace {
 
     public static void open(Path path, UUID localPlayerId) throws IOException {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
+        WorkspaceRecovery.checkpoint();
         session = ProjectSession.load(path, LocalProjectLibrary.store());
         playerId = localPlayerId;
         ProjectLibraryIndex.refresh();
         notifyListeners();
+    }
+
+    public static void recover(Path path, UUID localPlayerId) throws IOException {
+        WorkspaceRecovery.checkpoint();
+        session = new ProjectSession(WorkspaceRecovery.STORE.load(path),LocalProjectLibrary.store());
+        playerId=localPlayerId; notifyListeners();
     }
 
     public static void bindPlayer(UUID localPlayerId) {

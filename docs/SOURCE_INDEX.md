@@ -221,3 +221,9 @@ Native project-file picker reuses LWJGL TinyFileDialogs, the same native dialog 
 - https://docs.fabricmc.net/develop/rendering/basic-concepts — official extraction/submission rendering explanation; used to evaluate GUI snapshot ownership.
 - https://maven.fabricmc.net/docs/yarn-1.21.11+build.1/net/minecraft/client/render/entity/EntityRenderer.html — official Fabric API mappings for fresh createRenderState/updateRenderState methods. Implementation uses the project’s Mojang-mapped createRenderState()/extractRenderState().
 - https://github.com/neoforged/NeoForge/issues/2500 — upstream report of GUI state reuse in 1.21.6+ (not proof of identical 1.21.11 behavior); fresh snapshot avoids depending on that reuse contract. Runtime validation remains required.
+
+### Preview pose state research (2026-10-03)
+
+Fabric Yarn 1.21.11 API documents BipedEntityRenderState isGliding/leftWingPitch/Roll/Yaw and PlayerEntityRenderState glidingTicks. Mojang-mapped source uses Humanoid/Avatar equivalents; exact names and rendering behavior must pass compilation and captures before acceptance. Only isolated preview snapshots receive authored pose values; world state remains untouched.
+- https://maven.fabricmc.net/docs/yarn-1.21.11%2Bbuild.6/net/minecraft/client/render/entity/state/BipedEntityRenderState.html
+- https://maven.fabricmc.net/docs/yarn-1.21.11%2Bbuild.6/net/minecraft/client/render/entity/state/PlayerEntityRenderState.html

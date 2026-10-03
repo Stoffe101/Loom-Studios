@@ -63,6 +63,11 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         void cycleTrackSpeed(UUID trackId);
 
         void deleteTrack(UUID trackId);
+        default void beginKeyframeDrag(){dev.loomstudios.client.project.ClientProjectWorkspace.beginCompoundEdit();}
+        default void moveKeyframe(UUID id,int from,int to){
+            dev.loomstudios.client.project.ClientProjectWorkspace.apply(p->{AnimationTrack track=p.animation().tracks().stream().filter(t->t.id().equals(id)).findFirst().orElseThrow();return p.withAnimation(dev.loomstudios.project.AnimationAuthoring.replaceTrack(p.animation(),dev.loomstudios.project.AnimationAuthoring.moveKeyframe(track,from,to)));});
+        }
+        default void endKeyframeDrag(){dev.loomstudios.client.project.ClientProjectWorkspace.endCompoundEdit();}
     }
 
     private final Supplier<LoomProject> projectSupplier;
@@ -75,6 +80,8 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
 
     private int scrollRows;
     private boolean draggingScrollbar;
+    private UUID draggedTrack;
+    private int draggedTick;
 
     public LoomAnimationTimelineWidget(
             int x,
@@ -722,6 +729,10 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 controller.selectTrack(track.id());
 
                 if (mouseX >= timelineLeft()) {
+                    for(AnimationKeyframe key:track.keyframes()){
+                        int x=tickToX(key.tick(),animation.durationTicks(),timelineLeft(),getRight()-8-timelineLeft());
+                        if(Math.abs(mouseX-x)<=5){draggedTrack=track.id();draggedTick=key.tick();controller.beginKeyframeDrag();break;}
+                    }
                     controller.scrubTo(
                             xToTick(
                                     mouseX,
@@ -841,8 +852,10 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     }
     @Override protected void onDrag(MouseButtonEvent event, double dx, double dy) {
         if (draggingScrollbar) scrollTo(event.y());
+        else if(draggedTrack!=null){int next=xToTick(event.x(),projectSupplier.get().animation().durationTicks());if(next!=draggedTick){controller.moveKeyframe(draggedTrack,draggedTick,next);draggedTick=next;controller.scrubTo(next);}}
     }
-    @Override public void onRelease(MouseButtonEvent event) { draggingScrollbar = false; }
+    @Override public void onRelease(MouseButtonEvent event) { draggingScrollbar = false;if(draggedTrack!=null){draggedTrack=null;controller.endKeyframeDrag();} }
+    public void closeGesture(){if(draggedTrack!=null){draggedTrack=null;controller.endKeyframeDrag();}}
 
     @Override
     public boolean mouseScrolled(

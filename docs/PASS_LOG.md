@@ -1607,3 +1607,11 @@ Merged [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) at `4618352e4
 [Actions #192](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091132764) passed both jobs on that exact PR head. Java21 build: 103 tests, 0 failures/errors/skips. Runtime 02:54:26 UTC: all 68 captures and `LOOM_UI_WORKFLOWS PASS`, `LOOM_UI_INPUT_PREVIEW PASS`, `LOOM_UI_CAPTURE COMPLETE`. Environment/coverage/limitations match #191 above. Retained evidence and downloadable mod were produced by #191; source is unchanged. JAR SHA-256 `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea` verified locally.
 
 Main push [Actions #193](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091440293) was in progress at this documentation-only integration handoff; no success is claimed for a different SHA. No implementation changes in this follow-up. Next: user's interactive hardware/modpack/shader/multiplayer testing from main.
+
+## Library and authoring milestone — IN PROGRESS (2026-10-03)
+
+User authorized the complete follow-up feature milestone plus Browse All, right-click Edit/Rename/Delete and double-click editing. All five attached reference originals were viewed individually again. Home reference 03 drives card browsing/actions; Elytra reference 01 drives drawing/animation parity; Cape 05 and Import 04 drive contextual transforms. Preserve workshop framing and bounded GUI3 controls.
+
+Current branch: `codex/library-authoring-milestone`, base `a2996e47be8f1ed4a5bb0766d01027185eb9f3d7`. Implemented source pending verification: paged library with search/latest/name sorting, favorites, duplicate/rename, reversible Trash/restore; separate 30-second recovery drafts and Settings; standing/open/gliding preview controls; shared Cape/Elytra animation workspace and draggable keyframes; Elytra drawing tools and both-channel internal pixel copy/paste/rotation. None of this milestone is marked DONE until build/runtime/visual checks pass.
+
+Next in this active pass: complete useful template packs and import handles/processing conveniences, add runtime interaction/layout evidence, run exact-SHA CI and release compatibility checks, correct failures and update documentation. Real hardware shader/FPS and two-user multiplayer results remain separately identified until actually exercised.

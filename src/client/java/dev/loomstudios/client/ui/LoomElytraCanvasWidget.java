@@ -35,6 +35,19 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
     private long renderedRevision = Long.MIN_VALUE;
     private boolean strokeActive, panning;
     private int zoomIndex, panX, panY;
+    private java.util.function.Supplier<dev.loomstudios.project.PixelDrawing.Tool> tool=()->dev.loomstudios.project.PixelDrawing.Tool.PENCIL;
+    private java.util.function.IntSupplier color=()->0xFF22D7E8,brush=()->1;
+    private java.util.function.BooleanSupplier filled=()->false;
+    public interface Gesture {void finish(ElytraWing wing,int x0,int y0,int x1,int y1);}
+    private Gesture gesture;
+    private ElytraWing gestureWing;
+    private int startX,startY,endX,endY;
+    private dev.loomstudios.project.PixelSelection selection;
+    private ElytraWing selectionWing;
+    public void setDrawing(java.util.function.Supplier<dev.loomstudios.project.PixelDrawing.Tool> tool,java.util.function.IntSupplier color,java.util.function.IntSupplier brush,java.util.function.BooleanSupplier filled,Gesture gesture){this.tool=tool;this.color=color;this.brush=brush;this.filled=filled;this.gesture=gesture;}
+    public void setSelection(ElytraWing wing,dev.loomstudios.project.PixelSelection selection){selectionWing=wing;this.selection=selection;}
+    private boolean delayed(){return switch(tool.get()){case LINE,RECTANGLE,CIRCLE,SELECT->true;default->false;};}
+
     private static final float[] ZOOMS = {1, 1.25F, 1.5F, 2, 3, 4, 6, 8};
     public record ViewState(int zoomIndex, int panX, int panY) { }
     public ViewState viewState() { return new ViewState(zoomIndex, panX, panY); }
@@ -80,9 +93,14 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
             var t = wingTransform(wing); int index = wing == ElytraWing.LEFT ? 0 : 1;
             g.blit(RenderPipelines.GUI_TEXTURED, textureIds[index], t.left(), t.top(), 0, 0,
                     t.drawWidth(), t.drawHeight(), t.columns(), t.rows(), t.columns(), t.rows());
-            if (t.pixelScale() >= 5) {
+            if (t.pixelScale() >= 5 && dev.loomstudios.client.project.LoomPreferences.get().enabled("grid",true)) {
                 for (int x = 0; x <= t.columns(); x++) g.fill(t.screenX(x), t.top(), t.screenX(x) + 1, t.screenY(t.rows()), 0x28000000);
                 for (int y = 0; y <= t.rows(); y++) g.fill(t.left(), t.screenY(y), t.screenX(t.columns()), t.screenY(y) + 1, 0x28000000);
+            }
+            if(selection!=null&&wing==selectionWing)drawBounds(g,t,selection.minX(),selection.minY(),selection.maxX(),selection.maxY());
+            if(strokeActive&&delayed()&&gestureWing==wing){
+                if(tool.get()==dev.loomstudios.project.PixelDrawing.Tool.SELECT)drawBounds(g,t,Math.min(startX,endX),Math.min(startY,endY),Math.max(startX,endX),Math.max(startY,endY));
+                else {var mask=dev.loomstudios.project.PixelDrawing.shape(new dev.loomstudios.project.PixelPatch(t.columns(),t.rows(),new int[t.columns()*t.rows()]),tool.get(),startX,startY,endX,endY,brush.getAsInt(),color.getAsInt()|0xFF000000,filled.getAsBoolean());int[] p=mask.data();for(int y=0;y<t.rows();y++)for(int x=0;x<t.columns();x++)if(p[y*t.columns()+x]!=0)g.fill(t.screenX(x),t.screenY(y),t.screenX(x+1),t.screenY(y+1),p[y*t.columns()+x]);}
             }
             int[] pixel = t.pixelAt(mx, my);
             if (pixel != null) {
@@ -123,10 +141,17 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
         }
         renderedRevision = revisionSupplier.getAsLong();
     }
+    private void drawBounds(GuiGraphics g,CanvasViewportTransform t,int x0,int y0,int x1,int y1){int l=t.screenX(x0),top=t.screenY(y0),r=t.screenX(x1+1),b=t.screenY(y1+1);g.fill(l,top,r,top+1,LoomUiTheme.ACCENT);g.fill(l,b-1,r,b,LoomUiTheme.ACCENT);g.fill(l,top,l+1,b,LoomUiTheme.ACCENT);g.fill(r-1,top,r,b,LoomUiTheme.ACCENT);}
     private void applyAt(double x, double y) {
         for (ElytraWing wing : ElytraWing.values()) {
             int[] pixel = wingTransform(wing).pixelAt(x, y);
-            if (pixel != null) { pixelAction.apply(wing, pixel[0], pixel[1]); return; }
+            if (pixel != null) {
+                if(delayed()){
+                    if(gestureWing==null){gestureWing=wing;startX=pixel[0];startY=pixel[1];}
+                    if(wing==gestureWing){endX=pixel[0];endY=pixel[1];}
+                } else pixelAction.apply(wing,pixel[0],pixel[1]);
+                return;
+            }
         }
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
@@ -153,11 +178,14 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
     }
     @Override public void onClick(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() != 0) return;
-        if (!strokeActive) { strokeActive = true; strokeLifecycle.begin(); }
+        if (!strokeActive) { strokeActive = true;gestureWing=null; strokeLifecycle.begin(); }
         applyAt(event.x(), event.y());
     }
     @Override protected void onDrag(MouseButtonEvent event, double dx, double dy) { if (event.button() == 0) applyAt(event.x(), event.y()); }
-    @Override public void onRelease(MouseButtonEvent event) { if (strokeActive) { strokeActive = false; strokeLifecycle.end(); } }
+    @Override public void onRelease(MouseButtonEvent event) { if (strokeActive) {
+        if(delayed()&&gestureWing!=null&&gesture!=null)gesture.finish(gestureWing,startX,startY,endX,endY);
+        strokeActive=false;gestureWing=null;strokeLifecycle.end();
+    } }
     private void releaseTextures() {
         for (int i = 0; i < 2; i++) if (textures[i] != null) { Minecraft.getInstance().getTextureManager().release(textureIds[i]); textures[i] = null; images[i] = null; }
     }

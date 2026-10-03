@@ -20,6 +20,11 @@ import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.AnimationAuthoring;
+import dev.loomstudios.project.PixelDrawing.Tool;
+import dev.loomstudios.project.PixelDrawing;
+import dev.loomstudios.project.PixelSelection;
+import dev.loomstudios.project.SurfaceEdits;
+import dev.loomstudios.client.project.PixelClipboard;
 import dev.loomstudios.project.AnimationChannel;
 import dev.loomstudios.project.AnimationEffectType;
 import dev.loomstudios.project.AnimationEvaluator;
@@ -44,11 +49,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 public final class ElytraEditorScreen extends LoomPointerScreen {
-    private enum Tool {
-        PENCIL,
-        ERASER
-    }
-
     private enum InspectorTab {
         LAYERS,
         COLOR,
@@ -274,12 +274,20 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         return button;
     }
 
+    private final java.util.Map<Tool,LoomButton> drawingButtons=new java.util.EnumMap<>(Tool.class);
+    private boolean shapeFilled;
+    private PixelSelection selection;
+    private ElytraWing selectionWing=ElytraWing.LEFT;
+    private java.util.List<LoomButton> selectionButtons=new java.util.ArrayList<>();
+    private LoomButton filledButton;
     private void buildToolRail() {
-        int x = toolRailLeft + 2, w = toolRailRight - toolRailLeft - 4;
-        int y = contentTop + 5, h = compactMode ? 25 : 30;
-        pencilButton = iconButton(x, y, w, h, "Pencil (P)", LoomButton.Icon.PENCIL, () -> { tool = Tool.PENCIL; updateButtonStates(); }).setIconOnly(compactMode);
-        eraserButton = iconButton(x, y + h + 4, w, h, "Eraser (E)", LoomButton.Icon.ERASER, () -> { tool = Tool.ERASER; updateButtonStates(); }).setIconOnly(compactMode);
-        iconButton(x, y + (h + 4) * 2 + 8, w, h, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches).setIconOnly(compactMode);
+        drawingButtons.clear();selectionButtons.clear();
+        int x=toolRailLeft+2,w=toolRailRight-toolRailLeft-4,y=contentTop+5,h=Math.min(compactMode?25:30,(contentBottom-y-32)/9);
+        LoomButton.Icon[] icons={LoomButton.Icon.PENCIL,LoomButton.Icon.ERASER,LoomButton.Icon.FILL,LoomButton.Icon.EYEDROPPER,LoomButton.Icon.SELECT,LoomButton.Icon.LINE,LoomButton.Icon.RECTANGLE,LoomButton.Icon.CIRCLE};
+        String[] labels={"Pencil (B)","Eraser (E)","Fill (G)","Eyedropper (I)","Select (S)","Line (L)","Rectangle (R)","Circle (C)"};
+        for(int i=0;i<Tool.values().length;i++){Tool t=Tool.values()[i];LoomButton button=iconButton(x,y+i*(h+4),w,h,labels[i],icons[i],()->{tool=t;updateButtonStates();}).setIconOnly(compactMode);drawingButtons.put(t,button);}
+        pencilButton=drawingButtons.get(Tool.PENCIL);eraserButton=drawingButtons.get(Tool.ERASER);
+        iconButton(x,y+8*(h+4),w,h,"Swatches",LoomButton.Icon.PALETTE,this::toggleSwatches).setIconOnly(compactMode);
     }
 
 
@@ -317,6 +325,8 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                     }
                 }
         );
+        canvasWidget.setDrawing(()->tool,()->selectedColor,()->brushSize,()->shapeFilled,this::finishShape);
+        canvasWidget.setSelection(selectionWing,selection);
         addRenderableWidget(canvasWidget);
 
         int contextH = compactMode ? 19 : 22;
@@ -362,6 +372,11 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         );
         brushUpButton.setIconOnly(true);
 
+        filledButton=iconButton(centerLeft+154,contextY,80,contextH,"Outline",LoomButton.Icon.CIRCLE,()->{shapeFilled=!shapeFilled;updateButtonStates();}).setIconOnly(false);
+        Runnable[] actions={()->flipWingSelection(true),()->flipWingSelection(false),this::rotateWingSelection,this::copyWingSelection,this::pasteWingSelection,()->{selection=null;canvasWidget.setSelection(selectionWing,null);updateButtonStates();}};
+        LoomButton.Icon[] icons={LoomButton.Icon.FLIP_H,LoomButton.Icon.FLIP_V,LoomButton.Icon.ROTATE_RIGHT,LoomButton.Icon.COPY,LoomButton.Icon.PLUS,LoomButton.Icon.CLOSE};
+        String[] labels={"Flip H","Flip V","Rotate 90° (Ctrl+R)","Copy pixels (Ctrl+C)","Paste pixels (Ctrl+V)","Clear selection"};
+        for(int i=0;i<actions.length;i++)selectionButtons.add(iconButton(centerLeft+5+i*30,contextY,27,contextH,labels[i],icons[i],actions[i]).setIconOnly(true));
         this.timelineWidget = new LoomAnimationTimelineWidget(
                 centerLeft,
                 timelineTop,
@@ -1103,26 +1118,22 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         );
     }
 
-    private void editWing(ElytraWing wing, int x, int y) {
-        LoomLayer layer = selectedLayer();
-        if (layer == null || !layer.editableAsPaint()) {
-            return;
-        }
-
-        int color = tool == Tool.ERASER ? 0 : selectedColor;
-        ClientProjectWorkspace.apply(project ->
-                ProjectEdits.paintElytraWingBrush(
-                        project,
-                        selectedLayerId,
-                        wing,
-                        x,
-                        y,
-                        brushSize,
-                        color,
-                        linkedMirror
-                )
-        );
+    private void editWing(ElytraWing wing,int x,int y) {
+        if(tool==Tool.EYEDROPPER){int[] p=LoomTextureCompiler.compile(ClientProjectWorkspace.project().elytra(),0,false,false);int scale=ClientProjectWorkspace.project().elytra().width()/64;setSelectedColor(p[wing.atlasY(y,scale)*ClientProjectWorkspace.project().elytra().width()+wing.atlasX(x,scale)]);return;}
+        LoomLayer layer=selectedLayer();if(layer==null||!layer.editableAsPaint())return;
+        if(tool==Tool.FILL)ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x,y,x,y,1,selectedColor,false)));
+        else ClientProjectWorkspace.apply(p->ProjectEdits.paintElytraWingBrush(p,selectedLayerId,wing,x,y,brushSize,tool==Tool.ERASER?0:selectedColor,linkedMirror));
     }
+    private void finishShape(ElytraWing wing,int x0,int y0,int x1,int y1){
+        if(selectedLayer()==null||!selectedLayer().editableAsPaint())return;
+        if(tool==Tool.SELECT){selectionWing=wing;selection=PixelSelection.between(x0,y0,x1,y1);canvasWidget.setSelection(wing,selection);updateButtonStates();return;}
+        ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x0,y0,x1,y1,brushSize,selectedColor,shapeFilled)));
+    }
+    private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing).crop(selection);statusMessage="Pixels copied";}}
+    private void pasteWingSelection(){if(PixelClipboard.patch==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(PixelClipboard.patch,x,y)));selection=new PixelSelection(x,y,x+PixelClipboard.patch.width()-1,y+PixelClipboard.patch.height()-1);canvasWidget.setSelection(selectionWing,selection);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
+    private void flipWingSelection(boolean horizontal){if(selection==null)return;PixelSelection sel=selection;ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(patch.crop(sel).flip(horizontal),sel.minX(),sel.minY())));}
+    private void rotateWingSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);canvasWidget.setSelection(selectionWing,selection);}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
+    private void nudgeWingSelection(int dx,int dy){if(selection==null)return;PixelSelection sel=selection;var patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing);int x=Math.max(0,Math.min(patch.width()-sel.width(),sel.minX()+dx)),y=Math.max(0,Math.min(patch.height()-sel.height(),sel.minY()+dy));ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,face->face.clear(sel).paste(face.crop(sel),x,y)));selection=new PixelSelection(x,y,x+sel.width()-1,y+sel.height()-1);canvasWidget.setSelection(selectionWing,selection);}
 
 
     private void toggleLinked() {
@@ -1142,6 +1153,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void changeResolution(int direction) {
+        selection=null;if(canvasWidget!=null)canvasWidget.setSelection(selectionWing,null);
         CanvasResolution current = CanvasResolution.fromCanvas(
                 ClientProjectWorkspace.project().elytra()
         );
@@ -1224,6 +1236,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         if (findLayer(layerId) == null) {
             return;
         }
+        selection=null;if(canvasWidget!=null)canvasWidget.setSelection(selectionWing,null);
         selectedLayerId = layerId;
         selectedTrackId = ClientProjectWorkspace.project()
                 .animation()
@@ -1514,6 +1527,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void undo() {
+        selection=null;if(canvasWidget!=null)canvasWidget.setSelection(selectionWing,null);
         ClientProjectWorkspace.undo();
         ensureSelectedLayerExists();
         ensureSelectedTrackExists();
@@ -1522,6 +1536,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void redo() {
+        selection=null;if(canvasWidget!=null)canvasWidget.setSelection(selectionWing,null);
         ClientProjectWorkspace.redo();
         ensureSelectedLayerExists();
         ensureSelectedTrackExists();
@@ -1619,6 +1634,12 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void updateButtonStates() {
+        boolean paint=selectedLayer()!=null&&selectedLayer().editableAsPaint();
+        for(var entry:drawingButtons.entrySet()){entry.getValue().setSelected(tool==entry.getKey());entry.getValue().active=paint||entry.getKey()==Tool.EYEDROPPER;}
+        if(filledButton!=null){filledButton.visible=tool==Tool.CIRCLE||tool==Tool.RECTANGLE;filledButton.active=paint;filledButton.setMessage(Component.literal(shapeFilled?"Filled":"Outline"));}
+        for(int i=0;i<selectionButtons.size();i++){var button=selectionButtons.get(i);button.visible=tool==Tool.SELECT;button.active=paint&&(i==4?PixelClipboard.patch!=null:selection!=null);}
+        if(brushDownButton!=null){brushDownButton.visible=tool!=Tool.SELECT&&tool!=Tool.FILL&&tool!=Tool.EYEDROPPER;brushLabelButton.visible=brushDownButton.visible;brushUpButton.visible=brushDownButton.visible;}
+
         if (!ClientProjectWorkspace.isInitialized()) {
             return;
         }
@@ -2015,6 +2036,13 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         if (event.key() == 256 && paletteWindowVisible) { closePaletteWindow(); return true; }
         if (workspaceTooSmall) return super.keyPressed(event);
         if (getFocused() instanceof EditBox) return super.keyPressed(event);
+        if(event.hasControlDownWithQuirk()&&selectedLayer()!=null&&selectedLayer().editableAsPaint()){
+            if(event.key()==67){copyWingSelection();return true;}if(event.key()==86){pasteWingSelection();return true;}if(event.key()==82){rotateWingSelection();return true;}}
+        if(!event.hasControlDown()&&!event.hasAltDown()){
+            Tool chosen=switch(event.key()){case 66,80->Tool.PENCIL;case 69->Tool.ERASER;case 71->Tool.FILL;case 73->Tool.EYEDROPPER;case 83->Tool.SELECT;case 76->Tool.LINE;case 82->Tool.RECTANGLE;case 67->Tool.CIRCLE;default->null;};
+            if(chosen!=null){tool=chosen;updateButtonStates();return true;}
+            if(tool==Tool.SELECT&&selection!=null){switch(event.key()){case 263->nudgeWingSelection(-1,0);case 262->nudgeWingSelection(1,0);case 265->nudgeWingSelection(0,-1);case 264->nudgeWingSelection(0,1);default->{}}}
+        }
         if (event.hasControlDownWithQuirk()) {
             if (event.key() == 90) { undo(); return true; }
             if (event.key() == 89) { redo(); return true; }

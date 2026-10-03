@@ -427,7 +427,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         );
     }
 
+    private java.util.List<LoomButton> clipboardButtons=new java.util.ArrayList<>();
     private void buildContextBar() {
+        clipboardButtons.clear();
         int x = canvasLeft + 5, y = contextTop + 3, h = 20, small = 22;
         brushDownButton = iconButton(x, y, small, h, "Brush size -", LoomButton.Icon.MINUS, () -> changeBrushSize(-1)).setIconOnly(true);
         brushLabelButton = new LoomButton(x + 25, y, 72, h, Component.literal(brushLabel()), () -> {});
@@ -439,9 +441,13 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         selectionUpButton = iconButton(x + 25, y, small, h, "Nudge up (↑)", LoomButton.Icon.UP, () -> nudgeSelection(0, -1)).setIconOnly(true);
         selectionDownButton = iconButton(x + 50, y, small, h, "Nudge down (↓)", LoomButton.Icon.DOWN, () -> nudgeSelection(0, 1)).setIconOnly(true);
         selectionRightButton = iconButton(x + 75, y, small, h, "Nudge right (→)", LoomButton.Icon.RIGHT, () -> nudgeSelection(1, 0)).setIconOnly(true);
-        selectionFlipHorizontalButton = iconButton(x + 106, y, 55, h, "Flip H", LoomButton.Icon.FLIP_H, () -> flipSelection(true, false)).setIconOnly(false);
-        selectionFlipVerticalButton = iconButton(x + 164, y, 55, h, "Flip V", LoomButton.Icon.FLIP_V, () -> flipSelection(false, true)).setIconOnly(false);
-        selectionClearButton = iconButton(x + 225, y, 64, h, "Clear", LoomButton.Icon.SELECT, this::clearSelection).setIconOnly(false);
+        selectionFlipHorizontalButton = iconButton(x + 106, y, 25, h, "Flip H", LoomButton.Icon.FLIP_H, () -> flipSelection(true, false)).setIconOnly(false);
+        selectionFlipVerticalButton = iconButton(x + 134, y, 25, h, "Flip V", LoomButton.Icon.FLIP_V, () -> flipSelection(false, true)).setIconOnly(false);
+        selectionClearButton = iconButton(x + 162, y, 25, h, "Clear", LoomButton.Icon.SELECT, this::clearSelection).setIconOnly(true);
+        selectionFlipHorizontalButton.setIconOnly(true);selectionFlipVerticalButton.setIconOnly(true);
+        clipboardButtons.add(iconButton(x+190,y,25,h,"Rotate selection 90° (Ctrl+R)",LoomButton.Icon.ROTATE_RIGHT,this::rotatePixelSelection).setIconOnly(true));
+        clipboardButtons.add(iconButton(x+218,y,25,h,"Copy pixels (Ctrl+C)",LoomButton.Icon.COPY,this::copyPixelSelection).setIconOnly(true));
+        clipboardButtons.add(iconButton(x+246,y,25,h,"Paste pixels (Ctrl+V)",LoomButton.Icon.PLUS,this::pastePixelSelection).setIconOnly(true));
     }
 
 
@@ -463,7 +469,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         int tabGap = 3;
         int tabWidth = Math.max(
                 42,
-                (rightPanelRight - rightPanelLeft - tabGap * 2) / 3
+                (rightPanelRight - rightPanelLeft - tabGap * 3) / 4
         );
 
         inspectorLayersButton = navButton(
@@ -493,8 +499,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         inspectorPropertiesButton = navButton(
                 rightPanelLeft + (tabWidth + tabGap) * 2,
                 tabsY,
-                rightPanelRight
-                        - (rightPanelLeft + (tabWidth + tabGap) * 2),
+                tabWidth,
                 inspectorTabHeight,
                 "Props",
                 LoomButton.Icon.SETTINGS,
@@ -506,6 +511,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         inspectorLayersButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
         inspectorColorButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
         inspectorPropertiesButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
+        addRenderableWidget(new LoomButton(rightPanelLeft+3*(tabWidth+tabGap),tabsY,rightPanelRight-(rightPanelLeft+3*(tabWidth+tabGap)),inspectorTabHeight,Component.literal("Anim"),()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId))));
         buildLayerInspector(); buildColorInspector(); buildPropertyInspector();
     }
 
@@ -1076,6 +1082,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 && !workspaceState.project().cape().layers().isEmpty()
                 && selectedLayer().editableAsPaint();
         boolean hasSelection = selection != null && editablePaintSelection;
+        for(int i=0;i<clipboardButtons.size();i++){LoomButton b=clipboardButtons.get(i);b.visible=tool==Tool.SELECT;b.active=editablePaintSelection&&(i==2?dev.loomstudios.client.project.PixelClipboard.patch!=null:selection!=null);}
         if (selectionClearButton != null) {
             selectionClearButton.active = hasSelection;
         }
@@ -2470,6 +2477,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         updateButtonStates();
     }
 
+    private void copyPixelSelection(){if(selection!=null){dev.loomstudios.client.project.PixelClipboard.patch=dev.loomstudios.project.SurfaceEdits.cape(ClientProjectWorkspace.project(),selectedLayerId,capeRegion).crop(selection);statusMessage="Pixels copied";}}
+    private void pastePixelSelection(){var clipboard=dev.loomstudios.client.project.PixelClipboard.patch;if(clipboard==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->dev.loomstudios.project.SurfaceEdits.cape(p,selectedLayerId,capeRegion,patch->patch.paste(clipboard,x,y)));selection=new PixelSelection(x,y,x+clipboard.width()-1,y+clipboard.height()-1);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
+    private void rotatePixelSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->dev.loomstudios.project.SurfaceEdits.cape(p,selectedLayerId,capeRegion,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
     private void clearSelection() {
         this.selection = null;
         updateButtonStates();
@@ -2803,6 +2813,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         }
 
         if (event.hasControlDownWithQuirk()) {
+            if(selectedLayer()!=null&&selectedLayer().editableAsPaint()){
+                if(event.key()==67){copyPixelSelection();return true;}if(event.key()==86){pastePixelSelection();return true;}if(event.key()==82){rotatePixelSelection();return true;}
+            }
             if (event.key() == 90) {
                 undo();
                 return true;

@@ -100,7 +100,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
     private int shapeEndX;
     private int shapeEndY;
 
-    private boolean gridVisible = true;
+    private boolean gridVisible = dev.loomstudios.client.project.LoomPreferences.get().enabled("grid",true);
     public void toggleGrid() { gridVisible = !gridVisible; }
     public boolean gridVisible() { return gridVisible; }
 

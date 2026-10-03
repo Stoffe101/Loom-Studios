@@ -128,6 +128,9 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         buildLeftActions();
         buildCenterContent();
         buildPreviewPanel();
+        addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
+        addRenderableWidget(new LoomButton(leftPanelLeft,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
+        addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
     }
 
     private void buildLeftActions() {
@@ -175,10 +178,10 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                 width,
                 cardHeight,
                 Component.literal("Load Design"),
-                Component.literal("Open selected project"),
+                Component.literal("Browse saved projects"),
                 LoomActionCard.Icon.FOLDER,
                 false,
-                this::openSelected
+                ()->minecraft.setScreen(new LoomLibraryScreen(this))
         );
         load.active = ProjectLibraryIndex.selected().isPresent();
         addRenderableWidget(load);
@@ -282,6 +285,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                                 .orElse(false),
                         () -> selectProject(descriptor)
                 );
+                card.setOpenAction(this::openSelected);
+                card.setContextAction((x,y)->minecraft.setScreen(new LoomLibraryScreen(this,descriptor.projectId())));
                 projectCards.add(card);
                 addRenderableWidget(card);
             }
@@ -730,7 +735,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         }
     }
 
-    private static String formatAge(long modifiedAt) {
+    public static String formatAge(long modifiedAt) {
         long delta = Math.max(0L, System.currentTimeMillis() - modifiedAt);
         long minutes = delta / 60_000L;
 

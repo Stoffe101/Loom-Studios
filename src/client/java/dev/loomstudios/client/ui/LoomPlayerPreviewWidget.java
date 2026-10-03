@@ -40,6 +40,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
     private Mode mode;
     private IntSupplier timelineTickSupplier;
 
+    private dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose=dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING;
+    private float facing;
+    public void setPose(dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose){this.pose=pose;}
+    public dev.loomstudios.client.render.LoomPreviewState.PreviewPose previewPose(){return pose;}
     private float yaw = 25.0F;
     private float pitch;
     private float zoom = 1.0F;
@@ -98,7 +102,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             float partialTick
     ) {
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
-        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · Alpha guide");
+        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · "+(mode==Mode.ELYTRA?pose.label():"Cape"));
         // Small, native expand affordance stays inside the preview header.
         int ex=getRight()-18, ey=getY()+4;
         graphics.fill(ex,ey+5,ex+1,ey+11,LoomUiTheme.TEXT_MUTED);
@@ -136,9 +140,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             }
 
             dev.loomstudios.client.render.LoomPreviewState.orient(renderState,yaw);
+            dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==Mode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 
             Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI)
-                    .rotateY((float)Math.PI + yaw * ((float)Math.PI / 180.0F));
+                    .rotateY((float)Math.PI + (yaw+facing) * ((float)Math.PI / 180.0F));
             Quaternionf xRotation = new Quaternionf().rotateX(
                     pitch * ((float)Math.PI / 180.0F)
             );
@@ -205,6 +210,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                     return renderState;
                 };
 
+        if(!dev.loomstudios.client.project.LoomPreferences.get().enabled("animatePreview",true))timelineTick=0;
         return timelineTick == null
                 ? PlayerCosmeticRenderer.withPreviewProject(
                         Minecraft.getInstance(),
@@ -237,8 +243,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 var preview=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(
                         Minecraft.getInstance().screen,projectSupplier,mode==Mode.ELYTRA);
                 preview.setTimelineTickSupplier(timelineTickSupplier);
+                preview.setView(yaw,pitch,zoom,panX,panY,pose,facing);
                 Minecraft.getInstance().setScreen(preview); return;
             }
+            if(event.y()<getY()+19&&mode==Mode.ELYTRA){pose=pose.next();return;}
             dragging = true;
         }
     }

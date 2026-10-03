@@ -132,6 +132,16 @@ public final class AnimationAuthoring {
         return track.withKeyframes(next);
     }
 
+    /** Drag collision merges the destination, preserving bounded sorted keyframes. */
+    public static AnimationTrack moveKeyframe(AnimationTrack track,int oldTick,int newTick) {
+        AnimationKeyframe source=track.keyframes().stream().filter(k->k.tick()==oldTick).findFirst().orElseThrow(()->new IllegalArgumentException("Missing keyframe"));
+        if(oldTick==newTick)return track;
+        List<AnimationKeyframe> next=new ArrayList<>(track.keyframes());
+        next.removeIf(k->k.tick()==oldTick||k.tick()==newTick);
+        next.add(new AnimationKeyframe(newTick,source.value()));next.sort(Comparator.comparingInt(AnimationKeyframe::tick));
+        return track.withKeyframes(next);
+    }
+
     public static AnimationTrack removeKeyframe(
             AnimationTrack track,
             int tick
