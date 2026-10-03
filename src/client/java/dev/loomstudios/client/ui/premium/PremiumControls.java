@@ -24,6 +24,7 @@ public final class PremiumControls {
         ScreenEvents.AFTER_INIT.register((client,screen,width,height)-> {
             if(!screen.getClass().getPackageName().equals("dev.loomstudios.client.screen")
                     ||screen instanceof LoomPremiumPrototypeScreen)return;
+            if(screen instanceof dev.loomstudios.client.screen.LoomPointerScreen pointer)pointer.dismissChoices();
             ScreenEvents.beforeRender(screen).register((s,g,mx,my,dt)-> {
                 owner=s;target=g;mouseX=mx;mouseY=my;pending.clear();clips.clear();
             });
@@ -133,6 +134,9 @@ public final class PremiumControls {
     }
     public static void finish(GuiGraphics g) {
         if(g!=target)return;
+        // Deferred tooltips can flush before Fabric afterRender. Collect modal paint here
+        // so its opaque panel occludes underlying controls before the single overlay.
+        if(owner instanceof dev.loomstudios.client.screen.LoomPointerScreen pointer)pointer.renderChoices(g,mouseX,mouseY);
         var snapshot=List.copyOf(pending);
         if(previousOwner!=owner||previousWidth!=g.guiWidth()||previousHeight!=g.guiHeight()
                 ||!snapshot.equals(previous)) {

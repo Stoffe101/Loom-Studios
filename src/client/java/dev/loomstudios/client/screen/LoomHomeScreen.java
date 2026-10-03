@@ -131,19 +131,19 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         buildPreviewPanel();
         addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,13,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
         addRenderableWidget(new LoomButton(centerRight-61,templatesTop+3,54,13,Component.literal("View All"),()->minecraft.setScreen(new LoomTemplatesScreen(this))));
-        addRenderableWidget(new LoomButton(leftPanelLeft,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
-        addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Help"),()->minecraft.setScreen(new LoomHelpScreen(this))));
+        addRenderableWidget(new LoomButton(leftPanelLeft+6,contentBottom-26,(leftPanelRight-leftPanelLeft-16)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
+        addRenderableWidget(new LoomButton(leftPanelLeft+6+(leftPanelRight-leftPanelLeft-16)/2+4,contentBottom-26,(leftPanelRight-leftPanelLeft-16)/2,20,Component.literal("Help"),()->minecraft.setScreen(new LoomHelpScreen(this))));
     }
 
     private void buildLeftActions() {
-        int width = leftPanelRight - leftPanelLeft;
-        int available = contentBottom - contentTop;
+        int width = leftPanelRight - leftPanelLeft - 12;
+        int available = contentBottom - contentTop - 12;
         int gap = compactMode ? 4 : 5;
         int cardHeight=Math.max(28,(available-28-gap*5)/6);
-        int y = contentTop;
+        int y = contentTop+6;
 
         addRenderableWidget(new LoomActionCard(
-                leftPanelLeft,
+                leftPanelLeft+6,
                 y,
                 width,
                 cardHeight,
@@ -156,7 +156,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         y += cardHeight + gap;
 
         LoomActionCard elytra = new LoomActionCard(
-                leftPanelLeft,
+                leftPanelLeft+6,
                 y,
                 width,
                 cardHeight,
@@ -170,7 +170,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         y += cardHeight + gap;
 
         LoomActionCard load = new LoomActionCard(
-                leftPanelLeft,
+                leftPanelLeft+6,
                 y,
                 width,
                 cardHeight,
@@ -194,7 +194,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         y += cardHeight + gap;
 
         addRenderableWidget(new LoomActionCard(
-                leftPanelLeft,
+                leftPanelLeft+6,
                 y,
                 width,
                 cardHeight,
@@ -207,7 +207,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         y += cardHeight + gap;
 
         LoomActionCard codes = new LoomActionCard(
-                leftPanelLeft,
+                leftPanelLeft+6,
                 y,
                 width,
                 cardHeight,
@@ -219,7 +219,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
         addRenderableWidget(codes);
         y+=cardHeight+gap;
-        addRenderableWidget(new LoomActionCard(leftPanelLeft,y,width,cardHeight,
+        addRenderableWidget(new LoomActionCard(leftPanelLeft+6,y,width,cardHeight,
                 Component.literal("Settings"),Component.literal("Editor preferences"),LoomActionCard.Icon.SETTINGS,
                 false,()->minecraft.setScreen(new LoomSettingsScreen(this))));
     }

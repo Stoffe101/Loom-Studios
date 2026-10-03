@@ -1,5 +1,19 @@
 # Loom Studios — Pass Log
 
+## 2026-10-03 — Dropdowns and cosmetic-only preview — DONE: Linux runtime and visual verification
+
+Exact runtime source `21072136702cd2b2921c48ed20cab146b83c5dae`, accepted 2026-10-03 22:32 UTC. [Build248](https://github.com/Stoffe101/Loom-Studios/actions/runs/37157928246) passes both jobs: **128 tests, zero failures/errors/skips**, and **238 actual Minecraft captures**, all original PNGs downloaded and decoded locally. [Comparison25](https://github.com/Stoffe101/Loom-Studios/actions/runs/37157928161) passes all16 jobs and decodes138 screenshots, including20 new feedback views. MC1.21.11, Loader0.18.4, Fabric API0.141.1, Temurin21, Linux/Mesa/Xvfb; no optional mods/shaders.
+
+Implemented: bounded direct effect/preset/rate dropdowns with descriptions, smooth font, hover/focus, narration, keyboard selection, wheel scrolling and Escape/outside cancellation; resize dismissal; effect-specific scalar labels/help; six-pixel Home card/Browse/Help gutters; held-item-free isolated previews and hidden-character attachment cleanup while retaining Cape/Elytra. Real inventory and project/export/network formats remain unchanged. Reviewed both feedback crops and all five approved references.
+
+Visual acceptance: all four new profile contact sheets reviewed at1920×1080 and3440×1440 GUI2/3; original compact GUI3 dropdown confirms smooth text, row gutters and complete effect descriptions. Compact library/group/layer/menu/template and production import/export contact sheets reviewed for regressions. Full run passes dropdown bounds/cancel/keyboard choice, clean hands/armor, unchanged real inventory, existing painting/preview/input/animation/library/safety/import/export assertions and nine idle cache probes. Cache reuse is not hardware FPS evidence.
+
+Corrected before acceptance: constructor-time Fabric event registration failed at69d509d; inherited reflection lookup failed atd2376f4; full-size review atd3140b5 found pixel-font fallback. Popup collection now occurs inside PremiumControls.finish before its snapshot because deferred tooltips can flush earlier than Fabric afterRender. See DROPDOWN_PREVIEW_AUDIT.md and DECISIONS.md. No known failing automated checks on accepted runtime source.
+
+Artifacts: Build248 loom-editor-screenshots11286493023 and loom-studios-dev11286645374; Comparison25 loom-premium-* suites. Packaged classes verified; release JAR SHA256 `613af13bdebda86e5fb3bc1ea8967169f55467f9f9c61b429aa7f7562be8a3ba`. This acceptance commit changes documentation only; evidence belongs to the exact runtime SHA above.
+
+Docs audit distinguishes delivered historical TODOs from optional richer effect schemas/onion skin/reference layers/image processing/hosted services. Next release work: ordinary-client frame-time and interaction testing on target hardware, repeated open/close/resource reload, Windows/macOS native loading, Sodium/Iris/shaders and live equipped multiplayer. Those checks remain manual.
+
 ## 2026-10-03 — Usability and animation follow-up — DONE: Linux runtime and visual verification
 
 Exact runtime source `b447e7add4cf12ded65d477ad4f5c01bfc95c6fe`, accepted 2026-10-03 21:08 UTC. [Build #241](https://github.com/Stoffe101/Loom-Studios/actions/runs/37153029252) passes both jobs: **128 tests, zero failures/errors/skips**, and **218 actual Minecraft screenshots**. All original PNGs downloaded and decoded locally. [Comparison #19](https://github.com/Stoffe101/Loom-Studios/actions/runs/37153029222) passes all twelve jobs and decodes **118 screenshots**, including 28 feedback-specific usability views. MC1.21.11, Loader0.18.4, Fabric API0.141.1, Temurin Java21, Linux/Mesa/Xvfb; no Sodium/Iris/shaders.

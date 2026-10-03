@@ -145,7 +145,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 }
             }
 
-            ((dev.loomstudios.client.render.LoomPreviewVisibility)renderState).loom$characterHidden(!characterVisible);
+            dev.loomstudios.client.render.LoomPreviewState.visibility(renderState,characterVisible);
             dev.loomstudios.client.render.LoomPreviewState.orient(renderState,yaw);
             dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==Mode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 
