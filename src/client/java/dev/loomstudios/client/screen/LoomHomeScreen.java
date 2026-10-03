@@ -479,7 +479,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
     }
 
     private void createTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->{if(minecraft.player==null)return;ClientProjectWorkspace.replaceWith(dev.loomstudios.project.TemplateCatalog.create(kind,System.currentTimeMillis()),minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(this));});}
-    private void createGradientTemplate() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::createGradientTemplateNow); }
+    private void createGradientTemplate() { createTemplate(dev.loomstudios.project.TemplateCatalog.Kind.GRADIENT); }
     private void createGradientTemplateNow() {
         if (this.minecraft.player == null) {
             return;
