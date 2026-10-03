@@ -2,7 +2,7 @@
 
 ## 2026-10-03 — Modal choices and clean preview snapshots
 
-Choice popups are screen-owned overlays rendered after widgets and before premium paint finishes. They clamp to screen/footer bounds, intercept input while open, suppress underlying widget hover/tooltips and cancel without mutation. Preview extraction clears hand render states/stacks, and hidden-character presentation clears equipment/attachments from the isolated render snapshot; chest Elytra remains available to the wing layer. Real inventory and world renderer state are untouched. No new dependency or schema added. MC1.21.11 Mojang-mapped class signatures were inspected locally before editing.
+Choice popups are screen-owned overlays collected in PremiumControls.finish after widgets and before the paint snapshot. The deferred-tooltip mixin can flush earlier than Fabric afterRender, so the modal must join the actual flush to retain smooth font/occlusion. They clamp to screen/footer bounds, intercept input while open, suppress underlying widget hover/tooltips and cancel without mutation. Preview extraction clears hand render states/stacks, and hidden-character presentation clears equipment/attachments from the isolated render snapshot; chest Elytra remains available to the wing layer. Real inventory and world renderer state are untouched. No new dependency or schema added. MC1.21.11 Mojang-mapped class signatures were inspected locally before editing.
 
 ## 2026-10-03 — Preview visibility and guided animations
 
