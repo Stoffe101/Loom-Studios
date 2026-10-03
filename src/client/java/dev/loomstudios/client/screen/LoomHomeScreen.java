@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public final class LoomHomeScreen extends Screen {
+public final class LoomHomeScreen extends LoomPointerScreen {
     private static final Component TITLE = Component.literal("Loom Studios");
     private static final Component SUBTITLE =
             Component.literal("Cape & Elytra Design Studio");

@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public final class SmartImportScreen extends Screen {
+public final class SmartImportScreen extends LoomPointerScreen {
     private static final UUID PREVIEW_LAYER_ID =
             UUID.fromString("00000000-0000-4000-8000-00000000a11e");
     private static final UUID PREVIEW_LAYER_ID_RIGHT =

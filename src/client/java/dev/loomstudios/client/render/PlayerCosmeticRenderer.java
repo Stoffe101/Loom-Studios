@@ -91,7 +91,7 @@ public final class PlayerCosmeticRenderer {
                         preview == null
                                 ? null
                                 : preview.timelineTick(),
-                        preview != null
+                        preview != null && ClientProjectWorkspace.isLocalPlayer(playerId)
                 );
 
         CachedSkin cached = SKINS.get(playerId);

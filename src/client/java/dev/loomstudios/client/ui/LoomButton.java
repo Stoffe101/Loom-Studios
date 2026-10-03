@@ -48,6 +48,7 @@ public class LoomButton extends AbstractButton {
         LOCK,
         EMISSIVE,
         SAVE,
+        FOLDER,
         EQUIP,
         SHARE,
         EXPORT,

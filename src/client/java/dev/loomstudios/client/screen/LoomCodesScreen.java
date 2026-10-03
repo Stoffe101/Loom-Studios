@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class LoomCodesScreen extends Screen {
+public final class LoomCodesScreen extends LoomPointerScreen {
     private static final Component TITLE =
             Component.literal("Loom Studios - Share / Export");
 

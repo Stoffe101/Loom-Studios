@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 61) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 68) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -162,8 +162,8 @@ public final class LoomUiCapture {
                     if(stage==44||stage==58) {set(screen,"inspectorTab",enumValue(screen,"inspectorTab","PROPERTIES"));call(screen,"updateInspectorVisibility");}
                     if(stage==45){call(screen,"addAnimationTrack");set(screen,"inspectorTab",enumValue(screen,"inspectorTab","ANIMATION"));call(screen,"updateInspectorVisibility");}
                     if(stage==49||stage==50){set(screen,"inspectorTab",enumValue(screen,"inspectorTab","COLOR"));call(screen,"updateInspectorVisibility");call(screen,wing?"toggleSwatches":"togglePaletteWindow");}
-                    if(stage==51||stage==52) {
-                        set(screen,"tool",enumValue(screen,"tool","CIRCLE"));call(screen,"updateButtonStates");call(screen,"updateContextVisibility");
+                    if(stage==51||stage==52||stage==61||stage==62) {
+                        set(screen,"tool",enumValue(screen,"tool","CIRCLE")); if(stage>=61)set(screen,"rectangleFilled",true);call(screen,"updateButtonStates");call(screen,"updateContextVisibility");
                         var canvas=(dev.loomstudios.client.ui.LoomCapeFaceWidget)field(screen,"canvasWidget").get(screen);
                         var geometry=canvas.getClass().getDeclaredMethod("geometry",dev.loomstudios.project.CapeUvRegion.class,int.class);geometry.setAccessible(true);
                         int scale=dev.loomstudios.project.CanvasResolution.fromCanvas(ClientProjectWorkspace.project().cape()).scale();
@@ -171,7 +171,7 @@ public final class LoomUiCapture {
                         var start=mouse(t.screenX(2)+t.pixelScale()/2.0,t.screenY(2)+t.pixelScale()/2.0,0);
                         var end=mouse(t.screenX(7)+t.pixelScale()/2.0,t.screenY(12)+t.pixelScale()/2.0,0);
                         screen.mouseClicked(start,false);screen.mouseDragged(end,end.x()-start.x(),end.y()-start.y());
-                        if(stage==52) screen.mouseReleased(end);
+                        if(stage==52||stage==62) screen.mouseReleased(end);
                     }
                     if(stage==53||stage==54) verifyPan(screen);
                     if(stage==59||stage==60) {
@@ -180,6 +180,19 @@ public final class LoomUiCapture {
                         if(!(client.screen instanceof dev.loomstudios.client.screen.LoomPlayerPreviewScreen))throw new IllegalStateException("Expand preview unavailable");
                     }
                 }
+            }
+            if(stage>=63) {
+                Screen screen;
+                if(stage==63)screen=new CapeEditorScreen(new LoomHomeScreen());
+                else if(stage==64)screen=new ElytraEditorScreen(new LoomHomeScreen());
+                else if(stage==65)screen=new LoomHomeScreen();
+                else if(stage==67)screen=new LoomCodesScreen(new LoomHomeScreen(),fixtureProject);
+                else {
+                    var imported=new SmartImportScreen(new LoomHomeScreen(),dev.loomstudios.project.CapeUvRegion.OUTSIDE);
+                    var source=LoomCaptureFixtures.source(fixtureProject);
+                    set(imported,"loaded",new PngImportAdapter.LoadedImage(Path.of("capture-moon.png"),source,source));screen=imported;
+                }
+                client.setScreen(screen);verifyPreviewPan(screen);
             }
             client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
@@ -206,7 +219,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+            String name = index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
@@ -227,16 +240,30 @@ public final class LoomUiCapture {
                 ||!screen.mouseReleased(mouse(press.x()+12,press.y()+8,2)))throw new IllegalStateException("Middle-button route lost");
         if(before.equals(view.invoke(canvas)))throw new IllegalStateException("Canvas did not pan through Screen");
     }
+    private static void verifyPreviewPan(Screen screen) throws Exception {
+        var preview=(dev.loomstudios.client.ui.LoomPlayerPreviewWidget)field(screen,screen instanceof SmartImportScreen?"playerPreview":"previewWidget").get(screen);
+        var press=mouse(preview.getX()+preview.getWidth()/2.0,preview.getY()+preview.getHeight()/2.0,2);
+        for(int i=0;i<4;i++)screen.mouseScrolled(press.x(),press.y(),0,1);
+        var before=preview.viewState();
+        if(!screen.mouseClicked(press,false)||!screen.mouseDragged(mouse(press.x()+8,press.y()+6,2),8,6)
+                ||!screen.mouseReleased(mouse(press.x()+8,press.y()+6,2)))throw new IllegalStateException("3D pan route lost");
+        var after=preview.viewState();
+        if(after.panX()!=before.panX()+8||after.panY()!=before.panY()+6)throw new IllegalStateException("3D pan unchanged");
+    }
     private static void verifyInputAndPreview(Minecraft client) throws Exception {
         for(boolean wing:new boolean[]{false,true}) {
             ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
             Screen screen=wing?new ElytraEditorScreen(new LoomHomeScreen()):new CapeEditorScreen(new LoomHomeScreen());client.setScreen(screen);
-            verifyPan(screen);call(screen,wing?"toggleSwatches":"togglePaletteWindow");
+            verifyPan(screen);verifyPreviewPan(screen);call(screen,wing?"toggleSwatches":"togglePaletteWindow");
             var palette=(dev.loomstudios.client.ui.LoomPaletteWindow)field(screen,"paletteWindow").get(screen);
             var close=(AbstractWidget)palette.children().stream().filter(c->c instanceof AbstractWidget w && w.getMessage().getString().equals("Close swatches")).findFirst().orElseThrow();
             screen.mouseClicked(mouse(close.getX()+8,close.getY()+8,0),false);
             if(palette.visible||(boolean)field(screen,"paletteWindowVisible").get(screen))throw new IllegalStateException("Palette close did not update editor state");
         }
+        var expanded=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(client.screen,ClientProjectWorkspace::project);
+        client.setScreen(expanded);var center=mouse(expanded.width/2.0,expanded.height/2.0,2);
+        if(!expanded.mouseClicked(center,false)||!expanded.mouseDragged(mouse(center.x()+8,center.y()+6,2),8,6)||!expanded.mouseReleased(center))throw new IllegalStateException("Expanded middle pan route lost");
+        if(field(expanded,"panX").getInt(expanded)!=8||field(expanded,"panY").getInt(expanded)!=6)throw new IllegalStateException("Expanded pan unchanged");
         var first=dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,fixtureProject,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
         var second=dev.loomstudios.client.render.LoomPreviewState.extract(client.player);
         var counter=dev.loomstudios.client.render.PlayerCosmeticRenderer.class.getDeclaredField("previewHashComputations");counter.setAccessible(true);
@@ -257,7 +284,7 @@ public final class LoomUiCapture {
         int authored=((com.mojang.blaze3d.platform.NativeImage)imageField.get(actual)).getPixel(1,1);
         if(guided>>>24!=255 || authored!=0 || blank.cape().layers().getFirst().pixelAt(65)!=0)throw new IllegalStateException("Alpha guide leaked into runtime/project");
         dev.loomstudios.client.render.RuntimeCosmeticCache.release(client,blank.hash());
-        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash reuse and alpha isolation");
+        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen canvas/3D/expanded middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash reuse and alpha isolation");
     }
     private static void verifyWorkflows(Minecraft client) throws Exception {
         var projectPath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportProject(fixtureProject);

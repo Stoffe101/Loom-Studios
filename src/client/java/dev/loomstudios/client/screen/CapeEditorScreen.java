@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public final class CapeEditorScreen extends Screen {
+public final class CapeEditorScreen extends LoomPointerScreen {
     private final Screen parent;
     private boolean workspaceTooSmall;
     private final Consumer<WorkspaceState> workspaceListener =
@@ -560,8 +560,8 @@ public final class CapeEditorScreen extends Screen {
         r = rows.row(22);
         layerBlendButton = rowButton(r, "Blend: Normal", LoomButton.Icon.LAYERS, this::cycleLayerBlendMode);
         r = rows.row(22);
-        layerEmissiveButton = cellButton(r, 0, 2, "Emissive", LoomButton.Icon.EMISSIVE, this::toggleLayerEmissive).setIconOnly(true);
-        layerLockButton = cellButton(r, 1, 2, "Lock", LoomButton.Icon.LOCK, this::toggleLayerLock).setIconOnly(true);
+        layerEmissiveButton = cellButton(r, 0, 2, "Emissive", LoomButton.Icon.EMISSIVE, this::toggleLayerEmissive).setIconOnly(false);
+        layerLockButton = cellButton(r, 1, 2, "Lock", LoomButton.Icon.LOCK, this::toggleLayerLock).setIconOnly(false);
         r = rows.row(22);
         rowButton(r, "Edit image", LoomButton.Icon.IMAGE, this::openSmartImport).setIconOnly(false);
         propertyWidgets = widgetsSince(start);
@@ -668,6 +668,7 @@ public final class CapeEditorScreen extends Screen {
     private void updateContextVisibility() {
         boolean selectionTool = tool == Tool.SELECT;
         boolean rectangleTool = (tool == Tool.RECTANGLE || tool == Tool.CIRCLE);
+        if(rectangleModeButton != null) rectangleModeButton.setIcon(tool == Tool.CIRCLE ? LoomButton.Icon.CIRCLE : LoomButton.Icon.RECTANGLE);
         boolean brushTool = tool == Tool.PENCIL
                 || tool == Tool.ERASER
                 || tool == Tool.LINE
@@ -802,8 +803,7 @@ public final class CapeEditorScreen extends Screen {
         this.paletteWindowVisible = !this.paletteWindowVisible;
 
         if (this.paletteWindow != null) {
-            this.paletteWindow.setOnClose(this::closePaletteWindow);
-        this.paletteWindow.visible = this.paletteWindowVisible;
+            this.paletteWindow.visible = this.paletteWindowVisible;
         }
     }
 
@@ -1270,8 +1270,8 @@ public final class CapeEditorScreen extends Screen {
                 layerEmissiveButton.setMessage(
                         Component.literal(
                                 layer.emissive()
-                                        ? "Emissive: On"
-                                        : "Emissive: Off"
+                                        ? "Glow: On"
+                                        : "Glow: Off"
                         )
                 );
             }
@@ -2721,7 +2721,6 @@ public final class CapeEditorScreen extends Screen {
         updateButtonStates();
     }
 
-    private boolean canvasPanning;
     private void closePaletteWindow() {
         paletteWindowVisible = false;
         if (paletteWindow != null) paletteWindow.visible = false;
@@ -2734,17 +2733,13 @@ public final class CapeEditorScreen extends Screen {
             MouseButtonEvent event,
             boolean doubleClick
     ) {
-        if (paletteWindowVisible
-                && paletteWindow != null
-                && paletteWindow.visible
-                && paletteWindow.isMouseOver(event.x(), event.y())
-                && paletteWindow.mouseClicked(event, doubleClick)) {
-            this.setFocused(paletteWindow);
+        if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible
+                && paletteWindow.isMouseOver(event.x(),event.y())) {
+            boolean handled=paletteWindow.mouseClicked(event,doubleClick);
+            if(handled && paletteWindow.visible)setFocused(paletteWindow);
             return true;
         }
 
-        if (event.button() == 2 && canvasWidget != null && canvasWidget.isMouseOver(event.x(),event.y())
-                && canvasWidget.mouseClicked(event,doubleClick)) { canvasPanning = true; return true; }
         return super.mouseClicked(event, doubleClick);
     }
 
@@ -2761,7 +2756,6 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
-        if (canvasPanning && event.button() == 2) return canvasWidget.mouseDragged(event,dx,dy);
         return super.mouseDragged(event, dx, dy);
     }
 
@@ -2774,7 +2768,6 @@ public final class CapeEditorScreen extends Screen {
             return true;
         }
 
-        if (canvasPanning && event.button() == 2) { canvasPanning = false; return canvasWidget.mouseReleased(event); }
         return super.mouseReleased(event);
     }
 

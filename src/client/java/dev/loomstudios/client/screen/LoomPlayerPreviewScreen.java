@@ -48,6 +48,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private float pitch = 0.0F;
     private float zoom = 1.0F;
     private boolean draggingPreview;
+    private boolean panningPreview;
+    private int panX,panY;
     private java.util.function.IntSupplier timelineTickSupplier;
     public void setTimelineTickSupplier(java.util.function.IntSupplier supplier) { timelineTickSupplier=supplier; }
 
@@ -82,80 +84,28 @@ public final class LoomPlayerPreviewScreen extends Screen {
                 : PreviewMode.CAPE;
     }
 
+    private int panelWidth() { return Math.min(740,width-32); }
+    private int panelTop() { return dev.loomstudios.client.ui.LoomScreenChrome.headerHeight(dev.loomstudios.client.ui.LoomUiTheme.compact(width,height))+8; }
+    private int panelBottom() { return height-36; }
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        int panelWidth = Math.min(360, this.width - 32);
-        int panelHeight = Math.min(300, this.height - 32);
-        int left = (this.width - panelWidth) / 2;
-        int top = (this.height - panelHeight) / 2;
-        int right = left + panelWidth;
-        int bottom = top + panelHeight;
-
-        graphics.fill(left, top, right, bottom, PANEL_COLOR);
-        graphics.fill(left + 2, top + 2, right - 2, bottom - 2, INNER_COLOR);
-        graphics.fill(left, top, right, top + 2, ACCENT_COLOR);
-
-        graphics.drawCenteredString(
-                this.font,
-                TITLE,
-                this.width / 2,
-                top + 12,
-                TEXT_COLOR
-        );
-
-        Component modeText = Component.literal(
-                "Mode: " + (this.mode == PreviewMode.CAPE ? "Cape" : "Elytra")
-        );
-        graphics.drawCenteredString(
-                this.font,
-                modeText,
-                this.width / 2,
-                top + 28,
-                ACCENT_COLOR
-        );
-
-        int previewLeft = left + 24;
-        int previewTop = top + 46;
-        int previewRight = right - 24;
-        int previewBottom = bottom - 42;
-
-        graphics.fill(
-                previewLeft,
-                previewTop,
-                previewRight,
-                previewBottom,
-                0x8A02050A
-        );
-
-        if (this.minecraft.player != null) {
-            renderPreviewEntity(
-                    graphics,
-                    previewLeft,
-                    previewTop,
-                    previewRight,
-                    previewBottom,
-                    Math.max(20.0F, (previewBottom - previewTop) * 0.42F * this.zoom),
-                    this.minecraft.player
-            );
-        }
-
-        graphics.drawCenteredString(
-                this.font,
-                Component.literal("Drag: rotate   Mouse wheel: zoom   C: Cape/Elytra   R: reset   Esc: close"),
-                this.width / 2,
-                bottom - 25,
-                MUTED_TEXT_COLOR
-        );
-
-        graphics.drawCenteredString(
-                this.font,
-                Component.literal("Alpha guide: checkerboard shows transparency; exports keep authored pixels."),
-                this.width / 2,
-                bottom - 13,
-                MUTED_TEXT_COLOR
-        );
-
-        super.render(graphics, mouseX, mouseY, partialTick);
+    public void render(GuiGraphics graphics,int mouseX,int mouseY,float partialTick) {
+        var chrome=dev.loomstudios.client.ui.LoomUiTheme.compact(width,height);
+        dev.loomstudios.client.ui.LoomScreenChrome.renderBackdrop(graphics,width,height);
+        dev.loomstudios.client.ui.LoomScreenChrome.renderBrandHeader(graphics,width,"Player preview",chrome);
+        int left=(width-panelWidth())/2,right=left+panelWidth(),top=panelTop(),bottom=panelBottom();
+        dev.loomstudios.client.ui.LoomScreenChrome.panel(graphics,left,top,right,bottom);
+        dev.loomstudios.client.ui.LoomScreenChrome.panelHeader(graphics,left,top,right,
+                (mode==PreviewMode.CAPE?"Cape":"Elytra")+" · Alpha guide");
+        int x0=left+8,y0=top+24,x1=right-8,y1=bottom-38;
+        dev.loomstudios.client.ui.LoomWorkshopArt.previewScene(graphics,x0,y0,x1,y1);
+        if(minecraft.player!=null)renderPreviewEntity(graphics,x0,y0,x1,y1,
+                Math.max(20,Math.min((y1-y0)*0.45F,(x1-x0)*0.35F)*zoom),minecraft.player);
+        graphics.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(
+                "Drag: rotate · Middle: pan · Wheel: zoom · C: mode · R: reset · Esc: close",panelWidth()-16)),width/2,bottom-26,MUTED_TEXT_COLOR);
+        graphics.drawCenteredString(font,Component.literal(font.plainSubstrByWidth(
+                "Checkerboard = transparency. Exports keep authored pixels.",panelWidth()-16)),width/2,bottom-12,MUTED_TEXT_COLOR);
+        dev.loomstudios.client.ui.LoomScreenChrome.footer(graphics,width,height,"3D preview",mode==PreviewMode.CAPE?"Cape":"Elytra");
+        super.render(graphics,mouseX,mouseY,partialTick);
     }
 
     private void renderPreviewEntity(
@@ -194,17 +144,19 @@ public final class LoomPlayerPreviewScreen extends Screen {
                 0.0F
         );
 
+        graphics.enableScissor(x0,y0,x1,y1);
         graphics.submitEntityRenderState(
                 renderState,
                 size,
                 translation,
                 rotation,
                 xRotation,
-                x0,
-                y0,
-                x1,
-                y1
+                x0+panX,
+                y0+panY,
+                x1+panX,
+                y1+panY
         );
+        graphics.disableScissor();
     }
 
     private EntityRenderState extractRenderState(LivingEntity entity) {
@@ -216,6 +168,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if(event.button()==2 && isInsidePreview(event.x(),event.y())) { panningPreview=true;return true; }
         if (event.button() == 0 && isInsidePreview(event.x(), event.y())) {
             this.draggingPreview = true;
             return true;
@@ -226,6 +179,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        if(event.button()==2 && panningPreview) { panningPreview=false;return true; }
         if (event.button() == 0 && this.draggingPreview) {
             this.draggingPreview = false;
             return true;
@@ -236,6 +190,10 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if(event.button()==2 && panningPreview) {
+            panX=Mth.clamp(panX+(int)Math.round(dx),-width/2,width/2);
+            panY=Mth.clamp(panY+(int)Math.round(dy),-height/2,height/2);return true;
+        }
         if (event.button() == 0 && this.draggingPreview) {
             this.yaw = wrapDegrees(this.yaw - (float)dx * 1.25F);
             this.pitch = Mth.clamp(this.pitch + (float)dy * 0.8F, -35.0F, 35.0F);
@@ -274,6 +232,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
         }
 
         if (event.key() == 82) { // GLFW_KEY_R
+            panX=0;panY=0;
             this.yaw = 25.0F;
             this.pitch = 0.0F;
             this.zoom = 1.0F;
@@ -283,21 +242,9 @@ public final class LoomPlayerPreviewScreen extends Screen {
         return super.keyPressed(event);
     }
 
-    private boolean isInsidePreview(double mouseX, double mouseY) {
-        int panelWidth = Math.min(360, this.width - 32);
-        int panelHeight = Math.min(300, this.height - 32);
-        int left = (this.width - panelWidth) / 2;
-        int top = (this.height - panelHeight) / 2;
-
-        int previewLeft = left + 24;
-        int previewTop = top + 46;
-        int previewRight = left + panelWidth - 24;
-        int previewBottom = top + panelHeight - 42;
-
-        return mouseX >= previewLeft
-                && mouseX < previewRight
-                && mouseY >= previewTop
-                && mouseY < previewBottom;
+    private boolean isInsidePreview(double x,double y) {
+        int left=(width-panelWidth())/2;
+        return x>=left+8 && x<left+panelWidth()-8 && y>=panelTop()+24 && y<panelBottom()-38;
     }
 
     private static float wrapDegrees(float degrees) {

@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 /**
  * Reusable in-screen player preview for Loom showcase/editor layouts.
  */
-public final class LoomPlayerPreviewWidget extends AbstractWidget {
+public final class LoomPlayerPreviewWidget extends AbstractWidget implements LoomMiddlePanTarget {
     public enum Mode {
         CAPE,
         ELYTRA
@@ -44,6 +44,8 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     private float pitch;
     private float zoom = 1.0F;
     private boolean dragging;
+    private boolean panning;
+    private int panX,panY;
 
     public LoomPlayerPreviewWidget(
             int x,
@@ -69,12 +71,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag to rotate · Wheel to zoom")));
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag: rotate · Middle drag: pan · Wheel: zoom")));
     }
 
-    public record ViewState(float yaw, float pitch, float zoom) { }
-    public ViewState viewState() { return new ViewState(yaw, pitch, zoom); }
-    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; } }
+    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY) {
+        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0); }
+    }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier
@@ -146,6 +150,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     0.0F
             );
 
+            graphics.enableScissor(contentLeft,contentTop,contentRight,contentBottom);
             graphics.submitEntityRenderState(
                     renderState,
                     Math.max(
@@ -155,11 +160,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     translation,
                     rotation,
                     xRotation,
-                    contentLeft,
-                    contentTop,
-                    contentRight,
-                    contentBottom
+                    contentLeft+panX,
+                    contentTop+panY,
+                    contentRight+panX,
+                    contentBottom+panY
             );
+            graphics.disableScissor();
         } else {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
@@ -213,6 +219,17 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 );
     }
 
+    @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
+        if(event.button()==2 && isMouseOver(event.x(),event.y())) { panning=true;return true; }
+        return super.mouseClicked(event,doubleClick);
+    }
+    @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
+        if(event.button()==2 && panning) {
+            panX=Mth.clamp(panX+(int)Math.round(dx),-getWidth()/2,getWidth()/2);
+            panY=Mth.clamp(panY+(int)Math.round(dy),-getHeight()/2,getHeight()/2);return true;
+        }
+        return super.mouseDragged(event,dx,dy);
+    }
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() == 0) {
@@ -228,6 +245,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button()==2 && panning) { panning=false;return true; }
         if (event.button() == 0 && dragging) {
             dragging = false;
             return true;
@@ -263,6 +281,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
     }
 
     public void resetView() {
+        panX=0;panY=0;
         yaw = 25.0F;
         pitch = 0.0F;
         zoom = 1.0F;

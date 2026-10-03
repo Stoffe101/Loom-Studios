@@ -22,7 +22,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /** Two semantic wing views, sharing the same pixel-boundary transform as Cape. */
-public final class LoomElytraCanvasWidget extends AbstractWidget {
+public final class LoomElytraCanvasWidget extends AbstractWidget implements LoomMiddlePanTarget {
     @FunctionalInterface public interface PixelAction { void apply(ElytraWing wing, int x, int y); }
     public interface StrokeLifecycle { void begin(); void end(); }
     private final Supplier<LoomProject> projectSupplier;

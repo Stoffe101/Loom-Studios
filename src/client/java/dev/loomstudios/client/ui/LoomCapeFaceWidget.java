@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  * Focused cape-face editor with revision-cached GPU preview, crisp zoom,
  * middle-mouse panning, temporary brush-size preview and shape previews.
  */
-public final class LoomCapeFaceWidget extends AbstractWidget {
+public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMiddlePanTarget {
     @FunctionalInterface
     public interface PixelAction {
         void apply(int localX, int localY);

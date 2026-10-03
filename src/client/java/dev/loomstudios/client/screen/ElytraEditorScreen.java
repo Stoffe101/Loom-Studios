@@ -43,7 +43,7 @@ import net.minecraft.network.chat.Component;
 import java.io.IOException;
 import java.util.UUID;
 
-public final class ElytraEditorScreen extends Screen {
+public final class ElytraEditorScreen extends LoomPointerScreen {
     private enum Tool {
         PENCIL,
         ERASER
@@ -1704,8 +1704,8 @@ public final class ElytraEditorScreen extends Screen {
             lockButton.setSelected(layer != null && layer.locked());
             lockButton.setMessage(Component.literal(
                     layer != null && layer.locked()
-                            ? "Unlock Layer"
-                            : "Lock Layer"
+                            ? "Unlock"
+                            : "Lock"
             ));
         }
         if (layerAddButton != null) {
@@ -1982,7 +1982,6 @@ public final class ElytraEditorScreen extends Screen {
         updateButtonStates();
     }
 
-    private boolean canvasPanning;
     private void closePaletteWindow() {
         paletteWindowVisible = false;
         if (paletteWindow != null) paletteWindow.visible = false;
@@ -1991,21 +1990,18 @@ public final class ElytraEditorScreen extends Screen {
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(event.x(),event.y())) {
-            if (paletteWindow.mouseClicked(event,doubleClick)) setFocused(paletteWindow);
+            boolean handled=paletteWindow.mouseClicked(event,doubleClick);
+            if(handled && paletteWindow.visible)setFocused(paletteWindow);
             return true;
         }
-        if (event.button() == 2 && canvasWidget != null && canvasWidget.isMouseOver(event.x(),event.y())
-                && canvasWidget.mouseClicked(event,doubleClick)) { canvasPanning = true; return true; }
         return super.mouseClicked(event,doubleClick);
     }
     @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseDragged(event,dx,dy)) return true;
-        if (canvasPanning && event.button() == 2) return canvasWidget.mouseDragged(event,dx,dy);
         return super.mouseDragged(event,dx,dy);
     }
     @Override public boolean mouseReleased(MouseButtonEvent event) {
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseReleased(event)) return true;
-        if (canvasPanning && event.button() == 2) { canvasPanning = false; return canvasWidget.mouseReleased(event); }
         return super.mouseReleased(event);
     }
     @Override public boolean mouseScrolled(double x,double y,double dx,double dy) {
