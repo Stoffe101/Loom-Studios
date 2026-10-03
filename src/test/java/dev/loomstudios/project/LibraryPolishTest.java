@@ -25,6 +25,14 @@ class LibraryPolishTest {
         var store=new ProjectFileStore(directory);var p=LoomProjectFactory.blank("Saved",1);store.save(p);var history=new ProjectVersions(store);Path version=history.backup(p);
         Files.write(version,LoomProjectFactory.blank("Wrong identity",1).encode());assertThrows(java.io.IOException.class,()->history.restore(p.projectId(),version));assertEquals(p,store.load(store.pathFor(p.projectId())));
     }
+    @Test void changedSnapshotContentCannotBeRestoredOrSilentlyReused() throws Exception {
+        var store=new ProjectFileStore(directory);var p=LoomProjectFactory.blank("Saved",1);store.save(p);var history=new ProjectVersions(store);Path version=history.backup(p);
+        Files.write(version,p.withName("Tampered").encode());assertThrows(java.io.IOException.class,()->history.restore(p.projectId(),version));assertThrows(java.io.IOException.class,()->store.save(p.withName("Replacement")));assertEquals(p,store.load(store.pathFor(p.projectId())));
+    }
+    @Test void failedPreferenceWriteRollsBackTheInMemoryState() throws Exception {
+        Path blocker=directory.resolve("file");Files.writeString(blocker,"not a directory");var prefs=EditorPreferences.defaults(blocker.resolve("editor.properties"));
+        assertThrows(java.io.IOException.class,()->prefs.setAll(Map.of("folder","Changed","tags","pink")));assertEquals("",prefs.choice("folder",""));assertEquals("",prefs.choice("tags",""));
+    }
     @Test void organizationPersistsAndDoesNotModifyArtwork() throws Exception {
         Path file=directory.resolve("editor.properties");var p=TemplateCatalog.create(TemplateCatalog.Kind.CAT,1);String hash=p.hash();var org=new LibraryOrganization(new EditorPreferences(file));
         org.organize(List.of(p.projectId()),"Cute", "Pink, cute, PINK");org.group(p.projectId(),List.of(p.cape().layers().getFirst().id()),"Face");

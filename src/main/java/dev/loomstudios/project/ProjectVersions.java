@@ -12,7 +12,7 @@ public final class ProjectVersions {
     private Path directory(UUID id){return store.root().resolve("history").resolve(id.toString());}
     public List<Path> list(UUID id) throws IOException {
         Path d=directory(id);if(!Files.isDirectory(d))return List.of();
-        try(var files=Files.list(d)){return files.filter(p->p.getFileName().toString().matches("[0-9]+-[a-f0-9]{64}\\.loom")&&Files.isRegularFile(p,LinkOption.NOFOLLOW_LINKS)).sorted(Comparator.comparing((Path p)->p.getFileName().toString()).reversed()).toList();}
+        try(var files=Files.list(d)){return files.filter(p->p.getFileName().toString().matches("[0-9]{13}-[a-f0-9]{64}\\.loom")&&Files.isRegularFile(p,LinkOption.NOFOLLOW_LINKS)).sorted(Comparator.comparing((Path p)->p.getFileName().toString()).reversed()).toList();}
     }
     public Path backup(LoomProject p) throws IOException {
         Path d=directory(p.projectId());Files.createDirectories(d);String suffix="-"+p.hash()+".loom";
