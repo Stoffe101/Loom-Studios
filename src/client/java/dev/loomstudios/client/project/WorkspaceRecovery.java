@@ -23,7 +23,8 @@ public final class WorkspaceRecovery {
         try { STORE.save(project);checkpoint=project;lastWrite=System.currentTimeMillis(); }
         catch(IOException e) { lastWrite=System.currentTimeMillis(); LoomStudios.LOGGER.error("Could not checkpoint Loom draft",e); }
     }
-    public static void saved(LoomProject project) throws IOException {
-        Files.deleteIfExists(STORE.pathFor(project.projectId()));checkpoint=project;
+    public static void saved(LoomProject project) {
+        try{Files.deleteIfExists(STORE.pathFor(project.projectId()));}catch(IOException e){LoomStudios.LOGGER.warn("Saved design but could not remove its recovery draft",e);}
+        checkpoint=project;
     }
 }

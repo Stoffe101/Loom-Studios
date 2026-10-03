@@ -393,6 +393,15 @@ public final class LoomUiCapture {
         if(!ClientProjectWorkspace.isDirty()||!ClientProjectWorkspace.project().name().equals("Recovered draft"))throw new IllegalStateException("Draft recovery lost edits");
         ClientProjectWorkspace.save();
         if(Files.exists(draft))throw new IllegalStateException("Explicit save retained stale recovery draft");
+        var animation=new dev.loomstudios.client.screen.LoomAnimationScreen(new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,ClientProjectWorkspace.project().cape().layers().getFirst().id());client.setScreen(animation);animation.addTrack();
+        var original=ClientProjectWorkspace.project().animation();
+        var timeline=(AbstractWidget)field(animation,"timeline").get(animation);
+        Method left=timeline.getClass().getDeclaredMethod("timelineLeft"),top=timeline.getClass().getDeclaredMethod("rowTop");left.setAccessible(true);top.setAccessible(true);
+        int x=(int)left.invoke(timeline),y=(int)top.invoke(timeline)+10;
+        animation.mouseClicked(mouse(x,y,0),false);animation.mouseDragged(mouse(x+30,y,0),30,0);animation.mouseReleased(mouse(x+30,y,0));
+        if(ClientProjectWorkspace.session().isCompoundEditActive()||ClientProjectWorkspace.project().animation().equals(original))throw new IllegalStateException("Animation keyframe drag did not commit");
+        ClientProjectWorkspace.undo();if(!ClientProjectWorkspace.project().animation().equals(original))throw new IllegalStateException("Keyframe drag did not undo as one edit");
+        System.out.println("LOOM_UI_ANIMATION PASS: Screen keyframe dragging and single-step undo");
         System.out.println("LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit, isolated draft recovery and explicit save cleanup");
     }
     private static Field field(Object object,String name) throws Exception { Field f=object.getClass().getDeclaredField(name); f.setAccessible(true); return f; }

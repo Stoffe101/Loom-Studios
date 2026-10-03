@@ -174,8 +174,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
     }
 
     private EntityRenderState extractRenderState(LivingEntity entity) {
-        if(!dev.loomstudios.client.project.LoomPreferences.get().enabled("animatePreview",true))timelineTickSupplier=()->0;
         Supplier<EntityRenderState> snapshot=() -> dev.loomstudios.client.render.LoomPreviewState.extract(entity);
+        if(!dev.loomstudios.client.project.LoomPreferences.get().enabled("animatePreview",true))return PlayerCosmeticRenderer.withPreviewProjectAtTick(minecraft,previewProjectSupplier.get(),0,snapshot);
         return timelineTickSupplier==null
                 ? PlayerCosmeticRenderer.withPreviewProject(minecraft,previewProjectSupplier.get(),snapshot)
                 : PlayerCosmeticRenderer.withPreviewProjectAtTick(minecraft,previewProjectSupplier.get(),timelineTickSupplier.getAsInt(),snapshot);
@@ -243,15 +243,15 @@ public final class LoomPlayerPreviewScreen extends Screen {
             this.mode = this.mode == PreviewMode.CAPE
                     ? PreviewMode.ELYTRA
                     : PreviewMode.CAPE;
-            return true;
+            rebuildWidgets();return true;
         }
 
         if (event.key() == 82) { // GLFW_KEY_R
             panX=0;panY=0;
             this.yaw = 25.0F;
             this.pitch = 0.0F;
-            this.zoom = 1.0F;
-            return true;
+            this.zoom = 1.0F;facing=0;pose=dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING;
+            rebuildWidgets();return true;
         }
 
         return super.keyPressed(event);

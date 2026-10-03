@@ -1132,7 +1132,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         if(tool==Tool.SELECT){selectionWing=wing;selection=PixelSelection.between(x0,y0,x1,y1);canvasWidget.setSelection(wing,selection);updateButtonStates();return;}
         ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x0,y0,x1,y1,brushSize,selectedColor,shapeFilled)));
     }
-    private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing).crop(selection);statusMessage="Pixels copied";}}
+    private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing).crop(selection);statusMessage="Pixels copied";updateButtonStates();}}
     private void pasteWingSelection(){if(PixelClipboard.patch==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(PixelClipboard.patch,x,y)));selection=new PixelSelection(x,y,x+PixelClipboard.patch.width()-1,y+PixelClipboard.patch.height()-1);canvasWidget.setSelection(selectionWing,selection);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
     private void flipWingSelection(boolean horizontal){if(selection==null)return;PixelSelection sel=selection;ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(patch.crop(sel).flip(horizontal),sel.minX(),sel.minY())));}
     private void rotateWingSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);canvasWidget.setSelection(selectionWing,selection);}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
@@ -2044,7 +2044,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         if(!event.hasControlDown()&&!event.hasAltDown()){
             Tool chosen=switch(event.key()){case 66,80->Tool.PENCIL;case 69->Tool.ERASER;case 71->Tool.FILL;case 73->Tool.EYEDROPPER;case 83->Tool.SELECT;case 76->Tool.LINE;case 82->Tool.RECTANGLE;case 67->Tool.CIRCLE;default->null;};
             if(chosen!=null){tool=chosen;updateButtonStates();return true;}
-            if(tool==Tool.SELECT&&selection!=null){switch(event.key()){case 263->nudgeWingSelection(-1,0);case 262->nudgeWingSelection(1,0);case 265->nudgeWingSelection(0,-1);case 264->nudgeWingSelection(0,1);default->{}}}
+            if(tool==Tool.SELECT&&selection!=null){switch(event.key()){case 263->nudgeWingSelection(-1,0);case 262->nudgeWingSelection(1,0);case 265->nudgeWingSelection(0,-1);case 264->nudgeWingSelection(0,1);default->{}}if(event.key()>=262&&event.key()<=265)return true;}
         }
         if (event.hasControlDownWithQuirk()) {
             if (event.key() == 90) { undo(); return true; }

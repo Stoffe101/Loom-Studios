@@ -3,6 +3,10 @@
 2026-10-03 milestone verification: commit `5aa2ad043b40f0d06c9392650212dc0c8dd275db` passed build and the existing 68 real Minecraft/Mesa captures (Actions #196). Expanded new-screen capture and real library interaction assertions are now being added; this milestone remains IN PROGRESS until those checks pass and screenshots are reviewed.
 
 
+## 2026-10-03 — Library/authoring input hardening (IN PROGRESS)
+
+Checkpoint 7eb91de55cb22c139f53ee75b569af36cdf7062d: Actions #197 build passes 111 tests with zero failures/errors/skips; expanded runtime capture remains running. Added 28 screenshots for seven new workspaces at all four mandatory profiles, four compact library/action screens, and real Screen input assertions for Trash/delete/restore, double-click selection/edit and separate draft recovery. Follow-up fixes refresh clipboard availability immediately, consume selection arrow keys, preserve preview pose/facing across resize, avoid permanently freezing animation after a preference toggle, and keep successful saves successful when draft cleanup cannot run. Timeline dragging now has an actual Screen/undo runtime check. Native shader/GPU and live two-client scenarios are not represented by Mesa screenshots.
+
 ## 2026-10-03 — Main merge and full-test handoff
 
 **State: DONE — verified UI implementation merged to main; manual release testing is the next step.**

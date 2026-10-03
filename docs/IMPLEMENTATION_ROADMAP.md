@@ -1,5 +1,9 @@
 # Loom Studios — Implementation Roadmap
 
+## 2026-10-03 authoring milestone (IN PROGRESS)
+
+Source implemented: design browser/actions/Trash, isolated draft autosave and recovery, favorites/search/sort, six layered templates, local editor preferences and help, semantic-face clipboard/rotation, Elytra drawing parity, Cape/Elytra animation studio with keyframe dragging and per-effect controls, preview camera presets/standing/open/gliding/facing, and direct Smart Import move/scale/rotation handles. Project schema-v3 and multiplayer protocol remain unchanged. Build checkpoint 7eb91de passes 111 tests; extended runtime/visual evidence is pending. Hardware/modpack shader and multiplayer acceptance remains a separate release step.
+
 ## Phase 0 — Foundation spikes
 
 **Status:** PRIMARY PATHS PROVEN.
