@@ -75,7 +75,16 @@ public final class PremiumControls {
     }
     /** Clip earlier paint around a later native popup, preserving visible portions outside it. */
     public static void occlude(GuiGraphics g,int x,int y,int w,int h) {
-        if(g!=target)return;
+        if(g!=target||w<=0||h<=0||pending.isEmpty())return;
+        // Most opaque fills are canvas pixels, well away from collected controls.
+        // Do not allocate/copy the entire paint list for each non-overlapping pixel.
+        boolean overlaps=false;
+        for(Command c:pending) {
+            if(x<c.x()+c.w()&&x+w>c.x()&&y<c.y()+c.h()&&y+h>c.y()) {
+                overlaps=true;break;
+            }
+        }
+        if(!overlaps)return;
         List<Command> visible=new ArrayList<>();
         for(Command c:pending) {
             int left=Math.max(x,c.x()),top=Math.max(y,c.y());
