@@ -18,6 +18,14 @@ public final class ProjectLibraryIndex {
     private static List<ProjectDescriptor> entries = List.of();
     private static int rejectedFiles;
     private static UUID selectedProjectId;
+    private record Cached(java.nio.file.attribute.FileTime modified,long size,LoomProject project,ProjectDescriptor descriptor){}
+    private static final java.util.Map<Path,Cached> cache=new java.util.HashMap<>();
+    public static LoomProject load(ProjectDescriptor descriptor)throws IOException{
+        var attributes=java.nio.file.Files.readAttributes(descriptor.projectPath(),java.nio.file.attribute.BasicFileAttributes.class);
+        Cached c=cache.get(descriptor.projectPath());
+        if(c!=null&&c.modified().equals(attributes.lastModifiedTime())&&c.size()==attributes.size())return c.project();
+        return LocalProjectLibrary.load(descriptor.projectPath());
+    }
 
     private ProjectLibraryIndex() {
     }
@@ -29,6 +37,9 @@ public final class ProjectLibraryIndex {
         try {
             for (Path path : LocalProjectLibrary.list()) {
                 try {
+                    var attributes=java.nio.file.Files.readAttributes(path,java.nio.file.attribute.BasicFileAttributes.class);
+                    Cached cached=cache.get(path);
+                    if(cached!=null&&cached.modified().equals(attributes.lastModifiedTime())&&cached.size()==attributes.size()&&java.nio.file.Files.isRegularFile(cached.descriptor().thumbnailPath())){next.add(cached.descriptor());continue;}
                     LoomProject project = LocalProjectLibrary.load(path);
                     String hash = project.hash();
                     Path thumbnail = ProjectThumbnailCache.ensure(project, hash);
@@ -42,6 +53,7 @@ public final class ProjectLibraryIndex {
                             path,
                             thumbnail
                     ));
+                    cache.put(path,new Cached(attributes.lastModifiedTime(),attributes.size(),project,next.getLast()));
                 } catch (IOException | IllegalArgumentException e) {
                     rejected++;
                     LoomStudios.LOGGER.warn(
@@ -62,6 +74,7 @@ public final class ProjectLibraryIndex {
         );
 
         entries = List.copyOf(next);
+        cache.keySet().retainAll(next.stream().map(ProjectDescriptor::projectPath).toList());
         rejectedFiles = rejected;
 
         if (selectedProjectId != null && find(selectedProjectId).isEmpty()) {

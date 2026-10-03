@@ -7,7 +7,7 @@ import java.nio.file.*;
 
 /** Dirty drafts are never equipped or substituted for explicit saves. */
 public final class WorkspaceRecovery {
-    public static final ProjectFileStore STORE=new ProjectFileStore(LocalProjectLibrary.root().getParent().resolve("drafts"));
+    public static final ProjectFileStore STORE=new ProjectFileStore(LocalProjectLibrary.root().getParent().resolve("drafts"),false);
     private static LoomProject checkpoint;
     public static boolean editingStarted;
     private static long lastWrite;

@@ -25,6 +25,8 @@ import java.util.function.Supplier;
  * the rest of a row selects it.</p>
  */
 public final class LoomLayerListWidget extends AbstractWidget {
+    private java.util.function.Function<UUID,String> groupLabels=id->"";
+    public LoomLayerListWidget setGroupLabels(java.util.function.Function<UUID,String> labels){groupLabels=labels;return this;}
     private static final int HEADER_HEIGHT = 18;
     private static final int ROW_HEIGHT = 18;
     private static final int VISIBILITY_HIT_WIDTH = 18;
@@ -157,7 +159,7 @@ public final class LoomLayerListWidget extends AbstractWidget {
             int opacityX = lockX - opacityWidth - 6;
 
             String name = Minecraft.getInstance().font.plainSubstrByWidth(
-                    layer.name(),
+                    groupLabels.apply(layer.id()).isEmpty()?layer.name():groupLabels.apply(layer.id())+" · "+layer.name(),
                     Math.max(18, opacityX - (getX() + 52) - 4)
             );
 

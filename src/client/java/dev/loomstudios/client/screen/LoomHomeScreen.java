@@ -243,6 +243,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
 
         List<ProjectDescriptor> recent = ProjectLibraryIndex.entries()
                 .stream()
+                .sorted(java.util.Comparator.comparing((ProjectDescriptor d)->!dev.loomstudios.client.project.LoomPreferences.get().favorite(d.projectId())))
                 .limit(4)
                 .toList();
 
@@ -390,6 +391,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
     private static String primaryTemplateTitle(String title){return switch(title){case "Blank"->"BLANK";case "Gradient"->"GRADIENT";case "Nature"->"NATURE";case "Space"->"SPACE";case "Fantasy"->"FANTASY";case "Emblems"->"EMBLEM";default->"";};}
     private ProjectDescriptor projectMenu;
     private int menuX,menuY;
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(projectMenu!=null&&e.key()==256){projectMenu=null;return true;}return super.keyPressed(e);}
     @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent e,boolean twice){if(projectMenu!=null){var d=projectMenu;projectMenu=null;if(e.button()==0&&e.x()>=menuX&&e.x()<menuX+158&&e.y()>=menuY&&e.y()<menuY+207){int action=(int)(e.y()-menuY)/23;if(action!=5){var lib=new LoomLibraryScreen(this);lib.executeAction(d,action);}}return true;}return super.mouseClicked(e,twice);}
 
     private void buildPreviewPanel() {

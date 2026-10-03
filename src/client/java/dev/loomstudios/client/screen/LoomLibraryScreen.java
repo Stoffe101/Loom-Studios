@@ -26,7 +26,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private UUID initialMenu;
     private int tab,page,left,right,top,bottom,menuX,menuY;
     private boolean favorites,nameSort;
-    private String query="",message="Single click: preview · Double click: edit · Right click: actions";
+    private String query="",message="Double click: edit · Right click: actions · Ctrl/Shift: select several";
     private LoomButton previous,next;
     private ProjectFileStore undoStore;
     private UUID undoId;
@@ -36,7 +36,9 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     private LoomButton bulkButton;
     private String folderFilter="";
     private LibraryOrganization organization(){return new LibraryOrganization(LoomPreferences.get());}
-    public void executeAction(ProjectDescriptor d,int action){minecraft=net.minecraft.client.Minecraft.getInstance();minecraft.setScreen(this);menu=d;act(action);}
+    private boolean homeAction;
+    private void finishHomeAction(){if(homeAction){homeAction=false;minecraft.setScreen(parent);}}
+    public void executeAction(ProjectDescriptor d,int action){homeAction=true;minecraft.setScreen(this);menu=d;act(action);}
     public LoomLibraryScreen(Screen parent) { super(Component.literal("Design library"));this.parent=parent; }
     public LoomLibraryScreen(Screen parent,UUID menuId) { this(parent);initialMenu=menuId; }
     @Override protected void init() {
@@ -45,7 +47,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         top=header+8;bottom=height-28;left=8;right=Math.max(260,width-184);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
         String[] tabs={"Designs","Drafts","Trash"};
-        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;rebuildWidgets();}).setSelected(tab==t));}
+        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;multi.clear();folderFilter="";rebuildWidgets();}).setSelected(tab==t));}
         addRenderableWidget(new LoomButton(width-176,top,84,20,Component.literal(folderFilter.isEmpty()?"All folders":folderFilter),()->{var folders=new ArrayList<String>();folders.add("");entries.stream().map(d->organization().folder(d.projectId())).filter(s->!s.isEmpty()).distinct().sorted().forEach(folders::add);folderFilter=folders.get((folders.indexOf(folderFilter)+1)%folders.size());page=0;rebuildWidgets();}));
         addRenderableWidget(new LoomButton(width-88,top,80,20,Component.literal("Settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
         search=addRenderableWidget(new EditBox(font,left,top+26,Math.max(100,(right-left)/2),20,Component.literal("Search designs")));
@@ -78,6 +80,8 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
             catch(IOException e){message="Could not read library: "+e.getMessage();}
             entries=List.copyOf(list);
         }
+        multi.retainAll(entries.stream().map(ProjectDescriptor::projectId).toList());
+        bulkButton.visible=!multi.isEmpty();
         if(selected!=null)selected=entries.stream().filter(d->d.projectId().equals(selected.projectId())).findFirst().orElse(null);
         if(selected==null&&!entries.isEmpty())selected=entries.getFirst();
         if(selected!=null)select(selected);else previewProject=null;
@@ -109,7 +113,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         }
     }
     private LoomProject load(ProjectDescriptor d) throws IOException {
-        return new ProjectFileStore(d.projectPath().getParent()).load(d.projectPath());
+        return tab==0?ProjectLibraryIndex.load(d):new ProjectFileStore(d.projectPath().getParent()).load(d.projectPath());
     }
     private void select(ProjectDescriptor d) {
         selected=d;
@@ -153,8 +157,8 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
                     if(ClientProjectWorkspace.isInitialized()&&ClientProjectWorkspace.project().projectId().equals(d.projectId()))ClientProjectWorkspace.apply(current->current.withName(name));
                     message="Renamed design";
                 }));
-                case 2 -> {LoomPreferences.get().toggleFavorite(d.projectId());refresh();}
-                case 3 -> {LoomProject p=load(d);LoomProject copy=new LoomProject(p.schemaVersion(),UUID.randomUUID(),p.name().substring(0,Math.min(p.name().length(),LoomProjectCodec.MAX_PROJECT_NAME_CHARS-5))+" copy",LoomProjectMetadata.now(System.currentTimeMillis()),p.cape(),p.elytra(),p.runtime(),p.animation());LocalProjectLibrary.save(copy);message="Created independent copy";refresh();}
+                case 2 -> {LoomPreferences.get().toggleFavorite(d.projectId());refresh();finishHomeAction();}
+                case 3 -> {LoomProject p=load(d);LoomProject copy=new LoomProject(p.schemaVersion(),UUID.randomUUID(),p.name().substring(0,Math.min(p.name().length(),LoomProjectCodec.MAX_PROJECT_NAME_CHARS-5))+" copy",LoomProjectMetadata.now(System.currentTimeMillis()),p.cape(),p.elytra(),p.runtime(),p.animation());LocalProjectLibrary.save(copy);message="Created independent copy";refresh();finishHomeAction();}
                 case 4 -> {if(tab==2)return;
                     ProjectFileStore owner=tab==1?WorkspaceRecovery.STORE:LocalProjectLibrary.store();owner.trash(d.projectId());undoStore=owner;undoId=d.projectId();undoDelete.visible=true;
                     message="Moved to Trash · Undo delete is available";
