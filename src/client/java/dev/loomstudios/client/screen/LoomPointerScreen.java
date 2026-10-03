@@ -12,7 +12,17 @@ public abstract class LoomPointerScreen extends Screen {
     private dev.loomstudios.client.ui.LoomChoicePopup<?> choicePopup;
     protected LoomPointerScreen(Component title) {
         super(title);
-        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(this).register((screen,g,mx,my,dt)->{if(choicePopup!=null)choicePopup.render(g,mx,my);});
+
+    }
+    public static void registerChoices() {
+        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client,screen,width,height)-> {
+            if (screen instanceof LoomPointerScreen pointer) {
+                pointer.choicePopup=null;
+                net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((s,g,mx,my,dt)-> {
+                    if(pointer.choicePopup!=null)pointer.choicePopup.render(g,mx,my);
+                });
+            }
+        });
     }
     @Override public void render(net.minecraft.client.gui.GuiGraphics g,int mx,int my,float dt){super.render(g,hasChoices()?-1:mx,hasChoices()?-1:my,dt);}
     public boolean hasChoices(){return choicePopup!=null;}

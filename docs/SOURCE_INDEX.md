@@ -255,3 +255,5 @@ Version-specific questions: suppress preview body without hiding cosmetic layers
 ### 2026-10-03 held-item preview API check
 
 Exact Mojang-mapped MC1.21.11 client jar from repository Fabric Loom cache inspected: ArmedEntityRenderState exposes left/rightHandItemState and left/rightHandItemStack; ItemStackRenderState has clear/isEmpty; HumanoidRenderState exposes head/chest/legs/feet equipment; AvatarRenderState exposes heldOnHead, shoulder parrots, arrows/stingers. Clearing extracted snapshot fields avoids ItemInHand/armor/head feature leaks without touching player inventory. ScreenEvents.afterRender uses the established Fabric screen event API already used by PremiumControls. CI compilation/runtime remains required evidence.
+
+- Fabric ScreenEvents lifecycle: https://maven.fabricmc.net/docs/fabric-api-0.136.0%2B1.21.8/net/fabricmc/fabric/api/client/screen/v1/ScreenEvents.html — screen callbacks register during initialization; implementation follows the existing AFTER_INIT pattern in PremiumControls. Initial constructor registration failed at runtime and was corrected.

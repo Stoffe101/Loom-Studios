@@ -2,6 +2,8 @@
 
 ## 2026-10-03 — Dropdowns and cosmetic-only preview — IN PROGRESS
 
+Initial runtime attempt at `69d509d` failed before Home init: the new popup callback was registered in the screen constructor. Corrected by registering via Fabric AFTER_INIT, before the premium flush callback; resize also dismisses stale popup bounds. Build passed on that attempt; no runtime/visual acceptance is claimed for it.
+
 Reviewed both new feedback crops and all five approved references. Implemented bounded modal effect/preset/rate dropdowns with descriptions, selected/focused rows, wheel scrolling, keyboard arrows/Home/End/Enter and Escape/outside cancellation. Home actions and Browse/Help now have six-pixel horizontal panel gutters. Preview snapshots clear both held items without changing inventory; hidden character snapshots also clear armor/head attachments/parrots/arrows while retaining cape/Elytra. Effect-specific value labels/help finish a documented animation usability task. No project/export/network format change.
 
 Exact-source CI build and 238 full captures pending, including20 new dropdown/inset/held-item views at1920×1080 and3440×1440 GUI2/3. Runtime assertions cover cancellation, keyboard selection, popup bounds, clean render-state hands/armor, unchanged real inventory and existing regressions. Docs audit distinguishes completed historical TODOs from optional future schema/backend work; hardware/OS/shader/performance acceptance remains manual. Do not claim DONE before runtime and visual acceptance.
