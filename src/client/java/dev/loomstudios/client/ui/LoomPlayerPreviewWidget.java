@@ -42,6 +42,9 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
 
     private dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose=dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING;
     private float facing;
+    private boolean characterVisible=true;
+    public boolean characterVisible(){return characterVisible;}
+    public void setCharacterVisible(boolean value){characterVisible=value;}
     public void setPose(dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose){this.pose=pose;}
     public dev.loomstudios.client.render.LoomPreviewState.PreviewPose previewPose(){return pose;}
     private float yaw = 25.0F;
@@ -78,11 +81,11 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
         setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag: rotate · Middle drag: pan · Wheel: zoom")));
     }
 
-    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing) {
-        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0,dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING,0); }
+    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing,boolean characterVisible) {
+        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0,dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING,0,true); }
     }
-    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY,pose,facing); }
-    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY;pose=state.pose;facing=state.facing; } }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY,pose,facing,characterVisible); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY;pose=state.pose;facing=state.facing;characterVisible=state.characterVisible; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier
@@ -101,8 +104,11 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             int mouseY,
             float partialTick
     ) {
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(mouseX>=getRight()-39&&mouseX<getRight()-25&&mouseY<getY()+19?"Toggle character (H) · "+(characterVisible?"Hide player to inspect the design":"Show player"):"Drag: rotate · Middle drag: pan · Wheel: zoom · Double-click: full preview")));
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
         LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · "+(mode==Mode.ELYTRA?pose.label():"Cape"));
+        int toggleX=getRight()-39,toggleY=getY()+3;
+        LoomCharacterToggle.draw(graphics,toggleX,toggleY,14,characterVisible,mouseX>=toggleX&&mouseX<toggleX+14&&mouseY>=toggleY&&mouseY<toggleY+14);
         // Small, native expand affordance stays inside the preview header.
         int ex=getRight()-18, ey=getY()+4;
         graphics.fill(ex,ey+5,ex+1,ey+11,LoomUiTheme.TEXT_MUTED);
@@ -139,6 +145,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 }
             }
 
+            ((dev.loomstudios.client.render.LoomPreviewVisibility)renderState).loom$characterHidden(!characterVisible);
             dev.loomstudios.client.render.LoomPreviewState.orient(renderState,yaw);
             dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==Mode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 
@@ -225,7 +232,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 );
     }
 
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent event){if(isFocused()&&event.key()==72){characterVisible=!characterVisible;return true;}return super.keyPressed(event);}
+
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
+        if(event.button()==0&&event.x()>=getRight()-39&&event.x()<getRight()-25&&event.y()>=getY()+3&&event.y()<getY()+17){characterVisible=!characterVisible;playDownSound(Minecraft.getInstance().getSoundManager());return true;}
         if(event.button()==2 && isMouseOver(event.x(),event.y())) { panning=true;return true; }
         return super.mouseClicked(event,doubleClick);
     }
@@ -244,6 +254,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                         Minecraft.getInstance().screen,projectSupplier,mode==Mode.ELYTRA);
                 preview.setTimelineTickSupplier(timelineTickSupplier);
                 preview.setView(yaw,pitch,zoom,panX,panY,pose,facing);
+                preview.setCharacterVisible(characterVisible);
                 Minecraft.getInstance().setScreen(preview); return;
             }
             if(event.y()<getY()+19&&mode==Mode.ELYTRA){pose=pose.next();return;}

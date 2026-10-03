@@ -1,5 +1,9 @@
 # Loom Studios — Architectural Decisions
 
+## 2026-10-03 — Preview visibility and guided animations
+
+Character visibility belongs to isolated preview render snapshots, not player state. A body-only getRenderType override leaves cape/Elytra feature layers enabled and cannot hide a world player. The player-head control retains state when expanding/rebuilding the preview. Presets produce existing editable tracks, with one undo entry and bounded cycle counts; no new project/network format. Elytra glow uses vanilla baked wing geometry and an authored-pixel-only cached emissive mask; fixed-tick previews and live animation update existing textures rather than allocate new identities per frame. Native nested scissors are captured at command collection and applied during deferred studio rendering; occlusion uses the same clipped bounds. Decorative header caps and center face preserve source aspect, with repeated undecorated timber rather than stretching lanterns. Acceptance evidence is in USABILITY_ANIMATION_AUDIT.md.
+
 ## Premium studio presentation — DONE: UI/layout and Linux client verification (2026-10-03)
 
 Runtime source: `778c2eea7f50ae46240a46fe506be7ceb8f2e238`. [Build #229](https://github.com/Stoffe101/Loom-Studios/actions/runs/37142515469) passes both jobs: 125 tests, zero failures/errors/skips, and 190 actual Minecraft captures. [Comparison #8](https://github.com/Stoffe101/Loom-Studios/actions/runs/37142515428) passes all eight jobs: 90 decoded screenshots. Tested with Minecraft 1.21.11, Loader 0.18.4, Fabric API 0.141.1, Temurin Java 21, Linux/Xvfb/software Mesa; no Sodium/Iris/shaders.
@@ -1148,3 +1152,9 @@ Screen owns middle-button capture until release because container drag routing i
 Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in Actions #191; fresh snapshots, explicit GUI rear-view quaternion, separate preview namespaces/cache, alpha isolation and routed input passed. No schema/network change.
 
 - 2026-10-03 authoring milestone: delete means reversible Trash, with restore; single click previews, double click selects/edits, right click opens contextual actions. Drafts remain separate from saved/equipped projects. Use shared bounded animation/task screens and contextual tools instead of adding all controls to the narrow primary inspector. No hosted gallery/backend is added. Source implementation and verification completed at 9b22438db8c8aea42a10ee5800000c56415ac4e7 (Actions #200). Gliding uses a pose-specific preview centering offset; world render state remains unchanged.
+
+## 2026-10-03 — Preview visibility and preset recipes
+
+Preview body visibility is a boolean on a fresh AvatarRenderState snapshot. LivingEntityRenderer returns no body RenderType for that flagged snapshot; cosmetic layers retain normal visibility and world states stay unflagged. Character visibility travels with preview view state and expanded preview. Animation presets compile to existing effect/keyframe tracks, avoiding schema or wire changes. Deferred UI commands snapshot native nested scissor bounds rather than relying on scissor state when the later overlay renders.
+
+Elytra Glow follow-up: a separate cached emissive wing mask and fullbright ElytraModel pass now mirror cape highlights. Masks contain authored pixels only (no alpha-guide checkerboard); update at changed timeline ticks and release with their runtime bundle. Verification includes a wing-only glow capture plus mask presence/change assertions.

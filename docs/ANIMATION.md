@@ -74,14 +74,19 @@ Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project stat
 
 ## Next animation work
 
-- standing/open/gliding preview-state controls;
-- direct drag-to-move keyframes;
-- richer effect-specific property UI;
-- Cape Editor timeline exposure;
-- richer Moving Gradient parameterization;
-- final visual polish against Reference 04;
-- local runtime verification at all mandatory GUI profiles.
+- Hardware frame-time measurements while scrubbing and playing dense designs.
+- Effect-specific controls for gradient direction, shimmer density and intensity.
+- Optional onion-skin/reference frames and a visual preset picker.
+- Cross-platform and Sodium/Iris/shader acceptance with real equipped designs.
 
 ## Workspace ownership
 
 Elytra uses a compact adaptive timeline dock. Empty timelines show the next action and reserve only 66 logical pixels. Track collections scroll; effect and keyframe authoring lives on Animation -> Keys, while track loop/speed and project playback speed live on Animation -> Playback. Layer opacity/blend/lock/thickness live on Props. Selecting a track opens Animation. Violet accents identify animation without competing with the cyan canvas selection.
+
+## Guided preset workflow
+
+Open the animation studio, choose the layer, choose a preset and rate, then click **Apply & play**. **Save** keeps the changes. Each application is one undoable edit and replaces the selected track; use the timeline's Add Track to compose another effect. Rates are cycles per second at normal global playback speed. Long timelines may require a slower rate to remain within the existing track limits.
+
+Draw stars/highlights on their own layer, keeping the base design solid. Blinking stars fades that detail layer on/off; Shimmer twinkles its existing pixels; Glow creates an emissive highlight track. Color cycle, horizontal scroll and vertical wave work on the selected layer. **Advanced** exposes effect, key value, add/remove key and track speed. Drag timeline keys to change their timing. Presets preserve the existing project format.
+
+Elytra Glow follow-up: a separate cached emissive wing mask and fullbright ElytraModel pass now mirror cape highlights. Masks contain authored pixels only (no alpha-guide checkerboard); update at changed timeline ticks and release with their runtime bundle. Verification includes a wing-only glow capture plus mask presence/change assertions.

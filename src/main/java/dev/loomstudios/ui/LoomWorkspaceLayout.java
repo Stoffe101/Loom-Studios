@@ -18,7 +18,7 @@ public record LoomWorkspaceLayout(
         boolean compact = width <= 700 || height <= 420;
         int margin = 8;
         int gap = compact ? 4 : 6;
-        int header = compact ? 36 : 56;
+        int header = compact ? 48 : 72;
         int nav = compact ? 24 : 28;
         int top = header + nav + gap;
         int bottom = height - 28;
@@ -36,7 +36,7 @@ public record LoomWorkspaceLayout(
         int contextBottom = elytra ? timelineTop - gap : bottom;
         int contextTop = contextBottom - 26;
         // Properties are paged; reserve enough room for the tallest compact page.
-        int previewHeight = Math.max(60, Math.min(compact ? 110 : 210, bottom - top - 188));
+        int previewHeight = Math.max(48, Math.min(compact ? 110 : 210, bottom - top - 188));
         int previewBottom = top + previewHeight;
         int tabsTop = previewBottom + gap;
         int tabsBottom = tabsTop + 22;

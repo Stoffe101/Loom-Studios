@@ -6,6 +6,8 @@
     "GuiGraphicsAccessor",
     "GuiGraphicsOcclusionMixin",
     "AvatarRendererMixin",
+    "AvatarRenderStateMixin",
+    "LivingEntityRendererMixin",
     "ElytraModelMixin"
   ],
   "injectors": {
