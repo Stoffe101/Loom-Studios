@@ -217,16 +217,18 @@ public final class LoomUiCapture {
     private static void capture(Minecraft client, int index) {
         try {
             if(index>=182)System.out.println("LOOM_PREMIUM_CPU "+index+" "+dev.loomstudios.client.ui.premium.PremiumPaint.metrics());
-            if((index==8||index==22||index>=182&&index%2==0)&&cacheProbes.add(index)) {
+            if((index==8||index>=22&&index<42&&(index-22)%5==0||index>=182&&index%2==0)&&cacheProbes.add(index)) {
                 long uploads=dev.loomstudios.client.ui.LoomUiTextureCache.uploads();
                 long paints=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.paints();
+                long submitted=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.submittedFrames();
                 new Thread(()-> {
                     try {
                         Thread.sleep(400);
                         client.execute(()-> {
                             if(uploads!=dev.loomstudios.client.ui.LoomUiTextureCache.uploads()
                                     ||dev.loomstudios.client.ui.LoomUiTextureCache.size()>32
-                                    ||index>=182&&paints!=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.paints()) {
+                                    ||paints!=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.paints()
+                                    ||submitted==dev.loomstudios.client.ui.premium.PremiumGuiRenderer.submittedFrames()) {
                                 System.err.println("LOOM_UI_TEXTURE_CACHE_REUSE FAIL");client.stop();return;
                             }
                             System.out.println("LOOM_UI_TEXTURE_CACHE_REUSE PASS "+index+" uploads="+uploads);

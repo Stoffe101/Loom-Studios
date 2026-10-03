@@ -172,7 +172,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             );
             graphics.disableScissor();
         } else {
-            graphics.drawCenteredString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal("Select a saved design"),
                     getX() + getWidth() / 2,
@@ -181,7 +181,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             );
         }
 
-        if (getHeight() > 140 && dev.loomstudios.client.project.LoomPreferences.get().enabled("shortcuts",true)) graphics.drawCenteredString(
+        if (getHeight() > 140 && dev.loomstudios.client.project.LoomPreferences.get().enabled("shortcuts",true)) dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(
                         getWidth() < 190 ? "Drag · Scroll to zoom" : "Alpha guide · Drag / wheel",getWidth()-12)),

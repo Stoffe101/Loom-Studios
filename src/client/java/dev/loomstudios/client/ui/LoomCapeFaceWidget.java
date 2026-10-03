@@ -222,7 +222,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
 
         String header = regionWidth + "×" + regionHeight + " px";
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(header),
                 getX() + 10,
@@ -247,7 +247,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
             int left = getRight() - textWidth - 10;
 
             if (left > getX() + 120) {
-                graphics.drawString(
+                dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                         Minecraft.getInstance().font,
                         Component.literal(coords),
                         left,
@@ -301,7 +301,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
         graphics.disableScissor();
 
         if (zoomIndex > 0) {
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal("Mouse wheel: zoom  •  Middle drag: pan"),
                     getX() + 10,

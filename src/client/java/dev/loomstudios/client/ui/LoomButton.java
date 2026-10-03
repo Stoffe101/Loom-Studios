@@ -223,7 +223,7 @@ public class LoomButton extends AbstractButton {
             int center = icon == Icon.NONE
                     ? getX() + getWidth() / 2
                     : textLeft + maxWidth / 2;
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(clipped),
                     center - textWidth / 2,
@@ -243,6 +243,7 @@ public class LoomButton extends AbstractButton {
             Icon icon,
             int color
     ) {
+        if(dev.loomstudios.client.ui.premium.PremiumControls.icon(graphics,icon,x,y,size,color))return;
         if (LoomIconSet.draw(graphics, x, y, size, icon, color)) return;
         int s = Math.max(8, size);
         int accent = color == LoomUiTheme.TEXT_MUTED

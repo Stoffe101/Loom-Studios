@@ -729,7 +729,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
 
         if (ProjectLibraryIndex.entries().isEmpty()) {
-            graphics.drawCenteredString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,
                     this.font,
                     Component.literal("No saved projects yet"),
                     (centerLeft + centerRight) / 2,
@@ -739,7 +739,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         }
 
         if (ProjectLibraryIndex.rejectedFiles() > 0 && !compactMode) {
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     this.font,
                     Component.literal(
                             ProjectLibraryIndex.rejectedFiles()

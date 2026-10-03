@@ -58,6 +58,28 @@ public final class PremiumPaint {
         final String fitted=text;
         clip(x,y,width,size+3,()->text(fitted,centered?x+(width-actual)/2:x,y,size,color));
     }
+    public static void brand(String value,float x,float y,float width,float size) {
+        nvgFontSize(vg,size);
+        float total=nvgTextBounds(vg,0,0,value,(float[])null),left=x+(width-total)/2;
+        clip(x,y,width,size+4,()-> {
+            for(int i=0;i<value.length();i++) {
+                float at=left+nvgTextBounds(vg,0,0,value.substring(0,i),(float[])null);
+                float fraction=i/(float)(value.length()-1);
+                int r=Math.round(55+(193-55)*fraction),g=Math.round(217+(140-217)*fraction),b=Math.round(236+(255-236)*fraction);
+                String letter=value.substring(i,i+1);
+                text(letter,at,y+1,size,0x60000000);
+                text(letter,at,y,size,0xFF000000|r<<16|g<<8|b);
+            }
+        });
+    }
+    public static void surface(float x,float y,float w,float h,float radius,int base) {
+        try(var stack=MemoryStack.stackPush()) {
+            int top=0xFF000000|Math.min(255,(base>>16&255)+8)<<16|Math.min(255,(base>>8&255)+8)<<8|Math.min(255,(base&255)+10);
+            var paint=org.lwjgl.nanovg.NVGPaint.malloc(stack);
+            nvgLinearGradient(vg,x,y,x,y+h,color(stack,top),color(stack,base),paint);
+            nvgBeginPath(vg);nvgRoundedRect(vg,x,y,w,h,radius);nvgFillPaint(vg,paint);nvgFill(vg);paths++;
+        }
+    }
     public static void end() {
         nvgEndFrame(vg);
         if(warmup++<10)return;
@@ -90,7 +112,7 @@ public final class PremiumPaint {
     private static int loadIcon(String name) {
         try(var input=PremiumPaint.class.getResourceAsStream("/assets/loom-studios/icons/"+name+".svg")) {
             if(input==null)throw new IOException("Missing icon "+name);
-            String svg=new String(input.readAllBytes(),StandardCharsets.UTF_8).replace("currentColor","#e9f2fa");
+            String svg=new String(input.readAllBytes(),StandardCharsets.UTF_8).replace("currentColor","#ffffff");
             var parsed=nsvgParse(svg,"px",96);
             if(parsed==null)throw new IOException("Invalid SVG "+name);
             long raster=nsvgCreateRasterizer();

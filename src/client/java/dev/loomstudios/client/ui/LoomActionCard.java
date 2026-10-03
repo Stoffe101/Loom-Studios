@@ -118,7 +118,7 @@ public final class LoomActionCard extends AbstractButton {
             });
             if(!active) graphics.fill(cx,cy,cx+cw,cy+ch,0x99303B4D);
             String label = Minecraft.getInstance().font.plainSubstrByWidth(getMessage().getString(),getWidth()-8);
-            graphics.drawCenteredString(Minecraft.getInstance().font,Component.literal(label),getX()+getWidth()/2,getBottom()-14,
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,Minecraft.getInstance().font,Component.literal(label),getX()+getWidth()/2,getBottom()-14,
                     active ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED);
             return;
         }
@@ -145,7 +145,7 @@ public final class LoomActionCard extends AbstractButton {
                 ? getY() + (getHeight() - 8) / 2
                 : getY() + Math.max(5, getHeight() / 2 - 10);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(title),
                 textX,
@@ -161,7 +161,7 @@ public final class LoomActionCard extends AbstractButton {
                             subtitle.getString(),
                             available
                     );
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     Minecraft.getInstance().font,
                     Component.literal(subtitleText),
                     textX,

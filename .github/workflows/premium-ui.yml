@@ -24,6 +24,10 @@ jobs:
             start: 22
             end: 42
             count: 20
+          - suite: editors
+            start: 0
+            end: 8
+            count: 8
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

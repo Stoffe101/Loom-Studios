@@ -66,7 +66,7 @@ public final class LoomPaletteButton extends AbstractButton {
         graphics.fill(iconX, iconY + 6, iconX + 5, iconY + 11, 0xFFFFBE2E);
         graphics.fill(iconX + 6, iconY + 6, iconX + 11, iconY + 11, 0xFFFF5368);
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 getMessage(),
                 iconX + 18,

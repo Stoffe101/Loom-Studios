@@ -144,13 +144,13 @@ public final class LoomProjectCard extends AbstractButton {
             );
         }
 
-        if(decorated){String badge=dev.loomstudios.client.project.ClientProjectWorkspace.isInitialized()&&dev.loomstudios.client.project.ClientProjectWorkspace.project().projectId().equals(descriptor.projectId())&&dev.loomstudios.client.project.ClientProjectWorkspace.isCurrentProjectEquipped()?"Equipped":dev.loomstudios.client.project.LoomPreferences.get().favorite(descriptor.projectId())?"Favorite":"Saved";int bw=Minecraft.getInstance().font.width(badge)+8;graphics.fill(imageLeft+3,imageTop+3,imageLeft+3+bw,imageTop+15,0xDF152639);graphics.drawString(Minecraft.getInstance().font,badge,imageLeft+7,imageTop+5,LoomUiTheme.ACCENT,false);}
+        if(decorated){String badge=dev.loomstudios.client.project.ClientProjectWorkspace.isInitialized()&&dev.loomstudios.client.project.ClientProjectWorkspace.project().projectId().equals(descriptor.projectId())&&dev.loomstudios.client.project.ClientProjectWorkspace.isCurrentProjectEquipped()?"Equipped":dev.loomstudios.client.project.LoomPreferences.get().favorite(descriptor.projectId())?"Favorite":"Saved";int bw=Minecraft.getInstance().font.width(badge)+8;graphics.fill(imageLeft+3,imageTop+3,imageLeft+3+bw,imageTop+15,0xDF152639);dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,Minecraft.getInstance().font,badge,imageLeft+7,imageTop+5,LoomUiTheme.ACCENT,false);}
 
         String title = Minecraft.getInstance().font.plainSubstrByWidth(
                 descriptor.name(),
                 Math.max(20, getWidth() - 10)
         );
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(title),
                 getX() + 5,
@@ -158,7 +158,7 @@ public final class LoomProjectCard extends AbstractButton {
                 selected ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED,
                 false
         );
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 Minecraft.getInstance().font,
                 Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(ageText.getString(),Math.max(20,getWidth()-10))),
                 getX() + 5,

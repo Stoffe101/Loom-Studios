@@ -80,9 +80,9 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
     @Override protected void renderWidget(GuiGraphics g, int mx, int my, float tick) {
         LoomScreenChrome.panel(g, getX(), getY(), getRight(), getBottom());
         var font = Minecraft.getInstance().font;
-        g.drawString(font, Component.literal("Wing textures"), getX() + 8, getY() + 7, LoomUiTheme.TEXT_MUTED, false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, Component.literal("Wing textures"), getX() + 8, getY() + 7, LoomUiTheme.TEXT_MUTED, false);
         String zoom = Math.round(ZOOMS[zoomIndex] * 100) + "% · Wheel zoom / middle drag";
-        if (getWidth() > 380 && dev.loomstudios.client.project.LoomPreferences.get().enabled("shortcuts",true)) g.drawString(font, Component.literal(zoom), getRight() - font.width(zoom) - 8, getY() + 7, LoomUiTheme.TEXT_FAINT, false);
+        if (getWidth() > 380 && dev.loomstudios.client.project.LoomPreferences.get().enabled("shortcuts",true)) dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, Component.literal(zoom), getRight() - font.width(zoom) - 8, getY() + 7, LoomUiTheme.TEXT_FAINT, false);
         ensureTextures();
         var pair = pairTransform();
         LoomScreenChrome.workSurface(g, pair.clipLeft(), pair.clipTop(), pair.clipRight(), pair.clipBottom());

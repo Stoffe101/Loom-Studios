@@ -25,9 +25,9 @@ public final class LoomSlider extends AbstractWidget {
     @Override protected void renderWidget(GuiGraphics g, int mx, int my, float tick) {
         LoomScreenChrome.panel(g,getX(),getY(),getRight(),getBottom());
         var font = Minecraft.getInstance().font;
-        g.drawString(font, getMessage(), getX() + 4, getY() + 2, LoomUiTheme.TEXT_MUTED, false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, getMessage(), getX() + 4, getY() + 2, LoomUiTheme.TEXT_MUTED, false);
         String text = Math.round(value.getAsDouble() * 100) + "%";
-        g.drawString(font, Component.literal(text), getRight() - 4 - font.width(text), getY() + 2, LoomUiTheme.TEXT, false);
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, Component.literal(text), getRight() - 4 - font.width(text), getY() + 2, LoomUiTheme.TEXT, false);
         int y = getBottom() - 5;
         int thumb = getX() + 4 + (int)Math.round(value.getAsDouble() * (getWidth() - 8));
         g.fill(getX() + 4, y, getRight() - 4, y + 2, LoomUiTheme.BORDER);

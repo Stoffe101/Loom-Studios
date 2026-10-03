@@ -1934,8 +1934,8 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     ) {
         if (workspaceTooSmall) {
             LoomScreenChrome.renderBackdrop(graphics, width, height);
-            graphics.drawCenteredString(font, title, width / 2, height / 2 - 24, LoomUiTheme.TEXT);
-            graphics.drawCenteredString(font, Component.literal("Increase window size or reduce GUI scale"), width / 2, height / 2, LoomUiTheme.TEXT_MUTED);
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font, title, width / 2, height / 2 - 24, LoomUiTheme.TEXT);
+            dev.loomstudios.client.ui.premium.PremiumText.drawCenteredString(graphics,font, Component.literal("Increase window size or reduce GUI scale"), width / 2, height / 2, LoomUiTheme.TEXT_MUTED);
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
@@ -1994,10 +1994,10 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         );
 
         if (inspectorTab == InspectorTab.ANIMATION && findAnimationTrack(selectedTrackId) == null) {
-            graphics.drawString(font, Component.literal("Animate a layer"), rightPanelLeft + 8, inspectorTop + 12, LoomUiTheme.ACCENT_ALT, false);
-            graphics.drawString(font, Component.literal("1. Select a layer"), rightPanelLeft + 8, inspectorTop + 32, LoomUiTheme.TEXT_MUTED, false);
-            graphics.drawString(font, Component.literal("2. Add a track below"), rightPanelLeft + 8, inspectorTop + 48, LoomUiTheme.TEXT_MUTED, false);
-            graphics.drawString(font, Component.literal("3. Scrub, add key, set value"), rightPanelLeft + 8, inspectorTop + 64, LoomUiTheme.TEXT_MUTED, false);
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font, Component.literal("Animate a layer"), rightPanelLeft + 8, inspectorTop + 12, LoomUiTheme.ACCENT_ALT, false);
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font, Component.literal("1. Select a layer"), rightPanelLeft + 8, inspectorTop + 32, LoomUiTheme.TEXT_MUTED, false);
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font, Component.literal("2. Add a track below"), rightPanelLeft + 8, inspectorTop + 48, LoomUiTheme.TEXT_MUTED, false);
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font, Component.literal("3. Scrub, add key, set value"), rightPanelLeft + 8, inspectorTop + 64, LoomUiTheme.TEXT_MUTED, false);
         }
         var context = workspaceLayout.context();
         LoomScreenChrome.panel(graphics, context.left(), context.top(), context.right(), context.bottom());

@@ -23,15 +23,17 @@ import org.lwjgl.opengl.GL33C;
  */
 public final class PremiumGuiRenderer extends PictureInPictureRenderer<PremiumGuiRenderer.State> {
     private long paintedRevision=Long.MIN_VALUE;
-    private static long paints;
+    private static long paints,submittedFrames;
     private static long revisions;
     public static long paints() {return paints;}
+    public static long submittedFrames() {return submittedFrames;}
     public static long nextRevision() {return ++revisions;}
     public PremiumGuiRenderer(MultiBufferSource.BufferSource buffer) { super(buffer); }
     public static void register() {
         SpecialGuiElementRegistry.register(context -> new PremiumGuiRenderer(context.vertexConsumers()));
     }
     public static void submit(GuiGraphics graphics,long revision, Runnable paint) {
+        submittedFrames++;
         int w = graphics.guiWidth(), h = graphics.guiHeight();
         var matrix = new Matrix3x2f(graphics.pose());
         var bounds = new ScreenRectangle(0, 0, w, h).transformMaxBounds(matrix);

@@ -741,7 +741,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         int top = contentTop + (compactMode ? 34 : 39);
         int max = centerRight - centerLeft - 16;
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 font,
                 Component.literal("Export current design"),
                 left,
@@ -753,7 +753,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         String id = LoomProjectCode.designId(sourceProject);
         graphics.fill(left-2,top+11,centerRight-8,top+25,0xFF123347);
         graphics.fill(left-2,top+11,left,top+25,LoomUiTheme.ACCENT);
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 font,
                 Component.literal(id).withStyle(net.minecraft.ChatFormatting.BOLD),
                 left,
@@ -765,7 +765,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         if (!compactMode) {
             String hint =
                     "PNG = ready texture • .loom = editable project • Portable = copy/share";
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     font,
                     Component.literal(
                             font.plainSubstrByWidth(hint, max)
@@ -783,7 +783,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         int top = contentTop + (compactMode ? 34 : 39);
         int max = centerRight - centerLeft - 16;
 
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 font,
                 Component.literal("Import a shared design"),
                 left,
@@ -795,7 +795,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         String message = incomingProject == null
                 ? "Paste LSP1 code or open a .loom file"
                 : incomingStatus;
-        graphics.drawString(
+        dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 font,
                 Component.literal(
                         font.plainSubstrByWidth(message, max)
@@ -809,7 +809,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         );
 
         if (!compactMode) {
-            graphics.drawString(
+            dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                     font,
                     Component.literal(
                             font.plainSubstrByWidth("Imports create a new local project.", max)
