@@ -16,9 +16,9 @@ import net.minecraft.world.item.Items;
 
 /** Matches vanilla wing geometry and attachment; only authored highlights become fullbright. */
 public final class LoomElytraGlowLayer extends RenderLayer<AvatarRenderState,PlayerModel> {
-    private final ElytraModel<AvatarRenderState> model;
+    private final ElytraModel model;
     public LoomElytraGlowLayer(RenderLayerParent<AvatarRenderState,PlayerModel> parent,EntityModelSet models){
-        super(parent);model=new ElytraModel<>(models.bakeLayer(ModelLayers.ELYTRA));
+        super(parent);model=new ElytraModel(models.bakeLayer(ModelLayers.ELYTRA));
     }
     @Override public void submit(PoseStack pose,SubmitNodeCollector collector,int light,AvatarRenderState state,float yaw,float pitch){
         if(state.isInvisible||!state.chestEquipment.is(Items.ELYTRA))return;
