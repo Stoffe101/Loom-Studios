@@ -477,7 +477,10 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         inspectorLayersButton = iconButton(rightPanelLeft, y, w, tabHeight, "Layers", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.LAYERS)).setIconOnly(false);
         inspectorColorButton = iconButton(rightPanelLeft + w + gap, y, w, tabHeight, "Color", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.COLOR)).setIconOnly(false);
         inspectorPropertiesButton = iconButton(rightPanelLeft + 2 * (w + gap), y, w, tabHeight, "Props", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.PROPERTIES)).setIconOnly(false);
-        inspectorAnimationButton = iconButton(rightPanelLeft + 3 * (w + gap), y, rightPanelRight - (rightPanelLeft + 3 * (w + gap)), tabHeight, "Anim", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.ANIMATION)).setIconOnly(false);
+        inspectorAnimationButton = iconButton(rightPanelLeft + 3 * (w + gap), y, rightPanelRight - (rightPanelLeft + 3 * (w + gap)), tabHeight, "Anim", LoomButton.Icon.NONE, () -> {
+            if(inspectorTab==InspectorTab.ANIMATION)minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId));else setInspectorTab(InspectorTab.ANIMATION);
+        }).setIconOnly(false);
+        inspectorAnimationButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Animation properties · Click again for full timeline studio")));
         buildLayerInspector(); buildColorInspector(); buildPropertyInspector(); buildAnimationInspector();
     }
 

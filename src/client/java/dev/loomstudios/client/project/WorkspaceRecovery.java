@@ -9,13 +9,14 @@ import java.nio.file.*;
 public final class WorkspaceRecovery {
     public static final ProjectFileStore STORE=new ProjectFileStore(LocalProjectLibrary.root().getParent().resolve("drafts"));
     private static LoomProject checkpoint;
+    public static boolean editingStarted;
     private static long lastWrite;
     private WorkspaceRecovery() { }
     public static void tick() {
-        if(LoomPreferences.get().enabled("autosave",true) && System.currentTimeMillis()-lastWrite>=30000) checkpoint();
+        if(editingStarted&&LoomPreferences.get().enabled("autosave",true) && System.currentTimeMillis()-lastWrite>=30000) checkpoint();
     }
     public static void checkpoint() {
-        if(!ClientProjectWorkspace.isInitialized() || !ClientProjectWorkspace.isDirty()
+        if(!editingStarted||!ClientProjectWorkspace.isInitialized() || !ClientProjectWorkspace.isDirty()
                 || ClientProjectWorkspace.session().isCompoundEditActive()) return;
         LoomProject project=ClientProjectWorkspace.project();
         if(project==checkpoint)return;

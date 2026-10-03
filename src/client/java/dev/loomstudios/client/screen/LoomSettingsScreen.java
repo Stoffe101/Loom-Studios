@@ -13,7 +13,8 @@ public final class LoomSettingsScreen extends Screen {
         addToggle(x,y+56,"alphaGuide","Preview transparency guide",true);
         addToggle(x,y+84,"animatePreview","Animate live previews",true);
         addToggle(x,y+112,"shortcuts","Show shortcut hints",true);
-        addRenderableWidget(new LoomButton(x,y+150,300,22,Component.literal("Back"),this::onClose));}
+        addRenderableWidget(new LoomButton(x,y+150,300,22,Component.literal("Back"),this::onClose));
+        addRenderableWidget(new LoomButton(x,y+178,300,22,Component.literal("Shortcuts & workflow help"),()->minecraft.setScreen(new LoomHelpScreen(this))));}
     private void addToggle(int x,int y,String key,String label,boolean fallback){addRenderableWidget(new LoomButton(x,y,300,22,Component.literal(label+": "+(LoomPreferences.get().enabled(key,fallback)?"On":"Off")),()->{LoomPreferences.toggle(key,fallback);rebuildWidgets();}));}
     @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,"Editor preferences",LoomUiTheme.compact(width,height));super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,"Preferences save automatically","Local settings");}
     @Override public void onClose(){minecraft.setScreen(parent);}

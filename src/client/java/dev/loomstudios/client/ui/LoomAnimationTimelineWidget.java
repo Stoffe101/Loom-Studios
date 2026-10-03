@@ -730,7 +730,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
 
                 if (mouseX >= timelineLeft()) {
                     for(AnimationKeyframe key:track.keyframes()){
-                        int x=tickToX(key.tick(),animation.durationTicks(),timelineLeft(),getRight()-8-timelineLeft());
+                        int x=tickToX(key.tick(),animation.durationTicks(),timelineLeft(),getRight()-6-timelineLeft());
                         if(Math.abs(mouseX-x)<=5){draggedTrack=track.id();draggedTick=key.tick();controller.beginKeyframeDrag();break;}
                     }
                     controller.scrubTo(

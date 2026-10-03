@@ -36,7 +36,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         top=header+8;bottom=height-28;left=8;right=Math.max(260,width-184);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
         String[] tabs={"Designs","Drafts","Trash"};
-        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;refresh();}).setSelected(tab==t));}
+        for(int i=0;i<3;i++){final int t=i;addRenderableWidget(new LoomButton(66+i*65,top,61,20,Component.literal(tabs[i]),()->{tab=t;page=0;menu=null;rebuildWidgets();}).setSelected(tab==t));}
         addRenderableWidget(new LoomButton(width-176,top,168,20,Component.literal("Editor settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
         search=addRenderableWidget(new EditBox(font,left,top+26,Math.max(100,(right-left)/2),20,Component.literal("Search designs")));
         search.setMaxLength(80);search.setValue(query);search.setHint(Component.literal("Search designs…"));
@@ -125,7 +125,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
         ProjectDescriptor d=menu;menu=null;if(d==null)return;select(d);
         try {
             switch(index){
-                case 0 -> {if(tab==2){restore(d);message="Design restored";refresh();}else editSelected();}
+                case 0 -> {if(tab==2){restore(d);message="Design restored";rebuildWidgets();}else editSelected();}
                 case 1 -> minecraft.setScreen(new LoomRenameScreen(this,d.name(),name->{
                     LoomProject p=load(d).withName(name).withMetadata(load(d).metadata().touch(System.currentTimeMillis()));
                     new ProjectFileStore(d.projectPath().getParent()).save(p);
@@ -148,6 +148,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
             if(inside&&event.button()==0){act((int)(event.y()-menuY)/23);return true;}menu=null;return true;}
         return super.mouseClicked(event,doubleClick);
     }
+    @Override public boolean mouseScrolled(double x,double y,double sx,double sy){if(menu!=null)return true;if(x<right&&y>top+51&&sy!=0){page+=sy<0?1:-1;buildCards();return true;}return super.mouseScrolled(x,y,sx,sy);}
     @Override public boolean keyPressed(KeyEvent event){if(menu!=null&&event.key()==256){menu=null;return true;}return super.keyPressed(event);}
     @Override public void render(GuiGraphics g,int mx,int my,float delta){
         LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,"Design library",LoomUiTheme.compact(width,height));

@@ -13,6 +13,8 @@ public final class EditorPreferences {
         if (Files.isRegularFile(file) && Files.size(file)<=65536)
             try (InputStream stream=Files.newInputStream(file)) { values.load(stream); }
     }
+    private EditorPreferences(Path file,boolean empty){this.file=file;}
+    public static EditorPreferences defaults(Path file){return new EditorPreferences(file,true);}
     public boolean enabled(String key, boolean fallback) {
         return Boolean.parseBoolean(values.getProperty(key,Boolean.toString(fallback)));
     }

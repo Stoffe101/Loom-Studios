@@ -120,6 +120,7 @@ public final class ClientProjectWorkspace {
     }
 
     public static LoomProject apply(UnaryOperator<LoomProject> edit) {
+        WorkspaceRecovery.editingStarted=true;
         LoomProject result = session().apply(edit);
         notifyListeners();
         return result;
@@ -170,6 +171,7 @@ public final class ClientProjectWorkspace {
     ) {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
         WorkspaceRecovery.checkpoint();
+        WorkspaceRecovery.editingStarted=true;
         playerId = localPlayerId;
         session = new ProjectSession(
                 LoomProjectFactory.blank(name, nowEpochMillis),
@@ -181,14 +183,19 @@ public final class ClientProjectWorkspace {
     public static void open(Path path, UUID localPlayerId) throws IOException {
         Objects.requireNonNull(localPlayerId, "localPlayerId");
         WorkspaceRecovery.checkpoint();
+        WorkspaceRecovery.editingStarted=true;
         session = ProjectSession.load(path, LocalProjectLibrary.store());
         playerId = localPlayerId;
         ProjectLibraryIndex.refresh();
         notifyListeners();
     }
 
+    public static void replaceWith(LoomProject project,UUID localPlayerId) {
+        WorkspaceRecovery.checkpoint();WorkspaceRecovery.editingStarted=true;session=new ProjectSession(project,LocalProjectLibrary.store());playerId=localPlayerId;notifyListeners();
+    }
     public static void recover(Path path, UUID localPlayerId) throws IOException {
         WorkspaceRecovery.checkpoint();
+        WorkspaceRecovery.editingStarted=true;
         session = new ProjectSession(WorkspaceRecovery.STORE.load(path),LocalProjectLibrary.store());
         playerId=localPlayerId; notifyListeners();
     }

@@ -6,6 +6,8 @@ User authorized the complete follow-up feature milestone plus Browse All, right-
 
 Current branch: `codex/library-authoring-milestone`, base `a2996e47be8f1ed4a5bb0766d01027185eb9f3d7`. Implemented source pending verification: paged library with search/latest/name sorting, favorites, duplicate/rename, reversible Trash/restore; separate 30-second recovery drafts and Settings; standing/open/gliding preview controls; shared Cape/Elytra animation workspace and draggable keyframes; Elytra drawing tools and both-channel internal pixel copy/paste/rotation. None of this milestone is marked DONE until build/runtime/visual checks pass.
 
+First CI checkpoint `638a5b552b4047e8fae616ab6fd54edd029ae8d7`, Actions #195, failed compilation: three Cape clipboard feedback references used an absent statusMessage field. Corrected to the existing player notification method. Preview pose fields and the other new classes compiled. Templates and direct import handles are now implemented source, still awaiting exact-SHA checks.
+
 Next in this active pass: complete useful template packs and import handles/processing conveniences, add runtime interaction/layout evidence, run exact-SHA CI and release compatibility checks, correct failures and update documentation. Real hardware shader/FPS and two-user multiplayer results remain separately identified until actually exercised.
 
 ## User-feedback pass — DONE (2026-10-03)

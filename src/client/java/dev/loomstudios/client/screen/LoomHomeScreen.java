@@ -129,6 +129,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         buildCenterContent();
         buildPreviewPanel();
         addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
+        addRenderableWidget(new LoomButton(centerRight-61,templatesTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomTemplatesScreen(this))));
         addRenderableWidget(new LoomButton(leftPanelLeft,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
         addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Settings"),()->minecraft.setScreen(new LoomSettingsScreen(this))));
     }
@@ -349,10 +350,10 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                     templateWidth,
                     templateHeight,
                     labels[index],
-                    "Coming later",
+                    "Layered design",
                     icons[index],
-                    false,
-                    () -> { }
+                    true,
+                    () -> createTemplate(dev.loomstudios.project.TemplateCatalog.Kind.values()[index+2])
             );
         }
     }
@@ -465,6 +466,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         this.minecraft.setScreen(new CapeEditorScreen(this));
     }
 
+    private void createTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){if(minecraft.player==null)return;ClientProjectWorkspace.replaceWith(dev.loomstudios.project.TemplateCatalog.create(kind,System.currentTimeMillis()),minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(this));}
     private void createGradientTemplate() {
         if (this.minecraft.player == null) {
             return;
