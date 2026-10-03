@@ -27,4 +27,11 @@ public final class WorkspaceRecovery {
         try{Files.deleteIfExists(STORE.pathFor(project.projectId()));}catch(IOException e){LoomStudios.LOGGER.warn("Saved design but could not remove its recovery draft",e);}
         checkpoint=project;
     }
+    public static void keepDraft() throws IOException {
+        ClientProjectWorkspace.endCompoundEdit();
+        LoomProject project=ClientProjectWorkspace.project();STORE.save(project);checkpoint=project;lastWrite=System.currentTimeMillis();
+    }
+    public static void discardDraft(java.util.UUID id) throws IOException {
+        Files.deleteIfExists(STORE.pathFor(id));checkpoint=null;
+    }
 }

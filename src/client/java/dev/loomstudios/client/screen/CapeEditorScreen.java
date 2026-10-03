@@ -199,6 +199,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
 
     @Override
     protected void init() {
+        tooltipLayerState="";
         LoomCapeFaceWidget.ViewState viewState = canvasWidget == null ? null : canvasWidget.viewState();
         LoomPlayerPreviewWidget.ViewState previewState = previewWidget == null ? null : previewWidget.viewState();
         if (canvasWidget != null) canvasWidget.close();
@@ -206,7 +207,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         if (workspaceTooSmall) {
             ClientProjectWorkspace.endCompoundEdit();
             addRenderableWidget(new LoomButton(Math.max(0, (width - 100) / 2), height / 2 + 24, 100, 22,
-                    Component.literal("Back"), () -> minecraft.setScreen(parent)));
+                    Component.literal("Back"), this::onClose));
             return;
         }
         workspaceLayout = LoomWorkspaceLayout.create(width, height, false, 0);
@@ -236,7 +237,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         int x = margin, y = headerHeight + 2, h = navHeight - 4;
         String[] labels = {"Home", "Cape", "Elytra", "Import", "Export"};
         LoomButton.Icon[] icons = {LoomButton.Icon.HOME, LoomButton.Icon.CAPE, LoomButton.Icon.ELYTRA, LoomButton.Icon.IMAGE, LoomButton.Icon.EXPORT};
-        Runnable[] actions = {() -> minecraft.setScreen(new LoomHomeScreen()), () -> { }, () -> minecraft.setScreen(new ElytraEditorScreen(this)), this::openSmartImport,
+        Runnable[] actions = {() -> dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->minecraft.setScreen(new LoomHomeScreen())), () -> { }, () -> minecraft.setScreen(new ElytraEditorScreen(this)), this::openSmartImport,
                 () -> minecraft.setScreen(new LoomCodesScreen(this, ClientProjectWorkspace.project()))};
         for (int i = 0; i < labels.length; i++) {
             int w = font.width(labels[i]) + 28;
@@ -412,6 +413,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                         new LoomCapeFaceWidget.StrokeLifecycle() {
                             @Override
                             public void begin() {
+                                if(selectedLayer()!=null&&selectedLayer().editableAsPaint()&&tool!=Tool.ERASER&&tool!=Tool.SELECT&&tool!=Tool.EYEDROPPER)dev.loomstudios.client.palette.EditorColors.use(selectedColor);
                                 ClientProjectWorkspace.beginCompoundEdit();
                             }
 
@@ -1034,6 +1036,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         };
     }
 
+    private String tooltipLayerState="";
     private void setTool(Tool next) {
         this.tool = next;
         updateButtonStates();
@@ -1077,6 +1080,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             selectButton.setMessage(Component.literal("Select"));
             selectButton.setSelected(tool == Tool.SELECT);
         }
+        String state=selectedLayer()==null?"none":selectedLayer().kind()+":"+selectedLayer().locked();
+        if(!state.equals(tooltipLayerState)){tooltipLayerState=state;LoomButton[] buttons={pencilButton,eraserButton,fillButton,eyedropperButton,selectButton,lineButton,rectangleButton,circleButton};String[] tools={"PENCIL","ERASER","FILL","EYEDROPPER","SELECT","LINE","RECTANGLE","CIRCLE"};for(int i=0;i<buttons.length;i++)if(buttons[i]!=null)buttons[i].setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(dev.loomstudios.client.ui.LoomToolGuidance.tooltip(tools[i],selectedLayer(),false))));}
 
         boolean editablePaintSelection = workspaceState != null
                 && !workspaceState.project().cape().layers().isEmpty()
@@ -2711,6 +2716,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 : workspaceState.dirty()
                         ? "Unsaved edits"
                         : "Saved, not equipped";
+        status=dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
 
         LoomScreenChrome.footer(
                 graphics,
@@ -2861,7 +2867,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             }
 
             switch (event.key()) {
-                case 66 -> {
+                case 66,80 -> {
                     setTool(Tool.PENCIL);
                     return true;
                 }
@@ -2877,6 +2883,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                     setTool(Tool.EYEDROPPER);
                     return true;
                 }
+                case 83,86 -> {setTool(Tool.SELECT);return true;}
                 case 76 -> {
                     setTool(Tool.LINE);
                     return true;
@@ -2907,6 +2914,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
 
         return super.keyPressed(event);
     }
+
+    @Override public void onClose(){if(parent instanceof ElytraEditorScreen)minecraft.setScreen(parent);else dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->minecraft.setScreen(parent));}
 
     private boolean isEditingText() {
         if (paletteWindowVisible

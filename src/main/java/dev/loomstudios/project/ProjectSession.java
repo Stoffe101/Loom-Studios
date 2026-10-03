@@ -17,6 +17,7 @@ public final class ProjectSession {
     private Path sourcePath;
     private String savedHash;
     private LoomProject savedProject;
+    private final LoomProject initialProject;
     private long revision;
 
     private long cachedHashRevision = Long.MIN_VALUE;
@@ -39,6 +40,7 @@ public final class ProjectSession {
         this.history = new ProjectHistory(
                 Objects.requireNonNull(project, "project")
         );
+        this.initialProject = project;
     }
 
     public static ProjectSession load(
@@ -152,5 +154,12 @@ public final class ProjectSession {
         this.savedHash = currentHash();
         this.savedProject = project();
         return saved;
+    }
+
+    /** Forget unsaved history without writing artwork or changing equipped state. */
+    public void discardChanges() {
+        endCompoundEdit();
+        LoomProject baseline=savedProject==null?initialProject:savedProject;
+        history=new ProjectHistory(baseline);savedProject=baseline;revision++;cachedHash=null;
     }
 }

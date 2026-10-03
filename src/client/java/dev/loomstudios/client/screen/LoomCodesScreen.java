@@ -621,11 +621,10 @@ public final class LoomCodesScreen extends LoomPointerScreen {
             status = "Imported " + forked.name();
 
             if (openAfterImport) {
-                ClientProjectWorkspace.open(
-                        path,
-                        minecraft.player.getUUID()
-                );
-                minecraft.setScreen(new CapeEditorScreen(parent));
+                dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->{
+                    try{ClientProjectWorkspace.open(path,minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(parent));}
+                    catch(IOException e){status="Could not open imported design";dev.loomstudios.client.project.LoomDiagnostics.record("Open imported design",e);}
+                });
             }
         } catch (IOException | IllegalArgumentException e) {
             LoomStudios.LOGGER.error(

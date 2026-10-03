@@ -453,7 +453,9 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         });
     }
 
-    private void createNewCape() {
+    @Override public void onClose(){dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->minecraft.setScreen(null));}
+    private void createNewCape() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::createNewCapeNow); }
+    private void createNewCapeNow() {
         if (this.minecraft.player == null) {
             return;
         }
@@ -466,8 +468,9 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         this.minecraft.setScreen(new CapeEditorScreen(this));
     }
 
-    private void createTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){if(minecraft.player==null)return;ClientProjectWorkspace.replaceWith(dev.loomstudios.project.TemplateCatalog.create(kind,System.currentTimeMillis()),minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(this));}
-    private void createGradientTemplate() {
+    private void createTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->{if(minecraft.player==null)return;ClientProjectWorkspace.replaceWith(dev.loomstudios.project.TemplateCatalog.create(kind,System.currentTimeMillis()),minecraft.player.getUUID());minecraft.setScreen(new CapeEditorScreen(this));});}
+    private void createGradientTemplate() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::createGradientTemplateNow); }
+    private void createGradientTemplateNow() {
         if (this.minecraft.player == null) {
             return;
         }
@@ -549,7 +552,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
     }
 
-    private void createFromImport() {
+    private void createFromImport() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::createFromImportNow); }
+    private void createFromImportNow() {
         if (this.minecraft.player == null) {
             return;
         }
@@ -609,7 +613,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
     }
 
-    private void openSelected() {
+    private void openSelected() { dev.loomstudios.client.project.WorkspaceNavigation.request(this,this::openSelectedNow); }
+    private void openSelectedNow() {
         if (this.minecraft.player == null) {
             return;
         }

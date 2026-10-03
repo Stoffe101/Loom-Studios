@@ -1,5 +1,9 @@
 # Loom Studios — Current State
 
+## Editor safety/usability — IN PROGRESS (2026-10-03)
+
+All six requested additions are implemented source on `codex/editor-safety-usability` from `d038b23ea10570a193299157617570b5d5122212`: unsaved Save/Keep draft/Discard/Cancel, named delete confirmation + Undo, tool/disabled-reason guidance, recent/design colors, preview backgrounds and private diagnostics. All five originals were viewed again. No schema/network change. Build/tests and expanded 128-capture/runtime/visual checks are pending; next is to run checks, correct failures and document delivery. Hardware/modpack acceptance remains separate.
+
 ## Library and authoring milestone — DONE (2026-10-03)
 
 Merged to main through [PR #16](https://github.com/Stoffe101/Loom-Studios/pull/16), merge `ece5ec7a69e727390d61f22f631c7a59dac0e09f`, 2026-10-03 04:14 UTC. Merge tree equals the exact Actions #200 tested tree. This subsequent commit records documentation/evidence only; main push checks may still be running and are not claimed passed.

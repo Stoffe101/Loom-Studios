@@ -1,5 +1,7 @@
 # Loom Studios — Architectural Decisions
 
+2026-10-03 safety pass (source awaiting checks): failed save/recovery must not advance navigation. Save never equips; Keep draft preserves separate recovery; Discard removes recovery and restores the saved baseline. Internal same-workspace tabs do not prompt. Delete uses named confirmation, Trash and immediate non-overwriting Undo. Recent/design-color groups are virtual/read-only until palette saving. Preview backgrounds are GUI-only. Diagnostics are user-triggered clipboard text without raw logs/account/absolute paths/artwork; no telemetry/schema/protocol changes.
+
 ## ADR-001 — Minecraft 1.21.11 / Loader 0.18.4 baseline
 **Status:** Accepted
 

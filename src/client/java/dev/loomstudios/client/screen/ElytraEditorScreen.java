@@ -164,6 +164,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
 
     @Override
     protected void init() {
+        tooltipLayerState="";
         LoomElytraCanvasWidget.ViewState viewState = canvasWidget == null ? null : canvasWidget.viewState();
         LoomPlayerPreviewWidget.ViewState previewState = previewWidget == null ? null : previewWidget.viewState();
         if (canvasWidget != null) canvasWidget.close();
@@ -171,7 +172,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         if (workspaceTooSmall) {
             ClientProjectWorkspace.endCompoundEdit();
             addRenderableWidget(new LoomButton(Math.max(0, (width - 100) / 2), height / 2 + 24, 100, 22,
-                    Component.literal("Back"), () -> minecraft.setScreen(parent)));
+                    Component.literal("Back"), this::onClose));
             return;
         }
         ensureSelectedLayerExists(); ensureSelectedTrackExists();
@@ -199,7 +200,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         int x = margin, y = headerHeight + 2, h = navHeight - 4;
         String[] labels = {"Home", "Cape", "Elytra", "Import", "Export"};
         LoomButton.Icon[] icons = {LoomButton.Icon.HOME, LoomButton.Icon.CAPE, LoomButton.Icon.ELYTRA, LoomButton.Icon.IMAGE, LoomButton.Icon.EXPORT};
-        Runnable[] actions = {() -> minecraft.setScreen(new LoomHomeScreen()), () -> minecraft.setScreen(new CapeEditorScreen(this)), () -> { }, this::importImage,
+        Runnable[] actions = {() -> dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->minecraft.setScreen(new LoomHomeScreen())), () -> minecraft.setScreen(new CapeEditorScreen(this)), () -> { }, this::importImage,
                 () -> minecraft.setScreen(new LoomCodesScreen(this, ClientProjectWorkspace.project()))};
         for (int i = 0; i < labels.length; i++) {
             int w = font.width(labels[i]) + 28;
@@ -1122,6 +1123,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void editWing(ElytraWing wing,int x,int y) {
+        if(tool!=Tool.ERASER&&tool!=Tool.SELECT&&tool!=Tool.EYEDROPPER)dev.loomstudios.client.palette.EditorColors.use(selectedColor);
         if(tool==Tool.EYEDROPPER){int[] p=LoomTextureCompiler.compile(ClientProjectWorkspace.project().elytra(),0,false,false);int scale=ClientProjectWorkspace.project().elytra().width()/64;setSelectedColor(p[wing.atlasY(y,scale)*ClientProjectWorkspace.project().elytra().width()+wing.atlasX(x,scale)]);return;}
         LoomLayer layer=selectedLayer();if(layer==null||!layer.editableAsPaint())return;
         if(tool==Tool.FILL)ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x,y,x,y,1,selectedColor,false)));
@@ -1130,6 +1132,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private void finishShape(ElytraWing wing,int x0,int y0,int x1,int y1){
         if(selectedLayer()==null||!selectedLayer().editableAsPaint())return;
         if(tool==Tool.SELECT){selectionWing=wing;selection=PixelSelection.between(x0,y0,x1,y1);canvasWidget.setSelection(wing,selection);updateButtonStates();return;}
+        dev.loomstudios.client.palette.EditorColors.use(selectedColor);
         ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x0,y0,x1,y1,brushSize,selectedColor,shapeFilled)));
     }
     private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing).crop(selection);statusMessage="Pixels copied";updateButtonStates();}}
@@ -1636,9 +1639,12 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                 .orElse(null);
     }
 
+    private String tooltipLayerState="";
     private void updateButtonStates() {
         boolean paint=selectedLayer()!=null&&selectedLayer().editableAsPaint();
         for(var entry:drawingButtons.entrySet()){entry.getValue().setSelected(tool==entry.getKey());entry.getValue().active=paint||entry.getKey()==Tool.EYEDROPPER;}
+        String state=selectedLayer()==null?"none":selectedLayer().kind()+":"+selectedLayer().locked();
+        if(!state.equals(tooltipLayerState)){tooltipLayerState=state;for(var entry:drawingButtons.entrySet())entry.getValue().setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(dev.loomstudios.client.ui.LoomToolGuidance.tooltip(entry.getKey().name(),selectedLayer(),true))));}
         if(filledButton!=null){filledButton.visible=tool==Tool.CIRCLE||tool==Tool.RECTANGLE;filledButton.active=paint;filledButton.setMessage(Component.literal(shapeFilled?"Filled":"Outline"));}
         for(int i=0;i<selectionButtons.size();i++){var button=selectionButtons.get(i);button.visible=tool==Tool.SELECT;button.active=paint&&(i==4?PixelClipboard.patch!=null:selection!=null);}
         if(brushDownButton!=null){brushDownButton.visible=tool!=Tool.SELECT&&tool!=Tool.FILL&&tool!=Tool.EYEDROPPER;brushLabelButton.visible=brushDownButton.visible;brushUpButton.visible=brushDownButton.visible;}
@@ -1993,6 +1999,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                                 ? "Unsaved edits"
                                 : "Saved, not equipped")
                 : statusMessage;
+        status=dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),true,status);
 
         LoomScreenChrome.footer(
                 graphics,
@@ -2058,7 +2065,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void goBack() {
-        this.minecraft.setScreen(parent);
+        if(parent instanceof CapeEditorScreen)this.minecraft.setScreen(parent);else dev.loomstudios.client.project.WorkspaceNavigation.request(this,()->minecraft.setScreen(parent));
     }
 
     @Override

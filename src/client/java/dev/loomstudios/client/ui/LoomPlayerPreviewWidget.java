@@ -115,7 +115,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
         int contentRight = getRight() - 4;
         int contentBottom = getBottom() - (getHeight() > 140 ? 16 : 4);
 
-        LoomWorkshopArt.previewScene(graphics,contentLeft,contentTop,contentRight,contentBottom);
+        LoomPreviewBackground.render(graphics,contentLeft,contentTop,contentRight,contentBottom);
 
         LoomProject project = projectSupplier.get();
         LivingEntity player = Minecraft.getInstance().player;
