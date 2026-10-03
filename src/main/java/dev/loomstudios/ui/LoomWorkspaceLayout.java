@@ -36,7 +36,7 @@ public record LoomWorkspaceLayout(
         int contextBottom = elytra ? timelineTop - gap : bottom;
         int contextTop = contextBottom - 26;
         // Properties are paged; reserve enough room for the tallest compact page.
-        int previewHeight = Math.max(60, Math.min(compact ? 110 : 210, bottom - top - 188));
+        int previewHeight = Math.max(48, Math.min(compact ? 110 : 210, bottom - top - 188));
         int previewBottom = top + previewHeight;
         int tabsTop = previewBottom + gap;
         int tabsBottom = tabsTop + 22;
