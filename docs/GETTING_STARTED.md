@@ -1,5 +1,17 @@
 # Loom Studios — Getting Started
 
+## Library and layer tools
+
+Favorites appear first in Designs; search matches design names, local folder names and tags. Right-click a recent Home project or library card for Edit, Rename, Favorite, Duplicate, Delete, Equip, Folder / tags and Backup / versions. Double-click opens a design for editing. Home immediate Favorite/Duplicate/Equip actions return to Home; other workflows use the shared library/task screens.
+
+Ctrl-click library cards to add/remove selections; Shift-click selects a range. Bulk actions can assign folder/tags, favorite/unfavorite, create backups and move to recoverable Trash. Bulk restore refuses to overwrite an existing saved file. Counts report completed and failed items. Empty folder/tag fields clear existing organization, including when applying to several designs.
+
+Each changed explicit save keeps the previous artwork in local history, up to 20 unique snapshots per saved design. Backup / versions can create a manual snapshot or restore a previous one after confirmation; restore validates identity/checksum and backs up the current save first. Unsaved workspace changes use the usual Save/Keep draft/Discard/Cancel guard. Recovery autosave remains separate and does not automatically create saved-design versions.
+
+Click Manage in the Cape/Elytra layer panel for the full layer manager. Ctrl/Shift selects several layers; Select all shown applies to the current group filter. Assign/clear group changes local organization. Group filtering, hide/show, lock/unlock, duplicate, move up/down and confirmed delete operate on the selection. Canvas batch operations are one Ctrl+Z undo step; group labels are local preferences and are not canvas history. At least one layer must remain, and oversized duplication leaves the document unchanged. The compact inspector uses smaller rows; full managers show the stack without competing with the 3D panel.
+
+Folder/tag/group metadata is installation-local: it does not travel in exported artwork or version snapshots. Groups do not create nested rendering/group effects. The template collection now has fourteen designs, including Aurora, Dragon, Phoenix, Crystal, Cat, Fox, Frog and Heart. Previous/Next switches pages and keeps preview selection on the visible page.
+
 ## Development baseline
 
 - Minecraft 1.21.11

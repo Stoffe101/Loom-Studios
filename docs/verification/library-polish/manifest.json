@@ -1,0 +1,951 @@
+{
+  "testedSource": "01d530366a0f25ff89265eef27ec286c0d545d2f",
+  "mergeCommit": "7f9800e399e487ae59e5ba0f3b2c24fec6e697fb",
+  "run": 37125589956,
+  "runNumber": 217,
+  "checks": [
+    {
+      "name": "Real editor screenshots / Mesa",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Java 21 / Minecraft 1.21.11",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "tests": {
+    "count": 125,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "captures": [
+    {
+      "name": "cape-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "elytra-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "cape-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "elytra-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "cape-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "elytra-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "cape-color-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-properties-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-animation-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-playback-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-gradient-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-transform-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-stops-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-properties-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-color-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-many-layers-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-many-tracks-compact",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-single-pixel-live-200percent",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-single-pixel-committed-200percent",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-small-window-guidance",
+      "logicalWidth": 427,
+      "logicalHeight": 240
+    },
+    {
+      "name": "home-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "share-export-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "share-import-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "smart-import-placement-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "smart-import-processing-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "home-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "share-export-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "share-import-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "smart-import-placement-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "smart-import-processing-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "home-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "share-export-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "share-import-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "smart-import-placement-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "smart-import-processing-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "home-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "share-export-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "share-import-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "smart-import-placement-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "smart-import-processing-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "cape-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "elytra-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "cape-properties-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "elytra-animation-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "home-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "share-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "smart-import-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "cape-palette-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "elytra-palette-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "circle-live-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "circle-committed-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "cape-middle-pan-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "elytra-middle-pan-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "cape-transparent-guide-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "elytra-transparent-guide-windowed-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 334
+    },
+    {
+      "name": "cape-635x320-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "elytra-properties-635x320-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "cape-expanded-635x320-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "elytra-expanded-635x320-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "circle-filled-live-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "circle-filled-committed-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "cape-3d-pan-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "elytra-3d-pan-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "home-3d-pan-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "smart-import-3d-pan-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "share-3d-pan-gui3",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "library-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "templates-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "settings-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "cape-animation-studio-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "elytra-animation-studio-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "preview-open-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "preview-gliding-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "library-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "templates-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "settings-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "cape-animation-studio-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "elytra-animation-studio-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "preview-open-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "preview-gliding-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "library-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "templates-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "settings-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "cape-animation-studio-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "elytra-animation-studio-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "preview-open-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "preview-gliding-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "library-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "templates-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "settings-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "cape-animation-studio-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "elytra-animation-studio-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "preview-open-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "preview-gliding-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "library-context-635x320",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "library-drafts-635x320",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "library-trash-635x320",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "rename-635x320",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "safety-unsaved-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-delete-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-recent-design-colors-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-preview-light-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-preview-dark-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-preview-checker-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "safety-unsaved-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-delete-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-recent-design-colors-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-preview-light-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-preview-dark-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-preview-checker-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "safety-unsaved-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-delete-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-recent-design-colors-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-preview-light-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-preview-dark-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-preview-checker-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "safety-unsaved-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-delete-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-recent-design-colors-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-preview-light-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-preview-dark-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-preview-checker-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "safety-settings-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "safety-unsaved-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "safety-undo-delete-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "safety-palette-management-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-home-menu-hover-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-templates-cool-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-templates-cute-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-library-favorites-folders-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-library-bulk-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-library-organize-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-library-versions-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-cape-layers-dense-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-elytra-layers-dense-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-cape-layer-groups-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-elytra-layer-groups-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-layer-group-name-1920x1080-gui2",
+      "logicalWidth": 960,
+      "logicalHeight": 540
+    },
+    {
+      "name": "polish-home-menu-hover-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-templates-cool-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-templates-cute-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-library-favorites-folders-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-library-bulk-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-library-organize-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-library-versions-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-cape-layers-dense-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-elytra-layers-dense-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-cape-layer-groups-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-elytra-layer-groups-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-layer-group-name-1920x1080-gui3",
+      "logicalWidth": 640,
+      "logicalHeight": 360
+    },
+    {
+      "name": "polish-home-menu-hover-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-templates-cool-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-templates-cute-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-library-favorites-folders-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-library-bulk-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-library-organize-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-library-versions-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-cape-layers-dense-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-elytra-layers-dense-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-cape-layer-groups-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-elytra-layer-groups-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-layer-group-name-3440x1440-gui2",
+      "logicalWidth": 1720,
+      "logicalHeight": 720
+    },
+    {
+      "name": "polish-home-menu-hover-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-templates-cool-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-templates-cute-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-library-favorites-folders-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-library-bulk-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-library-organize-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-library-versions-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-cape-layers-dense-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-elytra-layers-dense-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-cape-layer-groups-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-elytra-layer-groups-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-layer-group-name-3440x1440-gui3",
+      "logicalWidth": 1147,
+      "logicalHeight": 480
+    },
+    {
+      "name": "polish-bulk-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-organize-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-versions-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-cape-layer-manager-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-elytra-layer-manager-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    },
+    {
+      "name": "polish-templates-cute-compact",
+      "logicalWidth": 635,
+      "logicalHeight": 320
+    }
+  ],
+  "screenshotArtifact": {
+    "id": 11275741226,
+    "sha256": "e222756d7f2799c7e09e556755b4659b8b9371db23a2a647a237dfedd11872b8",
+    "expires": "2027-01-01"
+  },
+  "visualReview": "Earlier screenshots reviewed; final archive inspection blocked by file/executor HTTP503",
+  "interactionPasses": [
+    "LOOM_UI_IMPORT_HANDLES PASS: Screen drag changes the rendered import candidate",
+    "LOOM_UI_WORKFLOWS PASS: project/portable/PNG export and both import pages",
+    "LOOM_UI_INPUT_PREVIEW PASS: Screen canvas/3D/expanded middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash/skin reuse and Cape/Elytra alpha isolation",
+    "LOOM_UI_ANIMATION PASS: Screen keyframe dragging and single-step undo",
+    "LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit, isolated draft recovery and explicit save cleanup",
+    "LOOM_UI_SAFETY PASS: unsaved cancel/save/keep/discard, delete cancel/Undo, design palette, background isolation, private diagnostics",
+    "LOOM_UI_POLISH PASS: inline Home menu/Escape, Home/catalog artwork equivalence, favorites-first, Ctrl bulk selection, batch hide/undo, library Equip"
+  ]
+}
