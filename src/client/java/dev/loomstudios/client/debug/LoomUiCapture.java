@@ -218,7 +218,7 @@ public final class LoomUiCapture {
     private static void capture(Minecraft client, int index) {
         try {
             if(index>=182)System.out.println("LOOM_PREMIUM_CPU "+index+" "+dev.loomstudios.client.ui.premium.PremiumPaint.metrics());
-            if((index==8||index>=22&&index<42&&(index-22)%5==0||index>=182&&index%2==0)&&cacheProbes.add(index)) {
+            if((index==8||index>=22&&index<42&&(index-22)%5==0||index>=182&&index<190&&index%2==0)&&cacheProbes.add(index)) {
                 long uploads=dev.loomstudios.client.ui.LoomUiTextureCache.uploads();
                 long paints=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.paints();
                 long submitted=dev.loomstudios.client.ui.premium.PremiumGuiRenderer.submittedFrames();
@@ -452,9 +452,13 @@ public final class LoomUiCapture {
         int view=(stage-190)%7;var home=new LoomHomeScreen();
         if(view==0)client.setScreen(home);
         else if(view==1){
+            for(int paletteIndex=0;paletteIndex<5;paletteIndex++){
+                dev.loomstudios.client.palette.ColorPaletteLibrary.create("Study palette "+paletteIndex,0xFF29385A);
+                for(int color=0;color<12;color++)dev.loomstudios.client.palette.ColorPaletteLibrary.addColorToSelected(0xFF000000|((paletteIndex*45+color*19)&255)<<16|((color*27)&255)<<8|170);
+            }
             var editor=new CapeEditorScreen(home);client.setScreen(editor);call(editor,"togglePaletteWindow");
             var palette=(dev.loomstudios.client.ui.LoomPaletteWindow)field(editor,"paletteWindow").get(editor);
-            set(palette,"swatchesScroll",40);
+            call(palette,"toggleManagement");set(palette,"swatchesScroll",40);
         }else if(view==2||view==3){
             Screen editor=view==2?new CapeEditorScreen(home):new ElytraEditorScreen(home);client.setScreen(editor);
             var preview=(dev.loomstudios.client.ui.LoomPlayerPreviewWidget)field(editor,"previewWidget").get(editor);

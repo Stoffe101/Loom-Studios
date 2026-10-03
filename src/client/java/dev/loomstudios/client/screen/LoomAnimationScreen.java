@@ -75,7 +75,11 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         }catch(IllegalArgumentException|IllegalStateException e){message=e.getMessage();}
     }
 
-    private void button(int x,int y,int w,String label,Runnable action){addRenderableWidget(new LoomButton(x,y,w,22,Component.literal(label),action));}
+    private void button(int x,int y,int w,String label,Runnable action){
+        var button=addRenderableWidget(new LoomButton(x,y,w,22,Component.literal(label),action));
+        String hint=label.startsWith("Preset:")?"Click to choose from seven animation presets":label.startsWith("Rate ")?"Click to cycle 0.25, 0.5, 1 or 2 cycles per second; then Apply":label.equals("Apply & play")?"Create or replace the selected track, then preview it. Ctrl+Z undoes the whole application":label.equals("Advanced")?"Edit the effect, keyframe values and track speed":label;
+        button.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(hint)));
+    }
     private void changeTrack(UnaryOperator<AnimationTrack> edit){AnimationTrack current=track();if(current!=null)ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(p.animation(),edit.apply(current))));}
     @Override public void togglePlayback(){playing=!playing;cursor=tick;}
     @Override public void toggleTimelineLoop(){ClientProjectWorkspace.apply(p->p.withAnimation(p.animation().withLoop(!p.animation().loop())));}
@@ -96,8 +100,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));LoomScreenChrome.panel(g,8,guideTop,width-204,guideTop+61);
         var f=minecraft.font;
         dev.loomstudios.client.ui.premium.PremiumControls.label(g,"1. Layer   2. Preset & rate   3. Apply & play   4. Save",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
-        var lines=f.split(Component.literal(preset.description()),guideWidth);
-        for(int i=0;i<Math.min(2,lines.size());i++)g.drawString(f,lines.get(i),16,guideTop+24+i*11,LoomUiTheme.TEXT_MUTED,false);
+        var lines=new ArrayList<String>();String line="";
+        for(String word:preset.description().split(" ")){if(!line.isEmpty()&&f.width(line+" "+word)>guideWidth){lines.add(line);line=word;}else line=line.isEmpty()?word:line+" "+word;}
+        if(!line.isEmpty())lines.add(line);
+        for(int i=0;i<Math.min(2,lines.size());i++)dev.loomstudios.client.ui.premium.PremiumControls.label(g,lines.get(i),16,guideTop+24+i*12,guideWidth,9,LoomUiTheme.TEXT_MUTED,false);
         super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-130),playing?"Playing":"Paused");}
     @Override public void removed(){if(timeline!=null)timeline.closeGesture();ClientProjectWorkspace.endCompoundEdit();super.removed();}
     @Override public void onClose(){minecraft.setScreen(parent);}
