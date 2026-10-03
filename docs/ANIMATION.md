@@ -74,13 +74,10 @@ Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project stat
 
 ## Next animation work
 
-- standing/open/gliding preview-state controls;
-- direct drag-to-move keyframes;
-- richer effect-specific property UI;
-- Cape Editor timeline exposure;
-- richer Moving Gradient parameterization;
-- final visual polish against Reference 04;
-- local runtime verification at all mandatory GUI profiles.
+- Hardware frame-time measurements while scrubbing and playing dense designs.
+- Effect-specific controls for gradient direction, shimmer density and intensity.
+- Optional onion-skin/reference frames and a visual preset picker.
+- Cross-platform and Sodium/Iris/shader acceptance with real equipped designs.
 
 ## Workspace ownership
 

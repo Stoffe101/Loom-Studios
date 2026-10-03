@@ -247,3 +247,7 @@ Native project-file picker reuses LWJGL TinyFileDialogs, the same native dialog 
 Fabric Yarn 1.21.11 API documents BipedEntityRenderState isGliding/leftWingPitch/Roll/Yaw and PlayerEntityRenderState glidingTicks. Mojang-mapped source uses Humanoid/Avatar equivalents; exact names and rendering behavior must pass compilation and captures before acceptance. Only isolated preview snapshots receive authored pose values; world state remains untouched.
 - https://maven.fabricmc.net/docs/yarn-1.21.11%2Bbuild.6/net/minecraft/client/render/entity/state/BipedEntityRenderState.html
 - https://maven.fabricmc.net/docs/yarn-1.21.11%2Bbuild.6/net/minecraft/client/render/entity/state/PlayerEntityRenderState.html
+
+## 2026-10-03 — Follow-up API checks
+
+Version-specific questions: suppress preview body without hiding cosmetic layers; match the Minecraft 1.21.11 wing-model API. Checked against the exact Mojang-mapped distribution compiled/run by repository CI: LivingEntityRenderer.getRenderType takes LivingEntityRenderState plus three booleans; ElytraModel is non-generic and accepts a baked ELYTRA ModelPart. Initial incorrect generic usage failed compile and was corrected. Acceptance requires actual client rendering, not signature assumptions. Capture assertions check unflagged world snapshots and animated Elytra emissive-mask selection. Runtime/reference source: the repository's Fabric Loom build uses official Minecraft 1.21.11 mappings; no third-party renderer dependency added.
