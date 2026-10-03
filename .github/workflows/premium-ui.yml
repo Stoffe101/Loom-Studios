@@ -39,7 +39,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Prepare display
         run: |
-          sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1
+          sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1 python3-pil
           mkdir -p run-ui-capture
           rm -f docs/verification/editor-workspace/*.png
           cat > run-ui-capture/options.txt <<'OPTIONS'
@@ -64,6 +64,38 @@ jobs:
           if [ '${{ matrix.suite }}' = renderer ]; then
             test "$(grep -c 'LOOM_UI_TEXTURE_CACHE_REUSE PASS' premium-capture.log)" -eq 4
           fi
+      - name: Decode captures and publish visual review previews
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import base64, io
+          files=sorted(Path('docs/verification/editor-workspace').glob('*.png'))
+          for path in files:
+              image=Image.open(path);image.load()
+          print('LOOM_CAPTURE_DECODE PASS count='+str(len(files)))
+          groups={}
+          for path in files:
+              if '-gui' not in path.stem: continue
+              profile=path.stem.split('-')[-2]+'-'+path.stem.split('-')[-1]
+              groups.setdefault(profile,[]).append(path)
+          def emit(name,image):
+              data=io.BytesIO();image.convert('RGB').save(data,format='JPEG',quality=92)
+              print('LOOM_REVIEW_IMAGE '+name+' '+base64.b64encode(data.getvalue()).decode('ascii'))
+          for profile,paths in groups.items():
+              sheet=Image.new('RGB',(1920,((len(paths)+1)//2)*575),'#080f1a')
+              draw=ImageDraw.Draw(sheet)
+              for index,path in enumerate(paths):
+                  image=Image.open(path).convert('RGB');image.thumbnail((950,540))
+                  x=(index%2)*960;y=(index//2)*575
+                  sheet.paste(image,(x,y+28));draw.text((x+8,y+8),path.name,fill='white')
+              emit('contact-'+profile,sheet)
+          for path in files:
+              if path.name in ('home-1920x1080-gui3.png','cape-1920x1080-gui3.png','elytra-1920x1080-gui3.png','home-3440x1440-gui3.png'):
+                  image=Image.open(path);emit(path.stem,image)
+                  if path.name.startswith(('cape-','elytra-')):
+                      emit(path.stem+'-inspector',image.crop((image.width//2,140,image.width,image.height-40)))
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
