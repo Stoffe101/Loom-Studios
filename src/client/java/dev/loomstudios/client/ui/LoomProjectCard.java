@@ -97,8 +97,9 @@ public final class LoomProjectCard extends AbstractButton {
         ensureTexture();
 
         if (texture != null && image != null) {
-            int sourceWidth = image.getWidth();
-            int sourceHeight = image.getHeight();
+            int atlasScale = image.getWidth() / 64;
+            int sourceWidth = 10 * atlasScale;
+            int sourceHeight = 16 * atlasScale;
             int availableWidth = Math.max(1, imageRight - imageLeft);
             int availableHeight = Math.max(1, imageBottom - imageTop);
             double scale = Math.min(
@@ -115,14 +116,14 @@ public final class LoomProjectCard extends AbstractButton {
                     textureId,
                     left,
                     top,
-                    0.0F,
-                    0.0F,
+                    (float)atlasScale,
+                    (float)atlasScale,
                     drawWidth,
                     drawHeight,
                     sourceWidth,
                     sourceHeight,
-                    sourceWidth,
-                    sourceHeight
+                    image.getWidth(),
+                    image.getHeight()
             );
         }
 

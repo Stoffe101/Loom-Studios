@@ -4,6 +4,12 @@
 **Target:** Minecraft Java Edition 1.21.11 / Fabric  
 **Active product phase:** Phase 2–5 — editor productization
 
+## Completed workshop pass
+
+**DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.
+
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). PR #14 remains unmerged.
+
 ## Overall status
 
 The Minecraft/Fabric feasibility phase is complete enough to support normal product development.
@@ -42,13 +48,13 @@ Loom Studios currently has:
 - a responsive shared reference UI shell;
 - icon-led compact editor controls;
 - contextual Cape inspector tabs for Layers / Color / Properties;
-- contextual Elytra inspector tabs for Layers / Color / Animation;
+- contextual Elytra inspector tabs for Layers / Color / Properties / Animation;
 - a compact timeline mode for 640x360 effective GUI layouts;
 - tabbed Smart Import Placement / Processing controls with fixed Apply actions;
 - first-class Share / Export navigation from Home, Cape and Elytra;
 - a simplified Export / Import sharing workspace.
 
-The current editor-productization work is **CI GREEN / LOCAL RE-VERIFICATION OF THE UI REFACTOR PENDING**.
+The editor workspace repair and subsequent workshop styling are **DONE for the requested UI scope**, verified by Actions #182 above. Cape/Elytra share integer pixel boundaries, bounded workspace regions, contextual controls, cached textures, paged inspectors and adaptive timelines. Home, Smart Import and Share have been inspected against their approved references at all four profiles. Project format and network protocol are unchanged. Optional-mod/shader/multiplayer compatibility and exhaustive manual feature checks remain separate release work.
 
 A local test on 2026-10-02 confirmed the underlying editor/import/Elytra/animation/sharing features were broadly functional, but the pre-refactor interface failed the visual/usability gate:
 - it did not resemble the approved references closely enough;
@@ -63,7 +69,7 @@ That feedback triggered the current full UI-shell refactor rather than increment
 
 Latest merged-main baseline entering the reference UI refactor: `e3e417ff21f231e8513186e499026682d4cfb785` — GitHub Actions #158 **SUCCESS**.
 
-Current UI-refactor implementation checkpoint: `db90568ad8e47b342e3be36419381f4e2c37af66` — GitHub Actions #172 **SUCCESS**.
+Historical initial UI-refactor implementation checkpoint: `db90568ad8e47b342e3be36419381f4e2c37af66` — GitHub Actions #172 **SUCCESS**.
 
 Pre-merge reference-UI validation checkpoint: `d6407fd5125836969d6dd5c40ecbb65c4069c1b6` — GitHub Actions #175 **SUCCESS**.
 
@@ -413,7 +419,6 @@ Additional Elytra workflow implemented in the current pass:
 
 Still missing for the full reference target:
 - standing/open/gliding preview-state controls;
-- animation timeline/tracks/effects;
 - final reference-layout polish.
 
 The semantic wing-link mode is editor state, not serialized project state.
@@ -426,16 +431,7 @@ Proven underneath:
 - separate emissive cape pass;
 - emissive mask compilation.
 
-Not implemented as an authoring product:
-- timeline;
-- tracks;
-- keyframes;
-- Pulse;
-- Scroll;
-- Hue Shift;
-- Moving Gradient;
-- Sparkle;
-- authored Emissive Glow parameters.
+Implemented authoring: schema-v3 tracks, keyframes, Pulse, Scroll, Hue Shift, Moving Gradient, Sparkle and Emissive Glow. See the Animation section below. This is a functional MVP; visual and shader compatibility acceptance remain separate.
 
 ## Home / project library
 
@@ -458,16 +454,15 @@ Implemented:
 - project count/status footer;
 - unreadable-project warning surface.
 
-Intentionally still placeholder/inactive:
-- project Loom Codes;
-- Settings product screen;
+Intentionally still unavailable:
+- Settings product screen (removed from primary navigation);
 - Nature / Space / Fantasy / Emblems template packs.
 
-Home visual/runtime verification at the four mandatory GUI profiles is still pending.
+Home visual/runtime verification at all four mandatory GUI profiles passed in Actions #182; see the completed workshop pass above.
 
 ## Smart Import
 
-**Functional implementation is complete on the branch / local visual-runtime verification pending.**
+**Functional implementation and four-profile visual verification PASS; both import pages also pass candidate/apply pixel checks in Actions #182.**
 
 Exact green checkpoint: `7a568f736f273328a3b55d1ea28587832cd45282` — GitHub Actions #113 **SUCCESS**.
 
@@ -524,7 +519,7 @@ See `SMART_IMPORT.md`.
 
 ## Animation
 
-**Functional schema/runtime/timeline MVP is CI green / local visual-runtime verification pending.**
+**Functional schema/runtime/timeline MVP is CI green; compact Animation/Playback and long-track captures pass in Actions #182. Exhaustive interactive animation checks remain separate.**
 
 Current schema v3 stores:
 - project timeline duration;
@@ -574,7 +569,7 @@ See `ANIMATION.md`.
 
 ## Loom Codes / sharing
 
-**Local/offline sharing MVP is implemented and CI green / local visual-runtime verification pending.**
+**Local/offline sharing MVP is CI green; Export/Import pass four-profile visual checks, project/portable round-trips and both PNG exports in Actions #182. OS file-picker/clipboard interaction remains a manual release check.**
 
 Exact green sharing checkpoints:
 - portable-code core: `bff95cbd5c79ce59b417e97f49cb58917b97d307` — Actions #152 **SUCCESS**;

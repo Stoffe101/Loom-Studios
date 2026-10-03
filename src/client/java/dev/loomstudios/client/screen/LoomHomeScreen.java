@@ -147,7 +147,7 @@ public final class LoomHomeScreen extends Screen {
                 y,
                 width,
                 cardHeight,
-                Component.literal("Create New Cape"),
+                Component.literal(compactMode ? "New Cape" : "Create New Cape"),
                 Component.literal("Start from scratch"),
                 LoomActionCard.Icon.CAPE,
                 true,
@@ -226,11 +226,11 @@ public final class LoomHomeScreen extends Screen {
         int recentHeight = compactMode
                 ? Math.max(
                         92,
-                        Math.min(116, (int)Math.round(centerHeight * 0.54))
+                        Math.min(172, (int)Math.round(centerHeight * 0.57))
                 )
                 : Math.max(
                         108,
-                        Math.min(154, (int)Math.round(centerHeight * 0.58))
+                        Math.min(380, (int)Math.round(centerHeight * 0.60))
                 );
 
         recentBottom = contentTop + recentHeight;

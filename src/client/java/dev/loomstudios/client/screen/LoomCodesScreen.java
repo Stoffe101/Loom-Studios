@@ -6,6 +6,10 @@ import dev.loomstudios.client.project.LocalProjectLibrary;
 import dev.loomstudios.client.project.ProjectLibraryIndex;
 import dev.loomstudios.client.sharing.LoomShareExportAdapter;
 import dev.loomstudios.client.ui.LoomButton;
+import dev.loomstudios.client.ui.LoomImagePreviewWidget;
+import dev.loomstudios.client.render.LoomTextureCompiler;
+import dev.loomstudios.image.PixelImage;
+import dev.loomstudios.project.AnimationChannel;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -38,6 +42,8 @@ public final class LoomCodesScreen extends Screen {
     private LoomProject previewProject;
 
     private LoomPlayerPreviewWidget previewWidget;
+    private LoomImagePreviewWidget capeTexturePreview, wingTexturePreview;
+    private PixelImage exportedCapeImage, exportedWingImage;
     private LoomPlayerPreviewWidget.Mode previewMode =
             LoomPlayerPreviewWidget.Mode.CAPE;
 
@@ -87,6 +93,8 @@ public final class LoomCodesScreen extends Screen {
 
     @Override
     protected void init() {
+        if(capeTexturePreview != null) capeTexturePreview.close();
+        if(wingTexturePreview != null) wingTexturePreview.close();
         exportControls.clear();
         importControls.clear();
         compactMode = LoomUiTheme.compact(width, height);
@@ -163,7 +171,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Back"),
                 LoomButton.Icon.BACK,
-                compactMode,
+                false,
                 this::goBack
         );
         addRenderableWidget(back);
@@ -175,7 +183,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Export"),
                 LoomButton.Icon.EXPORT,
-                compactMode,
+                false,
                 () -> setWorkspace(Workspace.EXPORT)
         );
         addRenderableWidget(exportTabButton);
@@ -188,7 +196,7 @@ public final class LoomCodesScreen extends Screen {
                 tabHeight,
                 Component.literal("Import"),
                 LoomButton.Icon.IMAGE,
-                compactMode,
+                false,
                 () -> setWorkspace(Workspace.IMPORT)
         );
         addRenderableWidget(importTabButton);
@@ -261,6 +269,16 @@ public final class LoomCodesScreen extends Screen {
                 LoomButton.Icon.ELYTRA,
                 this::exportElytra
         ));
+        int previewTop = y + buttonHeight + 10;
+        int previewHeight = contentBottom - previewTop - 7;
+        exportedCapeImage = new PixelImage(sourceProject.cape().width(),sourceProject.cape().height(),
+                LoomTextureCompiler.compileAnimated(sourceProject,AnimationChannel.CAPE,0,0,false));
+        exportedWingImage = new PixelImage(sourceProject.elytra().width(),sourceProject.elytra().height(),
+                LoomTextureCompiler.compileAnimated(sourceProject,AnimationChannel.ELYTRA,0,0,false));
+        capeTexturePreview = addRenderableWidget(new LoomImagePreviewWidget(left,previewTop,half,previewHeight,
+                Component.literal("Cape PNG"),() -> exportedCapeImage,() -> 0L));
+        wingTexturePreview = addRenderableWidget(new LoomImagePreviewWidget(left+half+gap,previewTop,right-left-half-gap,previewHeight,
+                Component.literal("Elytra PNG"),() -> exportedWingImage,() -> 0L));
     }
 
     private void buildImportControls() {
@@ -351,9 +369,9 @@ public final class LoomCodesScreen extends Screen {
 
         previewWidget = new LoomPlayerPreviewWidget(
                 rightLeft,
-                contentTop + 20,
+                contentTop,
                 width,
-                previewHeight - 20,
+                previewHeight,
                 () -> previewProject,
                 previewMode
         );
@@ -416,6 +434,8 @@ public final class LoomCodesScreen extends Screen {
         if (importTabButton != null) {
             importTabButton.setSelected(!exporting);
         }
+        if(capeTexturePreview != null) capeTexturePreview.visible = exporting;
+        if(wingTexturePreview != null) wingTexturePreview.visible = exporting;
         for (LoomButton button : exportControls) {
             button.visible = exporting;
         }
@@ -699,14 +719,6 @@ public final class LoomCodesScreen extends Screen {
                 rightRight,
                 contentBottom
         );
-        LoomScreenChrome.panelHeader(
-                graphics,
-                rightLeft,
-                contentTop,
-                rightRight,
-                "3D Preview"
-        );
-
         if (workspace == Workspace.EXPORT) {
             renderExportIntro(graphics);
         } else {
@@ -740,9 +752,11 @@ public final class LoomCodesScreen extends Screen {
         );
 
         String id = LoomProjectCode.designId(sourceProject);
+        graphics.fill(left-2,top+11,centerRight-8,top+25,0xFF123347);
+        graphics.fill(left-2,top+11,left,top+25,LoomUiTheme.ACCENT);
         graphics.drawString(
                 font,
-                Component.literal(id),
+                Component.literal(id).withStyle(net.minecraft.ChatFormatting.BOLD),
                 left,
                 top + 13,
                 LoomUiTheme.ACCENT,
@@ -799,7 +813,7 @@ public final class LoomCodesScreen extends Screen {
             graphics.drawString(
                     font,
                     Component.literal(
-                            "Imports create a new local project and never overwrite the sender."
+                            font.plainSubstrByWidth("Imports create a new local project.", max)
                     ),
                     left,
                     top + 28,
@@ -807,6 +821,12 @@ public final class LoomCodesScreen extends Screen {
                     false
             );
         }
+    }
+
+    @Override public void removed() {
+        if(capeTexturePreview != null) capeTexturePreview.close();
+        if(wingTexturePreview != null) wingTexturePreview.close();
+        super.removed();
     }
 
     private void goBack() {

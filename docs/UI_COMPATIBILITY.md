@@ -15,13 +15,18 @@ It is a hard UI compatibility gate. New editor panels, floating windows, tool ro
 
 Minecraft may round the logical width/height by a pixel depending on platform/window state. Layout code must not depend on an exact quotient.
 
+## Verified workshop chrome budget
+
+Actions #182 verifies all five screens at the four required profiles. Shared brand headers reserve 36 logical pixels in compact mode and 56 normally; decorative timber/steel/cloth/lantern artwork stays inside those bounds. Normal editor tool rails reserve 106 pixels for labels; compact rails use 30-pixel icons. The 20-pixel footer owns the centered parchment plaque and independently clipped left/right status. Preview gesture hints shorten below 190 pixels and clip to their assigned width. These budgets are included in canvas, preview and inspector layout calculations.
+
 ## Editor requirements
 
 At every required profile:
 
 - the main editing canvas must remain usable;
 - no required action may be clipped beyond the screen;
-- the right tool rail must scroll when its content is taller than its viewport;
+- inspector controls must fit their assigned bounds through contextual tabs/pages;
+- only genuine collections (layers, swatches, tracks) scroll;
 - the scrollbar must remain mouse-operable;
 - tool rows must not overlap;
 - disabled labels/buttons must remain legible;
@@ -44,13 +49,9 @@ Performance regressions should be tested especially at:
 - 1920×1080 / GUI 3, because it is the tightest required logical viewport;
 - 4x / 256×128 project resolution, because it is the heaviest currently supported editable texture.
 
-## Right tool rail
+## Bounded inspector
 
-The right-side editor controls live inside Minecraft's ScrollableLayout.
-
-This is intentional. Do not return to a fixed absolute vertical stack.
-
-Future controls may extend the rail without forcing the canvas smaller or allowing controls to fall below the screen.
+`LoomWorkspaceLayout` assigns non-overlapping canvas, tool context, timeline, preview, tabs and inspector rectangles above the footer. `LoomInspectorLayout` allocates rows and fails fast on overflow. Extend controls with a named page or a compact row, never with an unbounded stack. Properties and Gradient controls use pages; Animation separates Keys and Playback. Layer/swatch/track collections retain their own scrolling viewport.
 
 ## Floating editor windows
 
@@ -59,7 +60,7 @@ The Palettes window is the first floating tool window and establishes the expect
 - movable by title bar;
 - pinnable;
 - clamped to screen bounds;
-- independent from the tool-rail scrollbar;
+- independent from collection scrollbars;
 - retains state while the current editor screen remains alive;
 - may be hidden without losing palette/library data.
 
@@ -72,7 +73,7 @@ For each required profile:
 1. open Loom Studios;
 2. create/open a project;
 3. verify canvas dimensions and header;
-4. scroll the right rail from first to last control;
+4. visit each inspector tab/page and scroll long collections;
 5. open the Palettes window;
 6. move it to each side/corner;
 7. pin/unpin it;
@@ -92,7 +93,7 @@ Zoom is explicitly supported at every required display/GUI-scale profile.
 - up to 800% zoom is allowed;
 - canvas content is clipped to its viewport;
 - middle-mouse panning must remain reachable;
-- zoom must not force the right tool rail off-screen;
+- zoom must not force the inspector off-screen;
 - floating palette overlay must continue receiving topmost interaction even when it overlaps the zoomed canvas.
 
 

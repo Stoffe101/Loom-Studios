@@ -100,18 +100,13 @@ After changing optional JARs in `dev-mods/`, run:
 The output should show the four top-level test mods plus extracted TRansition/TRender library JARs when 3D Skin Layers is present.
 
 
-## SPIKE-03 Elytra thickness debug control
+## Elytra thickness
 
-During the current Elytra geometry proof, press **V** in the development client to cycle:
+Open Elytra -> Props -> Thickness. The authored 25%–200% value is saved with the project and used by Save + Equip. The historical V-key override was removed; 100% is the calibrated vanilla baseline.
 
-- 100% vanilla thickness
-- 75%
-- 50%
-- 25%
-- 150%
+## Editor screenshot verification
 
-The selected value appears in the action bar. This key is temporary developer tooling; the finished editor will use a proper control/slider and default to 100%.
-
+`./gradlew runClient -PuiCapture` explicitly enables a development-only screenshot flow that creates a flat test world in the isolated `run-ui-capture` directory. It records 42 actual Minecraft captures across all five screens at the four required display/GUI profiles, checks visible widget bounds and pairwise nonoverlap, and verifies project/portable/PNG exports plus candidate/apply pixel equivalence on both import pages. Normal launches and packaged clients never invoke it.
 
 ## Running two development clients on Windows
 

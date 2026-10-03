@@ -3,6 +3,7 @@ package dev.loomstudios.client.ui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
@@ -34,6 +35,10 @@ public class LoomButton extends AbstractButton {
         DELETE,
         UP,
         DOWN,
+        MINUS,
+        LEFT,
+        RIGHT,
+        GRID,
         IMAGE,
         GRADIENT,
         LOCK,
@@ -55,6 +60,8 @@ public class LoomButton extends AbstractButton {
     private boolean iconOnly;
     private boolean selected;
     private boolean danger;
+    private boolean primary;
+    public LoomButton setPrimary(boolean primary) { this.primary = primary; return this; }
 
     public LoomButton(
             int x,
@@ -90,6 +97,7 @@ public class LoomButton extends AbstractButton {
         this.action = action;
         this.icon = icon == null ? Icon.NONE : icon;
         this.iconOnly = iconOnly;
+        setTooltip(Tooltip.create(message));
     }
 
     public LoomButton setIcon(Icon icon) {
@@ -116,6 +124,11 @@ public class LoomButton extends AbstractButton {
         return this;
     }
 
+    @Override public void setMessage(Component message) {
+        super.setMessage(message);
+        setTooltip(Tooltip.create(message));
+    }
+
     @Override
     public void onPress(InputWithModifiers input) {
         if (this.active) {
@@ -135,10 +148,12 @@ public class LoomButton extends AbstractButton {
             int mouseY,
             float partialTick
     ) {
+        boolean effectiveIconOnly = iconOnly || (icon != Icon.NONE
+                && Minecraft.getInstance().font.width(getMessage()) + 28 > getWidth());
         boolean hot = this.isHoveredOrFocused() && this.active;
         int background = !this.active
                 ? LoomUiTheme.BUTTON_DISABLED
-                : selected
+                : selected || primary
                         ? LoomUiTheme.BUTTON_SELECTED
                         : hot
                                 ? LoomUiTheme.BUTTON_HOVER
@@ -146,9 +161,9 @@ public class LoomButton extends AbstractButton {
 
         int border = danger && this.active
                 ? (hot ? 0xFFFF7180 : LoomUiTheme.DANGER)
-                : (selected || hot) && this.active
+                : (selected || primary || hot)
                         ? LoomUiTheme.ACCENT
-                        : LoomUiTheme.BORDER;
+                        : LoomUiTheme.BORDER_SOFT;
 
         graphics.fill(
                 getX(),
@@ -165,7 +180,14 @@ public class LoomButton extends AbstractButton {
                 background
         );
 
-        if (selected && active) {
+        if (selected || primary || hot) {
+            graphics.fill(getX()+2,getY()+2,getRight()-2,getY()+3,0xAA58D8ED);
+            graphics.fill(getX()+2,getBottom()-3,getRight()-2,getBottom()-2,0x663BB9DD);
+        }
+        graphics.fill(getX()+2,getBottom()-2,getRight()-2,getBottom()-1,0xFF101A2A);
+        // Raised top edge is quiet; active edges alone carry colour.
+        graphics.fill(getX() + 1, getY() + 1, getRight() - 1, getY() + 2, hot || selected || primary ? 0x5545CADA : 0x223E5878);
+        if (selected) {
             graphics.fill(
                     getX() + 1,
                     getY() + 1,
@@ -185,7 +207,7 @@ public class LoomButton extends AbstractButton {
                     Math.min(14, getHeight() - 6)
             );
             int iconX;
-            if (iconOnly) {
+            if (effectiveIconOnly) {
                 iconX = getX() + (getWidth() - iconSize) / 2;
             } else {
                 iconX = getX() + 6;
@@ -194,7 +216,7 @@ public class LoomButton extends AbstractButton {
             drawIcon(graphics, iconX, iconY, iconSize, icon, color);
         }
 
-        if (!iconOnly) {
+        if (!effectiveIconOnly) {
             int textLeft = icon == Icon.NONE
                     ? getX() + 4
                     : getX() + 23;
@@ -230,6 +252,7 @@ public class LoomButton extends AbstractButton {
             Icon icon,
             int color
     ) {
+        if (LoomIconSet.draw(graphics, x, y, size, icon, color)) return;
         int s = Math.max(8, size);
         int accent = color == LoomUiTheme.TEXT_MUTED
                 ? LoomUiTheme.TEXT_MUTED
@@ -355,13 +378,12 @@ public class LoomButton extends AbstractButton {
                 graphics.fill(x + 2, y + 3, x + s - 2, y + s - 1, LoomUiTheme.DANGER);
                 graphics.fill(x + 1, y + 1, x + s - 1, y + 3, color);
             }
-            case UP -> {
-                graphics.fill(x + s / 2 - 1, y + 2, x + s / 2 + 2, y + s - 1, color);
-                graphics.fill(x + 2, y + 4, x + s - 2, y + 6, color);
-            }
-            case DOWN -> {
-                graphics.fill(x + s / 2 - 1, y + 1, x + s / 2 + 2, y + s - 2, color);
-                graphics.fill(x + 2, y + s - 6, x + s - 2, y + s - 4, color);
+            case UP, DOWN -> {
+                boolean down = icon == Icon.DOWN;
+                for (int i = 0; i < s / 2; i++) {
+                    int yy = down ? y + s - 3 - i : y + 2 + i;
+                    graphics.fill(x + s / 2 - i, yy, x + s / 2 + i + 1, yy + 1, color);
+                }
             }
             case IMAGE -> {
                 graphics.fill(x + 1, y + 1, x + s - 1, y + s - 1, color);
@@ -434,6 +456,20 @@ public class LoomButton extends AbstractButton {
                 graphics.fill(x + 2, y + 2, x + 4, y + s - 2, color);
                 graphics.fill(x + 3, y + s - 4, x + s - 2, y + s - 2, color);
                 graphics.fill(x + 1, y + 1, x + 5, y + 6, accent);
+            }
+            case MINUS -> graphics.fill(x + 2, y + s / 2 - 1, x + s - 2, y + s / 2 + 1, color);
+            case LEFT, RIGHT -> {
+                boolean right = icon == Icon.RIGHT;
+                for (int i = 0; i < s / 2; i++) {
+                    int xx = right ? x + s - 3 - i : x + 2 + i;
+                    graphics.fill(xx, y + s / 2 - i, xx + 1, y + s / 2 + i + 1, color);
+                }
+            }
+            case GRID -> {
+                for (int i = 1; i < s; i += 4) {
+                    graphics.fill(x + i, y + 1, x + i + 1, y + s - 1, color);
+                    graphics.fill(x + 1, y + i, x + s - 1, y + i + 1, color);
+                }
             }
             case NONE -> {
             }

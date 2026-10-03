@@ -348,9 +348,9 @@ Local/runtime:
 - Reference 05 responsive layout at all mandatory GUI profiles.
 ## Project format tests
 
-- schema-v2 save/load round-trip
+- current schema-v3 save/load round-trip (preserving v2 typed payloads)
 - deterministic output where required
-- schema-v1 -> schema-v2 migration
+- schema-v1 -> schema-v2 -> schema-v3 migration
 - stable schema-v2 blend IDs
 - stable layer-kind IDs
 - Paint payload round-trip
@@ -361,8 +361,8 @@ Local/runtime:
 - oversized embedded Image source rejection
 - oversized project rejection
 - unsupported future major version
-- portable code round-trip when Loom Codes are implemented
-- invalid portable code rejection when Loom Codes are implemented
+- implemented portable code round-trip
+- implemented invalid portable code rejection
 
 ## Animation/effect tests
 
@@ -389,7 +389,7 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 - full optional dev stack initial runtime: PASS
 - Elytra fallback to cape texture observed: PASS / expected vanilla behavior
 
-## SPIKE-03 verification additions
+## SPIKE-03 verification additions (historical)
 
 - dedicated Elytra texture takes precedence over cape fallback
 - cape animation does not alter dedicated Elytra
@@ -398,7 +398,7 @@ A test pass is not complete until its result is recorded in PASS_LOG.md and rele
 - inspect visual thickness from side/top/rear angles
 
 
-## Elytra thickness proof checks
+## Elytra thickness proof checks (historical V-key flow; current Props control)
 
 - 100% visually matches normal vanilla wing volume
 - 75/50/25% progressively reduce depth
@@ -830,3 +830,35 @@ Pass criteria:
 - file/apply/cancel controls remain reachable
 - labels do not clip
 - Placement / Processing tabs fit without primary vertical scrolling
+
+## 2026-10-02 workspace repair verification
+
+Implementation base: `f49ddb2e9727e16d3e6438772534f278d0520a38`; verified source `a2a9628afced367d4a178f944c5cce239d110fbf`, tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`, Actions #178.
+
+- Java 21.0.9, Minecraft 1.21.11, Fabric Loader 0.18.4, Fabric API 0.141.1+1.21.11, Loom 1.17.21, Gradle 9.6.1.
+- Full `build`: PASS in clean Actions #178 after final navigation/alpha/capture polish, Java 21.0.12+1, unmodified Loom.
+- `CanvasViewportTransformTest`: PASS for all semantic cape faces, 1x/2x/4x, fit through 800% zoom, positive/negative pan, pixel centers and exclusive selection edges.
+- `LoomWorkspaceLayoutTest`: PASS for all four mandatory profiles, ±1 logical rounding, Cape and Elytra with 0/1/5/16 tracks; positive bounded regions and canvas minimums.
+- Actual Minecraft editor screenshots: PASS for the four required profiles and compact inspector/collection scenarios. All 22 PNGs regenerated in clean Actions #178; live/released single-pixel outline region is identical at GUI 3 / 200% and the below-minimum guidance is readable.
+- Container-only Loom Unix socket probe workaround: cached plugin platform probe returns false because this container forbids Unix sockets. No project source or dependency version is changed by this workaround. Clean Actions #178 independently passed without this workaround.
+- Optional mods, shaders, multiplayer and full interactive workflow: NOT RUN for this repair.
+
+The opt-in development capture checks every visible widget against the window/footer bounds and records Cape/Elytra at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Inspect selection outline, context row, property pages, cached wing composition, preview and timeline; geometry tests alone do not establish reference fidelity.
+
+
+## 2026-10-02 workshop styling gate — PASS
+
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC.
+
+| Physical display | GUI scale | Logical area | Home / Cape / Elytra / Share Export+Import / Smart Placement+Processing |
+| --- | --- | --- | --- |
+| 1920×1080 | 2 | 960×540 | PASS |
+| 1920×1080 | 3 | 640×360 | PASS |
+| 3440×1440 | 2 | 1720×720 | PASS |
+| 3440×1440 | 3 | 1147×480 | PASS |
+
+All 42 fresh PNGs decode fully and were inspected against the five approved references. Every visible widget is bounded above the footer and pairwise nonoverlapping. Compact property/color/animation pages and long layer/track collections pass. The live/released one-pixel canvas-body crop `(114,330)–(1284,910)` is identical at GUI 3 / 200% zoom; below-minimum guidance is readable. Source labels, candidate hints, brand artwork, preview scenery, export previews and fixed actions fit their assigned panels.
+
+Runtime workflow checks PASS: editable/portable export hash round-trips, Cape/Elytra PNG dimensions, both Smart Import pages add an Image layer whose compiled pixels equal the candidate. Capture completion and workflow markers occur once. Focus tooltips are transient expected overlays in some editor captures. Optional mods, shader packs, multiplayer, OS picker/clipboard and exhaustive manual feature interactions were not exercised here.
+
+Environment: MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 / Temurin 21.0.12+1 / Loom 1.17.21 / Gradle 9.6.1 / clean Ubuntu-Mesa llvmpipe-Xvfb. Build/tests PASS; capture job PASS. Retained evidence: [index](verification/editor-workspace/README.md).

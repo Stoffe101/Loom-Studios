@@ -69,7 +69,12 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Drag to rotate · Wheel to zoom")));
     }
+
+    public record ViewState(float yaw, float pitch, float zoom) { }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier
@@ -88,36 +93,14 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             int mouseY,
             float partialTick
     ) {
-        graphics.fill(getX(), getY(), getRight(), getBottom(), LoomUiTheme.BORDER);
-        graphics.fill(
-                getX() + 1,
-                getY() + 1,
-                getRight() - 1,
-                getBottom() - 1,
-                LoomUiTheme.PANEL_INNER
-        );
+        LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
+        LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D Preview");
+        int contentLeft = getX() + 4;
+        int contentTop = getY() + 19;
+        int contentRight = getRight() - 4;
+        int contentBottom = getBottom() - (getHeight() > 140 ? 16 : 4);
 
-        graphics.drawString(
-                Minecraft.getInstance().font,
-                Component.literal("3D Preview"),
-                getX() + 8,
-                getY() + 7,
-                LoomUiTheme.TEXT,
-                false
-        );
-
-        int contentLeft = getX() + 6;
-        int contentTop = getY() + 22;
-        int contentRight = getRight() - 6;
-        int contentBottom = getBottom() - 18;
-
-        graphics.fill(
-                contentLeft,
-                contentTop,
-                contentRight,
-                contentBottom,
-                0xFF080E15
-        );
+        LoomWorkshopArt.previewScene(graphics,contentLeft,contentTop,contentRight,contentBottom);
 
         LoomProject project = projectSupplier.get();
         LivingEntity player = Minecraft.getInstance().player;
@@ -171,7 +154,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
                     renderState,
                     Math.max(
                             18.0F,
-                            (contentBottom - contentTop) * 0.42F * zoom
+                            Math.min((contentBottom - contentTop) * 0.49F, (contentRight - contentLeft) * 0.46F) * zoom
                     ),
                     translation,
                     rotation,
@@ -191,9 +174,10 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget {
             );
         }
 
-        graphics.drawCenteredString(
+        if (getHeight() > 140) graphics.drawCenteredString(
                 Minecraft.getInstance().font,
-                Component.literal("Drag to rotate  •  Wheel to zoom"),
+                Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(
+                        getWidth() < 190 ? "Drag · Scroll to zoom" : "Drag to rotate · Scroll to zoom",getWidth()-12)),
                 getX() + getWidth() / 2,
                 getBottom() - 12,
                 LoomUiTheme.TEXT_MUTED

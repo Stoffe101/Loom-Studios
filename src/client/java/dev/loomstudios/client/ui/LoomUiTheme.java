@@ -1,14 +1,14 @@
 package dev.loomstudios.client.ui;
 
 public final class LoomUiTheme {
-    public static final int BACKDROP = 0xF0060A10;
-    public static final int PANEL = 0xF0121822;
-    public static final int PANEL_INNER = 0xF0080C12;
-    public static final int PANEL_RAISED = 0xFF17212B;
-    public static final int PANEL_HEADER = 0xFF0D141C;
+    public static final int BACKDROP = 0xFF080F1A;
+    public static final int PANEL = 0xFF162131;
+    public static final int PANEL_INNER = 0xFF0F1928;
+    public static final int PANEL_RAISED = 0xFF202D40;
+    public static final int PANEL_HEADER = 0xFF19263A;
 
-    public static final int BORDER = 0xFF31424D;
-    public static final int BORDER_SOFT = 0xFF25343E;
+    public static final int BORDER = 0xFF354961;
+    public static final int BORDER_SOFT = 0xFF24344B;
     public static final int FRAME_WOOD = 0xFF4A3425;
     public static final int FRAME_WOOD_LIGHT = 0xFF70513A;
     public static final int FRAME_METAL = 0xFF53616C;
@@ -23,9 +23,9 @@ public final class LoomUiTheme {
     public static final int TEXT_MUTED = 0xFF98ABB5;
     public static final int TEXT_FAINT = 0xFF677781;
 
-    public static final int BUTTON = 0xFF17242E;
-    public static final int BUTTON_HOVER = 0xFF203744;
-    public static final int BUTTON_SELECTED = 0xFF183746;
+    public static final int BUTTON = 0xFF1B293C;
+    public static final int BUTTON_HOVER = 0xFF293F56;
+    public static final int BUTTON_SELECTED = 0xFF173E52;
     public static final int BUTTON_DISABLED = 0xFF10161B;
     public static final int DANGER = 0xFFD95567;
 

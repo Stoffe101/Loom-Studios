@@ -93,7 +93,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int svX = getX() + 8;
         int svY = getY() + 22;
         int svW = Math.max(64, Math.min(96, getWidth() / 2 - 18));
-        int svH = 64;
+        int svH = Math.min(64, Math.max(32, getHeight() - 47));
 
         int hueX = svX + svW + 5;
         int hueW = 9;
@@ -136,7 +136,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int hueY = svY + Math.round(hue * (svH - 1));
         graphics.fill(hueX - 2, hueY, hueX + hueW + 2, hueY + 2, 0xFFFFFFFF);
 
-        boolean compact = getHeight() < 135;
+        boolean compact = getHeight() < 135 || getWidth() < 270;
         int rightX = hueX + hueW + 8;
         int rightW = Math.max(42, getRight() - rightX - 8);
 
@@ -211,7 +211,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
             );
             graphics.drawString(
                     Minecraft.getInstance().font,
-                    Component.literal(hex),
+                    Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(hex, rightW)),
                     rightX,
                     svY + 24,
                     LoomUiTheme.TEXT,
@@ -229,6 +229,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
             int col = i % columns;
             int x = getX() + 8 + col * (swatch + gap);
             int y = paletteY + row * (swatch + gap);
+            if (y + swatch + 1 >= getBottom()) break;
 
             graphics.fill(x - 1, y - 1, x + swatch + 1, y + swatch + 1, LoomUiTheme.BORDER);
             graphics.fill(x, y, x + swatch, y + swatch, PALETTE[i]);
@@ -371,10 +372,10 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int svX = getX() + 8;
         int svY = getY() + 22;
         int svW = Math.max(64, Math.min(96, getWidth() / 2 - 18));
-        int svH = 64;
+        int svH = Math.min(64, Math.max(32, getHeight() - 47));
         int hueX = svX + svW + 5;
         int hueW = 9;
-        boolean compact = getHeight() < 135;
+        boolean compact = getHeight() < 135 || getWidth() < 270;
         int rightX = hueX + hueW + 8;
         int rightW = Math.max(42, getRight() - rightX - 8);
         int paletteY = svY + svH + (compact ? 6 : 24);
@@ -492,6 +493,7 @@ public final class LoomColorPickerWidget extends AbstractWidget {
             int col = i % columns;
             int x = getX() + 8 + col * (swatch + gap);
             int y = paletteY + row * (swatch + gap);
+            if (y + swatch + 1 >= getBottom()) break;
 
             if (inside(mouseX, mouseY, x, y, swatch, swatch)) {
                 setColor(PALETTE[i], true);

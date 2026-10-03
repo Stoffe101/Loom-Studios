@@ -9,6 +9,7 @@ out/
 
 # Loom / Minecraft runtime
 run/
+run-ui-capture/
 run-server/
 run-client-a/
 run-client-b/

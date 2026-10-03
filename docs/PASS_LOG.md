@@ -1,5 +1,43 @@
 # Loom Studios — Pass Log
 
+## 2026-10-02 — Five-screen workshop styling and profile acceptance
+
+**State: DONE — five-screen reference styling and mandatory profile alignment verified.**
+
+Continues draft PR #14 from `26b122220cd07ac61296e2ff4ddaa8ee66387659`. Re-inspected all five approved references. Replaced the flat shell with shared code-native timber planks, steel rivets, warm lanterns, stitched pennants, a cyan/violet pixel wordmark and parchment status plaque. Reserved header bounds grow to 36 compact / 56 normal; wide editor tool rails show labels. Decorative drawing owns no interaction or content coordinates. Selected controls gain inset highlights and panels use inset steel bevels. The live player preview sits in a moonlit forest scene.
+
+Smart Import now separates a source-image column, bounded Placement/Processing pages and processed/atlas previews, and an inline live candidate preview with fixed Apply/Cancel actions. Sharing keeps Export/Import labels at GUI 3, highlights the actual design fingerprint, removes a duplicate preview heading and clips explanatory copy. Home template cards show vertical cape silhouettes; actual recent thumbnails sample the back face rather than shrinking the entire UV atlas.
+
+Verification harness grows from 22 to 42 actual Minecraft captures: Cape/Elytra plus Home, Share Export/Import and Smart Import Placement/Processing at all four mandatory profiles, with compact editor pages/long collections and live/released one-pixel selection retained. It asserts both widget bounds and pairwise visible-control nonoverlap. Moon artwork and saved recent projects are deterministic development-world fixtures, not production templates or generated mockups. Final evidence now contains all 42 regenerated captures from the successful source checkpoint below.
+
+First checkpoint `6c537d486888de3399f154e8840eb401e4ec7050`: clean build PASS, Actions #180 capture stopped at the long-layer fixture because 14 extra 4x Paint layers exceeded the existing serialized-size limit. The editor images before that fixture had bounded/nonoverlapping controls. Use standard resolution for the long-layer stress case, correct the wordmark spelling, balance Home recent/template heights, close replaced import textures on resize, and retain candidate-preview rotation. The runner also verifies editable/portable export round-trips, PNG dimensions and applied import pixels matching the candidate on both pages.
+
+Second checkpoint `ee299ea7b0022632ae41e15a5c3bd557ae50f6e1`: Actions #181 clean build and all 42 captures PASS, including visible-widget nonoverlap and real export/import checks. Visual review caught the preview gesture hint spilling from Home's narrow panel and excessive empty Share space. Shorten the hint responsively, add actual Cape/Elytra PNG previews to Export, keep the capture cursor on chrome to avoid transient hover tooltips, and stop the runner before repeat shutdown ticks. Capture fixtures now include real converted wings for export preview inspection.
+
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. All 42 PNGs were decoded and visually inspected against the five references at every required profile. Home gesture hints fit; real Cape/Elytra PNG previews fill the Export workspace; Smart Import source/settings/results/live-preview remain bounded. Compact pages and long collections pass. The complete canvas-body crop `(114,330)–(1284,910)` is pixel-identical before/after single-pixel release at GUI 3 / 200% zoom. Both workflow and completion markers occur once. Keyboard-focus tooltips in some editor captures are transient overlays, not displaced controls.
+
+Environment: Minecraft 1.21.11, Loader 0.18.4, Fabric API 0.141.1+1.21.11, Temurin Java 21.0.12+1, Gradle 9.6.1, Loom 1.17.21, clean Ubuntu/Mesa llvmpipe. Commands: `./gradlew build` and Xvfb `./gradlew runClient -PuiCapture`. No optional mods/shaders. Exported editable/portable projects preserve hashes; Cape/Elytra PNG dimensions pass; both import pages apply pixels equal to the live candidate.
+
+Architecture/decisions: shared 36/56 header owns decorative artwork without owning input; live previews own bounded scenery/hints; Smart Import owns source/results/candidate textures and closes replacements on resize. No project schema/network changes. Intentional reference adaptations: native Minecraft font, code-native pixel artwork/icons, paged compact inspectors, semantic rectangular wing faces, local/offline sharing rather than a fictional hosted resolver. Next: review PR #14; optional-mod/shader/multiplayer and exhaustive manual release checks remain separate.
+
+
+## 2026-10-02 — Canvas geometry and bounded workspace repair
+
+**State: PARTIAL — clean build and editor screenshot verification PASS; full decorative reference acceptance pending.**
+
+Base: `f49ddb2e9727e16d3e6438772534f278d0520a38`. Target: all five approved `docs/references/ui` workshop screens, with primary work focused on the two failed Cape/Elytra screenshots.
+
+Changes: common integer canvas transform; identical live/committed selection bounds and no false hover handle; shared bounded compact/normal layout; slim workshop chrome; coherent icons; contextual tool rows; complete tab visibility; paged Layer/Gradient/Transform/Stops; opacity sliders; cached real layer thumbnails; cached two-wing composition with zoom/pan; adaptive timeline; explicit animation Keys/Playback; preserved canvas/preview view state; readable navigation and consistent Home routing; Elytra color alpha control. Smart Import retains its existing task tabs with the calmer shared surfaces.
+
+Architecture: pure geometry/layout contracts and bounded inspector allocator, replacing editor-owned duplicated absolute stacks. No schema or network change. Intentional reference deviations: native Minecraft font, code-native pixel icons, and paged compact properties preserve real functionality in 640×360 rather than reproducing reference-only decoration.
+
+Tests: clean [Actions #178](https://github.com/Stoffe101/Loom-Studios/actions/runs/37068918058) passed both jobs for source `a2a9628afced367d4a178f944c5cce239d110fbf`, tested merge `ed4b04f900dc200eb43fa6074fecd5d6a832e084`, Java 21.0.12+1 on Ubuntu/Mesa with the unmodified Loom plugin. All 22 regenerated PNGs were downloaded; compact Stops and minimum-window guidance are readable, and the single-pixel live/released outline region is identical at GUI 3 / 200% zoom. The committed-selection PNG is valid.
+
+Earlier local tests: full Gradle 9.6.1 `build` passed on Java 21.0.9 / MC 1.21.11 / Loader 0.18.4 / API 0.141.1+1.21.11 before final polish. New pixel transform and profile bounds tests passed. The earlier build passed all 99 tests. Actual Minecraft screenshots were inspected for Cape/Elytra at every required profile and compact Color/Properties/Gradient/Transform/Stops/Animation/Playback pages plus long layer/track collections. Live/committed single-pixel bounds were equal in the earlier capture run (88×88 physical pixels at 200%); one committed PNG was truncated during the environment failure and was removed. This is superseded by the successful clean CI capture above. The container's unsupported Unix sockets required a local cached Loom platform-probe workaround; the repository itself contains no platform patch. Clean CI above independently passed without that workaround.
+
+Risks/gaps: editor captures passed; full Home/Import/Share reference acceptance remains pending; optional-mod/shader/multiplayer compatibility not rechecked. Next: complete decorative workshop styling and review the wider five-screen reference target.
+
+
 ## 2026-10-02 — Reference UI architecture refactor
 
 **Status: IMPLEMENTATION CI PASS / LOCAL RE-VERIFICATION PENDING**

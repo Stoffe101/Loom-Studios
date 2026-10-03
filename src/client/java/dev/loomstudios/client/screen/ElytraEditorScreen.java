@@ -1,6 +1,12 @@
 package dev.loomstudios.client.screen;
 
 import dev.loomstudios.LoomStudios;
+import dev.loomstudios.ui.LoomWorkspaceLayout;
+import dev.loomstudios.client.ui.LoomInspectorLayout;
+import dev.loomstudios.client.ui.LoomSlider;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.input.KeyEvent;
+
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.ui.LoomAnimationTimelineWidget;
 import dev.loomstudios.client.ui.LoomButton;
@@ -45,10 +51,12 @@ public final class ElytraEditorScreen extends Screen {
     private enum InspectorTab {
         LAYERS,
         COLOR,
-        ANIMATION
+        ANIMATION,
+        PROPERTIES
     }
 
     private final Screen parent;
+    private boolean workspaceTooSmall;
 
     private Tool tool = Tool.PENCIL;
     private int selectedColor = 0xFF22D7E8;
@@ -133,6 +141,18 @@ public final class ElytraEditorScreen extends Screen {
     private int previewBottom;
     private int inspectorTop;
     private int inspectorBottom;
+    private LoomWorkspaceLayout workspaceLayout;
+    private java.util.List<AbstractWidget> layerWidgets = java.util.List.of();
+    private java.util.List<AbstractWidget> colorWidgets = java.util.List.of();
+    private java.util.List<AbstractWidget> propertyWidgets = java.util.List.of();
+    private java.util.List<AbstractWidget> animationWidgets = java.util.List.of();
+    private LoomButton inspectorPropertiesButton;
+    private LoomButton separateButton;
+    private LoomSlider opacitySlider;
+    private java.util.List<AbstractWidget> animationPlaybackWidgets = java.util.List.of();
+    private int animationPage;
+    private LoomButton animationPageButton, trackLoopButton, playbackLabel;
+    private int laidOutTrackCount;
     private boolean compactMode;
     private InspectorTab inspectorTab = InspectorTab.LAYERS;
 
@@ -143,174 +163,70 @@ public final class ElytraEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        ensureSelectedLayerExists();
-        ensureSelectedTrackExists();
-
-        this.compactMode = LoomUiTheme.compact(width, height);
-
-        int margin = compactMode ? 4 : 8;
-        int gap = compactMode ? 4 : 6;
-        int headerHeight = LoomScreenChrome.headerHeight(compactMode);
-        int navHeight = LoomScreenChrome.navHeight(compactMode);
-        int footerHeight = 18;
-
-        shellLeft = 0;
-        shellTop = 0;
-        shellRight = width;
-        shellBottom = height;
-        contentTop = headerHeight + navHeight + 4;
-        contentBottom = height - footerHeight - 4;
-
-        int toolRailWidth = compactMode ? 30 : 38;
-        int rightWidth = compactMode
-                ? Math.max(166, Math.min(184, width / 3))
-                : Math.max(205, Math.min(235, width / 4));
-
-        toolRailLeft = margin;
-        toolRailRight = toolRailLeft + toolRailWidth;
-        rightPanelRight = width - margin;
-        rightPanelLeft = rightPanelRight - rightWidth;
-        centerLeft = toolRailRight + gap;
-        centerRight = rightPanelLeft - gap;
-
-        int workspaceHeight = contentBottom - contentTop;
-        int timelineHeight = compactMode
-                ? Math.max(88, Math.min(104, workspaceHeight / 3))
-                : Math.max(116, Math.min(148, workspaceHeight / 3));
-        canvasTop = contentTop + (compactMode ? 22 : 25);
-        timelineBottom = contentBottom;
-        timelineTop = timelineBottom - timelineHeight;
-        canvasBottom = timelineTop - gap;
-
-        int previewHeight = compactMode
-                ? 72
-                : Math.max(100, Math.min(128, workspaceHeight / 3));
-        previewBottom = contentTop + previewHeight;
-        int tabHeight = compactMode ? 18 : 20;
-        inspectorTop = previewBottom + tabHeight + 5;
-        inspectorBottom = contentBottom;
-
-        buildTopNavigation(headerHeight, navHeight, margin);
-        buildToolRail();
-        buildCanvasToolbar();
-        buildCanvasAndTimeline();
-        buildRightPanel(previewHeight, tabHeight);
-        buildPaletteWindow(centerRight, contentTop);
-
-        updateButtonStates();
-        updateInspectorVisibility();
+        LoomElytraCanvasWidget.ViewState viewState = canvasWidget == null ? null : canvasWidget.viewState();
+        LoomPlayerPreviewWidget.ViewState previewState = previewWidget == null ? null : previewWidget.viewState();
+        if (canvasWidget != null) canvasWidget.close();
+        workspaceTooSmall = width < 600 || height < 350;
+        if (workspaceTooSmall) {
+            ClientProjectWorkspace.endCompoundEdit();
+            addRenderableWidget(new LoomButton(Math.max(0, (width - 100) / 2), height / 2 + 24, 100, 22,
+                    Component.literal("Back"), () -> minecraft.setScreen(parent)));
+            return;
+        }
+        ensureSelectedLayerExists(); ensureSelectedTrackExists();
+        laidOutTrackCount = (int)ClientProjectWorkspace.project().animation().tracks().stream().filter(t -> t.channel() == AnimationChannel.ELYTRA).count();
+        workspaceLayout = LoomWorkspaceLayout.create(width, height, true, laidOutTrackCount);
+        var layout = workspaceLayout;
+        compactMode = layout.compact();
+        shellLeft = 0; shellTop = 0; shellRight = width; shellBottom = height;
+        contentTop = layout.tools().top(); contentBottom = layout.tools().bottom();
+        toolRailLeft = layout.tools().left(); toolRailRight = layout.tools().right();
+        centerLeft = layout.canvas().left(); centerRight = layout.canvas().right();
+        canvasTop = layout.canvas().top(); canvasBottom = layout.canvas().bottom();
+        timelineTop = layout.timeline().top(); timelineBottom = layout.timeline().bottom();
+        rightPanelLeft = layout.preview().left(); rightPanelRight = layout.preview().right();
+        previewBottom = layout.preview().bottom(); inspectorTop = layout.inspector().top(); inspectorBottom = layout.inspector().bottom();
+        buildTopNavigation(layout.headerHeight(), layout.navHeight(), compactMode ? 4 : 8);
+        buildToolRail(); buildCanvasToolbar(); buildCanvasAndTimeline();
+        buildRightPanel(layout.preview().height(), 22); buildPaletteWindow(centerRight, contentTop);
+        canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
+        updateButtonStates(); updateInspectorVisibility();
     }
 
-    private void buildTopNavigation(
-            int headerHeight,
-            int navHeight,
-            int margin
-    ) {
-        int y = headerHeight;
-        int h = navHeight - 2;
-        int normal = 72;
-        int compact = 26;
-        int x = margin;
 
-        addRenderableWidget(navButton(
-                x, y, compactMode ? compact : normal, h,
-                "Home", LoomButton.Icon.HOME, false,
-                this::goBack
-        ));
-        x += (compactMode ? compact : normal) + 3;
-
-        addRenderableWidget(navButton(
-                x, y, compactMode ? compact : normal, h,
-                "Cape", LoomButton.Icon.CAPE, false,
-                () -> minecraft.setScreen(new CapeEditorScreen(this))
-        ));
-        x += (compactMode ? compact : normal) + 3;
-
-        LoomButton elytra = navButton(
-                x, y, compactMode ? compact : normal, h,
-                "Elytra", LoomButton.Icon.ELYTRA, true,
-                () -> { }
-        );
-        elytra.active = false;
-        addRenderableWidget(elytra);
-        x += (compactMode ? compact : normal) + 3;
-
-        addRenderableWidget(navButton(
-                x, y, compactMode ? compact : normal, h,
-                "Import", LoomButton.Icon.IMAGE, false,
-                this::importImage
-        ));
-        x += (compactMode ? compact : normal) + 3;
-
-        addRenderableWidget(navButton(
-                x,
-                y,
-                compactMode ? compact : normal + 10,
-                h,
-                compactMode ? "Share" : "Share / Export",
-                LoomButton.Icon.EXPORT,
-                false,
-                () -> minecraft.setScreen(
-                        new LoomCodesScreen(
-                                this,
-                                ClientProjectWorkspace.project()
-                        )
-                )
-        ));
-
-        int action = compactMode ? 26 : 62;
+    private void buildTopNavigation(int headerHeight, int navHeight, int margin) {
+        int x = margin, y = headerHeight + 2, h = navHeight - 4;
+        String[] labels = {"Home", "Cape", "Elytra", "Import", "Export"};
+        LoomButton.Icon[] icons = {LoomButton.Icon.HOME, LoomButton.Icon.CAPE, LoomButton.Icon.ELYTRA, LoomButton.Icon.IMAGE, LoomButton.Icon.EXPORT};
+        Runnable[] actions = {() -> minecraft.setScreen(new LoomHomeScreen()), () -> minecraft.setScreen(new CapeEditorScreen(this)), () -> { }, this::importImage,
+                () -> minecraft.setScreen(new LoomCodesScreen(this, ClientProjectWorkspace.project()))};
+        for (int i = 0; i < labels.length; i++) {
+            int w = font.width(labels[i]) + 28;
+            LoomButton button = navButton(x, y, w, h, labels[i], icons[i], i == 2, actions[i]);
+            button.setIconOnly(false);
+            addRenderableWidget(button);
+            x += w + 3;
+        }
         int right = width - margin;
-
-        addRenderableWidget(navButton(
-                right - action,
-                y,
-                action,
-                h,
-                compactMode ? "Equip" : "Save + Equip",
-                LoomButton.Icon.EQUIP,
-                false,
-                this::saveAndEquip
-        ));
-        right -= action + 3;
-
-        addRenderableWidget(navButton(
-                right - action,
-                y,
-                action,
-                h,
-                "Save",
-                LoomButton.Icon.SAVE,
-                false,
-                this::save
-        ));
-        right -= action + 3;
-
-        int history = compactMode ? 24 : 42;
-        redoButton = navButton(
-                right - history,
-                y,
-                history,
-                h,
-                "Redo",
-                LoomButton.Icon.REDO,
-                false,
-                this::redo
-        );
+        int equipWidth = font.width("Save + Equip") + 28;
+        LoomButton equip = navButton(right - equipWidth, y, equipWidth, h, "Save + Equip", LoomButton.Icon.EQUIP, false, this::saveAndEquip);
+        equip.setIconOnly(false).setPrimary(true);
+        addRenderableWidget(equip);
+        right -= equipWidth + 3;
+        int saveWidth = font.width("Save") + 28;
+        LoomButton save = navButton(right - saveWidth, y, saveWidth, h, "Save", LoomButton.Icon.SAVE, false, this::save);
+        save.setIconOnly(false);
+        addRenderableWidget(save);
+        right -= saveWidth + 3;
+        redoButton = navButton(right - 24, y, 24, h, "Redo (Ctrl+Y)", LoomButton.Icon.REDO, false, this::redo);
+        redoButton.setIconOnly(true);
         addRenderableWidget(redoButton);
-        right -= history + 3;
-
-        undoButton = navButton(
-                right - history,
-                y,
-                history,
-                h,
-                "Undo",
-                LoomButton.Icon.UNDO,
-                false,
-                this::undo
-        );
+        right -= 27;
+        undoButton = navButton(right - 24, y, 24, h, "Undo (Ctrl+Z)", LoomButton.Icon.UNDO, false, this::undo);
+        undoButton.setIconOnly(true);
         addRenderableWidget(undoButton);
     }
+
 
     private LoomButton navButton(
             int x,
@@ -358,132 +274,25 @@ public final class ElytraEditorScreen extends Screen {
     }
 
     private void buildToolRail() {
-        int x = toolRailLeft + 2;
-        int width = toolRailRight - toolRailLeft - 4;
-        int h = compactMode ? 28 : 32;
-        int gap = compactMode ? 4 : 5;
-        int y = contentTop + 22;
-
-        pencilButton = iconButton(
-                x, y, width, h,
-                "Pencil", LoomButton.Icon.PENCIL,
-                () -> {
-                    tool = Tool.PENCIL;
-                    updateButtonStates();
-                }
-        );
-        pencilButton.setIconOnly(true);
-        y += h + gap;
-
-        eraserButton = iconButton(
-                x, y, width, h,
-                "Eraser", LoomButton.Icon.ERASER,
-                () -> {
-                    tool = Tool.ERASER;
-                    updateButtonStates();
-                }
-        );
-        eraserButton.setIconOnly(true);
-        y += h + gap;
-
-        swatchesButton = iconButton(
-                x, y, width, h,
-                "Swatches", LoomButton.Icon.PALETTE,
-                this::toggleSwatches
-        );
-        swatchesButton.setIconOnly(true);
-        y += h + gap;
-
-        lockButton = iconButton(
-                x, y, width, h,
-                "Layer Lock", LoomButton.Icon.LOCK,
-                this::toggleLock
-        );
-        lockButton.setIconOnly(true);
+        int x = toolRailLeft + 2, w = toolRailRight - toolRailLeft - 4;
+        int y = contentTop + 5, h = compactMode ? 25 : 30;
+        pencilButton = iconButton(x, y, w, h, "Pencil (P)", LoomButton.Icon.PENCIL, () -> { tool = Tool.PENCIL; updateButtonStates(); }).setIconOnly(compactMode);
+        eraserButton = iconButton(x, y + h + 4, w, h, "Eraser (E)", LoomButton.Icon.ERASER, () -> { tool = Tool.ERASER; updateButtonStates(); }).setIconOnly(compactMode);
+        iconButton(x, y + (h + 4) * 2 + 8, w, h, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches).setIconOnly(compactMode);
     }
+
 
     private void buildCanvasToolbar() {
-        int y = contentTop;
-        int h = compactMode ? 19 : 22;
-        int gap = 3;
-        int x = centerLeft;
-        int small = compactMode ? 22 : 28;
-
-        linkButton = iconButton(
-                x,
-                y,
-                compactMode ? 82 : 118,
-                h,
-                linkedMirror ? "Linked Mirror" : "Separate Wings",
-                LoomButton.Icon.ELYTRA,
-                this::toggleLinked
-        );
-        linkButton.setIconOnly(false);
-        x += linkButton.getWidth() + gap;
-
-        resolutionDownButton = iconButton(
-                x, y, small, h,
-                "Resolution -", LoomButton.Icon.DOWN,
-                () -> changeResolution(-1)
-        );
-        resolutionDownButton.setIconOnly(true);
-        x += small + gap;
-
-        resolutionLabelButton = new LoomButton(
-                x,
-                y,
-                compactMode ? 46 : 62,
-                h,
-                Component.literal("1x"),
-                () -> { }
-        );
-        resolutionLabelButton.active = false;
-        addRenderableWidget(resolutionLabelButton);
-        x += resolutionLabelButton.getWidth() + gap;
-
-        resolutionUpButton = iconButton(
-                x, y, small, h,
-                "Resolution +", LoomButton.Icon.UP,
-                () -> changeResolution(1)
-        );
-        resolutionUpButton.setIconOnly(true);
-
-        int right = centerRight;
-        thicknessUpButton = iconButton(
-                right - small,
-                y,
-                small,
-                h,
-                "Thickness +",
-                LoomButton.Icon.UP,
-                () -> changeThickness(0.25F)
-        );
-        thicknessUpButton.setIconOnly(true);
-        right -= small + gap;
-
-        thicknessLabelButton = new LoomButton(
-                right - (compactMode ? 62 : 82),
-                y,
-                compactMode ? 62 : 82,
-                h,
-                Component.literal("Depth 100%"),
-                () -> { }
-        );
-        thicknessLabelButton.active = false;
-        addRenderableWidget(thicknessLabelButton);
-        right -= thicknessLabelButton.getWidth() + gap;
-
-        thicknessDownButton = iconButton(
-                right - small,
-                y,
-                small,
-                h,
-                "Thickness -",
-                LoomButton.Icon.DOWN,
-                () -> changeThickness(-0.25F)
-        );
-        thicknessDownButton.setIconOnly(true);
+        int x = centerLeft, y = contentTop, h = 22;
+        linkButton = iconButton(x, y, compactMode ? 78 : 96, h, "Linked", LoomButton.Icon.ELYTRA, () -> { linkedMirror = true; updateButtonStates(); }).setIconOnly(false);
+        x += linkButton.getWidth() + 3;
+        separateButton = iconButton(x, y, compactMode ? 68 : 90, h, "Separate", LoomButton.Icon.NONE, () -> { linkedMirror = false; updateButtonStates(); }).setIconOnly(false);
+        x += separateButton.getWidth() + 8;
+        resolutionDownButton = iconButton(x, y, 22, h, "Resolution -", LoomButton.Icon.MINUS, () -> changeResolution(-1)).setIconOnly(true); x += 25;
+        resolutionLabelButton = new LoomButton(x, y, 32, h, Component.literal("1x"), () -> {}); resolutionLabelButton.active = false; addRenderableWidget(resolutionLabelButton); x += 35;
+        resolutionUpButton = iconButton(x, y, 22, h, "Resolution +", LoomButton.Icon.PLUS, () -> changeResolution(1)).setIconOnly(true);
     }
+
 
     private void buildCanvasAndTimeline() {
         this.canvasWidget = new LoomElytraCanvasWidget(
@@ -510,7 +319,7 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(canvasWidget);
 
         int contextH = compactMode ? 19 : 22;
-        int contextY = canvasBottom - contextH - 3;
+        int contextY = workspaceLayout.context().top() + 3;
         int small = compactMode ? 22 : 28;
         int gap = 3;
 
@@ -520,7 +329,7 @@ public final class ElytraEditorScreen extends Screen {
                 small,
                 contextH,
                 "Brush -",
-                LoomButton.Icon.DOWN,
+                LoomButton.Icon.MINUS,
                 () -> changeBrush(-1)
         );
         brushDownButton.setIconOnly(true);
@@ -547,7 +356,7 @@ public final class ElytraEditorScreen extends Screen {
                 small,
                 contextH,
                 "Brush +",
-                LoomButton.Icon.UP,
+                LoomButton.Icon.PLUS,
                 () -> changeBrush(1)
         );
         brushUpButton.setIconOnly(true);
@@ -644,269 +453,76 @@ public final class ElytraEditorScreen extends Screen {
         addRenderableWidget(timelineWidget);
     }
 
-    private void buildRightPanel(
-            int previewHeight,
-            int tabHeight
-    ) {
-        int width = rightPanelRight - rightPanelLeft;
-
-        previewWidget = new LoomPlayerPreviewWidget(
-                rightPanelLeft + 2,
-                contentTop + 20,
-                width - 4,
-                Math.max(42, previewHeight - 22),
-                ClientProjectWorkspace::project,
-                LoomPlayerPreviewWidget.Mode.ELYTRA
-        );
+    private void buildRightPanel(int previewHeight, int tabHeight) {
+        previewWidget = addRenderableWidget(new LoomPlayerPreviewWidget(rightPanelLeft, contentTop,
+                rightPanelRight - rightPanelLeft, previewHeight, ClientProjectWorkspace::project, LoomPlayerPreviewWidget.Mode.ELYTRA));
         previewWidget.setTimelineTickSupplier(() -> timelineTick);
-        addRenderableWidget(previewWidget);
-
-        int tabY = previewBottom + 3;
-        int tabGap = 3;
-        int tabWidth = Math.max(42, (width - tabGap * 2) / 3);
-
-        inspectorLayersButton = navButton(
-                rightPanelLeft,
-                tabY,
-                tabWidth,
-                tabHeight,
-                "Layers",
-                LoomButton.Icon.LAYERS,
-                true,
-                () -> setInspectorTab(InspectorTab.LAYERS)
-        );
-        addRenderableWidget(inspectorLayersButton);
-
-        inspectorColorButton = navButton(
-                rightPanelLeft + tabWidth + tabGap,
-                tabY,
-                tabWidth,
-                tabHeight,
-                "Color",
-                LoomButton.Icon.PALETTE,
-                false,
-                () -> setInspectorTab(InspectorTab.COLOR)
-        );
-        addRenderableWidget(inspectorColorButton);
-
-        inspectorAnimationButton = navButton(
-                rightPanelLeft + (tabWidth + tabGap) * 2,
-                tabY,
-                width - (tabWidth + tabGap) * 2,
-                tabHeight,
-                "Anim",
-                LoomButton.Icon.PLAY,
-                false,
-                () -> setInspectorTab(InspectorTab.ANIMATION)
-        );
-        addRenderableWidget(inspectorAnimationButton);
-
-        buildLayerInspector();
-        buildColorInspector();
-        buildAnimationInspector();
+        int y = workspaceLayout.inspectorTabs().top(), gap = 3, w = (rightPanelRight - rightPanelLeft - 9) / 4;
+        inspectorLayersButton = iconButton(rightPanelLeft, y, w, tabHeight, "Layers", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.LAYERS)).setIconOnly(false);
+        inspectorColorButton = iconButton(rightPanelLeft + w + gap, y, w, tabHeight, "Color", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.COLOR)).setIconOnly(false);
+        inspectorPropertiesButton = iconButton(rightPanelLeft + 2 * (w + gap), y, w, tabHeight, "Props", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.PROPERTIES)).setIconOnly(false);
+        inspectorAnimationButton = iconButton(rightPanelLeft + 3 * (w + gap), y, rightPanelRight - (rightPanelLeft + 3 * (w + gap)), tabHeight, "Anim", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.ANIMATION)).setIconOnly(false);
+        buildLayerInspector(); buildColorInspector(); buildPropertyInspector(); buildAnimationInspector();
     }
+
 
     private void buildLayerInspector() {
-        int left = rightPanelLeft + 4;
-        int width = rightPanelRight - rightPanelLeft - 8;
-        int y = inspectorTop + 3;
-        int h = compactMode ? 17 : 20;
-        int gap = compactMode ? 2 : 3;
-
-        int listHeight = compactMode ? 66 : 94;
-        layerListWidget = new LoomLayerListWidget(
-                left,
-                y,
-                width,
-                listHeight,
-                () -> ClientProjectWorkspace.project().elytra(),
-                () -> selectedLayerId,
-                this::selectLayer,
-                this::toggleLayerVisibility,
-                this::toggleLayerLock
-        );
-        addRenderableWidget(layerListWidget);
-        y += listHeight + gap;
-
-        int third = Math.max(28, (width - gap * 2) / 3);
-        layerAddButton = iconButton(
-                left, y, third, h,
-                "Add", LoomButton.Icon.PLUS,
-                this::addLayer
-        );
-        layerAddButton.setIconOnly(compactMode);
-
-        layerDuplicateButton = iconButton(
-                left + third + gap, y, third, h,
-                "Copy", LoomButton.Icon.COPY,
-                this::duplicateLayer
-        );
-        layerDuplicateButton.setIconOnly(compactMode);
-
-        layerDeleteButton = iconButton(
-                left + (third + gap) * 2,
-                y,
-                width - third * 2 - gap * 2,
-                h,
-                "Delete",
-                LoomButton.Icon.DELETE,
-                this::deleteLayer
-        );
-        layerDeleteButton
-                .setIconOnly(compactMode)
-                .setDanger(true);
-        y += h + gap;
-
-        int quarter = Math.max(24, (width - gap * 3) / 4);
-        layerUpButton = iconButton(
-                left, y, quarter, h,
-                "Up", LoomButton.Icon.UP,
-                () -> moveLayer(1)
-        );
-        layerUpButton.setIconOnly(true);
-
-        layerDownButton = iconButton(
-                left + quarter + gap, y, quarter, h,
-                "Down", LoomButton.Icon.DOWN,
-                () -> moveLayer(-1)
-        );
-        layerDownButton.setIconOnly(true);
-
-        layerEditImageButton = iconButton(
-                left + (quarter + gap) * 2,
-                y,
-                width - quarter * 2 - gap * 2,
-                h,
-                "Edit Image",
-                LoomButton.Icon.IMAGE,
-                this::editSelectedImage
-        );
-        layerEditImageButton.setIconOnly(compactMode);
-        y += h + gap;
-
-        int renameWidth = compactMode ? 44 : 52;
-        layerNameField = new EditBox(
-                font,
-                left,
-                y,
-                Math.max(48, width - renameWidth - gap),
-                h,
-                Component.literal("Layer name")
-        );
-        layerNameField.setMaxLength(
-                dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS
-        );
-        layerNameField.setHint(Component.literal("Layer name"));
-        addRenderableWidget(layerNameField);
-
-        layerRenameButton = iconButton(
-                left + width - renameWidth,
-                y,
-                renameWidth,
-                h,
-                "Rename",
-                LoomButton.Icon.SETTINGS,
-                this::renameLayer
-        );
-        layerRenameButton.setIconOnly(compactMode);
-        y += h + gap;
-
-        int small = compactMode ? 22 : 28;
-        layerOpacityDownButton = iconButton(
-                left, y, small, h,
-                "Opacity -", LoomButton.Icon.DOWN,
-                () -> changeLayerOpacity(-0.1F)
-        );
-        layerOpacityDownButton.setIconOnly(true);
-
-        int labelWidth = width - small * 2 - gap * 2;
-        layerOpacityLabelButton = new LoomButton(
-                left + small + gap,
-                y,
-                labelWidth,
-                h,
-                Component.literal("Opacity 100%"),
-                () -> { }
-        );
-        layerOpacityLabelButton.active = false;
-        addRenderableWidget(layerOpacityLabelButton);
-
-        layerOpacityUpButton = iconButton(
-                left + small + gap + labelWidth + gap,
-                y,
-                small,
-                h,
-                "Opacity +",
-                LoomButton.Icon.UP,
-                () -> changeLayerOpacity(0.1F)
-        );
-        layerOpacityUpButton.setIconOnly(true);
-        y += h + gap;
-
-        int half = (width - gap) / 2;
-        layerBlendButton = iconButton(
-                left, y, half, h,
-                "Blend: Normal", LoomButton.Icon.LAYERS,
-                this::cycleLayerBlendMode
-        );
-        layerBlendButton.setIconOnly(false);
-
-        iconButton(
-                left + half + gap,
-                y,
-                width - half - gap,
-                h,
-                "Import",
-                LoomButton.Icon.IMAGE,
-                this::importImage
-        ).setIconOnly(compactMode);
-        y += h + gap;
-
-        iconButton(
-                left,
-                y,
-                width,
-                h,
-                compactMode ? "Cape → Wings" : "Convert Cape to Wings",
-                LoomButton.Icon.ELYTRA,
-                this::convertCapeToElytra
-        ).setIconOnly(false);
+        int start = children().size(); var rows = inspectorRows();
+        int count = ClientProjectWorkspace.project().elytra().layers().size();
+        var r = rows.row(Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64));
+        layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
+                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true));
+        r = rows.row(22);
+        layerAddButton = cellButton(r, 0, 3, "Add layer", LoomButton.Icon.PLUS, this::addLayer);
+        layerDuplicateButton = cellButton(r, 1, 3, "Duplicate layer", LoomButton.Icon.COPY, this::duplicateLayer);
+        layerDeleteButton = cellButton(r, 2, 3, "Delete layer", LoomButton.Icon.DELETE, this::deleteLayer).setDanger(true);
+        r = rows.row(22);
+        layerUpButton = cellButton(r, 0, 3, "Move layer up", LoomButton.Icon.UP, () -> moveLayer(1));
+        layerDownButton = cellButton(r, 1, 3, "Move layer down", LoomButton.Icon.DOWN, () -> moveLayer(-1));
+        layerEditImageButton = cellButton(r, 2, 3, "Edit image", LoomButton.Icon.IMAGE, this::editSelectedImage);
+        layerWidgets = widgetsSince(start);
     }
+
+    private void buildPropertyInspector() {
+        int start = children().size(); var rows = inspectorRows(); var r = rows.row(22);
+        layerNameField = addRenderableWidget(new EditBox(font, r.left(), r.top(), r.width() - 27, 22, Component.literal("Layer name")));
+        layerNameField.setMaxLength(dev.loomstudios.project.LoomProjectCodec.MAX_LAYER_NAME_CHARS);
+        layerRenameButton = iconButton(r.right() - 24, r.top(), 24, 22, "Rename layer", LoomButton.Icon.PENCIL, this::renameLayer).setIconOnly(true);
+        r = rows.row(22);
+        opacitySlider = addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Opacity", () -> selectedLayer().opacity(), value -> changeLayerOpacity((float)value - selectedLayer().opacity())));
+        r = rows.row(22); layerBlendButton = rowButton(r, "Blend: Normal", LoomButton.Icon.LAYERS, this::cycleLayerBlendMode);
+        r = rows.row(22);
+        lockButton = cellButton(r, 0, 2, "Lock layer", LoomButton.Icon.LOCK, this::toggleLock);
+        cellButton(r, 1, 2, "Import image", LoomButton.Icon.IMAGE, this::importImage);
+        r = rows.row(22);
+        thicknessDownButton = cellButton(r, 0, 3, "Thickness -", LoomButton.Icon.MINUS, () -> changeThickness(-0.25F));
+        thicknessLabelButton = cellButton(r, 1, 3, "100%", LoomButton.Icon.NONE, () -> {}); thicknessLabelButton.active = false;
+        thicknessUpButton = cellButton(r, 2, 3, "Thickness +", LoomButton.Icon.PLUS, () -> changeThickness(0.25F));
+        r = rows.row(22); rowButton(r, "Cape to wings", LoomButton.Icon.ELYTRA, this::convertCapeToElytra);
+        propertyWidgets = widgetsSince(start);
+    }
+
 
     private void buildColorInspector() {
-        int left = rightPanelLeft + 4;
-        int width = rightPanelRight - rightPanelLeft - 8;
-        int y = inspectorTop + 3;
-
-        colorPicker = new LoomColorPickerWidget(
-                left,
-                y,
-                width,
-                compactMode ? 118 : 150,
-                selectedColor,
-                this::setSelectedColor
-        );
-        addRenderableWidget(colorPicker);
-
-        int buttonY = y + (compactMode ? 121 : 153);
-        swatchesButton = iconButton(
-                left,
-                buttonY,
-                width,
-                compactMode ? 18 : 20,
-                "Swatches",
-                LoomButton.Icon.PALETTE,
-                this::toggleSwatches
-        );
-        swatchesButton.setIconOnly(false);
+        int start = children().size(); var rows = inspectorRows();
+        var r = rows.row(Math.min(110, workspaceLayout.inspector().height() - 62));
+        colorPicker = addRenderableWidget(new LoomColorPickerWidget(r.left(), r.top(), r.width(), r.height(), selectedColor, this::setSelectedColor));
+        r = rows.row(22);
+        addRenderableWidget(new LoomSlider(r.left(), r.top(), r.width(), "Color alpha",
+                () -> (selectedColor >>> 24) / 255.0,
+                value -> setSelectedColor(((int)Math.round(value * 255) << 24) | (selectedColor & 0xFFFFFF))));
+        r = rows.row(22); swatchesButton = rowButton(r, "Swatches", LoomButton.Icon.PALETTE, this::toggleSwatches);
+        colorWidgets = widgetsSince(start);
     }
 
+
     private void buildAnimationInspector() {
-        int left = rightPanelLeft + 4;
-        int width = rightPanelRight - rightPanelLeft - 8;
-        int y = inspectorTop + 3;
-        int h = compactMode ? 18 : 20;
-        int gap = compactMode ? 3 : 4;
+        int start = children().size();
+        int left = rightPanelLeft + 6;
+        int width = rightPanelRight - rightPanelLeft - 12;
+        int y = inspectorTop + 6;
+        int h = 22;
+        int gap = 4;
 
         animationEffectButton = iconButton(
                 left,
@@ -928,7 +544,7 @@ public final class ElytraEditorScreen extends Screen {
                 y,
                 half,
                 h,
-                compactMode ? "Add Key" : "Add Keyframe Here",
+                "Add key",
                 LoomButton.Icon.PLUS,
                 () -> withSelectedTrack(
                         track -> addAnimationKeyframe(track.id())
@@ -941,7 +557,7 @@ public final class ElytraEditorScreen extends Screen {
                 y,
                 width - half - gap,
                 h,
-                compactMode ? "Remove Key" : "Remove Nearest Key",
+                "Remove key",
                 LoomButton.Icon.DELETE,
                 () -> withSelectedTrack(
                         track -> removeAnimationKeyframe(track.id())
@@ -957,7 +573,7 @@ public final class ElytraEditorScreen extends Screen {
                 small,
                 h,
                 "Value -",
-                LoomButton.Icon.DOWN,
+                LoomButton.Icon.MINUS,
                 () -> withSelectedTrack(
                         track -> adjustAnimationKeyframeValue(
                                 track.id(),
@@ -985,7 +601,7 @@ public final class ElytraEditorScreen extends Screen {
                 small,
                 h,
                 "Value +",
-                LoomButton.Icon.UP,
+                LoomButton.Icon.PLUS,
                 () -> withSelectedTrack(
                         track -> adjustAnimationKeyframeValue(
                                 track.id(),
@@ -1015,15 +631,27 @@ public final class ElytraEditorScreen extends Screen {
                 y,
                 width,
                 h,
-                "Delete Animation Track",
+                "Delete track",
                 LoomButton.Icon.DELETE,
                 () -> withSelectedTrack(
                         track -> deleteAnimationTrack(track.id())
                 )
         );
-        animationDeleteButton
-                .setDanger(true)
-                .setIconOnly(false);
+        animationDeleteButton.setDanger(true).setIconOnly(false);
+        animationWidgets = widgetsSince(start).stream().filter(widget -> widget != animationSpeedButton).toList();
+        for (AbstractWidget widget : animationWidgets) widget.setY(widget.getY() + 26);
+        animationDeleteButton.setY(animationDeleteButton.getY() - 26);
+        var rows = inspectorRows(); var r = rows.row(22);
+        animationPageButton = rowButton(r, "Keyframes  ›", LoomButton.Icon.PLAY, () -> { animationPage = 1 - animationPage; updateInspectorVisibility(); });
+        start = children().size(); rows.row(22); r = rows.row(22);
+        animationSpeedButton.setY(inspectorTop + 32);
+        trackLoopButton = rowButton(r, "Track loop", LoomButton.Icon.LOOP, () -> withSelectedTrack(track -> ClientProjectWorkspace.apply(project -> project.withAnimation(AnimationAuthoring.replaceTrack(project.animation(), track.withLoop(!track.loop()))))));
+        r = rows.row(22);
+        cellButton(r,0,3,"Playback speed -",LoomButton.Icon.MINUS,() -> changeTimelinePlaybackSpeed(-0.25F));
+        playbackLabel = cellButton(r,1,3,"1.0x",LoomButton.Icon.NONE,() -> {}); playbackLabel.active = false;
+        cellButton(r,2,3,"Playback speed +",LoomButton.Icon.PLUS,() -> changeTimelinePlaybackSpeed(0.25F));
+        animationPlaybackWidgets = new java.util.ArrayList<>(widgetsSince(start));
+        animationPlaybackWidgets.add(animationSpeedButton);
     }
 
     private void withSelectedTrack(
@@ -1035,59 +663,60 @@ public final class ElytraEditorScreen extends Screen {
         }
     }
 
+
+    private java.util.List<AbstractWidget> widgetsSince(int index) {
+        return children().subList(index, children().size()).stream()
+                .filter(child -> child instanceof AbstractWidget).map(child -> (AbstractWidget)child).toList();
+    }
+    private static void show(java.util.List<AbstractWidget> widgets, boolean visible) {
+        for (AbstractWidget widget : widgets) widget.visible = visible;
+    }
+    private LoomInspectorLayout inspectorRows() { return new LoomInspectorLayout(workspaceLayout.inspector()); }
+    private LoomButton rowButton(LoomWorkspaceLayout.Rect row, String label, LoomButton.Icon icon, Runnable action) {
+        return iconButton(row.left(), row.top(), row.width(), row.height(), label, icon, action).setIconOnly(false);
+    }
+    private LoomButton cellButton(LoomWorkspaceLayout.Rect row, int index, int count, String label, LoomButton.Icon icon, Runnable action) {
+        int cell = (row.width() - (count - 1) * 3) / count;
+        int x = row.left() + index * (cell + 3);
+        int w = index == count - 1 ? row.right() - x : cell;
+        return iconButton(x, row.top(), w, row.height(), label, icon, action).setIconOnly(count > 2 && icon != LoomButton.Icon.NONE);
+    }
+
     private void setInspectorTab(InspectorTab tab) {
+        ClientProjectWorkspace.endCompoundEdit();
+        setFocused(null);
         inspectorTab = tab;
         updateInspectorVisibility();
     }
 
     private void updateInspectorVisibility() {
-        boolean layers = inspectorTab == InspectorTab.LAYERS;
-        boolean color = inspectorTab == InspectorTab.COLOR;
-        boolean animation = inspectorTab == InspectorTab.ANIMATION;
-
-        if (inspectorLayersButton != null) {
-            inspectorLayersButton.setSelected(layers);
-        }
-        if (inspectorColorButton != null) {
-            inspectorColorButton.setSelected(color);
-        }
-        if (inspectorAnimationButton != null) {
-            inspectorAnimationButton.setSelected(animation);
-        }
-
-        if (layerListWidget != null) layerListWidget.visible = layers;
-        if (layerAddButton != null) layerAddButton.visible = layers;
-        if (layerDuplicateButton != null) layerDuplicateButton.visible = layers;
-        if (layerDeleteButton != null) layerDeleteButton.visible = layers;
-        if (layerUpButton != null) layerUpButton.visible = layers;
-        if (layerDownButton != null) layerDownButton.visible = layers;
-        if (layerEditImageButton != null) layerEditImageButton.visible = layers;
-        if (layerNameField != null) layerNameField.setVisible(layers);
-        if (layerRenameButton != null) layerRenameButton.visible = layers;
-        if (layerOpacityDownButton != null) layerOpacityDownButton.visible = layers;
-        if (layerOpacityLabelButton != null) layerOpacityLabelButton.visible = layers;
-        if (layerOpacityUpButton != null) layerOpacityUpButton.visible = layers;
-        if (layerBlendButton != null) layerBlendButton.visible = layers;
-
-        if (colorPicker != null) colorPicker.visible = color;
-        if (swatchesButton != null) swatchesButton.visible = color;
-
-        LoomButton[] animationButtons = {
-                animationEffectButton,
-                animationAddKeyButton,
-                animationRemoveKeyButton,
-                animationValueDownButton,
-                animationValueLabelButton,
-                animationValueUpButton,
-                animationSpeedButton,
-                animationDeleteButton
-        };
-        for (LoomButton button : animationButtons) {
-            if (button != null) {
-                button.visible = animation;
+        if (layerListWidget != null) {
+            int count = ClientProjectWorkspace.project().elytra().layers().size();
+            int target = Math.min(Math.max(44, 20 + count * 24), workspaceLayout.inspector().height() - 64);
+            int delta = target - layerListWidget.getHeight();
+            if (delta != 0) {
+                layerListWidget.setHeight(target);
+                for (AbstractWidget widget : layerWidgets) if (widget != layerListWidget) widget.setY(widget.getY() + delta);
             }
         }
+
+        boolean layers = inspectorTab == InspectorTab.LAYERS, color = inspectorTab == InspectorTab.COLOR;
+        boolean animation = inspectorTab == InspectorTab.ANIMATION, properties = inspectorTab == InspectorTab.PROPERTIES;
+        inspectorLayersButton.setSelected(layers); inspectorColorButton.setSelected(color);
+        inspectorPropertiesButton.setSelected(properties); inspectorAnimationButton.setSelected(animation);
+        show(layerWidgets, layers); show(colorWidgets, color); show(propertyWidgets, properties);
+        boolean hasTrack = findAnimationTrack(selectedTrackId) != null;
+        show(animationWidgets, animation && hasTrack && animationPage == 0);
+        show(animationPlaybackWidgets, animation && hasTrack && animationPage == 1);
+        animationPageButton.visible = animation && hasTrack;
+        animationPageButton.setMessage(Component.literal(animationPage == 0 ? "Keyframes  ›" : "Playback  ›"));
+        var track = findAnimationTrack(selectedTrackId);
+        trackLoopButton.setMessage(Component.literal(track != null && track.loop() ? "Track loop: On" : "Track loop: Off"));
+        trackLoopButton.setSelected(track != null && track.loop());
+        playbackLabel.setMessage(Component.literal(String.format(java.util.Locale.ROOT,"%.2fx",ClientProjectWorkspace.project().animation().playbackSpeed())));
+        opacitySlider.active = selectedLayer() != null && !selectedLayer().locked();
     }
+
 
     private void toggleTimelinePlayback() {
         LoomAnimation animation =
@@ -1195,6 +824,7 @@ public final class ElytraEditorScreen extends Screen {
             return;
         }
         selectedTrackId = trackId;
+        inspectorTab = InspectorTab.ANIMATION;
         updateButtonStates();
     }
 
@@ -1990,6 +1620,18 @@ public final class ElytraEditorScreen extends Screen {
         }
 
         ensureSelectedTrackExists();
+        int trackCount = (int)ClientProjectWorkspace.project().animation().tracks().stream().filter(t -> t.channel() == AnimationChannel.ELYTRA).count();
+        if (workspaceLayout != null && trackCount != laidOutTrackCount) {
+            laidOutTrackCount = trackCount;
+            workspaceLayout = LoomWorkspaceLayout.create(width, height, true, trackCount);
+            var canvas = workspaceLayout.canvas(); var timeline = workspaceLayout.timeline();
+            canvasBottom = canvas.bottom(); timelineTop = timeline.top();
+            canvasWidget.setHeight(canvas.height());
+            timelineWidget.setY(timeline.top()); timelineWidget.setHeight(timeline.height());
+            brushDownButton.setY(workspaceLayout.context().top() + 3);
+            brushLabelButton.setY(workspaceLayout.context().top() + 3);
+            brushUpButton.setY(workspaceLayout.context().top() + 3);
+        }
 
         CanvasResolution resolution = CanvasResolution.fromCanvas(
                 ClientProjectWorkspace.project().elytra()
@@ -2002,11 +1644,9 @@ public final class ElytraEditorScreen extends Screen {
                 .size();
 
         if (linkButton != null) {
-            linkButton.setMessage(Component.literal(
-                    linkedMirror
-                            ? "Wings: Linked Mirror"
-                            : "Wings: Separate"
-            ));
+            linkButton.setMessage(Component.literal("Linked"));
+            linkButton.setSelected(linkedMirror);
+            separateButton.setSelected(!linkedMirror);
         }
         if (pencilButton != null) {
             pencilButton.active = editable;
@@ -2052,7 +1692,7 @@ public final class ElytraEditorScreen extends Screen {
         }
         if (thicknessLabelButton != null) {
             thicknessLabelButton.setMessage(Component.literal(
-                    "Depth " + Math.round(thickness * 100.0F) + "%"
+                    Math.round(thickness * 100.0F) + "%"
             ));
         }
         if (lockButton != null) {
@@ -2249,8 +1889,15 @@ public final class ElytraEditorScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
+        if (workspaceTooSmall) {
+            LoomScreenChrome.renderBackdrop(graphics, width, height);
+            graphics.drawCenteredString(font, title, width / 2, height / 2 - 24, LoomUiTheme.TEXT);
+            graphics.drawCenteredString(font, Component.literal("Increase window size or reduce GUI scale"), width / 2, height / 2, LoomUiTheme.TEXT_MUTED);
+            super.render(graphics, mouseX, mouseY, partialTick);
+            return;
+        }
         LoomScreenChrome.renderBackdrop(graphics, width, height);
-        LoomScreenChrome.renderBrandHeader(
+        LoomScreenChrome.renderEditorHeader(
                 graphics,
                 width,
                 compactMode
@@ -2269,13 +1916,7 @@ public final class ElytraEditorScreen extends Screen {
                 toolRailRight,
                 contentBottom
         );
-        LoomScreenChrome.panelHeader(
-                graphics,
-                toolRailLeft,
-                contentTop,
-                toolRailRight,
-                compactMode ? "" : "Tools"
-        );
+
 
         LoomScreenChrome.panel(
                 graphics,
@@ -2299,13 +1940,7 @@ public final class ElytraEditorScreen extends Screen {
                 rightPanelRight,
                 previewBottom
         );
-        LoomScreenChrome.panelHeader(
-                graphics,
-                rightPanelLeft,
-                contentTop,
-                rightPanelRight,
-                "3D Preview"
-        );
+
 
         LoomScreenChrome.panel(
                 graphics,
@@ -2315,29 +1950,14 @@ public final class ElytraEditorScreen extends Screen {
                 inspectorBottom
         );
 
-        if (inspectorTab == InspectorTab.ANIMATION) {
-            AnimationTrack track = findAnimationTrack(selectedTrackId);
-            String help = track == null
-                    ? "Select layer → + Track → add keyframes"
-                    : "Scrub time → Add Key → change Value / Effect";
-            graphics.drawString(
-                    font,
-                    Component.literal(
-                            font.plainSubstrByWidth(
-                                    help,
-                                    rightPanelRight - rightPanelLeft - 12
-                            )
-                    ),
-                    rightPanelLeft + 6,
-                    Math.max(
-                            inspectorTop + 110,
-                            inspectorBottom - 14
-                    ),
-                    LoomUiTheme.TEXT_MUTED,
-                    false
-            );
+        if (inspectorTab == InspectorTab.ANIMATION && findAnimationTrack(selectedTrackId) == null) {
+            graphics.drawString(font, Component.literal("Animate a layer"), rightPanelLeft + 8, inspectorTop + 12, LoomUiTheme.ACCENT_ALT, false);
+            graphics.drawString(font, Component.literal("1. Select a layer"), rightPanelLeft + 8, inspectorTop + 32, LoomUiTheme.TEXT_MUTED, false);
+            graphics.drawString(font, Component.literal("2. Add a track below"), rightPanelLeft + 8, inspectorTop + 48, LoomUiTheme.TEXT_MUTED, false);
+            graphics.drawString(font, Component.literal("3. Scrub, add key, set value"), rightPanelLeft + 8, inspectorTop + 64, LoomUiTheme.TEXT_MUTED, false);
         }
-
+        var context = workspaceLayout.context();
+        LoomScreenChrome.panel(graphics, context.left(), context.top(), context.right(), context.bottom());
         String status = statusMessage.isBlank()
                 ? (ClientProjectWorkspace.isCurrentProjectEquipped()
                         ? "Saved / Equipped"
@@ -2356,6 +1976,20 @@ public final class ElytraEditorScreen extends Screen {
 
         super.render(graphics, mouseX, mouseY, partialTick);
         updateButtonStates();
+    }
+
+    @Override public boolean keyPressed(KeyEvent event) {
+        if (workspaceTooSmall) return super.keyPressed(event);
+        if (getFocused() instanceof EditBox) return super.keyPressed(event);
+        if (event.hasControlDownWithQuirk()) {
+            if (event.key() == 90) { undo(); return true; }
+            if (event.key() == 89) { redo(); return true; }
+            if (event.key() == 83) { if (event.hasShiftDown()) saveAndEquip(); else save(); return true; }
+        } else if (!event.hasAltDown()) {
+            if (event.key() == 80) { tool = Tool.PENCIL; updateButtonStates(); return true; }
+            if (event.key() == 69) { tool = Tool.ERASER; updateButtonStates(); return true; }
+        }
+        return super.keyPressed(event);
     }
 
     private void goBack() {
@@ -2377,6 +2011,7 @@ public final class ElytraEditorScreen extends Screen {
             paletteWindowY = paletteWindow.getY();
             paletteWindowPinned = paletteWindow.pinned();
         }
+        ClientProjectWorkspace.endCompoundEdit();
         super.removed();
     }
 

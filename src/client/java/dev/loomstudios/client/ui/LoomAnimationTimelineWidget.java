@@ -74,6 +74,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     private final boolean inlineTrackControls;
 
     private int scrollRows;
+    private boolean draggingScrollbar;
 
     public LoomAnimationTimelineWidget(
             int x,
@@ -173,6 +174,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 LoomUiTheme.PANEL_INNER
         );
 
+        graphics.fill(getX() + 1, getY() + 1, getRight() - 1, getY() + 2, LoomUiTheme.ACCENT_ALT);
         renderPrimaryHeader(graphics, animation);
         if (!compactTimeline()) {
             renderSecondaryHeader(graphics, animation);
@@ -183,22 +185,8 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         int visibleRows = visibleRows();
 
         if (tracks.isEmpty()) {
-            graphics.drawCenteredString(
-                    Minecraft.getInstance().font,
-                    Component.literal("No animation yet"),
-                    getX() + getWidth() / 2,
-                    rowTop + 10,
-                    LoomUiTheme.TEXT
-            );
-            graphics.drawCenteredString(
-                    Minecraft.getInstance().font,
-                    Component.literal(
-                            "Select a layer, then use + Track or the Animation panel"
-                    ),
-                    getX() + getWidth() / 2,
-                    rowTop + 24,
-                    LoomUiTheme.TEXT_MUTED
-            );
+            graphics.drawString(Minecraft.getInstance().font, Component.literal("Select a layer, then + Track"),
+                    getX() + 8, rowTop + 8, LoomUiTheme.TEXT_MUTED, false);
         } else {
             UUID selected = selectedTrackSupplier.get();
 
@@ -214,13 +202,13 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                         project,
                         animation,
                         track,
-                        rowTop + row * ROW_HEIGHT,
+                        rowTop + row * rowHeight(),
                         track.id().equals(selected)
                 );
             }
         }
 
-        if (!compactTimeline()) {
+        if (!compactTimeline() && inlineTrackControls) {
             renderFooter(graphics, project, animation, tracks);
         }
 
@@ -267,6 +255,10 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 false
         );
 
+        if (compactTimeline()) {
+            drawControl(graphics, getX() + 160, y, 18, controlHeight, "-", true);
+            drawControl(graphics, getX() + 180, y, 18, controlHeight, "+", true);
+        }
         int addWidth = Math.min(62, Math.max(48, getWidth() / 5));
         drawControl(
                 graphics,
@@ -675,6 +667,10 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         LoomAnimation animation = project.animation();
 
         if (mouseY < getY() + primaryHeight()) {
+            if (compactTimeline() && mouseX >= getX() + 160 && mouseX < getX() + 198) {
+                controller.changeDuration(mouseX < getX() + 179 ? -20 : 20);
+                return;
+            }
             if (mouseX >= getX() + 6 && mouseX < getX() + 26) {
                 controller.togglePlayback();
                 return;
@@ -705,6 +701,12 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         int rowTop = rowTop();
         int footerTop = getBottom() - footerHeight();
 
+        if (mouseY >= rowTop && mouseY < footerTop && mouseX >= getRight() - 7
+                && tracks.size() > visibleRows()) {
+            draggingScrollbar = true;
+            scrollTo(mouseY);
+            return;
+        }
         if (mouseY >= rowTop && mouseY < footerTop) {
             int row = (int)((mouseY - rowTop) / rowHeight());
             int index = scrollRows + row;
@@ -829,6 +831,19 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
         }
     }
 
+    private void scrollTo(double y) {
+        int count = filteredTracks(projectSupplier.get().animation()).size();
+        int visible = visibleRows();
+        int height = Math.max(1, getBottom() - footerHeight() - 2 - rowTop());
+        int thumb = Math.max(10, height * visible / Math.max(1, count));
+        double fraction = (y - rowTop() - thumb / 2.0) / Math.max(1, height - thumb);
+        scrollRows = (int)Math.round(Math.max(0, Math.min(1, fraction)) * Math.max(0, count - visible));
+    }
+    @Override protected void onDrag(MouseButtonEvent event, double dx, double dy) {
+        if (draggingScrollbar) scrollTo(event.y());
+    }
+    @Override public void onRelease(MouseButtonEvent event) { draggingScrollbar = false; }
+
     @Override
     public boolean mouseScrolled(
             double mouseX,
@@ -908,7 +923,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     }
 
     private int footerHeight() {
-        return compactTimeline() ? 0 : FOOTER_HEIGHT;
+        return compactTimeline() || !inlineTrackControls ? 0 : FOOTER_HEIGHT;
     }
 
     private int rowHeight() {

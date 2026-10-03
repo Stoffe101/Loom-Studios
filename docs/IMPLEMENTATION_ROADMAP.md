@@ -20,8 +20,8 @@ Remaining release-hardening item:
 **Status:** SCHEMA-V2 FOUNDATION GREEN.
 
 Implemented:
-- schema-v2 project model;
-- explicit schema-v1 -> v2 migration;
+- current schema-v3 project model;
+- explicit schema-v1 -> v2 -> v3 migration;
 - cape + Elytra canvases;
 - typed Paint / Image / Gradient layers;
 - persistent layer lock;
@@ -56,7 +56,7 @@ Implemented:
 - undo/redo;
 - live unsaved 3D preview;
 - save/equip;
-- responsive scrollable tool rail.
+- bounded contextual workspace with collection-only scrolling.
 
 Implemented in the current selection slice:
 - drag selection;
@@ -148,7 +148,6 @@ Later enhancements:
 - tint;
 - reference-only mode;
 - direct transform handles;
-- Elytra-target import once the Elytra editor exists;
 - final reference-image visual polish.
 
 ## Phase 5 — Elytra editor

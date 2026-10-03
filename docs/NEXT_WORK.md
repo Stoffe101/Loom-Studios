@@ -1,68 +1,20 @@
 # Loom Studios — Next Work
 
-## Current gate
+## Completed workshop pass
 
-The 2026-10-02 local test established a new UI gate.
+**DONE — requested five-screen workshop styling and four-profile alignment acceptance.** All five approved references were visually inspected. Shared timber/steel framing, lanterns, stitched pennants, cyan/violet branding, navy panels, moonlit live previews and parchment footer are implemented. All 42 captures were decoded and inspected; visible controls pass window/footer bounds and pairwise nonoverlap checks. Native Minecraft fonts, code-native pixel art and compact paged inspectors are intentional adaptations.
 
-Feature functionality was broadly working, but the old shell failed on:
-- reference fidelity;
-- button/control density;
-- excessive scrolling;
-- text overlap;
-- animation discoverability;
-- Export discoverability;
-- 1920x1080 GUI scale 3.
+Verified source `58491bc8855f854f2f1902e32f1720cb3e5e3274`, tested merge `3de85d41980e1d28d78e429749147031a41766d1`: [Actions #182](https://github.com/Stoffe101/Loom-Studios/actions/runs/37073091623) passed build/tests and all 42 fresh actual Minecraft captures on 2026-10-02 at 22:36 UTC. Screenshots: [verification index](verification/editor-workspace/README.md). PR #14 remains unmerged.
 
-This is now a dedicated reference-UI refactor, not a spacing patch.
+## Next concrete work
 
-Merged-main baseline entering the refactor:
-- `e3e417ff21f231e8513186e499026682d4cfb785`
-- GitHub Actions #158: **SUCCESS**
+PR #14 is ready for review; review/merge remains separate from this implementation pass. The requested styling/alignment gate is complete. Before a release, run the optional-mod/shader/multiplayer and exhaustive interactive feature checks below; do not treat these broader product checks as completed by screenshots.
 
-Current refactor implementation checkpoint:
-- `db90568ad8e47b342e3be36419381f4e2c37af66`
-- GitHub Actions #172: **SUCCESS**
-
-Implemented in the refactor:
-- responsive shared screen chrome;
-- compact-mode breakpoint treating <=700x420 as a first-class layout;
-- simplified Home with five real primary actions and no dead Settings card;
-- Share / Export named explicitly on Home;
-- Cape icon tool rail;
-- Cape canvas toolbar + contextual lower control bar;
-- Cape Layers / Color / Properties inspector tabs;
-- Gradient controls shown only in the Properties context;
-- Elytra icon tool rail;
-- Elytra canvas toolbar;
-- Elytra Layers / Color / Animation inspector tabs;
-- animation effect/keyframe controls moved out of the timeline row footer;
-- compact timeline geometry;
-- Smart Import Placement / Processing tabs;
-- fixed Smart Import Apply / Preview / Cancel actions;
-- Share screen split into explicit Export / Import workspaces;
-- direct Share / Export access from Cape and Elytra editors.
-
-The next gate is **local visual/runtime re-verification of this new shell**.
+Run `./gradlew runClient -PuiCapture` to reproduce the isolated development flow: 42 actual screenshots, visible-control bounds/nonoverlap, project/portable/PNG exports, and import candidate/apply equivalence on both pages. Packaged clients and ordinary development launches never invoke it.
 
 ## Runtime verification queue
 
-### Reference UI refactor smoke pass
-Run this before the deeper feature checklist:
-- 1920x1080 / GUI scale 3 first;
-- Home has no text overlap and primary actions are readable;
-- Cape Editor shows canvas + tool rail + one inspector context without a giant vertical control scroll;
-- Color tab is reachable without covering Layers;
-- Gradient Properties only appears when relevant;
-- Elytra Editor keeps canvas, timeline and 3D preview simultaneously understandable;
-- Animation tab explains the flow: select layer -> + Track -> scrub -> Add Key -> Value/Effect;
-- compact timeline rows do not overlap header/footer;
-- Smart Import switches Placement / Processing without scrolling through both at once;
-- Smart Import Apply remains visible regardless of tab;
-- Share / Export is reachable from both editors;
-- Export Project / Cape PNG / Elytra PNG are immediately visible in Export;
-- Import controls are hidden while Export is active and vice versa;
-- no inactive Settings placeholder on Home;
-- no primary UI text overlap at any required GUI profile.
+The five-screen reference smoke pass is complete at 1920×1080 GUI 2/3 and 3440×1440 GUI 2/3. Retained evidence includes compact Color/Properties/Gradient/Transform/Stops/Animation/Playback, long collections, one-pixel live/released selection and below-minimum guidance. The following queue is for deeper manual release testing.
 
 ### Select / transforms
 - drag selection at 1x / 2x / 4x;
