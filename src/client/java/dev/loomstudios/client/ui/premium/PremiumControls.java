@@ -18,13 +18,14 @@ public final class PremiumControls {
     private static int previousWidth,previousHeight;
     private static long revision;
     private static int mouseX,mouseY;
+    private static final java.util.Deque<net.minecraft.client.gui.navigation.ScreenRectangle> clips=new java.util.ArrayDeque<>();
     private PremiumControls() {}
     public static void register() {
         ScreenEvents.AFTER_INIT.register((client,screen,width,height)-> {
             if(!screen.getClass().getPackageName().equals("dev.loomstudios.client.screen")
                     ||screen instanceof LoomPremiumPrototypeScreen)return;
             ScreenEvents.beforeRender(screen).register((s,g,mx,my,dt)-> {
-                owner=s;target=g;mouseX=mx;mouseY=my;pending.clear();
+                owner=s;target=g;mouseX=mx;mouseY=my;pending.clear();clips.clear();
             });
             ScreenEvents.afterRender(screen).register((s,g,mx,my,dt)->finish(g));
             ScreenEvents.remove(screen).register(s-> {
@@ -42,25 +43,25 @@ public final class PremiumControls {
                                  boolean iconOnly,boolean active,boolean hot,boolean focused,
                                  boolean selected,boolean primary,boolean danger) {
         if(g!=target||owner==null||!supports(label))return false;
-        pending.add(new Button(x,y,w,h,label,null,icon,iconOnly,active,hot,focused,selected,primary,danger,
+        collect(new Button(x,y,w,h,label,null,icon,iconOnly,active,hot,focused,selected,primary,danger,
                 new Matrix3x2f(g.pose())));
         return true;
     }
     public static boolean card(GuiGraphics g,int x,int y,int w,int h,String label,String subtitle,
                                LoomButton.Icon icon,boolean active,boolean hot,boolean focused,boolean primary) {
         if(g!=target||owner==null||!supports(label)||!supports(subtitle))return false;
-        pending.add(new Button(x,y,w,h,label,subtitle,icon,false,active,hot,focused,false,primary,false,
+        collect(new Button(x,y,w,h,label,subtitle,icon,false,active,hot,focused,false,primary,false,
                 new Matrix3x2f(g.pose())));
         return true;
     }
     public static boolean label(GuiGraphics g,String text,int x,int y,int width,float size,int ink,boolean centered) {
         if(g!=target||owner==null||!supports(text))return false;
-        pending.add(new Label(x,y,Math.max(1,width),(int)Math.ceil(size+3),text,size,ink,centered,false,new Matrix3x2f(g.pose())));
+        collect(new Label(x,y,Math.max(1,width),(int)Math.ceil(size+3),text,size,ink,centered,false,new Matrix3x2f(g.pose())));
         return true;
     }
     public static boolean brand(GuiGraphics g,int x,int y,int width,float size) {
         if(g!=target||owner==null)return false;
-        pending.add(new Label(x,y,width,(int)Math.ceil(size+4),"Loom Studios",size,0xFFE7EEF7,true,true,new Matrix3x2f(g.pose())));
+        collect(new Label(x,y,width,(int)Math.ceil(size+4),"Loom Studios",size,0xFFE7EEF7,true,true,new Matrix3x2f(g.pose())));
         return true;
     }
     public static boolean hovered(GuiGraphics g,int x,int y,int width,int height) {
@@ -68,7 +69,22 @@ public final class PremiumControls {
     }
     public static boolean icon(GuiGraphics g,String name,int x,int y,int size,int ink) {
         if(g!=target||owner==null)return false;
-        pending.add(new Symbol(x,y,size,size,name,ink,new Matrix3x2f(g.pose())));return true;
+        collect(new Symbol(x,y,size,size,name,ink,new Matrix3x2f(g.pose())));return true;
+    }
+    /** Snapshot the native scissor at collection time; the overlay is painted after it is popped. */
+    public static void pushClip(GuiGraphics g,int left,int top,int right,int bottom) {
+        if(g!=target)return;
+        var a=g.pose().transformPosition(left,top,new org.joml.Vector2f());
+        var b=g.pose().transformPosition(right,bottom,new org.joml.Vector2f());
+        int x=(int)Math.floor(Math.min(a.x,b.x)),y=(int)Math.floor(Math.min(a.y,b.y));
+        int r=(int)Math.ceil(Math.max(a.x,b.x)),d=(int)Math.ceil(Math.max(a.y,b.y));
+        if(!clips.isEmpty()){var c=clips.peek();x=Math.max(x,c.left());y=Math.max(y,c.top());r=Math.min(r,c.right());d=Math.min(d,c.bottom());}
+        clips.push(new net.minecraft.client.gui.navigation.ScreenRectangle(x,y,Math.max(0,r-x),Math.max(0,d-y)));
+    }
+    public static void popClip(GuiGraphics g){if(g==target&&!clips.isEmpty())clips.pop();}
+    private static void collect(Command command) {
+        if(clips.isEmpty())pending.add(command);
+        else {var c=clips.peek();if(c.width()>0&&c.height()>0)pending.add(new Cut(c.left(),c.top(),c.width(),c.height(),command));}
     }
     public static boolean icon(GuiGraphics g,LoomButton.Icon icon,int x,int y,int size,int ink) {
         return icon!=LoomButton.Icon.NONE&&icon(g,iconName(icon),x,y,size,ink);
@@ -109,7 +125,7 @@ public final class PremiumControls {
             previousWidth=g.guiWidth();previousHeight=g.guiHeight();
         }
         if(!snapshot.isEmpty())PremiumGuiRenderer.submit(g,revision,()->snapshot.forEach(Command::paint));
-        target=null;pending.clear();
+        target=null;pending.clear();clips.clear();
     }
     private interface Command {
         int x();int y();int w();int h();void paint();

@@ -737,7 +737,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
     }
 
     private void renderExportIntro(GuiGraphics graphics) {
-        int left = centerLeft + 8;
+        int left = centerLeft + 12;
         int top = contentTop + (compactMode ? 34 : 39);
         int max = centerRight - centerLeft - 16;
 
@@ -751,12 +751,12 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         );
 
         String id = LoomProjectCode.designId(sourceProject);
-        graphics.fill(left-2,top+11,centerRight-8,top+25,0xFF123347);
-        graphics.fill(left-2,top+11,left,top+25,LoomUiTheme.ACCENT);
+        graphics.fill(left,top+11,centerRight-12,top+25,0xFF123347);
+        graphics.fill(left,top+11,left+2,top+25,LoomUiTheme.ACCENT);
         dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,
                 font,
                 Component.literal(id).withStyle(net.minecraft.ChatFormatting.BOLD),
-                left,
+                left + 8,
                 top + 13,
                 LoomUiTheme.ACCENT,
                 false
@@ -779,7 +779,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
     }
 
     private void renderImportIntro(GuiGraphics graphics) {
-        int left = centerLeft + 8;
+        int left = centerLeft + 12;
         int top = contentTop + (compactMode ? 34 : 39);
         int max = centerRight - centerLeft - 16;
 

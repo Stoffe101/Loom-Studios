@@ -49,6 +49,9 @@ public final class LoomPlayerPreviewScreen extends Screen {
     public void setView(float yaw,float pitch,float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing){this.yaw=yaw;this.pitch=pitch;this.zoom=zoom;this.panX=panX;this.panY=panY;this.pose=pose;this.facing=facing;}
     @Override protected void init(){
         int left=(width-panelWidth())/2+8,top=panelTop()+23,total=panelWidth()-16;
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total-171,panelTop()+3,18,16,Component.literal("Toggle character"),()->{characterVisible=!characterVisible;}){
+            @Override protected void renderWidget(GuiGraphics g,int mx,int my,float dt){dev.loomstudios.client.ui.LoomCharacterToggle.draw(g,getX(),getY(),16,characterVisible,isHoveredOrFocused());}
+        });
         addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total-148,panelTop()+3,148,16,Component.literal(dev.loomstudios.client.ui.LoomPreviewBackground.current().label()),()->{dev.loomstudios.client.ui.LoomPreviewBackground.cycle();rebuildWidgets();}));
         String[] views={"Back","Front","Left","Right"};float[] angles={25,180,90,270};
         for(int i=0;i<4;i++){final float angle=angles[i];addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+i*(total/4),top,total/4-3,19,Component.literal(views[i]),()->{yaw=angle;pitch=0;panX=0;panY=0;}));}
@@ -58,6 +61,8 @@ public final class LoomPlayerPreviewScreen extends Screen {
         addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+2*(total/4),top,total/4-3,19,Component.literal("Zoom "+Math.round(zoom*100)+"%"),()->{zoom=zoom>=1.6F?0.65F:zoom+0.2F;rebuildWidgets();}));
         addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+3*(total/4),top,total/4-3,19,Component.literal(mode==PreviewMode.CAPE?"Cape":"Elytra"),()->{mode=mode==PreviewMode.CAPE?PreviewMode.ELYTRA:PreviewMode.CAPE;rebuildWidgets();}));
     }
+    private boolean characterVisible=true;
+    public void setCharacterVisible(boolean value){characterVisible=value;}
     private float yaw = 25.0F;
     private float pitch = 0.0F;
     private float zoom = 1.0F;
@@ -143,6 +148,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
             }
         }
 
+        ((dev.loomstudios.client.render.LoomPreviewVisibility)renderState).loom$characterHidden(!characterVisible);
         dev.loomstudios.client.render.LoomPreviewState.orient(renderState,this.yaw);
         dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==PreviewMode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 

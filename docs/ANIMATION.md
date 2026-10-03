@@ -85,3 +85,9 @@ Timeline scrubbing uses a scoped preview-only runtime bundle. Dirty project stat
 ## Workspace ownership
 
 Elytra uses a compact adaptive timeline dock. Empty timelines show the next action and reserve only 66 logical pixels. Track collections scroll; effect and keyframe authoring lives on Animation -> Keys, while track loop/speed and project playback speed live on Animation -> Playback. Layer opacity/blend/lock/thickness live on Props. Selecting a track opens Animation. Violet accents identify animation without competing with the cyan canvas selection.
+
+## Guided preset workflow
+
+Open the animation studio, choose the layer, choose a preset and rate, then click **Apply & play**. **Save** keeps the changes. Each application is one undoable edit and replaces the selected track; use the timeline's Add Track to compose another effect. Rates are cycles per second at normal global playback speed. Long timelines may require a slower rate to remain within the existing track limits.
+
+Draw stars/highlights on their own layer, keeping the base design solid. Blinking stars fades that detail layer on/off; Shimmer twinkles its existing pixels; Glow creates an emissive highlight track. Color cycle, horizontal scroll and vertical wave work on the selected layer. **Advanced** exposes effect, key value, add/remove key and track speed. Drag timeline keys to change their timing. Presets preserve the existing project format.

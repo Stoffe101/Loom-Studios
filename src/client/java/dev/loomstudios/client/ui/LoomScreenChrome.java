@@ -19,7 +19,7 @@ public final class LoomScreenChrome {
         for (int y = t; y < b; y += 12) g.fill(l, y, r, Math.min(y + 1,b), 0x182E4968);
     }
 
-    public static int headerHeight(boolean compact) { return compact ? 36 : 56; }
+    public static int headerHeight(boolean compact) { return compact ? 48 : 72; }
     public static int navHeight(boolean compact) { return compact ? 22 : 26; }
 
     public static void renderEditorHeader(GuiGraphics g, int width, String title, boolean compact) {
@@ -29,9 +29,9 @@ public final class LoomScreenChrome {
     public static void renderBrandHeader(GuiGraphics g, int width, String subtitle, boolean compact) {
         int h = headerHeight(compact), center = width / 2;
         int wordWidth=Math.min(width-120,compact?250:390);
-        if(dev.loomstudios.client.ui.premium.PremiumControls.brand(g,center-wordWidth/2,compact?4:7,wordWidth,compact?18:27)) {
+        if(dev.loomstudios.client.ui.premium.PremiumControls.brand(g,center-wordWidth/2,compact?11:16,wordWidth,compact?16:24)) {
             dev.loomstudios.client.ui.premium.PremiumControls.label(g,subtitle==null?"":subtitle,
-                    center-wordWidth/2,compact?25:40,wordWidth,compact?9:10,LoomUiTheme.TEXT,true);
+                    center-wordWidth/2,compact?30:45,wordWidth,compact?8:9,LoomUiTheme.TEXT,true);
             return;
         }
         LoomWorkshopArt.timber(g, 0, 0, width, h);

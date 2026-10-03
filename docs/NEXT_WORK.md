@@ -1,5 +1,12 @@
 # Loom Studios — Next Work
 
+## 2026-10-03 — Usability and animation follow-up — IN PROGRESS
+
+User's seven feedback crops and all five approved references reviewed. Latest merged-runtime artifact (`778c2ee`, Premium UI run 37142515428, GUI3 polish) inspected: stretched header, flush context rows and footer buttons confirmed. Implemented aspect-preserved decorative caps with repeated timber, taller aligned brand header shared with editor layout, inset Home actions/View All/export code, shared menu geometry/hit targets, captured native scissors for deferred smooth UI, player-head character toggle isolated to preview snapshots, and seven editable animation recipes with guidance/rate controls and compact advanced layout. No project/schema or network changes.
+
+Validation pending: exact-source build, model tests, full runtime assertions and 218 original captures, including 28 new usability views across 1920×1080 and 3440×1440 GUI 2/3. Local Java 21/Gradle bootstrap completed but Fabric Loom resolution failed; use repository CI for authoritative compilation/runtime. Do not claim this pass DONE or merged until those checks and visual review pass. See USABILITY_ANIMATION_AUDIT.md. Windows/Sodium/Iris hardware performance remains manual verification.
+
+
 ## Premium studio presentation — DONE: UI/layout and Linux client verification (2026-10-03)
 
 Runtime source: `778c2eea7f50ae46240a46fe506be7ceb8f2e238`. [Build #229](https://github.com/Stoffe101/Loom-Studios/actions/runs/37142515469) passes both jobs: 125 tests, zero failures/errors/skips, and 190 actual Minecraft captures. [Comparison #8](https://github.com/Stoffe101/Loom-Studios/actions/runs/37142515428) passes all eight jobs: 90 decoded screenshots. Tested with Minecraft 1.21.11, Loader 0.18.4, Fabric API 0.141.1, Temurin Java 21, Linux/Xvfb/software Mesa; no Sodium/Iris/shaders.

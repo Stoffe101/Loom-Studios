@@ -129,8 +129,8 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         buildLeftActions();
         buildCenterContent();
         buildPreviewPanel();
-        addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
-        addRenderableWidget(new LoomButton(centerRight-61,templatesTop+3,54,16,Component.literal("View All"),()->minecraft.setScreen(new LoomTemplatesScreen(this))));
+        addRenderableWidget(new LoomButton(centerRight-61,contentTop+3,54,13,Component.literal("View All"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
+        addRenderableWidget(new LoomButton(centerRight-61,templatesTop+3,54,13,Component.literal("View All"),()->minecraft.setScreen(new LoomTemplatesScreen(this))));
         addRenderableWidget(new LoomButton(leftPanelLeft,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Browse"),()->minecraft.setScreen(new LoomLibraryScreen(this))));
         addRenderableWidget(new LoomButton(leftPanelLeft+(leftPanelRight-leftPanelLeft-4)/2+4,contentBottom-22,(leftPanelRight-leftPanelLeft-4)/2,20,Component.literal("Help"),()->minecraft.setScreen(new LoomHelpScreen(this))));
     }
@@ -288,7 +288,7 @@ public final class LoomHomeScreen extends LoomPointerScreen {
                         () -> selectProject(descriptor)
                 );
                 card.setOpenAction(this::openSelected);
-                card.setContextAction((x,y)->{selectProject(descriptor);projectMenu=descriptor;menuX=Math.max(8,Math.min(width-166,x.intValue()));menuY=Math.max(contentTop,Math.min(height-28-207,y.intValue()));});
+                card.setContextAction((x,y)->{selectProject(descriptor);projectMenu=descriptor;menuX=Math.max(8,Math.min(width-LoomProjectMenu.WIDTH-8,x.intValue()));menuY=Math.max(contentTop,Math.min(height-28-LoomProjectMenu.height(9),y.intValue()));});
                 card.setDecorated(true);
                 projectCards.add(card);
                 addRenderableWidget(card);
@@ -391,13 +391,13 @@ public final class LoomHomeScreen extends LoomPointerScreen {
     private ProjectDescriptor projectMenu;
     private int menuX,menuY;
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(projectMenu!=null&&e.key()==256){projectMenu=null;return true;}return super.keyPressed(e);}
-    @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent e,boolean twice){if(projectMenu!=null){var d=projectMenu;projectMenu=null;if(e.button()==0&&e.x()>=menuX&&e.x()<menuX+158&&e.y()>=menuY&&e.y()<menuY+207){int action=(int)(e.y()-menuY)/23;if(action!=5){var lib=new LoomLibraryScreen(this);lib.executeAction(d,action);}}return true;}return super.mouseClicked(e,twice);}
+    @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent e,boolean twice){if(projectMenu!=null){var d=projectMenu;projectMenu=null;if(e.button()==0&&LoomProjectMenu.actionAt(e.x(),e.y(),menuX,menuY,9)>=0){int action=LoomProjectMenu.actionAt(e.x(),e.y(),menuX,menuY,9);if(action!=5){var lib=new LoomLibraryScreen(this);lib.executeAction(d,action);}}return true;}return super.mouseClicked(e,twice);}
 
     private void buildPreviewPanel() {
         int width = previewRight - previewLeft;
         int previewHeight = Math.max(
                 compactMode ? 80 : 90,
-                contentBottom - contentTop - (compactMode ? 23 : 27)
+                contentBottom - contentTop - (compactMode ? 29 : 33)
         );
 
         this.previewWidget = new LoomPlayerPreviewWidget(
@@ -409,10 +409,12 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         );
         addRenderableWidget(this.previewWidget);
 
-        int buttonGap = 4;
-        int buttonWidth = Math.max(72, (width - buttonGap) / 2);
+        int buttonGap = 6;
+        int footerInset = 6;
+        int footerWidth = width - 2 * footerInset;
+        int buttonWidth = (footerWidth - buttonGap) / 2;
 
-        this.openSelectedButton.setX(previewLeft);
+        this.openSelectedButton.setX(previewLeft + footerInset);
         this.openSelectedButton.setY(contentTop + previewHeight + 4);
         this.openSelectedButton.setWidth(buttonWidth);
         this.openSelectedButton.setHeight(compactMode ? 18 : 20);
@@ -422,9 +424,9 @@ public final class LoomHomeScreen extends LoomPointerScreen {
         addRenderableWidget(this.openSelectedButton);
 
         addRenderableWidget(new LoomButton(
-                previewLeft + buttonWidth + buttonGap,
+                previewLeft + footerInset + buttonWidth + buttonGap,
                 contentTop + previewHeight + 4,
-                width - buttonWidth - buttonGap,
+                footerWidth - buttonWidth - buttonGap,
                 compactMode ? 18 : 20,
                 Component.literal("Reset View"),
                 LoomButton.Icon.RESET,

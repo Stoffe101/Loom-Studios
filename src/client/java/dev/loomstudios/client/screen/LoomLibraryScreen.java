@@ -136,7 +136,7 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     }
     private void openMenu(ProjectDescriptor d,double x,double y) {
         if(d==null)return;menu=d;
-        menuX=Math.max(8,Math.min(width-166,(int)x));menuY=Math.max(top,Math.min(bottom-actions().length*23,(int)y));
+        menuX=Math.max(8,Math.min(width-LoomProjectMenu.WIDTH-8,(int)x));menuY=Math.max(top,Math.min(bottom-LoomProjectMenu.height(actions().length),(int)y));
     }
     private String[] actions() {return tab==2?new String[]{"Restore","Rename…","Favorite","Duplicate","Close"}:
             new String[]{tab==1?"Recover & edit":"Edit","Rename…",LoomPreferences.get().favorite(menu.projectId())?"Unfavorite":"Favorite","Duplicate",tab==1?"Discard to Trash":"Delete to Trash","Close",tab==1?"Save + equip":"Equip","Folder / tags","Backup / versions"};}
@@ -173,8 +173,8 @@ public final class LoomLibraryScreen extends LoomPointerScreen {
     }
     private void undoDelete(){if(undoId==null)return;try{undoStore.restore(undoId);tab=undoStore==WorkspaceRecovery.STORE?1:0;undoId=null;message="Deletion undone";rebuildWidgets();}catch(IOException e){message="Restore failed; the design remains in Trash";LoomDiagnostics.record("Undo delete",e);}}
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
-        if(menu!=null){String[] actions=actions();boolean inside=event.x()>=menuX&&event.x()<menuX+158&&event.y()>=menuY&&event.y()<menuY+actions.length*23;
-            if(inside&&event.button()==0){act((int)(event.y()-menuY)/23);return true;}menu=null;return true;}
+        if(menu!=null){String[] actions=actions();int action=LoomProjectMenu.actionAt(event.x(),event.y(),menuX,menuY,actions.length);boolean inside=action>=0;
+            if(inside&&event.button()==0){act(action);return true;}menu=null;return true;}
         return super.mouseClicked(event,doubleClick);
     }
     @Override public boolean mouseScrolled(double x,double y,double sx,double sy){if(menu!=null)return true;if(x<right&&y>top+51&&sy!=0){page+=sy<0?1:-1;buildCards();return true;}return super.mouseScrolled(x,y,sx,sy);}

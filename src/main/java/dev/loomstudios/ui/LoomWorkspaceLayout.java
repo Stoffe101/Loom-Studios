@@ -18,7 +18,7 @@ public record LoomWorkspaceLayout(
         boolean compact = width <= 700 || height <= 420;
         int margin = 8;
         int gap = compact ? 4 : 6;
-        int header = compact ? 36 : 56;
+        int header = compact ? 48 : 72;
         int nav = compact ? 24 : 28;
         int top = header + nav + gap;
         int bottom = height - 28;

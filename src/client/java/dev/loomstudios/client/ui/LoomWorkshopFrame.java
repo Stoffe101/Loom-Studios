@@ -12,9 +12,15 @@ final class LoomWorkshopFrame {
     static void draw(GuiGraphics g,int width,int height) {
         int head=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height));
         int bottom=height-25,mid=Math.max(0,bottom-head);
-        slice(g,0,0,7,head,0,0,SIDE,TOP);
-        slice(g,7,0,width-14,head,SIDE,0,WIDTH-2*SIDE,TOP);
-        slice(g,width-7,0,7,head,WIDTH-SIDE,0,SIDE,TOP);
+        // Keep lanterns, banners and metal brackets at their source aspect ratio.
+        // Only the undecorated sign face grows; timber repeats into the remaining space.
+        int sign=Math.min(width-190,LoomUiTheme.compact(width,height)?270:410);
+        int cap=Math.round(560.0F*head/TOP),left=(width-sign)/2;
+        int tile=Math.max(1,Math.round(180.0F*head/TOP));
+        for(int x=0;x<width;x+=tile)slice(g,x,0,Math.min(tile,width-x),head,90,0,180,TOP);
+        slice(g,left-cap,0,cap,head,0,0,560,TOP);
+        slice(g,left,0,sign,head,560,0,552,TOP);
+        slice(g,left+sign,0,cap,head,1112,0,560,TOP);
         slice(g,0,head,7,mid,0,TOP,SIDE,HEIGHT-TOP-BOTTOM);
         slice(g,width-7,head,7,mid,WIDTH-SIDE,TOP,SIDE,HEIGHT-TOP-BOTTOM);
         slice(g,0,bottom,7,7,0,HEIGHT-BOTTOM,SIDE,BOTTOM);
