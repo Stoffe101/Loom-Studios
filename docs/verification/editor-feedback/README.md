@@ -8,6 +8,8 @@ Runtime checks verify actual Screen routing for texture and 3D pan/release; pale
 
 Mod artifact SHA-256: `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea`. PNGs are original pixel evidence from the final source run.
 
+Integrated through [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) at main merge `4618352e4a38dd8d2faf5ee464eecc7cca56d543`, 2026-10-03 02:55 UTC. Final PR head `f62a6e9b62366eef6bf02d2e875b4aac2915328f` additionally passed [Actions #192](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091132764), with identical implementation and 103 tests/68 captures. Merge tree equality was checked. Main push #193 was pending at integration-note handoff.
+
 | Capture | Evidence |
 | --- | --- |
 | cape-1920x1080-gui2 | [PNG](cape-1920x1080-gui2.png) |

@@ -1599,3 +1599,11 @@ Delivery: [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) targets ma
 ### Completion evidence
 
 Final source #191 supersedes earlier partial runs #186/#187 and intermediate successes #188/#189/#190. Retained PNGs are copied without changing pixels. Latest documentation/evidence-only follow-up does not modify implementation, schema, protocol or the verified mod artifact. Next work is actual hardware/optional-mod/multiplayer testing.
+
+## 2026-10-03 — Feedback main integration — DONE
+
+Merged [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) at `4618352e4a38dd8d2faf5ee464eecc7cca56d543` on main, 02:55 UTC, under the user's existing instruction to finish and merge for testing. Expected head `f62a6e9b62366eef6bf02d2e875b4aac2915328f` and unchanged base `55b56570d75909c80466f3557d57a9c61e3dc74b` were checked immediately before the pinned merge. Main tree equals the tested PR tree; local main fast-forwarded cleanly.
+
+[Actions #192](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091132764) passed both jobs on that exact PR head. Java21 build: 103 tests, 0 failures/errors/skips. Runtime 02:54:26 UTC: all 68 captures and `LOOM_UI_WORKFLOWS PASS`, `LOOM_UI_INPUT_PREVIEW PASS`, `LOOM_UI_CAPTURE COMPLETE`. Environment/coverage/limitations match #191 above. Retained evidence and downloadable mod were produced by #191; source is unchanged. JAR SHA-256 `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea` verified locally.
+
+Main push [Actions #193](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091440293) was in progress at this documentation-only integration handoff; no success is claimed for a different SHA. No implementation changes in this follow-up. Next: user's interactive hardware/modpack/shader/multiplayer testing from main.
