@@ -64,7 +64,8 @@ public final class RuntimeCosmeticCache {
                     existing.capeTexture.upload(); existing.emissiveTexture.upload();
                 }
                 if(existing.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)) {
-                    redrawElytra(existing,fixedTimelineTick); existing.elytraTexture.upload();
+                    redrawElytra(existing,fixedTimelineTick); redrawElytraEmissive(existing,fixedTimelineTick);
+                    existing.elytraTexture.upload(); if(existing.hasElytraEmissive)existing.elytraEmissiveTexture.upload();
                 }
             }
             return existing;
@@ -135,6 +136,7 @@ public final class RuntimeCosmeticCache {
         redrawCape(bundle, initialTimelineTick);
         redrawElytra(bundle, initialTimelineTick);
         redrawEmissive(bundle, initialTimelineTick);
+        redrawElytraEmissive(bundle,initialTimelineTick);
 
         bundle.capeTexture = new DynamicTexture(
                 () -> "Loom Studios cape " + suffix,
@@ -149,6 +151,8 @@ public final class RuntimeCosmeticCache {
                 bundle.emissiveImage
         );
 
+        bundle.elytraEmissiveTexture=new DynamicTexture(()->"Loom Studios emissive Elytra "+suffix,bundle.elytraEmissiveImage);
+        client.getTextureManager().register(bundle.elytraEmissiveTextureId,bundle.elytraEmissiveTexture);
         client.getTextureManager().register(capeId, bundle.capeTexture);
         client.getTextureManager().register(elytraId, bundle.elytraTexture);
         client.getTextureManager().register(emissiveId, bundle.emissiveTexture);
@@ -156,6 +160,7 @@ public final class RuntimeCosmeticCache {
         bundle.capeTexture.upload();
         bundle.elytraTexture.upload();
         bundle.emissiveTexture.upload();
+        bundle.elytraEmissiveTexture.upload();
 
         BUNDLES.put(projectHash, bundle);
         BY_CAPE_TEXTURE.put(capeId, bundle);
@@ -217,7 +222,9 @@ public final class RuntimeCosmeticCache {
                     && bundle.elytraTimelineTick != timelineTick) {
                 bundle.elytraTimelineTick = timelineTick;
                 redrawElytra(bundle, timelineTick);
+                redrawElytraEmissive(bundle,timelineTick);
                 bundle.elytraTexture.upload();
+                if(bundle.hasElytraEmissive)bundle.elytraEmissiveTexture.upload();
             }
         }
     }
@@ -242,6 +249,7 @@ public final class RuntimeCosmeticCache {
         client.getTextureManager().release(bundle.capeTextureId);
         client.getTextureManager().release(bundle.elytraTextureId);
         client.getTextureManager().release(bundle.emissiveTextureId);
+        client.getTextureManager().release(bundle.elytraEmissiveTextureId);
     }
 
     public static void close(Minecraft client) {
@@ -249,6 +257,7 @@ public final class RuntimeCosmeticCache {
             client.getTextureManager().release(bundle.capeTextureId);
             client.getTextureManager().release(bundle.elytraTextureId);
             client.getTextureManager().release(bundle.emissiveTextureId);
+        client.getTextureManager().release(bundle.elytraEmissiveTextureId);
         }
 
         BUNDLES.clear();
@@ -325,6 +334,11 @@ public final class RuntimeCosmeticCache {
         );
     }
 
+    private static void redrawElytraEmissive(RuntimeBundle bundle,int tick){
+        if(bundle.hasElytraEmissive)writePixels(bundle.elytraEmissiveImage,LoomTextureCompiler.compileAnimated(bundle.project,AnimationChannel.ELYTRA,tick,0,true));
+        else clear(bundle.elytraEmissiveImage);
+    }
+
     private static void writePixels(NativeImage target, int[] pixels) {
         int width = target.getWidth();
         int height = target.getHeight();
@@ -368,16 +382,20 @@ public final class RuntimeCosmeticCache {
         final Identifier capeTextureId;
         final Identifier elytraTextureId;
         final Identifier emissiveTextureId;
+        final Identifier elytraEmissiveTextureId;
+        final boolean hasElytraEmissive;
         final ClientAsset.ResourceTexture capeAsset;
         final ClientAsset.ResourceTexture elytraAsset;
         final NativeImage capeImage;
         final NativeImage elytraImage;
         final NativeImage emissiveImage;
+        final NativeImage elytraEmissiveImage;
 
         boolean alphaGuide;
         DynamicTexture capeTexture;
         DynamicTexture elytraTexture;
         DynamicTexture emissiveTexture;
+        DynamicTexture elytraEmissiveTexture;
         int legacyPhase = -1;
         int capeTimelineTick = -1;
         int elytraTimelineTick = -1;
@@ -401,6 +419,9 @@ public final class RuntimeCosmeticCache {
             this.capeTextureId = capeTextureId;
             this.elytraTextureId = elytraTextureId;
             this.emissiveTextureId = emissiveTextureId;
+            this.elytraEmissiveTextureId=Identifier.fromNamespaceAndPath(LoomStudios.MOD_ID,"dynamic/elytra_emissive_"+projectHash.substring(0,16));
+            this.elytraEmissiveImage=new NativeImage(NativeImage.Format.RGBA,project.elytra().width(),project.elytra().height(),false);
+            this.hasElytraEmissive=project.elytra().layers().stream().anyMatch(l->l.emissive())||project.animation().tracks().stream().anyMatch(t->t.enabled()&&t.channel()==AnimationChannel.ELYTRA&&t.effect()==AnimationEffectType.EMISSIVE_GLOW);
             this.capeAsset = capeAsset;
             this.elytraAsset = elytraAsset;
             this.capeImage = capeImage;

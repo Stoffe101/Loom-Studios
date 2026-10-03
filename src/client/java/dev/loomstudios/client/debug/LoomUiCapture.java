@@ -460,6 +460,7 @@ public final class LoomUiCapture {
             var palette=(dev.loomstudios.client.ui.LoomPaletteWindow)field(editor,"paletteWindow").get(editor);
             call(palette,"toggleManagement");set(palette,"swatchesScroll",40);
         }else if(view==2||view==3){
+            if(view==3)ClientProjectWorkspace.apply(p->{var recipe=dev.loomstudios.project.AnimationPreset.GLOW.create(p.elytra().layers().getLast().id(),dev.loomstudios.project.AnimationChannel.ELYTRA,p.animation().durationTicks(),.5F);var tracks=new java.util.ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(p.animation().withTracks(tracks));});
             Screen editor=view==2?new CapeEditorScreen(home):new ElytraEditorScreen(home);client.setScreen(editor);
             var preview=(dev.loomstudios.client.ui.LoomPlayerPreviewWidget)field(editor,"previewWidget").get(editor);
             preview.mouseClicked(mouse(preview.getRight()-32,preview.getY()+10,0),false);
@@ -489,7 +490,14 @@ public final class LoomUiCapture {
         ClientProjectWorkspace.undo();if(!before.equals(ClientProjectWorkspace.project().animation()))throw new IllegalStateException("Preset was not one undoable edit");
         int action=dev.loomstudios.client.ui.LoomProjectMenu.actionAt(20,20,8,8,9);
         if(action!=0||dev.loomstudios.client.ui.LoomProjectMenu.actionAt(9,9,8,8,9)!=-1)throw new IllegalStateException("Menu inset hit targets incorrect");
-        System.out.println("LOOM_UI_USABILITY PASS: character click/state isolation, preset application/single undo, menu gutters and bounded animation controls");
+        ClientProjectWorkspace.apply(p->{var recipe=dev.loomstudios.project.AnimationPreset.GLOW.create(p.elytra().layers().getLast().id(),dev.loomstudios.project.AnimationChannel.ELYTRA,p.animation().durationTicks(),.5F);var tracks=new java.util.ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(p.animation().withTracks(tracks));});
+        var glowProject=ClientProjectWorkspace.project();
+        var glowState=dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProjectAtTick(client,glowProject,0,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
+        if(dev.loomstudios.client.render.PlayerCosmeticRenderer.getElytraEmissiveTexture((net.minecraft.client.renderer.entity.state.AvatarRenderState)glowState)==null)throw new IllegalStateException("Elytra Glow mask missing");
+        var dim=dev.loomstudios.client.render.LoomTextureCompiler.compileAnimated(glowProject,dev.loomstudios.project.AnimationChannel.ELYTRA,0,0,true);
+        var bright=dev.loomstudios.client.render.LoomTextureCompiler.compileAnimated(glowProject,dev.loomstudios.project.AnimationChannel.ELYTRA,20,0,true);
+        if(java.util.Arrays.equals(dim,bright)||java.util.Arrays.stream(bright).noneMatch(pixel->(pixel>>>24)>0))throw new IllegalStateException("Elytra Glow did not animate");
+        System.out.println("LOOM_UI_USABILITY PASS: character click/state isolation, preset application/single undo, menu gutters, bounded animation controls and animated Elytra Glow mask");
     }
     private static final String[] POLISH_NAMES={"home-menu-hover","templates-cool","templates-cute","library-favorites-folders","library-bulk","library-organize","library-versions","cape-layers-dense","elytra-layers-dense","cape-layer-groups","elytra-layer-groups","layer-group-name"};
     private static String polishCaptureName(int index){if(index>=176)return "polish-"+new String[]{"bulk-compact","organize-compact","versions-compact","cape-layer-manager-compact","elytra-layer-manager-compact","templates-cute-compact"}[index-176];int[] p=PROFILES[(index-128)/12];return "polish-"+POLISH_NAMES[(index-128)%12]+"-"+p[0]+"x"+p[1]+"-gui"+p[2];}

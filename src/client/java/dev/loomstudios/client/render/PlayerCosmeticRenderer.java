@@ -170,6 +170,12 @@ public final class PlayerCosmeticRenderer {
         return bundle.emissiveTextureId;
     }
 
+    public static Identifier getElytraEmissiveTexture(AvatarRenderState state){
+        if(!emissivePassEnabled||state.skin==null||state.skin.elytra()==null)return null;
+        var bundle=RuntimeCosmeticCache.byElytraTexture(state.skin.elytra().texturePath());
+        return bundle!=null&&bundle.hasElytraEmissive?bundle.elytraEmissiveTextureId:null;
+    }
+
     public static <T> T withPreviewProject(
             Minecraft client,
             LoomProject project,

@@ -1152,3 +1152,5 @@ Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in 
 ## 2026-10-03 — Preview visibility and preset recipes
 
 Preview body visibility is a boolean on a fresh AvatarRenderState snapshot. LivingEntityRenderer returns no body RenderType for that flagged snapshot; cosmetic layers retain normal visibility and world states stay unflagged. Character visibility travels with preview view state and expanded preview. Animation presets compile to existing effect/keyframe tracks, avoiding schema or wire changes. Deferred UI commands snapshot native nested scissor bounds rather than relying on scissor state when the later overlay renders.
+
+Elytra Glow follow-up: a separate cached emissive wing mask and fullbright ElytraModel pass now mirror cape highlights. Masks contain authored pixels only (no alpha-guide checkerboard); update at changed timeline ticks and release with their runtime bundle. Verification includes a wing-only glow capture plus mask presence/change assertions.

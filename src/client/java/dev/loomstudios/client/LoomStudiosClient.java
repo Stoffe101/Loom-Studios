@@ -37,6 +37,7 @@ public final class LoomStudiosClient implements ClientModInitializer {
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register(
                 (entityType, renderer, helper, context) -> {
                     if (renderer instanceof AvatarRenderer<?> avatarRenderer) {
+                        helper.register(new dev.loomstudios.client.render.LoomElytraGlowLayer(avatarRenderer,context.getModelSet()));
                         helper.register(
                                 new LoomCapeGlowLayer(
                                         avatarRenderer,
