@@ -1,6 +1,6 @@
 # Library and authoring verification
 
-Active milestone: 2026-10-03. Evidence is collected from the real Minecraft client, not UI mockups. Source checkpoint and final results will be recorded after successful exact-commit checks.
+Verified 9b22438db8c8aea42a10ee5800000c56415ac4e7 in Actions #200 (2026-10-03): 111 tests and 100 actual captures, all runtime markers pass. Evidence is collected from the real Minecraft client, not UI mockups. All PNGs decode and are visually reviewed. Four contact sheets summarize the 32 new-screen images; all 100 original PNGs remain in the CI artifact. Final packaging hash is recorded in MANIFEST.json.
 
 ## Scope
 
@@ -34,3 +34,14 @@ The 68 earlier editor/import/share/layout/preview captures are also regenerated.
 3. Create each template and edit its layers. Copy/paste/rotate selections across both editors; check linked wings, locked layers and undo/redo.
 4. Add effects on both channels, drag keyframes, change values and play the preview. Undo a drag once. Adjust an imported image using all three handle types and compare the candidate to the applied result.
 5. Repeat at the four display/GUI profiles. Test hardware FPS and optional Sodium/Iris/Sodium Extra/3D Skin Layers, shaders off/on, and a second multiplayer client. These external scenarios are not claimed by software-Mesa CI.
+
+## Retained visual evidence
+
+- [Contact sheet 1](contact-0.png)
+- [Contact sheet 2](contact-1.png)
+- [Contact sheet 3](contact-2.png)
+- [Contact sheet 4](contact-3.png)
+
+[Manifest](MANIFEST.json) records all 100 PNG hashes and the tested JAR hash. The 32 new-screen originals are retained beside this index; all 100 originals and logs remain in the Actions #200 artifact.
+
+Merged through PR #16 at ece5ec7a69e727390d61f22f631c7a59dac0e09f; source equals the tested tree. Subsequent evidence/documentation changes do not modify production code.

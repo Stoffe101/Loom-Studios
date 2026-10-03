@@ -281,6 +281,8 @@ Preview skin patches use a separate UUID cache from equipped/world skin patches,
 
 Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in Actions #191; fresh snapshots, explicit GUI rear-view quaternion, separate preview namespaces/cache, alpha isolation and routed input passed. No schema/network change.
 
-## Library and authoring milestone (source in progress)
+## Library and authoring milestone (verified)
 
 EditorPreferences is a local atomic properties store; favorites/preferences do not change project schema or portable hashes. ProjectFileStore gains UUID-preserving rename and reversible Trash moves with non-overwriting restore. WorkspaceRecovery writes dirty snapshots to a separate draft store, never equipping/publishing them. Library collection pagination keeps controls bounded. Shared PixelPatch/PixelDrawing/SurfaceEdits operate on semantic faces and preserve untouched UV pixels and layer eligibility. Shared animation workspace uses existing schema-v3 tracks with compound keyframe drags. Preview poses affect only owned render snapshots.
+
+TemplateCatalog supplies original immutable layered pixel designs; selecting a template forks a new project ID. Smart Import handles bind to the existing normalized LayerTransform and candidate/apply pipeline. The shared animation screen retains schema-v3 tracks/effects and compound gesture history. Local settings remain outside portable artwork and multiplayer state. Final evidence: Actions #200 at 9b22438db8c8aea42a10ee5800000c56415ac4e7.
