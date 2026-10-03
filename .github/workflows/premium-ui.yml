@@ -96,8 +96,7 @@ jobs:
           print('LOOM_CAPTURE_DECODE PASS count='+str(len(files)))
           groups={}
           for path in files:
-              if '-gui' not in path.stem: continue
-              profile=path.stem.split('-')[-2]+'-'+path.stem.split('-')[-1]
+              profile=(path.stem.split('-')[-2]+'-'+path.stem.split('-')[-1]) if '-gui' in path.stem else 'compact'
               groups.setdefault(profile,[]).append(path)
           def emit(name,image):
               data=io.BytesIO();image.convert('RGB').save(data,format='JPEG',quality=92)
