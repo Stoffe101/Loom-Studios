@@ -1579,3 +1579,7 @@ Actions #187 on `6cf317a1d9856ca8d924ae3800ffb97099983d85`: Java21 build/tests p
 ### Rear-view verification and 3D pointer coverage
 
 Actions #188 on `6142af02e1b2b5089cf22b8e9301ccf9c5eb5c0c` passed Java21 build/tests and all 61 Minecraft captures/input/export assertions. Individually inspected Home ultrawide, Cape windowed, Elytra ultrawide and expanded Cape: actual garment is visible on the back and whole player is intact. The added preview camera quaternion resolves the observed occlusion. Follow-up broadens middle pan to the 3D widget on all screens and expanded view (not just the texture canvas); updates expanded workshop framing, folder/share/lock symbols and labeled glow/lock states. Final 68-capture validation remains IN PROGRESS.
+
+### Preview cache finalization
+
+Separated preview/world skin-patch caches to remove per-frame patch churn when both render passes alternate. Strengthened actual-runtime assertions for twenty interleaved frames (no rehash/skin reconstruction) and preview-only alpha isolation on both cosmetic channels. CI now prints the exact XML test totals. Final source validation is pending; local javac is unavailable, so Java21 validation remains in GitHub Actions.

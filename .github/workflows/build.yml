@@ -32,7 +32,19 @@ jobs:
         run: ./gradlew --version
 
       - name: Build
-        run: ./gradlew --no-daemon build
+        run: |
+          ./gradlew --no-daemon build
+          python3 - <<'PYTEST'
+          import glob, xml.etree.ElementTree as ET
+          reports = glob.glob('build/test-results/test/TEST-*.xml')
+          assert reports, 'No test reports'
+          totals = {name: 0 for name in ('tests', 'failures', 'errors', 'skipped')}
+          for report in reports:
+              root = ET.parse(report).getroot()
+              for name in totals: totals[name] += int(root.get(name, 0))
+          print('LOOM_TEST_REPORT ' + ' '.join(f'{name}={value}' for name, value in totals.items()))
+          assert totals['failures'] == totals['errors'] == 0
+          PYTEST
 
       - name: Upload mod artifact
         uses: actions/upload-artifact@v4

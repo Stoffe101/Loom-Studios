@@ -268,7 +268,11 @@ public final class LoomUiCapture {
         var second=dev.loomstudios.client.render.LoomPreviewState.extract(client.player);
         var counter=dev.loomstudios.client.render.PlayerCosmeticRenderer.class.getDeclaredField("previewHashComputations");counter.setAccessible(true);
         long beforeHashes=counter.getLong(null);
-        for(int i=0;i<20;i++) dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,fixtureProject,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
+        for(int i=0;i<20;i++) {
+            dev.loomstudios.client.render.LoomPreviewState.extract(client.player);
+            var reused=(net.minecraft.client.renderer.entity.state.AvatarRenderState)dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,fixtureProject,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
+            if(reused.skin!=((net.minecraft.client.renderer.entity.state.AvatarRenderState)first).skin)throw new IllegalStateException("World/preview frames invalidate each other's skin patch");
+        }
         if(counter.getLong(null)!=beforeHashes)throw new IllegalStateException("Immutable preview rehashes every frame");
         if(first==second)throw new IllegalStateException("Preview shares mutable state");
         var avatar=(net.minecraft.client.renderer.entity.state.AvatarRenderState)first;
@@ -279,12 +283,16 @@ public final class LoomUiCapture {
         var blankState=(net.minecraft.client.renderer.entity.state.AvatarRenderState)dev.loomstudios.client.render.PlayerCosmeticRenderer.withPreviewProject(client,blank,()->dev.loomstudios.client.render.LoomPreviewState.extract(client.player));
         var guide=dev.loomstudios.client.render.RuntimeCosmeticCache.byCapeTexture(blankState.skin.cape().texturePath());
         var actual=dev.loomstudios.client.render.RuntimeCosmeticCache.getOrCompile(client,blank.hash(),blank);
-        var imageField=guide.getClass().getDeclaredField("capeImage");imageField.setAccessible(true);
-        int guided=((com.mojang.blaze3d.platform.NativeImage)imageField.get(guide)).getPixel(1,1);
-        int authored=((com.mojang.blaze3d.platform.NativeImage)imageField.get(actual)).getPixel(1,1);
-        if(guided>>>24!=255 || authored!=0 || blank.cape().layers().getFirst().pixelAt(65)!=0)throw new IllegalStateException("Alpha guide leaked into runtime/project");
+        for(String channel:new String[]{"capeImage","elytraImage"}) {
+            var imageField=guide.getClass().getDeclaredField(channel);imageField.setAccessible(true);
+            int guided=((com.mojang.blaze3d.platform.NativeImage)imageField.get(guide)).getPixel(1,1);
+            int authored=((com.mojang.blaze3d.platform.NativeImage)imageField.get(actual)).getPixel(1,1);
+            if(guided>>>24!=255 || authored!=0)throw new IllegalStateException("Alpha guide leaked into "+channel);
+        }
+        if(blank.cape().layers().getFirst().pixelAt(65)!=0||blank.elytra().layers().getFirst().pixelAt(65)!=0)
+            throw new IllegalStateException("Alpha guide modified the project");
         dev.loomstudios.client.render.RuntimeCosmeticCache.release(client,blank.hash());
-        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen canvas/3D/expanded middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash reuse and alpha isolation");
+        System.out.println("LOOM_UI_INPUT_PREVIEW PASS: Screen canvas/3D/expanded middle pan, palette close, isolated snapshot, cosmetic assets, 20-frame hash/skin reuse and Cape/Elytra alpha isolation");
     }
     private static void verifyWorkflows(Minecraft client) throws Exception {
         var projectPath=dev.loomstudios.client.sharing.LoomShareExportAdapter.exportProject(fixtureProject);

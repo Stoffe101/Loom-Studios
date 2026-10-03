@@ -25,6 +25,7 @@ public final class PlayerCosmeticRenderer {
     public static final float ELYTRA_VISUAL_BASELINE_Z_SCALE = 0.5F;
 
     private static final Map<UUID, CachedSkin> SKINS = new HashMap<>();
+    private static final Map<UUID, CachedSkin> PREVIEW_SKINS = new HashMap<>();
 
     private static boolean emissivePassEnabled = true;
     private static String lastLocalProjectHash;
@@ -71,7 +72,8 @@ public final class PlayerCosmeticRenderer {
         LoomProject project;
         String projectHash;
 
-        if (preview != null && ClientProjectWorkspace.isLocalPlayer(playerId)) {
+        boolean previewingLocal=preview != null && ClientProjectWorkspace.isLocalPlayer(playerId);
+        if (previewingLocal) {
             project = preview.project();
             projectHash = preview.projectHash();
         } else {
@@ -88,13 +90,12 @@ public final class PlayerCosmeticRenderer {
                         client,
                         projectHash,
                         project,
-                        preview == null
-                                ? null
-                                : preview.timelineTick(),
-                        preview != null && ClientProjectWorkspace.isLocalPlayer(playerId)
+                        previewingLocal ? preview.timelineTick() : null,
+                        previewingLocal
                 );
 
-        CachedSkin cached = SKINS.get(playerId);
+        Map<UUID,CachedSkin> skins=previewingLocal?PREVIEW_SKINS:SKINS;
+        CachedSkin cached = skins.get(playerId);
 
         if (cached == null
                 || cached.source != state.skin
@@ -107,7 +108,7 @@ public final class PlayerCosmeticRenderer {
             ));
 
             cached = new CachedSkin(state.skin, projectHash, patched);
-            SKINS.put(playerId, cached);
+            skins.put(playerId, cached);
         }
 
         state.skin = cached.patched;
@@ -245,6 +246,7 @@ public final class PlayerCosmeticRenderer {
 
     public static void clearPreviewProject(Minecraft client) {
         PREVIEW_OVERRIDE.remove();
+        PREVIEW_SKINS.clear();
 
         if (previewProjectHash != null
                 && (!ClientProjectWorkspace.isInitialized()
