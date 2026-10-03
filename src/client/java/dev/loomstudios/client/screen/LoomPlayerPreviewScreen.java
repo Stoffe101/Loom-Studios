@@ -50,7 +50,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
     @Override protected void init(){
         int left=(width-panelWidth())/2+8,top=panelTop()+23,total=panelWidth()-16;
         addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total-171,panelTop()+3,18,16,Component.literal("Toggle character"),()->{characterVisible=!characterVisible;}){
-            @Override protected void renderWidget(GuiGraphics g,int mx,int my,float dt){dev.loomstudios.client.ui.LoomCharacterToggle.draw(g,getX(),getY(),16,characterVisible,isHoveredOrFocused());}
+            @Override protected void renderContents(GuiGraphics g,int mx,int my,float dt){dev.loomstudios.client.ui.LoomCharacterToggle.draw(g,getX(),getY(),16,characterVisible,isHoveredOrFocused());}
         });
         addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total-148,panelTop()+3,148,16,Component.literal(dev.loomstudios.client.ui.LoomPreviewBackground.current().label()),()->{dev.loomstudios.client.ui.LoomPreviewBackground.cycle();rebuildWidgets();}));
         String[] views={"Back","Front","Left","Right"};float[] angles={25,180,90,270};

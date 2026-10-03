@@ -24,6 +24,7 @@ public enum AnimationPreset {
 
     public AnimationTrack create(UUID layer,AnimationChannel channel,int duration,float cyclesPerSecond){
         if(!Float.isFinite(cyclesPerSecond)||cyclesPerSecond<.25F||cyclesPerSecond>2F)throw new IllegalArgumentException("Rate must be between 0.25 and 2 cycles per second");
+        if(duration*cyclesPerSecond<20)throw new IllegalArgumentException("Timeline is shorter than one preset cycle");
         int cycles=Math.max(1,Math.min(24,(int)Math.floor(duration*cyclesPerSecond/20)));
         float speed=duration*cyclesPerSecond/(20*cycles);
         if(speed>8)throw new IllegalArgumentException("Shorten the timeline or choose a slower preset rate");

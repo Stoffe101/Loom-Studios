@@ -364,7 +364,7 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         int width = rightRight - rightLeft;
         int previewHeight = Math.max(
                 compactMode ? 96 : 130,
-                contentBottom - contentTop - (compactMode ? 48 : 56)
+                contentBottom - contentTop - (compactMode ? 56 : 64)
         );
 
         previewWidget = new LoomPlayerPreviewWidget(
@@ -377,13 +377,14 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         );
         addRenderableWidget(previewWidget);
 
-        int gap = 4;
-        int half = Math.max(54, (width - gap) / 2);
+        int gap = 6;
+        int inset = 6, available = width - 2 * inset;
+        int half = (available - gap) / 2;
         int y = contentTop + previewHeight + 3;
         int h = compactMode ? 18 : 20;
 
         capePreviewButton = new LoomButton(
-                rightLeft,
+                rightLeft + inset,
                 y,
                 half,
                 h,
@@ -395,9 +396,9 @@ public final class LoomCodesScreen extends LoomPointerScreen {
                 )
         );
         elytraPreviewButton = new LoomButton(
-                rightLeft + half + gap,
+                rightLeft + inset + half + gap,
                 y,
-                width - half - gap,
+                available - half - gap,
                 h,
                 Component.literal("Elytra"),
                 LoomButton.Icon.ELYTRA,
@@ -410,9 +411,9 @@ public final class LoomCodesScreen extends LoomPointerScreen {
         addRenderableWidget(elytraPreviewButton);
 
         addRenderableWidget(new LoomButton(
-                rightLeft,
+                rightLeft + inset,
                 y + h + 3,
-                width,
+                available,
                 h,
                 Component.literal("Reset 3D View"),
                 LoomButton.Icon.RESET,

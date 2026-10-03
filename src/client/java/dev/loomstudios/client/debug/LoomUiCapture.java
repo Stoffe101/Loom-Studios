@@ -462,7 +462,7 @@ public final class LoomUiCapture {
             if(preview.characterVisible())throw new IllegalStateException("Character toggle click failed");
         }else if(view==4||view==5){
             var animation=new dev.loomstudios.client.screen.LoomAnimationScreen(home,dev.loomstudios.project.AnimationChannel.CAPE,ClientProjectWorkspace.project().cape().layers().getFirst().id());
-            client.setScreen(animation);set(animation,"preset",dev.loomstudios.project.AnimationPreset.STARS);animation.applyPreset();
+            client.setScreen(animation);set(animation,"layerId",ClientProjectWorkspace.project().cape().layers().get(1).id());set(animation,"preset",dev.loomstudios.project.AnimationPreset.STARS);animation.applyPreset();
             if(view==5){set(animation,"advanced",true);call(animation,"rebuildWidgets");}
             for(var child:animation.children())if(child instanceof AbstractWidget w&&w.getBottom()>animation.height-28)throw new IllegalStateException("Animation control crosses footer: "+w.getMessage());
         }else{

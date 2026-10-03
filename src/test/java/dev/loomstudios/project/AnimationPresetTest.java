@@ -15,7 +15,7 @@ class AnimationPresetTest {
                     assertTrue(track.keyframes().size()<=AnimationTrack.MAX_KEYFRAMES);
                     assertEquals(animation,LoomProjectCodec.decode(LoomProjectCodec.encode(project.withAnimation(animation))).animation());
                     assertEquals(track.keyframes().getFirst().value(),track.keyframes().getLast().value());
-                }catch(IllegalArgumentException e){assertTrue(duration*rate/20>24*8,"Unexpected invalid recipe: "+e);}
+                }catch(IllegalArgumentException e){assertTrue(duration*rate<20||duration*rate/20>24*8,"Unexpected invalid recipe: "+e);}
             }
     }
     @Test void starBlinkRateChangesVisibleTiming(){

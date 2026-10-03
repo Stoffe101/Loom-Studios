@@ -60,14 +60,16 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     public void applyPreset(){
         try{
             var animation=ClientProjectWorkspace.project().animation();
-            var recipe=preset.create(layerId,channel,animation.durationTicks(),presetRate);
+            int period=Math.round(20/presetRate);
+            int duration=Math.min(LoomAnimation.MAX_DURATION_TICKS,((animation.durationTicks()+period-1)/period)*period);
+            var recipe=preset.create(layerId,channel,duration,presetRate);
             if(animation.tracks().size()>=LoomAnimation.MAX_TRACKS&&track()==null)throw new IllegalStateException("Delete a track before adding another");
             var current=track();
             if(current!=null){
                 var replacement=new AnimationTrack(current.id(),layerId,channel,recipe.effect(),true,recipe.speed(),true,recipe.keyframes());
-                ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(p.animation(),replacement)));trackId=replacement.id();
+                ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(AnimationAuthoring.changeDuration(p.animation(),duration),replacement)));trackId=replacement.id();
             }else{
-                ClientProjectWorkspace.apply(p->{var tracks=new ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(p.animation().withTracks(tracks));});trackId=recipe.id();
+                ClientProjectWorkspace.apply(p->{var tracks=new ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(AnimationAuthoring.changeDuration(p.animation(),duration).withTracks(tracks));});trackId=recipe.id();
             }
             tick=0;cursor=0;playing=true;message=preset.label()+" applied to selected layer · "+presetRate+" cycles/sec · Save to keep changes";rebuildWidgets();
         }catch(IllegalArgumentException|IllegalStateException e){message=e.getMessage();}
