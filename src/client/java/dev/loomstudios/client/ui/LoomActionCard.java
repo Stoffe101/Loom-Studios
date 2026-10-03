@@ -34,7 +34,8 @@ public final class LoomActionCard extends AbstractButton {
     private final boolean primary;
     private int[] templatePixels;
     private int templateWidth,templateHeight;
-    public LoomActionCard setTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){var p=dev.loomstudios.project.TemplateCatalog.create(kind,0);int scale=dev.loomstudios.project.CanvasResolution.fromCanvas(p.cape()).scale();templateWidth=10*scale;templateHeight=16*scale;templatePixels=dev.loomstudios.client.render.LoomTextureCompiler.compile(p.cape(),0,false,false);return this;}
+    private dev.loomstudios.project.TemplateCatalog.Kind templateKind;
+    public LoomActionCard setTemplate(dev.loomstudios.project.TemplateCatalog.Kind kind){templateKind=kind;var p=dev.loomstudios.project.TemplateCatalog.create(kind,0);int scale=dev.loomstudios.project.CanvasResolution.fromCanvas(p.cape()).scale();templateWidth=10*scale;templateHeight=16*scale;templatePixels=dev.loomstudios.client.render.LoomTextureCompiler.compile(p.cape(),0,false,false);return this;}
 
     public LoomActionCard(
             int x,
@@ -104,11 +105,15 @@ public final class LoomActionCard extends AbstractButton {
             int cx = getX()+(getWidth()-cw)/2, cy = getY()+Math.max(6,(getHeight()-20-ch)/2);
             graphics.fill(cx-1,cy-1,cx+cw+1,cy+ch+1,LoomUiTheme.BORDER);
             int rows=templatePixels==null?16:templateHeight,columns=templatePixels==null?10:templateWidth;
+            LoomUiTextureCache.draw(graphics,"template/"+(templateKind==null?icon.name():templateKind.name()),cx,cy,cw,ch,()-> {
+            var image=new com.mojang.blaze3d.platform.NativeImage(columns,rows,false);
             for(int row=0;row<rows;row++)for(int col=0;col<columns;col++){
                 int color=icon==Icon.BLANK?0xFFCBD5E0:0xFF111738;
                 if(templatePixels!=null){int scale=templateWidth/10,ax=scale+col,ay=scale+row;color=templatePixels[ay*(64*scale)+ax];if((color>>>24)==0)color=((row/4+col/4)%2==0?0xFF34445A:0xFF233044);}
-                graphics.fill(cx+col*cw/columns,cy+row*ch/rows,cx+(col+1)*cw/columns,cy+(row+1)*ch/rows,color);
+                image.setPixel(col,row,color);
             }
+            return image;
+            });
             if(!active) graphics.fill(cx,cy,cx+cw,cy+ch,0x99303B4D);
             String label = Minecraft.getInstance().font.plainSubstrByWidth(getMessage().getString(),getWidth()-8);
             graphics.drawCenteredString(Minecraft.getInstance().font,Component.literal(label),getX()+getWidth()/2,getBottom()-14,

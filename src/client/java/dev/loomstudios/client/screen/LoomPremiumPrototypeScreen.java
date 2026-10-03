@@ -26,6 +26,7 @@ public final class LoomPremiumPrototypeScreen extends Screen {
     public LoomPremiumPrototypeScreen(boolean smooth) { super(Component.literal("Loom UI prototype")); this.smooth=smooth; }
     @Override protected void init() {
         controls.clear();
+        PremiumPaint.resetMetrics();
         if(minecraft.player!=null) ClientProjectWorkspace.ensure(minecraft.player.getUUID());
         boolean compact=width<800;
         bodyY=65;bodyH=height-bodyY-33;
@@ -121,7 +122,12 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         }
         void paint(int mouseX,int mouseY) {
             boolean hover=mouseX>=getX()&&mouseX<getRight()&&mouseY>=getY()&&mouseY<getBottom();
-            boolean activeTool=label.equals(selected)||label.isEmpty()&&icon.equals(selected.toLowerCase(java.util.Locale.ROOT));
+            String selectedIcon=switch(selected) {
+                case "Fill" -> "paint-bucket";case "Eyedropper" -> "pipette";
+                case "Select" -> "square-dashed";case "Line" -> "minus";case "Rectangle" -> "square";
+                default -> selected.toLowerCase(java.util.Locale.ROOT);
+            };
+            boolean activeTool=label.equals(selected)||label.isEmpty()&&icon.equals(selectedIcon);
             boolean hot=hover||isFocused();
             PremiumPaint.box(getX(),getY(),getWidth(),getHeight(),4,activeTool?0xFF164454:hot?0xFF233A50:0xFF192A3E);
             PremiumPaint.outline(getX(),getY(),getWidth(),getHeight(),4,activeTool?CYAN:hot?0xFF6C97AE:0xFF354B61);

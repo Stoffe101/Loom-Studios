@@ -31,6 +31,7 @@ public final class LoomUiCapture {
     private static boolean pending, prepared, fixturesPrepared, importHandleChecked;
     private static Path fixturePath;
     private static LoomProject fixtureProject;
+    private static final java.util.Set<Integer> cacheProbes=new java.util.HashSet<>();
     private LoomUiCapture() {}
     public static void tick(Minecraft client) {
         if (!ENABLED || pending) return;
@@ -215,6 +216,23 @@ public final class LoomUiCapture {
     }
     private static void capture(Minecraft client, int index) {
         try {
+            if(index>=182)System.out.println("LOOM_PREMIUM_CPU "+index+" "+dev.loomstudios.client.ui.premium.PremiumPaint.metrics());
+            if((index==8||index==22)&&cacheProbes.add(index)) {
+                long uploads=dev.loomstudios.client.ui.LoomUiTextureCache.uploads();
+                new Thread(()-> {
+                    try {
+                        Thread.sleep(400);
+                        client.execute(()-> {
+                            if(uploads!=dev.loomstudios.client.ui.LoomUiTextureCache.uploads()
+                                    ||dev.loomstudios.client.ui.LoomUiTextureCache.size()>32) {
+                                System.err.println("LOOM_UI_TEXTURE_CACHE_REUSE FAIL");client.stop();return;
+                            }
+                            System.out.println("LOOM_UI_TEXTURE_CACHE_REUSE PASS "+index+" uploads="+uploads);
+                            capture(client,index);
+                        });
+                    } catch(InterruptedException error) {Thread.currentThread().interrupt();client.execute(client::stop);}
+                },"loom-cache-probe").start();return;
+            }
             if(index==66&&!importHandleChecked){
                 var widget=(AbstractWidget)field(client.screen,"texturePreview").get(client.screen);
                 var before=(LoomProject)invokeCandidate(client.screen);

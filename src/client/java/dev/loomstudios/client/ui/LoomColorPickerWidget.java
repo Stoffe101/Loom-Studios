@@ -98,33 +98,19 @@ public final class LoomColorPickerWidget extends AbstractWidget {
         int hueX = svX + svW + 5;
         int hueW = 9;
 
-        for (int y = 0; y < svH; y += 2) {
-            float v = 1.0F - y / (float)Math.max(1, svH - 1);
-
-            for (int x = 0; x < svW; x += 2) {
-                float s = x / (float)Math.max(1, svW - 1);
-                int rgb = Color.HSBtoRGB(hue, s, v);
-                graphics.fill(
-                        svX + x,
-                        svY + y,
-                        Math.min(svX + svW, svX + x + 2),
-                        Math.min(svY + svH, svY + y + 2),
-                        0xFF000000 | (rgb & 0x00FFFFFF)
-                );
-            }
-        }
-
-        for (int y = 0; y < svH; y++) {
-            float h = y / (float)Math.max(1, svH - 1);
-            int rgb = Color.HSBtoRGB(h, 1.0F, 1.0F);
-            graphics.fill(
-                    hueX,
-                    svY + y,
-                    hueX + hueW,
-                    svY + y + 1,
-                    0xFF000000 | (rgb & 0x00FFFFFF)
-            );
-        }
+        float displayedHue=hue;
+        LoomUiTextureCache.draw(graphics,"sv/"+Float.floatToIntBits(displayedHue)+"/"+svW+"/"+svH,
+                svX,svY,svW,svH,()-> {
+                    var image=new com.mojang.blaze3d.platform.NativeImage(svW,svH,false);
+                    for(int y=0;y<svH;y++)for(int x=0;x<svW;x++)
+                        image.setPixel(x,y,0xFF000000|Color.HSBtoRGB(displayedHue,x/(float)Math.max(1,svW-1),1-y/(float)Math.max(1,svH-1)));
+                    return image;
+                });
+        LoomUiTextureCache.draw(graphics,"hue/"+svH,hueX,svY,hueW,svH,()-> {
+            var image=new com.mojang.blaze3d.platform.NativeImage(1,svH,false);
+            for(int y=0;y<svH;y++)image.setPixel(0,y,0xFF000000|Color.HSBtoRGB(y/(float)Math.max(1,svH-1),1,1));
+            return image;
+        });
 
         int markerX = svX + Math.round(saturation * (svW - 1));
         int markerY = svY + Math.round((1.0F - brightness) * (svH - 1));

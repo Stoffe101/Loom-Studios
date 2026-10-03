@@ -1,5 +1,7 @@
 # Loom Studios — Architectural Decisions
 
+2026-10-03 implementation spike: Java/LWJGL NanoVG PIP integration derived from NVGRenderer f4e8272, bundled Inter/Lucide notices, isolated F9 comparison, conventional widget input and CPU submission instrumentation. Template/picker follow-up uses a32-entry UI texture cache with dimension/hue/template keys and resource disposal. Initial source71d3d02 Java21/125 tests pass; new follow-up and runtime capture acceptance remain IN PROGRESS. See PREMIUM_PROTOTYPE.md. No Kotlin, owo-ui or production-screen renderer migration adopted yet.
+
 2026-10-03 follow-up research: NanoVG through NVGRenderer explicitly targets Fabric1.21.11 and is now a rendering-spike candidate for smooth shapes/text/SVGs; Kotlin/native packaging and actual Loom compatibility remain untested. Next compare a small NanoVG prototype with cached Fabric assets before adoption; owo-ui layout evaluation is separate. YACL is settings-oriented and ImGui is developer-tool-oriented. No dependencies/code added or runtime tests run. See PREMIUM_UI_AUDIT.md for primary sources and requirements.
 
 Research direction only: prefer existing Fabric GUI with cached textures, SVG-derived icon atlas, authored workshop assets and a smooth-font prototype. owo-ui0.13.0+1.21.11 is a layout-spike candidate; not adopted. Official ModernUI support for1.21.11 is unconfirmed. See PREMIUM_UI_AUDIT.md; no dependency/schema changes.

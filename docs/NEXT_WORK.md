@@ -1,5 +1,7 @@
 # Loom Studios — Next Work
 
+Prototype follow-up verification is pending:32-entry cached template/picker textures, correct selected-tool/tinted icons, per-profile warm CPU samples and actual-client idle-upload reuse assertions at Home/color-picker captures. Initial source71d3d02 build/125 tests passed; the full capture job is still running. Next validate the follow-up source and inspect the eight renderer comparisons before choosing the production renderer.
+
 ## NanoVG prototype — IN PROGRESS (2026-10-03)
 
 Implemented an isolated F9 renderer comparison with smooth Inter typography, cached Lucide SVG textures, rounded panels, compact layouts, normal widget input/narration, actual 3D preview interleaving and CPU submission counters. Added LWJGL NanoVG module/native packaging and third-party notices; no Kotlin runtime is needed. Eight smooth/native captures extend the regression suite to190. Build/runtime/image verification is pending; local existing Fabric Loom resolution failed. The main UI overhaul is not done. [Prototype scope and verification](PREMIUM_PROTOTYPE.md).

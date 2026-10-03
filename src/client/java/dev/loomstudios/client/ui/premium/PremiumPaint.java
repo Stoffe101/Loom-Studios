@@ -20,6 +20,7 @@ public final class PremiumPaint {
     private static ByteBuffer fontBytes;
     private static long started;
     private static int paths;
+    private static int warmup;
     private static final ArrayDeque<Long> times = new ArrayDeque<>();
     private static final HashMap<String,Integer> icons = new HashMap<>();
     private PremiumPaint() {}
@@ -42,6 +43,7 @@ public final class PremiumPaint {
     public static void transform(Matrix3x2f m) { nvgTransform(vg,m.m00(),m.m01(),m.m10(),m.m11(),m.m20(),m.m21()); }
     public static void end() {
         nvgEndFrame(vg);
+        if(warmup++<10)return;
         times.addLast(System.nanoTime() - started);
         if (times.size() > 240) times.removeFirst();
     }
@@ -52,6 +54,7 @@ public final class PremiumPaint {
         return String.format(java.util.Locale.ROOT, "CPU submit p50 %.2f / p95 %.2f ms · %d paths",
                 sorted[sorted.length/2]/1e6, sorted[Math.min(sorted.length-1,(int)(sorted.length*.95))]/1e6, paths);
     }
+    public static void resetMetrics() {times.clear();warmup=0;}
     public static void close() {
         if (vg != 0) { nvgDelete(vg); vg = 0; }
         if (fontBytes != null) { MemoryUtil.memFree(fontBytes); fontBytes = null; }
@@ -63,6 +66,7 @@ public final class PremiumPaint {
         try(var stack=MemoryStack.stackPush()) {
             var paint=org.lwjgl.nanovg.NVGPaint.malloc(stack);
             nvgImagePattern(vg,x,y,size,size,0,image,1,paint);
+            paint.innerColor().set(color(stack,tint));paint.outerColor().set(color(stack,tint));
             nvgBeginPath(vg);nvgRect(vg,x,y,size,size);nvgFillPaint(vg,paint);nvgFill(vg);paths++;
         }
     }
