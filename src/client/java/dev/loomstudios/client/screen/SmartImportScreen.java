@@ -395,8 +395,8 @@ public final class SmartImportScreen extends Screen {
                 h,
                 small,
                 "Rotation",
-                LoomButton.Icon.BACK,
-                LoomButton.Icon.PLAY,
+                LoomButton.Icon.ROTATE_LEFT,
+                LoomButton.Icon.ROTATE_RIGHT,
                 () -> rotate(-15.0),
                 () -> rotate(15.0)
         );

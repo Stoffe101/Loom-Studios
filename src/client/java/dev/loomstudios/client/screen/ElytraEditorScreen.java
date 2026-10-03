@@ -6,6 +6,7 @@ import dev.loomstudios.client.ui.LoomInspectorLayout;
 import dev.loomstudios.client.ui.LoomSlider;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.ui.LoomAnimationTimelineWidget;

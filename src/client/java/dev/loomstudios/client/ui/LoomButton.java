@@ -23,6 +23,8 @@ public class LoomButton extends AbstractButton {
         RECTANGLE,
         CIRCLE,
         CLOSE,
+        ROTATE_LEFT,
+        ROTATE_RIGHT,
         MOVE,
         FLIP_H,
         FLIP_V,
