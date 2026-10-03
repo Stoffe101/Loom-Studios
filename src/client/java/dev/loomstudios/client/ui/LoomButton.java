@@ -157,6 +157,8 @@ public class LoomButton extends AbstractButton {
         boolean effectiveIconOnly = iconOnly || (icon != Icon.NONE
                 && Minecraft.getInstance().font.width(getMessage()) + 28 > getWidth());
         boolean hot = this.isHoveredOrFocused() && this.active;
+        if(dev.loomstudios.client.ui.premium.PremiumControls.button(graphics,getX(),getY(),getWidth(),getHeight(),
+                getMessage().getString(),icon,effectiveIconOnly,active,hot,isFocused(),selected,primary,danger))return;
         int background = !this.active
                 ? LoomUiTheme.BUTTON_DISABLED
                 : selected || primary

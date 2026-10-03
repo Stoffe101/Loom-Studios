@@ -3,7 +3,8 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "src/client/java/dev/loomstudios/client/ui/premium/**"
+      - "src/client/java/dev/loomstudios/client/ui/**"
+      - "src/client/resources/assets/loom-studios/**"
       - "src/client/java/dev/loomstudios/client/screen/LoomPremiumPrototypeScreen.java"
       - ".github/workflows/premium-ui.yml"
   workflow_dispatch:
@@ -11,6 +12,18 @@ permissions:
   contents: read
 jobs:
   compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: renderer
+            start: 182
+            end: 190
+            count: 8
+          - suite: production
+            start: 22
+            end: 42
+            count: 20
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -41,15 +54,17 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
           ALSOFT_DRIVERS: "null"
         run: |
-          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=182 | tee premium-capture.log
-          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 8
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=${{ matrix.start }} -PuiCaptureEnd=${{ matrix.end }} | tee premium-capture.log
+          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq ${{ matrix.count }}
           grep -q 'LOOM_UI_CAPTURE COMPLETE' premium-capture.log
-          test "$(grep -c 'LOOM_UI_TEXTURE_CACHE_REUSE PASS' premium-capture.log)" -eq 4
+          if [ '${{ matrix.suite }}' = renderer ]; then
+            test "$(grep -c 'LOOM_UI_TEXTURE_CACHE_REUSE PASS' premium-capture.log)" -eq 4
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: loom-premium-comparison
+          name: loom-premium-${{ matrix.suite }}
           path: |
-            docs/verification/editor-workspace/premium-*.png
+            docs/verification/editor-workspace/*.png
             premium-capture.log
             run-ui-capture/logs/latest.log

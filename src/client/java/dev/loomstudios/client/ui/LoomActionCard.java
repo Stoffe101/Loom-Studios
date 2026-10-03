@@ -70,6 +70,9 @@ public final class LoomActionCard extends AbstractButton {
             float partialTick
     ) {
         boolean hot = this.active && this.isHoveredOrFocused();
+        boolean template = switch(icon) { case BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM -> true; default -> false; };
+        if(!template&&dev.loomstudios.client.ui.premium.PremiumControls.card(graphics,getX(),getY(),getWidth(),getHeight(),
+                getMessage().getString(),subtitle.getString(),mappedIcon(icon),active,hot,isFocused(),primary))return;
         int border = primary || hot
                 ? LoomUiTheme.ACCENT
                 : LoomUiTheme.BORDER;
@@ -99,7 +102,6 @@ public final class LoomActionCard extends AbstractButton {
             );
         }
 
-        boolean template = switch(icon) { case BLANK,GRADIENT,NATURE,SPACE,FANTASY,EMBLEM -> true; default -> false; };
         if (template && getHeight() >= 50) {
             int ch = Math.min(144,Math.min(getHeight()-28,(getWidth()-12)*16/10)), cw = ch*10/16;
             int cx = getX()+(getWidth()-cw)/2, cy = getY()+Math.max(6,(getHeight()-20-ch)/2);
@@ -186,7 +188,11 @@ public final class LoomActionCard extends AbstractButton {
             int size
     ) {
         int main = enabled ? LoomUiTheme.TEXT : LoomUiTheme.TEXT_MUTED;
-        LoomButton.Icon mapped = switch (icon) {
+        LoomButton.drawIcon(graphics, x, y, size, mappedIcon(icon), main);
+    }
+
+    private static LoomButton.Icon mappedIcon(Icon icon) {
+        return switch (icon) {
             case CAPE, BLANK -> LoomButton.Icon.CAPE;
             case ELYTRA -> LoomButton.Icon.ELYTRA;
             case IMAGE -> LoomButton.Icon.IMAGE;
@@ -196,7 +202,6 @@ public final class LoomActionCard extends AbstractButton {
             case FOLDER -> LoomButton.Icon.FOLDER;
             case NATURE, SPACE, FANTASY, EMBLEM -> LoomButton.Icon.GRADIENT;
         };
-        LoomButton.drawIcon(graphics, x, y, size, mapped, main);
     }
 
     @Override

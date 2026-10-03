@@ -1,22 +1,12 @@
 # Loom Studios — Pass Log
 
-Actions#220 source71d3d02:125 tests and190 captures pass; all images decode and eight renderer comparisons were inspected. Smooth icons/text/3D interleaving work, but continuous painting had high Mesa CPU tails and compact layers/rail needed changes. Latest fixes cache the vector surface by interaction revision and use a compact layers/preview switch; verification pending. See PREMIUM_PROTOTYPE.md. Full workshop art and production-screen migration remain TODO.
+## Premium presentation — IN PROGRESS (2026-10-03)
 
-Prototype follow-up verification is pending:32-entry cached template/picker textures, correct selected-tool/tinted icons, per-profile warm CPU samples and actual-client idle-upload reuse assertions at Home/color-picker captures. Initial source71d3d02 build/125 tests passed; the full capture job is still running. Next validate the follow-up source and inspect the eight renderer comparisons before choosing the production renderer.
+Renderer foundation verified at source `82ad78a144cf02c9e190a9fe8ed7a37063ce0d5e`: Java21 build and125 tests pass (zero failures/errors/skips), plus fast Actions run37136727179 with eight actual-client renderer captures. All eight PNGs decode and were visually inspected: compact GUI3 shows four sample layers, tool rail contains its controls, smooth text/icons remain clear. Four idle vector-paint reuse assertions pass. Full190 capture regression run37136727143 is still running. Earlier source29a1b952 passes125 tests/190 captures and cached Home/picker upload-reuse checks. These are Minecraft1.21.11/Fabric0.18.4/API0.141.1, Temurin21, software Mesa; hardware FPS/shaders remain unverified.
 
-## NanoVG prototype — IN PROGRESS (2026-10-03)
+Production migration has started: actual LoomButton controls and Home action cards use a shared transparent NanoVG overlay with Inter labels and46 SVG icons (Lucide plus three Loom-specific drawings). The overlay snapshots geometry/labels/interaction state and reuses unchanged textures; native popups occlude earlier controls. Existing widgets keep their keyboard, mouse, narration and tooltips. Build/image verification of this new source is pending. The workshop-art skin, other text/controls, resource reload and full responsive production overhaul are still unfinished. See PREMIUM_PROTOTYPE.md.
 
-Implemented an isolated F9 renderer comparison with smooth Inter typography, cached Lucide SVG textures, rounded panels, compact layouts, normal widget input/narration, actual 3D preview interleaving and CPU submission counters. Added LWJGL NanoVG module/native packaging and third-party notices; no Kotlin runtime is needed. Eight smooth/native captures extend the regression suite to190. Build/runtime/image verification is pending; local existing Fabric Loom resolution failed. The main UI overhaul is not done. [Prototype scope and verification](PREMIUM_PROTOTYPE.md).
-
-Next: compile and capture on GitHub Actions, resolve integration failures, compare all four profiles, then choose the renderer and migrate production screens. Hardware FPS/shaders remain unverified.
-
-2026-10-03 follow-up research: NanoVG through NVGRenderer explicitly targets Fabric1.21.11 and is now a rendering-spike candidate for smooth shapes/text/SVGs; Kotlin/native packaging and actual Loom compatibility remain untested. Next compare a small NanoVG prototype with cached Fabric assets before adoption; owo-ui layout evaluation is separate. YACL is settings-oriented and ImGui is developer-tool-oriented. No dependencies/code added or runtime tests run. See PREMIUM_UI_AUDIT.md for primary sources and requirements.
-
-## Premium UI/performance audit — research complete; overhaul TODO (2026-10-03)
-
-Inspected the recovered Actions #217 archive: all182 PNGs decoded, eleven contact sheets reviewed and selected GUI3 originals inspected; latest150225 feedback and all five references viewed individually. The HTTP503 archive-access blocker is resolved. Visual quality is still below the references and performance is unmeasured. No rendering code or dependency changed in this pass. [Audit, primary sources and implementation sequence](PREMIUM_UI_AUDIT.md).
-
-Next: instrument frame-time/render costs, cache template/picker/scenery rendering, then build an asset/icon/font-based Home/Cape vertical slice and responsive640×360 editor. Existing125 tests are prior evidence only; no new game/FPS run this pass. Optional mods, hardware and multiplayer acceptance remain outstanding.
+Next: verify the new source's build and20 production-screen captures at all four profiles, fix layering/spacing failures, then replace procedural workshop artwork and migrate remaining typography/components. Do not treat the renderer sample as a completed editor or claim hardware performance from Mesa.
 
 ## Library / layer polish — implementation verified; visual acceptance PARTIAL (2026-10-03)
 

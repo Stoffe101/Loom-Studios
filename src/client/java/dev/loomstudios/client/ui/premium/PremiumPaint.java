@@ -41,6 +41,23 @@ public final class PremiumPaint {
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
     }
     public static void transform(Matrix3x2f m) { nvgTransform(vg,m.m00(),m.m01(),m.m10(),m.m11(),m.m20(),m.m21()); }
+    public static void transformed(Matrix3x2f m,Runnable body) {
+        nvgSave(vg);transform(m);
+        try {body.run();}finally{nvgRestore(vg);}
+    }
+    public static void fittedText(String value,float x,float y,float width,float size,int color,boolean centered) {
+        nvgFontSize(vg,size);
+        String text=value;
+        if(nvgTextBounds(vg,0,0,text,(float[])null)>width) {
+            int end=text.length();
+            while(end>0&&nvgTextBounds(vg,0,0,text.substring(0,end)+"…",(float[])null)>width)
+                end=text.offsetByCodePoints(end,-1);
+            text=end==0?"":text.substring(0,end)+"…";
+        }
+        float actual=nvgTextBounds(vg,0,0,text,(float[])null);
+        final String fitted=text;
+        clip(x,y,width,size+3,()->text(fitted,centered?x+(width-actual)/2:x,y,size,color));
+    }
     public static void end() {
         nvgEndFrame(vg);
         if(warmup++<10)return;

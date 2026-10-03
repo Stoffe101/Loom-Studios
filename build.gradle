@@ -37,6 +37,7 @@ loom {
                 systemProperties.put("loom.uiCapture", "true")
                 vmArgs "-Xms256M", "-Xmx1024M"
                 if (project.hasProperty("uiCaptureStart")) systemProperties.put("loom.uiCaptureStart", project.property("uiCaptureStart").toString())
+                if (project.hasProperty("uiCaptureEnd")) systemProperties.put("loom.uiCaptureEnd", project.property("uiCaptureEnd").toString())
                 systemProperties.put("fabric.log.level", "info")
             }
         }

@@ -23,7 +23,6 @@ public final class LoomPremiumPrototypeScreen extends Screen {
     private String selected="Pencil";
     private boolean previewVisible=true;
     private boolean initialLayout=true,benchmark;
-    private static long nextRevision;
     private long paintRevision;
     private int lastHoverMask=Integer.MIN_VALUE;
     private int inspectorX, canvasX, canvasW, bodyY, bodyH, inspectorW;
@@ -34,7 +33,7 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         if(minecraft.player!=null) ClientProjectWorkspace.ensure(minecraft.player.getUUID());
         boolean compact=width<800;
         if(initialLayout){previewVisible=!compact;initialLayout=false;}
-        paintRevision=++nextRevision;lastHoverMask=Integer.MIN_VALUE;
+        paintRevision=PremiumGuiRenderer.nextRevision();lastHoverMask=Integer.MIN_VALUE;
         bodyY=65;bodyH=height-bodyY-33;
         int rail=compact?36:112; inspectorW=compact?158:216;
         inspectorX=width-inspectorW-12;canvasX=rail+20;canvasW=inspectorX-canvasX-10;
@@ -48,7 +47,7 @@ public final class LoomPremiumPrototypeScreen extends Screen {
         String[] icons={"pencil","eraser","paint-bucket","pipette","square-dashed","minus","square","circle"};
         for(int i=0;i<tools.length;i++){
             String tool=tools[i];
-            addControl(12,bodyY+12+i*27,rail,23,compact?"":tool,icons[i],()->{selected=tool;paintRevision=++nextRevision;}).setTooltip(Tooltip.create(Component.literal(tool)));
+            addControl(12,bodyY+12+i*27,rail,23,compact?"":tool,icons[i],()->{selected=tool;paintRevision=PremiumGuiRenderer.nextRevision();}).setTooltip(Tooltip.create(Component.literal(tool)));
         }
         addControl(inspectorX+10,height-58,inspectorW-20,22,"Layer manager","layers",
                 ()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,null)));
@@ -68,7 +67,7 @@ public final class LoomPremiumPrototypeScreen extends Screen {
             int mask=0;
             for(int i=0;i<controls.size();i++){Control c=controls.get(i);
                 if(c.isFocused()||mouseX>=c.getX()&&mouseX<c.getRight()&&mouseY>=c.getY()&&mouseY<c.getBottom())mask|=1<<i;}
-            if(mask!=lastHoverMask||benchmark){lastHoverMask=mask;paintRevision=++nextRevision;}
+            if(mask!=lastHoverMask||benchmark){lastHoverMask=mask;paintRevision=PremiumGuiRenderer.nextRevision();}
             PremiumGuiRenderer.submit(graphics,paintRevision,()->paint(mouseX,mouseY));
         }
         else {

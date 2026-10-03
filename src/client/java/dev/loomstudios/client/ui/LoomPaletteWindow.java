@@ -357,6 +357,7 @@ public final class LoomPaletteWindow extends AbstractContainerWidget {
             int mouseY,
             float partialTick
     ) {
+        dev.loomstudios.client.ui.premium.PremiumControls.occlude(graphics,getX(),getY(),getWidth(),getHeight());
         graphics.fill(
                 getX(),
                 getY(),
