@@ -1,5 +1,8 @@
 # Loom Studios — Pass Log
 
+2026-10-03 milestone verification: commit `5aa2ad043b40f0d06c9392650212dc0c8dd275db` passed build and the existing 68 real Minecraft/Mesa captures (Actions #196). Expanded new-screen capture and real library interaction assertions are now being added; this milestone remains IN PROGRESS until those checks pass and screenshots are reviewed.
+
+
 ## 2026-10-03 — Main merge and full-test handoff
 
 **State: DONE — verified UI implementation merged to main; manual release testing is the next step.**

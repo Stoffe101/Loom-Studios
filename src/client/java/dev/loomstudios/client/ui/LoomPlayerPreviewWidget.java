@@ -78,11 +78,11 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
         setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag: rotate · Middle drag: pan · Wheel: zoom")));
     }
 
-    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY) {
-        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0); }
+    public record ViewState(float yaw, float pitch, float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing) {
+        public ViewState(float yaw,float pitch,float zoom) { this(yaw,pitch,zoom,0,0,dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING,0); }
     }
-    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY); }
-    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY; } }
+    public ViewState viewState() { return new ViewState(yaw, pitch, zoom,panX,panY,pose,facing); }
+    public void restoreViewState(ViewState state) { if (state != null) { yaw = state.yaw; pitch = state.pitch; zoom = state.zoom; panX=state.panX;panY=state.panY;pose=state.pose;facing=state.facing; } }
 
     public void setTimelineTickSupplier(
             IntSupplier timelineTickSupplier

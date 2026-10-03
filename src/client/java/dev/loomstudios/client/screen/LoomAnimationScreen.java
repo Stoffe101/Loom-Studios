@@ -26,7 +26,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override protected void init(){
         int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8,right=width-204,bottom=height-28;
         if(layerId==null||layers().stream().noneMatch(l->l.id().equals(layerId)))layerId=layers().getFirst().id();
-        if(trackId==null)trackId=ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.channel()==channel&&t.layerId().equals(layerId)).map(AnimationTrack::id).findFirst().orElse(null);
+        if(track()==null)trackId=ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.channel()==channel&&t.layerId().equals(layerId)).map(AnimationTrack::id).findFirst().orElse(null);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
         addRenderableWidget(new LoomButton(66,top,Math.max(150,right-152),20,Component.literal("Layer: "+layers().stream().filter(l->l.id().equals(layerId)).findFirst().orElseThrow().name()),()->{int index=0;for(int i=0;i<layers().size();i++)if(layers().get(i).id().equals(layerId))index=i;layerId=layers().get((index+1)%layers().size()).id();trackId=null;rebuildWidgets();}));
         addRenderableWidget(new LoomButton(right-80,top,80,20,Component.literal("Save"),()->{try{ClientProjectWorkspace.save();message="Saved animation";}catch(java.io.IOException e){message="Save failed";}}));
@@ -61,7 +61,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override public void deleteTrack(UUID id){ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.removeTrack(p.animation(),id)));trackId=null;rebuildWidgets();}
     @Override public void tick(){if(refreshPending&&!ClientProjectWorkspace.session().isCompoundEditActive()){refreshPending=false;rebuildWidgets();}if(playing){var a=ClientProjectWorkspace.project().animation();cursor+=a.playbackSpeed();if(cursor>a.durationTicks()){if(a.loop())cursor%=a.durationTicks();else{cursor=a.durationTicks();playing=false;}}tick=(int)cursor;}}
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(e.hasControlDownWithQuirk()&&e.key()==90){ClientProjectWorkspace.undo();rebuildWidgets();return true;}if(e.hasControlDownWithQuirk()&&e.key()==89){ClientProjectWorkspace.redo();rebuildWidgets();return true;}return super.keyPressed(e);}
-    @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-130),"Drag diamonds to move keys");}
+    @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-130),"Drag keyframes");}
     @Override public void removed(){if(timeline!=null)timeline.closeGesture();ClientProjectWorkspace.endCompoundEdit();super.removed();}
     @Override public void onClose(){minecraft.setScreen(parent);}
     @Override public boolean isPauseScreen(){return false;}

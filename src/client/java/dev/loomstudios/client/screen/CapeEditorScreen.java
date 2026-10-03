@@ -2477,7 +2477,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         updateButtonStates();
     }
 
-    private void copyPixelSelection(){if(selection!=null){dev.loomstudios.client.project.PixelClipboard.patch=dev.loomstudios.project.SurfaceEdits.cape(ClientProjectWorkspace.project(),selectedLayerId,capeRegion).crop(selection);notifyPlayer("Pixels copied");}}
+    private void copyPixelSelection(){if(selection!=null){dev.loomstudios.client.project.PixelClipboard.patch=dev.loomstudios.project.SurfaceEdits.cape(ClientProjectWorkspace.project(),selectedLayerId,capeRegion).crop(selection);notifyPlayer("Pixels copied");updateButtonStates();}}
     private void pastePixelSelection(){var clipboard=dev.loomstudios.client.project.PixelClipboard.patch;if(clipboard==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->dev.loomstudios.project.SurfaceEdits.cape(p,selectedLayerId,capeRegion,patch->patch.paste(clipboard,x,y)));selection=new PixelSelection(x,y,x+clipboard.width()-1,y+clipboard.height()-1);updateButtonStates();}catch(IllegalArgumentException e){notifyPlayer(e.getMessage());}}
     private void rotatePixelSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->dev.loomstudios.project.SurfaceEdits.cape(p,selectedLayerId,capeRegion,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);updateButtonStates();}catch(IllegalArgumentException e){notifyPlayer(e.getMessage());}}
     private void clearSelection() {

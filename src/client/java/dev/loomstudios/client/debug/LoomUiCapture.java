@@ -46,7 +46,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= 68) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= 100) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -62,13 +62,13 @@ public final class LoomUiCapture {
             int profile = Math.min(stage / 2, 3);
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
-                int[] target = stage == 21 ? new int[]{854,480,2} : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
+                int[] target = stage == 21 ? new int[]{854,480,2} : stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
                 client.options.guiScale().set(target[2]);
                 org.lwjgl.glfw.GLFW.glfwSetWindowSize(client.getWindow().handle(), target[0], target[1]);
                 client.resizeDisplay(); prepared = true; wait = 10; return;
             }
             if (stage != 20) {
-                client.options.guiScale().set(stage == 21 ? 2 : stage >= 42 ? 3 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
+                client.options.guiScale().set(stage == 21 ? 2 : stage >= 96 ? 3 : stage >= 68 ? PROFILES[(stage-68)/7][2] : stage >= 42 ? 3 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
                 client.resizeDisplay();
             }
             if (stage < 8) {
@@ -146,7 +146,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Single-pixel selection changed on release");
             }
             if (stage == 21) client.setScreen(new CapeEditorScreen(new LoomHomeScreen()));
-            if(stage>=42) {
+            if(stage>=42 && stage<68) {
                 ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
                 if(stage==55 || stage==56) ClientProjectWorkspace.apply(old -> dev.loomstudios.project.LoomProjectFactory.blank("Transparent",1L));
                 if(stage==46) client.setScreen(new LoomHomeScreen());
@@ -181,7 +181,7 @@ public final class LoomUiCapture {
                     }
                 }
             }
-            if(stage>=63) {
+            if(stage>=63 && stage<68) {
                 Screen screen;
                 if(stage==63)screen=new CapeEditorScreen(new LoomHomeScreen());
                 else if(stage==64)screen=new ElytraEditorScreen(new LoomHomeScreen());
@@ -194,6 +194,7 @@ public final class LoomUiCapture {
                 }
                 client.setScreen(screen);verifyPreviewPan(screen);
             }
+            if(stage>=68) prepareMilestone(client);
             client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
             pending = true;
@@ -219,7 +220,7 @@ public final class LoomUiCapture {
                     throw new IllegalStateException("Overlapping controls: "+x.getMessage().getString()+" / "+y.getMessage().getString());
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
-            String name = index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
+            String name = index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
                     : new String[]{"cape-color-compact","cape-properties-compact","elytra-animation-compact","elytra-playback-compact","cape-gradient-compact","cape-transform-compact","cape-stops-compact","elytra-properties-compact","elytra-color-compact","cape-many-layers-compact","elytra-many-tracks-compact","cape-single-pixel-live-200percent","cape-single-pixel-committed-200percent","cape-small-window-guidance"}[index-8];
             Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
@@ -331,6 +332,68 @@ public final class LoomUiCapture {
                 throw new IllegalStateException("Applied import differs from candidate preview");
         }
         System.out.println("LOOM_UI_WORKFLOWS PASS: project/portable/PNG export and both import pages");
+    }
+    private static void prepareMilestone(Minecraft client) throws Exception {
+        ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+        int view=stage>=96?0:(stage-68)%7;
+        Screen screen;
+        if(view==0) screen=new dev.loomstudios.client.screen.LoomLibraryScreen(new LoomHomeScreen());
+        else if(view==1) screen=new dev.loomstudios.client.screen.LoomTemplatesScreen(new LoomHomeScreen());
+        else if(view==2) screen=new dev.loomstudios.client.screen.LoomSettingsScreen(new LoomHomeScreen());
+        else if(view<=4) {
+            var channel=view==3?dev.loomstudios.project.AnimationChannel.CAPE:dev.loomstudios.project.AnimationChannel.ELYTRA;
+            var layer=(view==3?ClientProjectWorkspace.project().cape():ClientProjectWorkspace.project().elytra()).layers().getFirst();
+            screen=new dev.loomstudios.client.screen.LoomAnimationScreen(new LoomHomeScreen(),channel,layer.id());
+        } else {
+            var preview=new dev.loomstudios.client.screen.LoomPlayerPreviewScreen(new LoomHomeScreen(),ClientProjectWorkspace::project);
+            set(preview,"mode",enumValue(preview,"mode","ELYTRA"));
+            preview.setView(25,0,1,0,0,view==5?dev.loomstudios.client.render.LoomPreviewState.PreviewPose.OPEN:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING,0);
+            screen=preview;
+        }
+        client.setScreen(screen);
+        if(screen instanceof dev.loomstudios.client.screen.LoomAnimationScreen animation) animation.addTrack();
+        if(stage>=96) {
+            if(stage==96) {
+                var cards=(java.util.List<?>)field(screen,"cards").get(screen);
+                if(cards.isEmpty())throw new IllegalStateException("Library fixture missing");
+                var card=(AbstractWidget)cards.getFirst();
+                screen.mouseClicked(mouse(card.getX()+10,card.getY()+12,1),false);
+                if(field(screen,"menu").get(screen)==null)throw new IllegalStateException("Right click menu missing");
+            } else if(stage==97 || stage==98) {
+                set(screen,"tab",stage==97?1:2);call(screen,"rebuild");
+            } else {
+                screen=new dev.loomstudios.client.screen.LoomRenameScreen(screen,"Moonlit",name->{});client.setScreen(screen);
+            }
+        }
+    }
+    private static void verifyLibraryWorkflows(Minecraft client) throws Exception {
+        var project=dev.loomstudios.project.LoomProjectCode.forkImported(fixtureProject,System.currentTimeMillis()).withName("Library action test");
+        var path=LocalProjectLibrary.save(project);
+        var library=new dev.loomstudios.client.screen.LoomLibraryScreen(new LoomHomeScreen(),project.projectId());client.setScreen(library);
+        if(field(library,"menu").get(library)==null)throw new IllegalStateException("Context selection not loaded");
+        var act=library.getClass().getDeclaredMethod("act",int.class);act.setAccessible(true);
+        act.invoke(library,4);
+        if(Files.exists(path))throw new IllegalStateException("Delete did not remove saved design");
+        set(library,"tab",2);call(library,"rebuild");
+        var selected=(dev.loomstudios.client.project.ProjectDescriptor)field(library,"selected").get(library);
+        if(selected==null||!selected.projectId().equals(project.projectId()))throw new IllegalStateException("Deleted design not in Trash");
+        set(library,"menu",selected);act.invoke(library,0);
+        if(!Files.exists(path)||!LocalProjectLibrary.store().load(path).hash().equals(project.hash()))throw new IllegalStateException("Trash restore changed artwork");
+        var cards=(java.util.List<?>)field(library,"cards").get(library);
+        var descriptors=(java.util.Map<?,?>)field(library,"descriptors").get(library);
+        AbstractWidget target=null;
+        for(var c:cards)if(((dev.loomstudios.client.project.ProjectDescriptor)descriptors.get(c)).projectId().equals(project.projectId()))target=(AbstractWidget)c;
+        if(target==null)throw new IllegalStateException("Restored card missing");
+        library.mouseClicked(mouse(target.getX()+10,target.getY()+12,0),true);
+        if(!(client.screen instanceof CapeEditorScreen)||!ClientProjectWorkspace.project().projectId().equals(project.projectId()))throw new IllegalStateException("Double click did not select and edit design");
+        ClientProjectWorkspace.apply(p->p.withName("Recovered draft"));dev.loomstudios.client.project.WorkspaceRecovery.checkpoint();
+        if(!LocalProjectLibrary.store().load(path).hash().equals(project.hash()))throw new IllegalStateException("Autosave overwrote explicit save");
+        var draft=dev.loomstudios.client.project.WorkspaceRecovery.STORE.pathFor(project.projectId());
+        ClientProjectWorkspace.recover(draft,client.player.getUUID());
+        if(!ClientProjectWorkspace.isDirty()||!ClientProjectWorkspace.project().name().equals("Recovered draft"))throw new IllegalStateException("Draft recovery lost edits");
+        ClientProjectWorkspace.save();
+        if(Files.exists(draft))throw new IllegalStateException("Explicit save retained stale recovery draft");
+        System.out.println("LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit, isolated draft recovery and explicit save cleanup");
     }
     private static Field field(Object object,String name) throws Exception { Field f=object.getClass().getDeclaredField(name); f.setAccessible(true); return f; }
     private static void set(Object object,String name,Object value) throws Exception { field(object,name).set(object,value); }

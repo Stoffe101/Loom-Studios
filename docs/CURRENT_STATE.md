@@ -1,5 +1,8 @@
 # Loom Studios — Current State
 
+2026-10-03 milestone verification: commit `5aa2ad043b40f0d06c9392650212dc0c8dd275db` passed build and the existing 68 real Minecraft/Mesa captures (Actions #196). Expanded new-screen capture and real library interaction assertions are now being added; this milestone remains IN PROGRESS until those checks pass and screenshots are reviewed.
+
+
 ## Library and authoring milestone — IN PROGRESS (2026-10-03)
 
 User authorized the complete follow-up feature milestone plus Browse All, right-click Edit/Rename/Delete and double-click editing. All five attached reference originals were viewed individually again. Home reference 03 drives card browsing/actions; Elytra reference 01 drives drawing/animation parity; Cape 05 and Import 04 drive contextual transforms. Preserve workshop framing and bounded GUI3 controls.
