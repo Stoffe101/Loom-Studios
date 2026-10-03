@@ -280,3 +280,7 @@ LoomPointerScreen now captures the middle-button pointer for marked canvas/3D wi
 Preview skin patches use a separate UUID cache from equipped/world skin patches, preventing both render passes from invalidating each other every frame. The capture harness alternates world/preview extraction twenty times and asserts identical preview skin object plus zero additional codec hashes. Alpha-guide isolation is verified for both Cape and Elytra images.
 
 Feedback architecture verified at `b7f7212388858109b96f3e8fc8a7175bc3ef8c45` in Actions #191; fresh snapshots, explicit GUI rear-view quaternion, separate preview namespaces/cache, alpha isolation and routed input passed. No schema/network change.
+
+## Library and authoring milestone (source in progress)
+
+EditorPreferences is a local atomic properties store; favorites/preferences do not change project schema or portable hashes. ProjectFileStore gains UUID-preserving rename and reversible Trash moves with non-overwriting restore. WorkspaceRecovery writes dirty snapshots to a separate draft store, never equipping/publishing them. Library collection pagination keeps controls bounded. Shared PixelPatch/PixelDrawing/SurfaceEdits operate on semantic faces and preserve untouched UV pixels and layer eligibility. Shared animation workspace uses existing schema-v3 tracks with compound keyframe drags. Preview poses affect only owned render snapshots.

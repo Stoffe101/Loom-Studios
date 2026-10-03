@@ -250,6 +250,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
         texturePreview = addRenderableWidget(new LoomImagePreviewWidget(
                 controlPanelX+halfWidth+gap,previewTop,workWidth-halfWidth-gap,bottom-previewTop,
                 Component.literal(importTarget == ImportTarget.CAPE ? "Cape Texture" : "Wing Texture"),this::textureImage,this::revision));
+        texturePreview.setTransformController(new LoomImagePreviewWidget.TransformController(){
+            public LayerTransform transform(){return loaded==null?null:buildImageData().transform();}
+            public void move(double dx,double dy){offsetX=Math.max(-2,Math.min(2,offsetX+dx));offsetY=Math.max(-2,Math.min(2,offsetY+dy));touch();}
+            public void scale(double delta){changeScale(scale*delta);}
+            public void rotate(double degrees){SmartImportScreen.this.rotate(degrees);}
+        });
         playerPreview = addRenderableWidget(new LoomPlayerPreviewWidget(
                 rightX,top,rightWidth,bottom-top-48,this::candidateProject,
                 importTarget == ImportTarget.CAPE ? LoomPlayerPreviewWidget.Mode.CAPE : LoomPlayerPreviewWidget.Mode.ELYTRA));

@@ -1,5 +1,16 @@
 # Loom Studios — Pass Log
 
+2026-10-03 milestone verification: commit `5aa2ad043b40f0d06c9392650212dc0c8dd275db` passed build and the existing 68 real Minecraft/Mesa captures (Actions #196). Expanded new-screen capture and real library interaction assertions are now being added; this milestone remains IN PROGRESS until those checks pass and screenshots are reviewed.
+
+
+## 2026-10-03 — New-screen visual review (IN PROGRESS)
+
+Actions #197 passed both jobs for 7eb91de: 111 tests and all 100 actual captures. All 100 PNGs decode; all 32 new-screen images were reviewed in four contact sheets. Library/context/Drafts/Trash/Rename, six-template collection, preferences and both animation studios align with the workshop style and fit every profile. Gliding preview sits too low because it reused the standing entity-centering offset; use a pose-specific vertical translation for inline and expanded previews and re-capture. Standing/open views remain unchanged. Final import-drag and animation-drag checks are still running on later checkpoints.
+
+## 2026-10-03 — Library/authoring input hardening (IN PROGRESS)
+
+Checkpoint 7eb91de55cb22c139f53ee75b569af36cdf7062d: Actions #197 build passes 111 tests with zero failures/errors/skips; expanded runtime capture remains running. Added 28 screenshots for seven new workspaces at all four mandatory profiles, four compact library/action screens, and real Screen input assertions for Trash/delete/restore, double-click selection/edit and separate draft recovery. Follow-up fixes refresh clipboard availability immediately, consume selection arrow keys, preserve preview pose/facing across resize, avoid permanently freezing animation after a preference toggle, and keep successful saves successful when draft cleanup cannot run. Timeline dragging now has an actual Screen/undo runtime check. Native shader/GPU and live two-client scenarios are not represented by Mesa screenshots.
+
 ## 2026-10-03 — Main merge and full-test handoff
 
 **State: DONE — verified UI implementation merged to main; manual release testing is the next step.**
@@ -1607,3 +1618,15 @@ Merged [PR #15](https://github.com/Stoffe101/Loom-Studios/pull/15) at `4618352e4
 [Actions #192](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091132764) passed both jobs on that exact PR head. Java21 build: 103 tests, 0 failures/errors/skips. Runtime 02:54:26 UTC: all 68 captures and `LOOM_UI_WORKFLOWS PASS`, `LOOM_UI_INPUT_PREVIEW PASS`, `LOOM_UI_CAPTURE COMPLETE`. Environment/coverage/limitations match #191 above. Retained evidence and downloadable mod were produced by #191; source is unchanged. JAR SHA-256 `d80bde04724ff827987a699c97ad1aa47b5fdec37d3248224e40e71d2ecbcbea` verified locally.
 
 Main push [Actions #193](https://github.com/Stoffe101/Loom-Studios/actions/runs/37091440293) was in progress at this documentation-only integration handoff; no success is claimed for a different SHA. No implementation changes in this follow-up. Next: user's interactive hardware/modpack/shader/multiplayer testing from main.
+
+## Library and authoring milestone — IN PROGRESS (2026-10-03)
+
+User authorized the complete follow-up feature milestone plus Browse All, right-click Edit/Rename/Delete and double-click editing. All five attached reference originals were viewed individually again. Home reference 03 drives card browsing/actions; Elytra reference 01 drives drawing/animation parity; Cape 05 and Import 04 drive contextual transforms. Preserve workshop framing and bounded GUI3 controls.
+
+Current branch: `codex/library-authoring-milestone`, base `a2996e47be8f1ed4a5bb0766d01027185eb9f3d7`. Implemented source pending verification: paged library with search/latest/name sorting, favorites, duplicate/rename, reversible Trash/restore; separate 30-second recovery drafts and Settings; standing/open/gliding preview controls; shared Cape/Elytra animation workspace and draggable keyframes; Elytra drawing tools and both-channel internal pixel copy/paste/rotation. None of this milestone is marked DONE until build/runtime/visual checks pass.
+
+Next in this active pass: complete useful template packs and import handles/processing conveniences, add runtime interaction/layout evidence, run exact-SHA CI and release compatibility checks, correct failures and update documentation. Real hardware shader/FPS and two-user multiplayer results remain separately identified until actually exercised.
+
+### First milestone compile checkpoint
+
+Actions #195 on `638a5b552b4047e8fae616ab6fd54edd029ae8d7` failed client compilation in three Cape clipboard feedback lines referring to absent statusMessage. Corrected to existing notifyPlayer; other new source including pose fields compiled. Added original layered templates and direct imported-image move/scale/rotate handles, plus help/preferences safeguards. Current verification pending; do not call this milestone DONE.

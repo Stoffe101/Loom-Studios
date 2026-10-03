@@ -81,6 +81,34 @@ public final class ProjectFileStore {
         }
     }
 
+    /** Reversible deletion. The UUID remains stable and restore never overwrites a design. */
+    public Path trash(UUID id) throws IOException {
+        Path source = pathFor(id);
+        if (!Files.isRegularFile(source, java.nio.file.LinkOption.NOFOLLOW_LINKS))
+            throw new IOException("Design is missing or is not a regular file");
+        Path directory = root.resolve("trash");
+        Files.createDirectories(directory);
+        Path destination = directory.resolve(id + ".loom");
+        Files.move(source, destination);
+        return destination;
+    }
+
+    public Path restore(UUID id) throws IOException {
+        Path source = root.resolve("trash").resolve(id + ".loom");
+        if (!Files.isRegularFile(source, java.nio.file.LinkOption.NOFOLLOW_LINKS))
+            throw new IOException("Trashed design is missing");
+        Files.move(source, pathFor(id));
+        return pathFor(id);
+    }
+
+    public LoomProject rename(UUID id, String name, long now) throws IOException {
+        LoomProject project = load(pathFor(id));
+        LoomProject renamed = project.withName(name.strip())
+                .withMetadata(project.metadata().touch(now));
+        save(renamed);
+        return renamed;
+    }
+
     private Path requireInsideRoot(Path path) {
         Path normalized = Objects.requireNonNull(path, "path")
                 .toAbsolutePath()

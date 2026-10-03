@@ -33,6 +33,7 @@ public final class PlayerCosmeticRenderer {
     private static LoomProject hashedPreviewProject;
     private static long previewHashComputations;
     private static String cachedPreviewHash, cachedTimelineHash;
+    private static boolean cachedAlphaGuide;
     private static final ThreadLocal<PreviewOverride> PREVIEW_OVERRIDE = new ThreadLocal<>();
 
     private PlayerCosmeticRenderer() {
@@ -91,7 +92,7 @@ public final class PlayerCosmeticRenderer {
                         projectHash,
                         project,
                         previewingLocal ? preview.timelineTick() : null,
-                        previewingLocal
+                        previewingLocal && dev.loomstudios.client.project.LoomPreferences.get().enabled("alphaGuide",true)
                 );
 
         Map<UUID,CachedSkin> skins=previewingLocal?PREVIEW_SKINS:SKINS;
@@ -210,12 +211,14 @@ public final class PlayerCosmeticRenderer {
             Integer timelineTick,
             Supplier<T> action
     ) {
-        if (hashedPreviewProject != project) {
+        boolean guide=dev.loomstudios.client.project.LoomPreferences.get().enabled("alphaGuide",true);
+        if (hashedPreviewProject != project || guide!=cachedAlphaGuide) {
+            cachedAlphaGuide=guide;
             previewHashComputations++;
             hashedPreviewProject = project;
             cachedPreviewHash = ClientProjectWorkspace.isInitialized() && ClientProjectWorkspace.project() == project
                     ? ClientProjectWorkspace.projectHash() : project.hash();
-            cachedPreviewHash = LoomProjectCodec.sha256((cachedPreviewHash + "#alpha-guide-preview").getBytes(StandardCharsets.UTF_8));
+            cachedPreviewHash = LoomProjectCodec.sha256((cachedPreviewHash + (guide?"#alpha-guide-preview":"#plain-preview")).getBytes(StandardCharsets.UTF_8));
             cachedTimelineHash = LoomProjectCodec.sha256((cachedPreviewHash + "#timeline-preview").getBytes(StandardCharsets.UTF_8));
         }
         String hash = timelineTick == null ? cachedPreviewHash : cachedTimelineHash;

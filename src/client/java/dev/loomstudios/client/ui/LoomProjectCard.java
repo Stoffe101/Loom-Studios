@@ -32,6 +32,18 @@ public final class LoomProjectCard extends AbstractButton {
     private final Runnable action;
     private final Identifier textureId;
 
+    private Runnable openAction;
+    private java.util.function.BiConsumer<Double,Double> contextAction;
+    public LoomProjectCard setOpenAction(Runnable action) { openAction=action;return this; }
+    public LoomProjectCard setContextAction(java.util.function.BiConsumer<Double,Double> action) { contextAction=action;return this; }
+    @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event,boolean doubleClick) {
+        if(event.button()==1 && isMouseOver(event.x(),event.y()) && contextAction!=null){contextAction.accept(event.x(),event.y());return true;}
+        return super.mouseClicked(event,doubleClick);
+    }
+    @Override public void onClick(net.minecraft.client.input.MouseButtonEvent event,boolean doubleClick) {
+        action.run();if(doubleClick&&openAction!=null)openAction.run();
+    }
+
     private DynamicTexture texture;
     private NativeImage image;
     private boolean textureAttempted;
@@ -148,15 +160,6 @@ public final class LoomProjectCard extends AbstractButton {
                 false
         );
 
-        if (selected) {
-            graphics.fill(
-                    getX() + 1,
-                    getY() + 1,
-                    getX() + 3,
-                    getBottom() - 1,
-                    LoomUiTheme.ACCENT
-            );
-        }
     }
 
     private void ensureTexture() {

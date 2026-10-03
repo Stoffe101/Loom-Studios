@@ -44,6 +44,19 @@ public final class LoomPlayerPreviewScreen extends Screen {
     private final Supplier<LoomProject> previewProjectSupplier;
 
     private PreviewMode mode = PreviewMode.CAPE;
+    private dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose=dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING;
+    private float facing;
+    public void setView(float yaw,float pitch,float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing){this.yaw=yaw;this.pitch=pitch;this.zoom=zoom;this.panX=panX;this.panY=panY;this.pose=pose;this.facing=facing;}
+    @Override protected void init(){
+        int left=(width-panelWidth())/2+8,top=panelTop()+23,total=panelWidth()-16;
+        String[] views={"Back","Front","Left","Right"};float[] angles={25,180,90,270};
+        for(int i=0;i<4;i++){final float angle=angles[i];addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+i*(total/4),top,total/4-3,19,Component.literal(views[i]),()->{yaw=angle;pitch=0;panX=0;panY=0;}));}
+        top+=23;
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left,top,total/4-3,19,Component.literal(pose.label()),()->{pose=pose.next();rebuildWidgets();}));
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+total/4,top,total/4-3,19,Component.literal("Facing "+Math.round(facing)+"°"),()->{facing=(facing+45)%360;rebuildWidgets();}));
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+2*(total/4),top,total/4-3,19,Component.literal("Zoom "+Math.round(zoom*100)+"%"),()->{zoom=zoom>=1.6F?0.65F:zoom+0.2F;rebuildWidgets();}));
+        addRenderableWidget(new dev.loomstudios.client.ui.LoomButton(left+3*(total/4),top,total/4-3,19,Component.literal(mode==PreviewMode.CAPE?"Cape":"Elytra"),()->{mode=mode==PreviewMode.CAPE?PreviewMode.ELYTRA:PreviewMode.CAPE;rebuildWidgets();}));
+    }
     private float yaw = 25.0F;
     private float pitch = 0.0F;
     private float zoom = 1.0F;
@@ -96,7 +109,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
         dev.loomstudios.client.ui.LoomScreenChrome.panel(graphics,left,top,right,bottom);
         dev.loomstudios.client.ui.LoomScreenChrome.panelHeader(graphics,left,top,right,
                 (mode==PreviewMode.CAPE?"Cape":"Elytra")+" · Alpha guide");
-        int x0=left+8,y0=top+24,x1=right-8,y1=bottom-38;
+        int x0=left+8,y0=top+72,x1=right-8,y1=bottom-38;
         dev.loomstudios.client.ui.LoomWorkshopArt.previewScene(graphics,x0,y0,x1,y1);
         if(minecraft.player!=null)renderPreviewEntity(graphics,x0,y0,x1,y1,
                 Math.max(20,Math.min((y1-y0)*0.45F,(x1-x0)*0.35F)*zoom),minecraft.player);
@@ -130,9 +143,10 @@ public final class LoomPlayerPreviewScreen extends Screen {
         }
 
         dev.loomstudios.client.render.LoomPreviewState.orient(renderState,this.yaw);
+        dev.loomstudios.client.render.LoomPreviewState.pose(renderState,mode==PreviewMode.ELYTRA?pose:dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
 
         Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI)
-                    .rotateY((float)Math.PI + this.yaw * ((float)Math.PI / 180.0F));
+                    .rotateY((float)Math.PI + (this.yaw+facing) * ((float)Math.PI / 180.0F));
         Quaternionf xRotation = new Quaternionf().rotateX(
                 this.pitch * ((float)Math.PI / 180.0F)
         );
@@ -140,7 +154,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
         Vector3f translation = new Vector3f(
                 0.0F,
-                renderState.boundingBoxHeight / 2.0F + 0.0625F,
+                mode==PreviewMode.ELYTRA&&pose==dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING?0.2F:renderState.boundingBoxHeight / 2.0F + 0.0625F,
                 0.0F
         );
 
@@ -161,6 +175,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     private EntityRenderState extractRenderState(LivingEntity entity) {
         Supplier<EntityRenderState> snapshot=() -> dev.loomstudios.client.render.LoomPreviewState.extract(entity);
+        if(!dev.loomstudios.client.project.LoomPreferences.get().enabled("animatePreview",true))return PlayerCosmeticRenderer.withPreviewProjectAtTick(minecraft,previewProjectSupplier.get(),0,snapshot);
         return timelineTickSupplier==null
                 ? PlayerCosmeticRenderer.withPreviewProject(minecraft,previewProjectSupplier.get(),snapshot)
                 : PlayerCosmeticRenderer.withPreviewProjectAtTick(minecraft,previewProjectSupplier.get(),timelineTickSupplier.getAsInt(),snapshot);
@@ -228,15 +243,15 @@ public final class LoomPlayerPreviewScreen extends Screen {
             this.mode = this.mode == PreviewMode.CAPE
                     ? PreviewMode.ELYTRA
                     : PreviewMode.CAPE;
-            return true;
+            rebuildWidgets();return true;
         }
 
         if (event.key() == 82) { // GLFW_KEY_R
             panX=0;panY=0;
             this.yaw = 25.0F;
             this.pitch = 0.0F;
-            this.zoom = 1.0F;
-            return true;
+            this.zoom = 1.0F;facing=0;pose=dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING;
+            rebuildWidgets();return true;
         }
 
         return super.keyPressed(event);
@@ -244,7 +259,7 @@ public final class LoomPlayerPreviewScreen extends Screen {
 
     private boolean isInsidePreview(double x,double y) {
         int left=(width-panelWidth())/2;
-        return x>=left+8 && x<left+panelWidth()-8 && y>=panelTop()+24 && y<panelBottom()-38;
+        return x>=left+8 && x<left+panelWidth()-8 && y>=panelTop()+72 && y<panelBottom()-38;
     }
 
     private static float wrapDegrees(float degrees) {

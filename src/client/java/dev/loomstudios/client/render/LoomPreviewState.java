@@ -9,7 +9,20 @@ import net.minecraft.world.entity.Pose;
 
 /** Own the snapshot submitted to deferred GUI rendering, never the world's state. */
 public final class LoomPreviewState {
+    public enum PreviewPose { STANDING, OPEN, GLIDING;
+        public PreviewPose next(){return values()[(ordinal()+1)%values().length];}
+        public String label(){return switch(this){case STANDING->"Standing";case OPEN->"Open wings";case GLIDING->"Gliding";};}
+    }
     private LoomPreviewState() { }
+    public static void pose(EntityRenderState state,PreviewPose pose) {
+        if(state instanceof net.minecraft.client.renderer.entity.state.AvatarRenderState avatar){
+            avatar.isFallFlying=pose==PreviewPose.GLIDING;
+            avatar.fallFlyingTimeInTicks=pose==PreviewPose.GLIDING?20.0F:0.0F;
+            avatar.elytraRotX=0.2617994F;
+            avatar.elytraRotY=pose==PreviewPose.STANDING?0.0F:0.12F;
+            avatar.elytraRotZ=pose==PreviewPose.STANDING?-0.2617994F:-0.9F;
+        }
+    }
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static EntityRenderState extract(LivingEntity entity) {
         EntityRenderer renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);

@@ -87,10 +87,12 @@ public final class LoomStudiosClient implements ClientModInitializer {
             }
 
             dev.loomstudios.client.debug.LoomUiCapture.tick(client);
+            dev.loomstudios.client.project.WorkspaceRecovery.tick();
             ClientCosmeticSync.tick(client);
             PlayerCosmeticRenderer.tick(client);
         });
 
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> dev.loomstudios.client.project.WorkspaceRecovery.checkpoint());
         ClientLifecycleEvents.CLIENT_STOPPING.register(PlayerCosmeticRenderer::close);
     }
 }
