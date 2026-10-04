@@ -655,6 +655,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         g, width, "Animation 2.1 · Parameter lanes", LoomUiTheme.compact(width, height));
     super.render(g, mx, my, dt);
     LoomScreenChrome.footer(g, width, height, message, selected.size() + " selected");
+    renderChoices(g, mx, my);
   }
 
   @Override

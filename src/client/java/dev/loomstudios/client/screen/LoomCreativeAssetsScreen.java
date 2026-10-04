@@ -798,6 +798,7 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
         LoomUiTheme.compact(width, height));
     super.render(g, mx, my, dt);
     LoomScreenChrome.footer(g, width, height, message, "Local guides · saved stamps");
+    renderChoices(g, mx, my);
   }
 
   @Override
