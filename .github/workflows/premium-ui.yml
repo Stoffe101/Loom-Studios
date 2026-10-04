@@ -16,6 +16,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - suite: authoring-gui2
+            start: 238
+            end: 248
+            count: 10
+          - suite: authoring-gui3
+            start: 248
+            end: 258
+            count: 10
+          - suite: authoring-wide-gui2
+            start: 258
+            end: 268
+            count: 10
+          - suite: authoring-wide-gui3
+            start: 268
+            end: 278
+            count: 10
           - suite: choices-gui2
             start: 218
             end: 223

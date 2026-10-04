@@ -1,5 +1,12 @@
 # Loom Studios — Network Protocol
 
+## Implemented protocol2
+
+Schema4 increases the project envelope to8 MiB. Both client and server must run compatible protocol2 builds; ordinary or incompatible servers still allow local cosmetics. Fabric registerLarge performs transport fragmentation with512 bytes reserved above the serialized budget. Every blob is bounded, SHA-256 checked and fully decoded before use. Only compatible clients with an expected current hash may upload. Equipped state remains server authoritative; edits and animation frames stay local until Save + Equip.
+
+Server: one validation worker/four queued uploads; raw LRU cache64 MiB/64 entries; upload1/sec, download4/sec; commits verify exact player connection and expected hash. Client: one decoder worker/two queued downloads, session-epoch commits, decoded LRU128 MiB/64 entries. Visible cache misses retry after5 seconds; an evicted equipped blob is requested again from its connected owner. Queues and histories are bounded, not unlimited by the higher resolution. See AUTHORING_V4.md and CURRENT_STATE.md for exact validation evidence and remaining dedicated-server soak coverage. Historical proposed messages follow.
+
+
 ## Goals
 
 - server-authoritative equipped state

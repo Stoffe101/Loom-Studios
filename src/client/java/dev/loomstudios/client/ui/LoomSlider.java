@@ -17,6 +17,9 @@ public final class LoomSlider extends AbstractWidget {
     private final DoubleSupplier value;
     private final DoubleConsumer change;
     private boolean dragging;
+    private java.util.function.DoubleFunction<String> formatter = v -> Math.round(v*100)+"%";
+    public LoomSlider format(java.util.function.DoubleFunction<String> formatter){this.formatter=formatter;return this;}
+
     public LoomSlider(int x, int y, int width, String label, DoubleSupplier value, DoubleConsumer change) {
         super(x, y, width, 22, Component.literal(label));
         this.value = value;
@@ -26,7 +29,7 @@ public final class LoomSlider extends AbstractWidget {
         LoomScreenChrome.panel(g,getX(),getY(),getRight(),getBottom());
         var font = Minecraft.getInstance().font;
         dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, getMessage(), getX() + 4, getY() + 2, LoomUiTheme.TEXT_MUTED, false);
-        String text = Math.round(value.getAsDouble() * 100) + "%";
+        String text = formatter.apply(value.getAsDouble());
         dev.loomstudios.client.ui.premium.PremiumText.drawString(g,font, Component.literal(text), getRight() - 4 - font.width(text), getY() + 2, LoomUiTheme.TEXT, false);
         int y = getBottom() - 5;
         int thumb = getX() + 4 + (int)Math.round(value.getAsDouble() * (getWidth() - 8));

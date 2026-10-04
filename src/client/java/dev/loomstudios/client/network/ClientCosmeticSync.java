@@ -1,6 +1,7 @@
 package dev.loomstudios.client.network;
 
 import dev.loomstudios.LoomStudios;
+import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.network.LoomNetworking;
 import dev.loomstudios.network.payload.EquippedStateS2CPayload;
 import dev.loomstudios.network.payload.HelloC2SPayload;
@@ -10,7 +11,7 @@ import dev.loomstudios.network.payload.ProjectNeededS2CPayload;
 import dev.loomstudios.network.payload.ProjectRequestC2SPayload;
 import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.LoomProjectCodec;
-import dev.loomstudios.client.project.ClientProjectWorkspace;
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -20,32 +21,60 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ClientCosmeticSync {
-    private static final Map<String, LoomProject> PROJECTS = new HashMap<>();
+    private static final dev.loomstudios.project.BoundedCache<String, LoomProject> PROJECTS =
+            new dev.loomstudios.project.BoundedCache<>(
+                    128L * 1024 * 1024, 64, dev.loomstudios.project.ProjectMemory::artworkBytes);
     private static final Map<UUID, String> EQUIPPED = new HashMap<>();
 
+    private static final Map<String, Long> REQUESTED = new java.util.LinkedHashMap<>();
+    private static final java.util.concurrent.ThreadPoolExecutor DECODER =
+            new java.util.concurrent.ThreadPoolExecutor(
+                    1,
+                    1,
+                    30,
+                    java.util.concurrent.TimeUnit.SECONDS,
+                    new java.util.concurrent.ArrayBlockingQueue<>(2),
+                    task -> {
+                        Thread thread = new Thread(task, "loom-project-decoder");
+                        thread.setDaemon(true);
+                        return thread;
+                    },
+                    new java.util.concurrent.ThreadPoolExecutor.AbortPolicy());
+    private static long sessionEpoch;
     private static UUID localPlayerId;
     private static String announcedLocalHash;
     private static boolean serverSupportsLoom;
     private static boolean helloPending;
 
-    private ClientCosmeticSync() {
-    }
+    private ClientCosmeticSync() {}
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(ProjectNeededS2CPayload.ID, (payload, context) ->
-                context.client().execute(() -> sendLocalProjectIfRequested(payload.projectHash())));
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING
+                .register(client -> DECODER.shutdownNow());
+        ClientPlayNetworking.registerGlobalReceiver(
+                ProjectNeededS2CPayload.ID,
+                (payload, context) ->
+                        context.client()
+                                .execute(() -> sendLocalProjectIfRequested(payload.projectHash())));
 
-        ClientPlayNetworking.registerGlobalReceiver(ProjectBlobS2CPayload.ID, (payload, context) ->
-                context.client().execute(() -> acceptProjectBlob(payload.projectHash(), payload.data())));
+        ClientPlayNetworking.registerGlobalReceiver(
+                ProjectBlobS2CPayload.ID,
+                (payload, context) ->
+                        context.client()
+                                .execute(
+                                        () ->
+                                                acceptProjectBlob(
+                                                        payload.projectHash(), payload.data())));
 
-        ClientPlayNetworking.registerGlobalReceiver(EquippedStateS2CPayload.ID, (payload, context) ->
-                context.client().execute(() -> acceptEquippedState(payload)));
+        ClientPlayNetworking.registerGlobalReceiver(
+                EquippedStateS2CPayload.ID,
+                (payload, context) -> context.client().execute(() -> acceptEquippedState(payload)));
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
-                client.execute(() -> onJoin(client)));
+        ClientPlayConnectionEvents.JOIN.register(
+                (handler, sender, client) -> client.execute(() -> onJoin(client)));
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                client.execute(ClientCosmeticSync::resetSession));
+        ClientPlayConnectionEvents.DISCONNECT.register(
+                (handler, client) -> client.execute(ClientCosmeticSync::resetSession));
     }
 
     private static void onJoin(Minecraft client) {
@@ -73,22 +102,15 @@ public final class ClientCosmeticSync {
 
         if (serverSupportsLoom) {
             ClientPlayNetworking.send(
-                    new HelloC2SPayload(
-                            LoomNetworking.PROTOCOL_VERSION,
-                            currentHash
-                    )
-            );
+                    new HelloC2SPayload(LoomNetworking.PROTOCOL_VERSION, currentHash));
             announcedLocalHash = currentHash;
 
-            LoomStudios.LOGGER.info(
-                    "Loom project hello sent: {}",
-                    shortHash(currentHash)
-            );
+            LoomStudios.LOGGER.info("Loom project hello sent: {}", shortHash(currentHash));
         } else {
             announcedLocalHash = currentHash;
             LoomStudios.LOGGER.info(
-                    "Server does not advertise Loom Studios networking; local-only cosmetics remain available."
-            );
+                    "Server does not advertise Loom Studios networking; local-only cosmetics remain"
+                            + " available.");
         }
     }
 
@@ -110,7 +132,19 @@ public final class ClientCosmeticSync {
         }
 
         String hash = EQUIPPED.get(playerId);
-        return hash == null ? null : PROJECTS.get(hash);
+        if (hash == null) return null;
+        LoomProject project = PROJECTS.get(hash);
+        if (project == null
+                && serverSupportsLoom
+                && ClientPlayNetworking.canSend(ProjectRequestC2SPayload.ID)) {
+            long now = System.nanoTime();
+            if (now - REQUESTED.getOrDefault(hash, 0L) > 5_000_000_000L) {
+                if (REQUESTED.size() >= 128) REQUESTED.remove(REQUESTED.keySet().iterator().next());
+                REQUESTED.put(hash, now);
+                ClientPlayNetworking.send(new ProjectRequestC2SPayload(hash));
+            }
+        }
+        return project;
     }
 
     public static String projectHashFor(UUID playerId) {
@@ -136,28 +170,44 @@ public final class ClientCosmeticSync {
         }
 
         LoomProject project = ClientProjectWorkspace.equippedProject();
-        ClientPlayNetworking.send(
-                new ProjectBlobC2SPayload(hash, project.encode())
-        );
+        ClientPlayNetworking.send(new ProjectBlobC2SPayload(hash, project.encode()));
     }
 
     private static void acceptProjectBlob(String hash, byte[] data) {
         if (!LoomProjectCodec.isValidHash(hash)
                 || data.length == 0
-                || data.length > LoomProjectCodec.MAX_SERIALIZED_BYTES
-                || !hash.equals(LoomProjectCodec.sha256(data))) {
-            LoomStudios.LOGGER.warn("Rejected invalid Loom project blob from server.");
-            return;
-        }
-
+                || data.length > LoomProjectCodec.MAX_SERIALIZED_BYTES) return;
+        long epoch = sessionEpoch;
+        var client = Minecraft.getInstance();
         try {
-            PROJECTS.put(hash, LoomProjectCodec.decode(data));
-            LoomStudios.LOGGER.info(
-                    "Cached remote Loom project {}",
-                    shortHash(hash)
-            );
-        } catch (IllegalArgumentException e) {
-            LoomStudios.LOGGER.warn("Rejected malformed Loom project blob from server.", e);
+            DECODER.execute(
+                    () -> {
+                        try {
+                            if (!hash.equals(LoomProjectCodec.sha256(data)))
+                                throw new IllegalArgumentException("Project hash mismatch");
+                            var decoded = LoomProjectCodec.decode(data);
+                            client.execute(
+                                    () -> {
+                                        if (sessionEpoch != epoch) return;
+                                        PROJECTS.put(hash, decoded);
+                                        REQUESTED.remove(hash);
+                                        LoomStudios.LOGGER.info(
+                                                "Cached remote Loom project {}", shortHash(hash));
+                                    });
+                        } catch (IllegalArgumentException e) {
+                            client.execute(
+                                    () -> {
+                                        if (sessionEpoch == epoch)
+                                            LoomStudios.LOGGER.warn(
+                                                    "Rejected malformed Loom project blob from"
+                                                            + " server: {}",
+                                                    e.getMessage());
+                                    });
+                        }
+                    });
+        } catch (java.util.concurrent.RejectedExecutionException busy) {
+            // A subsequent visible-player lookup retries; never queue unbounded decoded artwork.
+            REQUESTED.remove(hash);
         }
     }
 
@@ -175,15 +225,16 @@ public final class ClientCosmeticSync {
 
         if (!PROJECTS.containsKey(payload.projectHash())
                 && ClientPlayNetworking.canSend(ProjectRequestC2SPayload.ID)) {
-            ClientPlayNetworking.send(
-                    new ProjectRequestC2SPayload(payload.projectHash())
-            );
+            ClientPlayNetworking.send(new ProjectRequestC2SPayload(payload.projectHash()));
         }
     }
 
     private static void resetSession() {
+        sessionEpoch++;
+        DECODER.getQueue().clear();
         PROJECTS.clear();
         EQUIPPED.clear();
+        REQUESTED.clear();
         serverSupportsLoom = false;
         helloPending = false;
 

@@ -216,7 +216,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         contentTop = layout.tools().top(); contentBottom = layout.tools().bottom();
         toolRailLeft = layout.tools().left(); toolRailRight = layout.tools().right();
         canvasLeft = layout.canvas().left(); canvasRight = layout.canvas().right();
-        canvasTop = layout.canvas().top(); canvasBottom = layout.canvas().bottom();
+        canvasTop = layout.canvas().top(); canvasBottom = layout.canvas().bottom()-26;
         contextTop = layout.context().top();
         rightPanelLeft = layout.preview().left(); rightPanelRight = layout.preview().right();
         previewBottom = layout.preview().bottom();
@@ -225,6 +225,9 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         toolPanelWidth = rightPanelRight - rightPanelLeft; toolPanelHeight = inspectorBottom - inspectorTop;
         buildTopNavigation(layout.headerHeight(), layout.navHeight(), 8);
         buildToolRail(); buildCanvasToolbar(22); buildCanvas(); buildContextBar();
+        int actionWidth=(canvasRight-canvasLeft-4)/2;
+        iconButton(canvasLeft,canvasBottom+3,actionWidth,22,"Animate cape",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId))).setIconOnly(false);
+        iconButton(canvasLeft+actionWidth+4,canvasBottom+3,actionWidth,22,"Surface tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,false,selectedLayerId,capeRegion,null,null,selectedColor))).setIconOnly(false);
         buildRightPanel(layout.preview().height(), 22);
         canvasWidget.setShapeFilledSupplier(() -> rectangleFilled);
         canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
@@ -1166,7 +1169,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             resolutionDownButton.active = resolution != CanvasResolution.STANDARD;
         }
         if (resolutionUpButton != null) {
-            resolutionUpButton.active = resolution != CanvasResolution.ULTRA;
+            resolutionUpButton.active = resolution != CanvasResolution.MAXIMUM;
         }
 
         if (brushDownButton != null) {
@@ -2720,6 +2723,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 : workspaceState.dirty()
                         ? "Unsaved edits"
                         : "Saved, not equipped";
+        if(ClientProjectWorkspace.session().editError()!=null)status=ClientProjectWorkspace.session().editError();
         status=System.currentTimeMillis()<feedbackUntil&&feedbackProject==ClientProjectWorkspace.project()?feedback:dev.loomstudios.client.ui.LoomToolGuidance.status(tool.name(),selectedLayer(),false,status);
 
         LoomScreenChrome.footer(

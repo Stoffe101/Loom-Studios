@@ -116,6 +116,8 @@ public final class PlayerCosmeticRenderer {
         state.showCape = true;
     }
 
+    public static boolean usesLoomElytra(AvatarRenderState state){return state.skin!=null&&state.skin.elytra()!=null&&RuntimeCosmeticCache.byElytraTexture(state.skin.elytra().texturePath())!=null;}
+
     public static float getElytraThicknessScale(AvatarRenderState state) {
         if (state.skin == null || state.skin.elytra() == null) {
             return 1.0F;

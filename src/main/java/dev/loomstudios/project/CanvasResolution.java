@@ -3,7 +3,9 @@ package dev.loomstudios.project;
 public enum CanvasResolution {
     STANDARD(1, "1x"),
     HIGH(2, "2x"),
-    ULTRA(4, "4x");
+    ULTRA(4, "4x"),
+    DETAIL(6, "6x"),
+    MAXIMUM(8, "8x");
 
     private final int scale;
     private final String label;

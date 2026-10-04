@@ -14,6 +14,12 @@ public final class ImageProcessingPipeline {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(settings, "settings");
 
+        source = settings.background().apply(source);
+        if(settings.tintStrength()>0) {
+            int[] colors=source.pixels();float t=settings.tintStrength();int tint=settings.tintColor();
+            for(int i=0;i<colors.length;i++){int c=colors[i],rgb=0;for(int shift:new int[]{0,8,16}){int v=c>>>shift&255,channel=tint>>>shift&255;rgb|=Math.round(v*(1-t)+v*channel/255f*t)<<shift;}colors[i]=(c&0xFF000000)|rgb;}
+            source=new PixelImage(source.width(),source.height(),colors);
+        }
         PixelImage adjusted = ImageAdjustments.adjust(
                 source,
                 settings.brightness(),

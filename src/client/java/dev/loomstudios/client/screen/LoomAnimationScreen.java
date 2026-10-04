@@ -19,7 +19,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private boolean playing,refreshPending;
     private AnimationEffectType chosen=AnimationEffectType.PULSE;
     private LoomAnimationTimelineWidget timeline;
-    private String message="1. Choose a layer · 2. Pick a preset · 3. Apply & preview · 4. Save";
+    private String message="Purple bars: track span · Diamonds: keys · Cyan line: playhead · 1. Choose a layer · 2. Pick a preset · 3. Apply & preview · 4. Save";
     private AnimationPreset preset=AnimationPreset.GLOW;
     private float presetRate=.5F;
     private LoomPlayerPreviewWidget preview;
@@ -39,7 +39,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         addRenderableWidget(new LoomButton(right+8,top,188,20,Component.literal("Undo / Ctrl+Z"),()->{ClientProjectWorkspace.undo();rebuildWidgets();}));
         int workTop=top+26;
         var view=preview==null?null:preview.viewState();
-        int previewHeight=Math.max(60,Math.min(180,bottom-workTop-(advanced?158:124)));
+        int previewHeight=Math.max(40,Math.min(180,bottom-workTop-(advanced?184:124)));
         preview=addRenderableWidget(new LoomPlayerPreviewWidget(right+8,workTop,188,previewHeight,ClientProjectWorkspace::project,channel==AnimationChannel.CAPE?LoomPlayerPreviewWidget.Mode.CAPE:LoomPlayerPreviewWidget.Mode.ELYTRA));
         preview.restoreViewState(view);preview.setTimelineTickSupplier(()->tick);
         int y=workTop+previewHeight+5;
@@ -54,6 +54,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             button(right+8,y+120,60,"+ Key",()->{if(track()!=null)addKeyframe(trackId);});
             button(right+72,y+120,60,"- Key",()->{if(track()!=null)removeKeyframe(trackId);});
             button(right+136,y+120,60,"Speed",()->{if(track()!=null)cycleTrackSpeed(trackId);});
+            button(right+8,y+144,188,"Parameters & easing…",()->{if(track()!=null)minecraft.setScreen(new LoomEffectParametersScreen(this,trackId,tick));});
         }
         guideTop=workTop;guideWidth=right-24;
         timeline=addRenderableWidget(new LoomAnimationTimelineWidget(8,workTop+66,right-8,bottom-workTop-66,ClientProjectWorkspace::project,channel,()->trackId,()->tick,()->playing,this,false));
@@ -67,7 +68,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             if(animation.tracks().size()>=LoomAnimation.MAX_TRACKS&&track()==null)throw new IllegalStateException("Delete a track before adding another");
             var current=track();
             if(current!=null){
-                var replacement=new AnimationTrack(current.id(),layerId,channel,recipe.effect(),true,recipe.speed(),true,recipe.keyframes());
+                var replacement=new AnimationTrack(current.id(),layerId,channel,recipe.effect(),true,recipe.speed(),true,recipe.keyframes(),recipe.parameters());
                 ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(AnimationAuthoring.changeDuration(p.animation(),duration),replacement)));trackId=replacement.id();
             }else{
                 ClientProjectWorkspace.apply(p->{var tracks=new ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(AnimationAuthoring.changeDuration(p.animation(),duration).withTracks(tracks));});trackId=recipe.id();

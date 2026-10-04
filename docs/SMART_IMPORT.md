@@ -1,5 +1,12 @@
 # Loom Studios — Smart Import
 
+## Current multi-format/local processing workflow
+
+Import detects PNG, JPG/JPEG, GIF, BMP, TIFF or WBMP by content through header-first ImageIO bounds. Files are limited to32 MiB, source dimensions4096px/16M pixels, and embedded artwork512px. GIF offsets/disposal/delays are composed locally and bounded to64 frames/4M embedded pixels. High resolution improves placement detail when the original image contains it.
+
+Processing → Image adjustments offers brightness, contrast, saturation and dedicated tint; background removal samples a pixel and applies RGB tolerance in connected/global mode. Checkerboard previews explain transparency. Create Swatches from Image saves/selects an extracted palette. Image layers retain original embedded pixels and settings for later reopening. Compact Processing routes adjustments into this dedicated workspace so the texture preview keeps drag space. Elytra import targets the selected face, with independent wing UVs and a mirrored linked copy confined to that face. See AUTHORING_V4.md for usage and limits.
+
+
 **Status:** Functional implementation complete / exact-head CI and local visual verification pending  
 **Reference target:** `Loom_Studios_03_Smart_Import.png`
 

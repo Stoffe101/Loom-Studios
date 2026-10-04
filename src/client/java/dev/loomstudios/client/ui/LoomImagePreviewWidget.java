@@ -37,6 +37,10 @@ public final class LoomImagePreviewWidget extends AbstractWidget {
         void scale(double delta);
         void rotate(double degrees);
     }
+    private boolean pixelGesture;
+    private java.util.function.BiConsumer<Integer,Integer> pixelAction;
+    public void setPixelAction(java.util.function.BiConsumer<Integer,Integer> action){pixelAction=action;}
+    private void applyPixel(double x,double y){if(pixelAction==null||drawWidth<1||drawHeight<1||x<imageLeft||y<imageTop||x>=imageLeft+drawWidth||y>=imageTop+drawHeight)return;PixelImage image=imageSupplier.get();if(image!=null)pixelAction.accept(Math.min(image.width()-1,(int)((x-imageLeft)*image.width()/drawWidth)),Math.min(image.height()-1,(int)((y-imageTop)*image.height()/drawHeight)));}
     private TransformController controller;
     private int handleMode;
     private double lastX,lastY;
@@ -183,15 +187,15 @@ public final class LoomImagePreviewWidget extends AbstractWidget {
         int x=(int)p[4][0],y=(int)p[4][1];g.fill(x-3,y-3,x+4,y+4,LoomUiTheme.ACCENT_ALT);g.disableScissor();
     }
     private void line(GuiGraphics g,double[] a,double[] b){int steps=Math.min(2048,Math.max(1,(int)Math.ceil(Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1])))));for(int i=0;i<=steps;i++){int x=(int)Math.round(a[0]+(b[0]-a[0])*i/steps),y=(int)Math.round(a[1]+(b[1]-a[1])*i/steps);g.fill(x,y,x+1,y+1,LoomUiTheme.ACCENT);}}
-    @Override public void onClick(net.minecraft.client.input.MouseButtonEvent e,boolean doubleClick){if(e.button()!=0||controller==null||controller.transform()==null||e.y()<getY()+20)return;
+    @Override public void onClick(net.minecraft.client.input.MouseButtonEvent e,boolean doubleClick){if(pixelAction!=null&&e.button()==0){pixelGesture=true;dev.loomstudios.client.project.ClientProjectWorkspace.beginCompoundEdit();applyPixel(e.x(),e.y());return;}if(e.button()!=0||controller==null||controller.transform()==null||e.y()<getY()+20)return;
         handleMode=1;var p=handles();for(int i=0;i<p.length;i++)if(Math.hypot(e.x()-p[i][0],e.y()-p[i][1])<=7)handleMode=i==4?3:2;lastX=e.x();lastY=e.y();}
-    @Override protected void onDrag(net.minecraft.client.input.MouseButtonEvent e,double dx,double dy){if(handleMode==0||controller==null||controller.transform()==null)return;var t=controller.transform();
+    @Override protected void onDrag(net.minecraft.client.input.MouseButtonEvent e,double dx,double dy){if(pixelAction!=null){applyPixel(e.x(),e.y());return;}if(handleMode==0||controller==null||controller.transform()==null)return;var t=controller.transform();
         double cx=imageLeft+t.centerX()*drawWidth,cy=imageTop+t.centerY()*drawHeight;
         if(handleMode==1)controller.move(dx/Math.max(1,drawWidth),dy/Math.max(1,drawHeight));
         else if(handleMode==2){double old=Math.hypot(lastX-cx,lastY-cy),next=Math.hypot(e.x()-cx,e.y()-cy);if(old>2)controller.scale((next-old)/old);}
         else {double old=Math.atan2(lastY-cy,lastX-cx),next=Math.atan2(e.y()-cy,e.x()-cx);double delta=Math.toDegrees(next-old);if(delta>180)delta-=360;if(delta< -180)delta+=360;controller.rotate(delta);}
         lastX=e.x();lastY=e.y();}
-    @Override public void onRelease(net.minecraft.client.input.MouseButtonEvent e){handleMode=0;}
+    @Override public void onRelease(net.minecraft.client.input.MouseButtonEvent e){handleMode=0;if(pixelGesture){pixelGesture=false;dev.loomstudios.client.project.ClientProjectWorkspace.endCompoundEdit();}}
 
 
     private void ensureTexture(PixelImage source, long revision) {

@@ -45,7 +45,7 @@ public final class ProjectFileStore {
         Path target = pathFor(project.projectId());
         if(keepHistory&&Files.isRegularFile(target,java.nio.file.LinkOption.NOFOLLOW_LINKS)){
             LoomProject previous=load(target);
-            if(!previous.hash().equals(project.hash()))new ProjectVersions(this).backup(previous);
+            if(!previous.hash().equals(project.hash()) || LoomProjectCodec.peekSchemaVersion(Files.readAllBytes(target)) != LoomProject.CURRENT_SCHEMA_VERSION)new ProjectVersions(this).backupSource(target,previous.projectId());
         }
         Path temporary = root.resolve(project.projectId() + ".loom.tmp");
         Files.write(temporary, project.encode());

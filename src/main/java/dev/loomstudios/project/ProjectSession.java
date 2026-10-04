@@ -6,9 +6,7 @@ import java.util.Objects;
 import java.util.function.LongSupplier;
 import java.util.function.UnaryOperator;
 
-/**
- * Owns one editable project session: history, dirty state and persistence.
- */
+/** Owns one editable project session: history, dirty state and persistence. */
 public final class ProjectSession {
     private final ProjectFileStore store;
     private final LongSupplier clock;
@@ -19,34 +17,27 @@ public final class ProjectSession {
     private LoomProject savedProject;
     private final LoomProject initialProject;
     private long revision;
+    private String editError;
+
+    public String editError() {
+        return editError;
+    }
 
     private long cachedHashRevision = Long.MIN_VALUE;
     private String cachedHash;
 
-    public ProjectSession(
-            LoomProject project,
-            ProjectFileStore store
-    ) {
+    public ProjectSession(LoomProject project, ProjectFileStore store) {
         this(project, store, System::currentTimeMillis);
     }
 
-    ProjectSession(
-            LoomProject project,
-            ProjectFileStore store,
-            LongSupplier clock
-    ) {
+    ProjectSession(LoomProject project, ProjectFileStore store, LongSupplier clock) {
         this.store = Objects.requireNonNull(store, "store");
         this.clock = Objects.requireNonNull(clock, "clock");
-        this.history = new ProjectHistory(
-                Objects.requireNonNull(project, "project")
-        );
+        this.history = new ProjectHistory(Objects.requireNonNull(project, "project"));
         this.initialProject = project;
     }
 
-    public static ProjectSession load(
-            Path path,
-            ProjectFileStore store
-    ) throws IOException {
+    public static ProjectSession load(Path path, ProjectFileStore store) throws IOException {
         LoomProject project = store.load(path);
         ProjectSession session = new ProjectSession(project, store);
         session.sourcePath = path.toAbsolutePath().normalize();
@@ -105,23 +96,27 @@ public final class ProjectSession {
     public LoomProject apply(UnaryOperator<LoomProject> edit) {
         Objects.requireNonNull(edit, "edit");
         LoomProject before = project();
-        LoomProject edited = Objects.requireNonNull(
-                edit.apply(before),
-                "edit result"
-        );
+        editError = null;
+        try {
+            LoomProject edited = Objects.requireNonNull(edit.apply(before), "edit result");
 
-        if (edited.equals(before)) {
+            if (edited.equals(before)) {
+                return before;
+            }
+
+            LoomProject touched = edited.withMetadata(edited.metadata().touch(clock.getAsLong()));
+
+            byte[] encoded = null;
+            if (ProjectMemory.artworkBytes(touched) > 7L * 1024 * 1024) encoded = touched.encode();
+            LoomProject result = history.apply(ignored -> touched);
+            revision++;
+            cachedHash = encoded == null ? null : LoomProjectCodec.sha256(encoded);
+            cachedHashRevision = revision;
+            return result;
+        } catch (IllegalArgumentException e) {
+            editError = e.getMessage();
             return before;
         }
-
-        LoomProject touched = edited.withMetadata(
-                edited.metadata().touch(clock.getAsLong())
-        );
-
-        LoomProject result = history.apply(ignored -> touched);
-        revision++;
-        cachedHash = null;
-        return result;
     }
 
     public LoomProject undo() {
@@ -159,7 +154,10 @@ public final class ProjectSession {
     /** Forget unsaved history without writing artwork or changing equipped state. */
     public void discardChanges() {
         endCompoundEdit();
-        LoomProject baseline=savedProject==null?initialProject:savedProject;
-        history=new ProjectHistory(baseline);savedProject=baseline;revision++;cachedHash=null;
+        LoomProject baseline = savedProject == null ? initialProject : savedProject;
+        history = new ProjectHistory(baseline);
+        savedProject = baseline;
+        revision++;
+        cachedHash = null;
     }
 }

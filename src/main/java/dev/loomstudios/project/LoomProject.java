@@ -13,7 +13,7 @@ public record LoomProject(
         LoomRuntimeSettings runtime,
         LoomAnimation animation
 ) {
-    public static final int CURRENT_SCHEMA_VERSION = 3;
+    public static final int CURRENT_SCHEMA_VERSION = 4;
     public static final int TEXTURE_WIDTH = 64;
     public static final int TEXTURE_HEIGHT = 32;
 
@@ -41,6 +41,10 @@ public record LoomProject(
         validateRuntimeCanvas("cape", cape);
         validateRuntimeCanvas("elytra", elytra);
         validateAnimationReferences(animation, cape, elytra);
+        if (ProjectMemory.canvasBytes(cape, new java.util.IdentityHashMap<>())
+                + ProjectMemory.canvasBytes(elytra, new java.util.IdentityHashMap<>()) > ProjectMemory.MAX_ARTWORK_BYTES) {
+            throw new IllegalArgumentException("Project artwork exceeds the 60 MiB memory budget");
+        }
     }
 
     private static void validateAnimationReferences(
@@ -103,7 +107,7 @@ public record LoomProject(
             throw new IllegalArgumentException(
                     label
                             + " canvas must use a supported Loom resolution: "
-                            + "64x32, 128x64, or 256x128",
+                            + "1x, 2x, 4x, 6x or 8x",
                     e
             );
         }

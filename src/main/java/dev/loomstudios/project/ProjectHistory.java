@@ -8,13 +8,14 @@ import java.util.function.UnaryOperator;
 /**
  * Phase-1 undo/redo foundation.
  *
- * <p>Edits are expressed as project transformations. For now history stores
- * immutable project snapshots; later high-volume tools may use specialized
- * deltas without changing the editor-facing API.</p>
+ * <p>Edits are expressed as project transformations. For now history stores immutable project
+ * snapshots; later high-volume tools may use specialized deltas without changing the editor-facing
+ * API.
  */
 public final class ProjectHistory {
     private static final int DEFAULT_LIMIT = 128;
 
+    private static final long MEMORY_LIMIT = 96L * 1024 * 1024;
     private final int limit;
     private final Deque<LoomProject> undo = new ArrayDeque<>();
     private final Deque<LoomProject> redo = new ArrayDeque<>();
@@ -41,10 +42,9 @@ public final class ProjectHistory {
     }
 
     public LoomProject apply(UnaryOperator<LoomProject> edit) {
-        LoomProject next = Objects.requireNonNull(
-                Objects.requireNonNull(edit, "edit").apply(current),
-                "edit result"
-        );
+        LoomProject next =
+                Objects.requireNonNull(
+                        Objects.requireNonNull(edit, "edit").apply(current), "edit result");
 
         if (next.equals(current)) {
             return current;
@@ -60,6 +60,7 @@ public final class ProjectHistory {
         pushUndo(current);
         current = next;
         redo.clear();
+        trimMemory();
         return current;
     }
 
@@ -85,6 +86,7 @@ public final class ProjectHistory {
         compoundActive = false;
         compoundChanged = false;
         compoundBase = null;
+        trimMemory();
     }
 
     public boolean isCompoundEditActive() {
@@ -96,6 +98,11 @@ public final class ProjectHistory {
         while (undo.size() > limit) {
             undo.removeFirst();
         }
+    }
+
+    private void trimMemory() {
+        while (!undo.isEmpty() && ProjectMemory.retainedBytes(undo, current) > MEMORY_LIMIT)
+            undo.removeFirst();
     }
 
     public boolean canUndo() {

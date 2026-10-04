@@ -116,7 +116,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
     private PanelTab panelTab = PanelTab.PLACEMENT;
     private boolean compactMode;
 
-    private String status = "Choose a PNG to begin";
+    private String status = "Choose an image to begin";
     private int controlPanelX;
     private int controlPanelY;
     private int controlPanelWidth;
@@ -147,6 +147,8 @@ public final class SmartImportScreen extends LoomPointerScreen {
         );
     }
 
+    private dev.loomstudios.project.ElytraSurface importSurface=dev.loomstudios.project.ElytraSurface.OUTSIDE;
+    public static SmartImportScreen forElytra(Screen parent,dev.loomstudios.project.ElytraSurface face){var screen=forElytra(parent);screen.importSurface=face;return screen;}
     public static SmartImportScreen forElytra(Screen parent) {
         return new SmartImportScreen(
                 parent,
@@ -215,7 +217,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
             this.status = "Editing Image layer: "
                     + editingLayer.name();
         } else if (this.importTarget == ImportTarget.ELYTRA_LINKED) {
-            this.status = "Choose a PNG for linked Elytra wings";
+            this.status = "Choose an image for linked Elytra wings";
         }
     }
 
@@ -239,7 +241,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
         controlPanelX = margin + leftWidth + gap;
         controlPanelY = top;
         controlPanelWidth = rightX - gap - controlPanelX;
-        controlPanelHeight = compactMode ? 180 : 210;
+        controlPanelHeight = compactMode ? 180 : 242;
         int workWidth = controlPanelWidth;
         int halfWidth = (workWidth - gap) / 2;
         originalPreview = addRenderableWidget(new LoomImagePreviewWidget(
@@ -260,7 +262,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 rightX,top,rightWidth,bottom-top-48,this::candidateProject,
                 importTarget == ImportTarget.CAPE ? LoomPlayerPreviewWidget.Mode.CAPE : LoomPlayerPreviewWidget.Mode.ELYTRA));
         playerPreview.restoreViewState(previewState);
-        placeAction(null,margin,bottom-20,leftWidth,20,"Choose PNG",LoomButton.Icon.IMAGE,this::choosePng);
+        placeAction(null,margin,bottom-20,leftWidth,20,"Choose Image",LoomButton.Icon.IMAGE,this::choosePng);
         int left = controlPanelX + 5, right = controlPanelX + controlPanelWidth - 5;
         int panelWidth = right-left;
         int buttonHeight = compactMode ? 18 : 21, rowGap = compactMode ? 3 : 4;
@@ -471,6 +473,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
         );
         y += h + gap;
 
+        if (!compactMode) {
         brightnessButton = placeStepper(
                 processingControls,
                 left,
@@ -515,6 +518,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 () -> changeSaturation(0.1F)
         );
         y += h + gap;
+
+        } else {
+            brightnessButton = contrastButton = saturationButton = null;
+            placeAction(processingControls,left,y,width,h,"Adjust / Background / Swatches…",LoomButton.Icon.IMAGE,this::openImageAdjustments);
+            y += h + gap;
+        }
 
         colorLimitButton = placeStepper(
                 processingControls,
@@ -562,6 +571,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 () -> changePosterize(-1),
                 () -> changePosterize(1)
         );
+        y += h + gap;
+        if(!compactMode) placeAction(processingControls,left,y,width,h,"Background, tint & swatches…",LoomButton.Icon.IMAGE,this::openImageAdjustments);
+    }
+
+    private void openImageAdjustments() {
+        if(loaded!=null)minecraft.setScreen(new LoomImageEffectsScreen(this,loaded.embedded(),processing,value->{processing=value;touch();}));
     }
 
     private LoomButton placeAction(
@@ -706,10 +721,10 @@ public final class SmartImportScreen extends LoomPointerScreen {
 
     private void choosePng() {
         String selected = TinyFileDialogs.tinyfd_openFileDialog(
-                "Loom Studios - Import PNG",
+                "Loom Studios - Import Image",
                 "",
                 null,
-                "PNG image (*.png)",
+                "PNG, JPEG, GIF, BMP, TIFF, WBMP",
                 false
         );
 
@@ -739,7 +754,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
             touch();
         } catch (IOException | IllegalArgumentException e) {
             LoomStudios.LOGGER.error(
-                    "Failed to import Smart Import PNG {}",
+                    "Failed to import Smart Import Image {}",
                     selected,
                     e
             );
@@ -949,7 +964,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
 
         if (importTarget == ImportTarget.ELYTRA_LINKED) {
             ImageLayerData secondary = buildImageData(
-                    ElytraWing.RIGHT.normalizedRect(project.elytra()),
+                    importSurface.normalizedRect(project.elytra(),ElytraWing.RIGHT),
                     true
             );
             LoomLayer rightPreview = previewLayer(
@@ -1099,7 +1114,9 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 base.sourceCrop(),
                 transform,
                 base.clip(),
-                processing
+                processing,
+                editingBaseData != null ? base.frames() : loaded.frames(),
+                editingBaseData != null ? base.frameTicks() : loaded.frameTicks()
         );
     }
 
@@ -1132,7 +1149,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
             return editingBaseData.clip();
         }
 
-        return ElytraWing.LEFT.normalizedRect(project.elytra());
+        return importSurface.normalizedRect(project.elytra(),ElytraWing.LEFT);
     }
 
     private void open3dPreview() {
@@ -1165,7 +1182,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
             if (importTarget == ImportTarget.ELYTRA_LINKED) {
                 LoomProject project = ClientProjectWorkspace.project();
                 ImageLayerData right = buildImageData(
-                        ElytraWing.RIGHT.normalizedRect(project.elytra()),
+                        importSurface.normalizedRect(project.elytra(),ElytraWing.RIGHT),
                         true
                 );
 
@@ -1232,6 +1249,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
             return;
         }
 
+        if (ClientProjectWorkspace.session().editError() != null) {
+            status = "Import not applied: " + ClientProjectWorkspace.session().editError();
+            updateButtonLabels();
+            return;
+        }
+
         if (parent instanceof CapeEditorScreen
                 || parent instanceof ElytraEditorScreen) {
             this.minecraft.setScreen(parent);
@@ -1287,13 +1310,13 @@ public final class SmartImportScreen extends LoomPointerScreen {
         posterizeButton.setMessage(Component.literal(
                 "Levels " + processing.posterizeLevels()
         ));
-        brightnessButton.setMessage(Component.literal(
+        if(brightnessButton!=null)brightnessButton.setMessage(Component.literal(
                 "Brightness " + percent(processing.brightness())
         ));
-        contrastButton.setMessage(Component.literal(
+        if(contrastButton!=null)contrastButton.setMessage(Component.literal(
                 "Contrast " + percent(processing.contrast())
         ));
-        saturationButton.setMessage(Component.literal(
+        if(saturationButton!=null)saturationButton.setMessage(Component.literal(
                 "Saturation " + percent(processing.saturation())
         ));
         scaleButton.setMessage(Component.literal(

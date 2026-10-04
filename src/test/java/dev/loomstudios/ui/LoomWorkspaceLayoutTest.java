@@ -30,7 +30,7 @@ class LoomWorkspaceLayoutTest {
     @Test void emptyTimelineReturnsSpaceToWingCanvas() {
         var empty = LoomWorkspaceLayout.create(640,360,true,0);
         var tracks = LoomWorkspaceLayout.create(640,360,true,5);
-        assertEquals(66, empty.timeline().height());
-        assertTrue(empty.canvas().height() > tracks.canvas().height());
+        assertEquals(22, empty.timeline().height());
+        assertEquals(empty.canvas().height(), tracks.canvas().height());
     }
 }

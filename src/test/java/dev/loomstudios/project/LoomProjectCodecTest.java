@@ -688,7 +688,7 @@ class LoomProjectCodecTest {
 
         LoomProject migrated = LoomProjectCodec.decode(legacy);
 
-        assertEquals(3, migrated.schemaVersion());
+        assertEquals(4, migrated.schemaVersion());
         assertEquals(LayerKind.PAINT, migrated.cape().layers().getFirst().kind());
         assertFalse(migrated.cape().layers().getFirst().locked());
         assertArrayEquals(
@@ -752,7 +752,7 @@ class LoomProjectCodecTest {
         LoomProject decoded = LoomProjectCodec.decode(typed.encode());
 
         assertEquals(typed, decoded);
-        assertEquals(3, decoded.schemaVersion());
+        assertEquals(4, decoded.schemaVersion());
         assertEquals(
                 LayerKind.IMAGE,
                 decoded.cape().layers().get(1).kind()
@@ -989,7 +989,7 @@ class LoomProjectCodecTest {
     @Test
     void unsupportedSchemaUsesExplicitMigrationGate() {
         byte[] encoded = LoomProjectFactory.forPlayer(PLAYER_ID).encode();
-        encoded[7] = 4;
+        encoded[7] = 5;
 
         IllegalArgumentException error = assertThrows(
                 IllegalArgumentException.class,

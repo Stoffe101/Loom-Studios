@@ -66,7 +66,7 @@ public final class AnimationEvaluator {
                 return right.value();
             }
 
-            float progress = (tick - left.tick()) / (float)span;
+            float progress = left.easing().apply((tick - left.tick()) / (float)span);
             return left.value()
                     + (right.value() - left.value()) * progress;
         }

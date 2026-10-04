@@ -11,9 +11,15 @@ public record ImageProcessingSettings(
         int colorLimit,
         boolean dither,
         int posterizeLevels,
-        List<Integer> palette
+        List<Integer> palette,
+        int tintColor, float tintStrength, BackgroundRemoval background
 ) {
+    public ImageProcessingSettings(ImageProcessingMode mode,float brightness,float contrast,float saturation,int colorLimit,boolean dither,int posterizeLevels,List<Integer> palette){this(mode,brightness,contrast,saturation,colorLimit,dither,posterizeLevels,palette,0xFFFFFFFF,0,BackgroundRemoval.none());}
+    public ImageProcessingSettings withTint(int color,float strength){return new ImageProcessingSettings(mode,brightness,contrast,saturation,colorLimit,dither,posterizeLevels,palette,color,strength,background);}
+    public ImageProcessingSettings withBackground(BackgroundRemoval value){return new ImageProcessingSettings(mode,brightness,contrast,saturation,colorLimit,dither,posterizeLevels,palette,tintColor,tintStrength,value);}
     public ImageProcessingSettings {
+        Objects.requireNonNull(background,"background");
+        if(!Float.isFinite(tintStrength)||tintStrength<0||tintStrength>1)throw new IllegalArgumentException("Tint strength must be 0–1");
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(palette, "palette");
 
@@ -60,7 +66,7 @@ public record ImageProcessingSettings(
                 colorLimit,
                 dither,
                 posterizeLevels,
-                palette
+                palette, tintColor, tintStrength, background
         );
     }
 
@@ -77,7 +83,7 @@ public record ImageProcessingSettings(
                 colorLimit,
                 dither,
                 posterizeLevels,
-                palette
+                palette, tintColor, tintStrength, background
         );
     }
 
@@ -93,7 +99,7 @@ public record ImageProcessingSettings(
                 nextColorLimit,
                 nextDither,
                 posterizeLevels,
-                palette
+                palette, tintColor, tintStrength, background
         );
     }
 
@@ -106,7 +112,7 @@ public record ImageProcessingSettings(
                 colorLimit,
                 dither,
                 levels,
-                palette
+                palette, tintColor, tintStrength, background
         );
     }
 
@@ -119,7 +125,7 @@ public record ImageProcessingSettings(
                 colorLimit,
                 dither,
                 posterizeLevels,
-                nextPalette
+                nextPalette, tintColor, tintStrength, background
         );
     }
 

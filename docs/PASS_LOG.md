@@ -1,3 +1,19 @@
+## 2026-10-04 — Schema-v4 authoring — DONE: Linux runtime and visual verification
+
+Accepted runtime source `2fe83e46df4e4da4be7896ae1ec74bc0f4bf77a7`, final checks completed 02:01 UTC. [Build256](https://github.com/Stoffe101/Loom-Studios/actions/runs/37168936038) passes both jobs: **154 tests, zero failures/errors/skips**, with the official unmodified Fabric Loom toolchain and **384 MiB test heap**, plus **278 actual Minecraft screenshots**. [Comparison32](https://github.com/Stoffe101/Loom-Studios/actions/runs/37168935938) passes all20 jobs and178 screenshots. Minecraft1.21.11, Loader0.18.4, Fabric API0.141.1, Temurin21, Linux/Mesa/Xvfb; no optional mods/shaders.
+
+Implemented all17 requested authoring areas in AUTHORING_V4.md: bounded compressed layer storage before 1/2/4/6/8× Cape/Elytra; safe budget rejection instead of the seven-layer crash; PNG/JPEG/GIF/BMP/TIFF/WBMP import; GIF playback; sampled local background removal, tint/brightness/contrast/saturation and image swatches; independent Elytra UV faces; optional Animate entry/return; typed effect parameters and five easing curves; Alpha Lock/clipping/editable masks; exact Wand/Replace selection; five stamps; unfolded cape seam editing; readable ruler/legend. Original legacy files and version checksums are preserved. Immutable compression, renderer/raster/history and multiplayer caches are bounded; upload validation/download decode use bounded background workers.
+
+Verification includes48-layer8× save/load/Loom Code, malformed expansion and entropy rollback, cache reuse/resize/budget, legacy history/tampering, all image decoders/GIF disposal, masks/effects/wing isolation, real Screen stamp drag with single undo, Wand/Replace/mask controls, image sampling/swatches, GIF native-texture changes on both channels, animation return/key dragging and all prior safety/library/import/preview checks. A3,149,338-byte live integrated-server transfer passes native C2S/S2C fragmentation, asynchronous validation, equip broadcast and client decode.
+
+Visual evidence: all seven supplied problem/reference images inspected; all40 authoring originals decoded and four display-profile sheets reviewed, plus20 production import/Home/export captures including the final compact Processing layout. Targets are references01/04/05; focused dialogs intentionally preserve compact editing space. Required1920×1080/3440×1440 GUI2/3 are captured and bounds-tested. The final278-capture artifact11289874252 passed CI; its archive downloaded, but the local execution transport disconnected before final extraction/review. Final cache and backup changes after the reviewed UI source do not change rendering. Do not claim every final PNG was individually reviewed.
+
+Build artifact11290202752 is the verified release JAR; SHA256 `5657a148176cfedf092a02eed5d6af5b27a3574ad00c66c52a289d154faff1ad`. Packaged authoring classes and wing accessor mixin were checked. This acceptance update changes documentation only; runtime evidence belongs to the exact SHA above.
+
+Corrections retained in checkpoint history: capture fixture overwrite, physical Outside/Inside UV mapping, compact635×320 import drag/header collision, a local duplicate variable and original-byte legacy-history hash handling. No known failing automated checks on the accepted source. Both client and server must update to schema4/protocol2; older releases cannot read newly saved projects. Keyframes animate the primary scalar; other typed settings configure the effect. WebP/HEIC/AVIF are unsupported.
+
+Next work: ordinary-client frame times and repeated open/close/resource reload on target hardware; Windows/macOS native loading; Sodium/Iris/shaders; dedicated-server concurrent multiplayer soak; finish extracting/reviewing the final capture archive when workspace access recovers. Cache assertions and integrated transfer tests are not hardware FPS or dedicated-server load evidence.
+
 # Loom Studios — Pass Log
 
 ## 2026-10-03 — Dropdowns and cosmetic-only preview — DONE: Linux runtime and visual verification
@@ -1711,3 +1727,43 @@ Next in this active pass: complete useful template packs and import handles/proc
 ### First milestone compile checkpoint
 
 Actions #195 on `638a5b552b4047e8fae616ab6fd54edd029ae8d7` failed client compilation in three Cape clipboard feedback lines referring to absent statusMessage. Corrected to existing notifyPlayer; other new source including pose fields compiled. Added original layered templates and direct imported-image move/scale/rotate handles, plus help/preferences safeguards. Current verification pending; do not call this milestone DONE.
+
+## 2026-10-04 — Schema-v4 authoring foundations (IN PROGRESS)
+
+Base `82ca0a9db3f7093d2fd24d17ea6bee1f401be0d7`, branch `codex/schema4-authoring`; working tree checkpoint, no release SHA yet. Audited all seven supplied screenshots and serialization/UV/model paths. The old 1 MiB raw-pixel envelope explains the >7-layer crash at 4×. Vanilla ElytraModel uses tex(22,0) for both cuboids, so the previous LEFT/RIGHT authoring rectangles were the outside/inside faces of one shared UV block. Inspected official mapped Minecraft 1.21.11 bytecode to confirm geometry, deformation and texture origin.
+
+Implemented bounded compressed layer blocks and schema migration, five resolution steps, typed parameters/easing, masks, alpha lock/clipping, bounded multi-format/GIF import, local image processing, exact selections/stamps/seam tools, independent wing geometry and face editing, animation entry/layout cleanup, bounded caches/history. See AUTHORING_V4.md and DECISIONS.md for contracts.
+
+Validation: Java21.0.12 standalone compilation and 150 tests PASS at 384 MiB heap (128 previous +22 new). Large 48-layer 8× project round-trips file and portable code; oversized entropy edit remains unchanged; compressed expansion forgery fails; GIF frame offsets/timing/restore-to-previous pass; mask/clip selection/UV isolation tests pass. Full client/runtime and official Fabric toolchain evidence remain pending. Local Loom Unix-domain socket probe needs an environment-only fallback; that cached tool edit is excluded from repository changes. Risks: prototype integration not visually accepted yet, protocol2 requires matching versions, real multiplayer soak not yet performed. Next: full client, 40 new screenshots across four profiles and actual input/payload checks, then official CI and final merge.
+
+## 2026-10-04 — Authoring-v4 integration corrections — IN PROGRESS
+
+CI096bdddc7b5f5e4aa24beeef0fb0ebef3fbce0e2: official build success (150 tests), MC1.21.11, Loader0.18.4, API0.141.1, Temurin21, Linux/Mesa/Xvfb, no optional mods/shaders. Four authoring jobs generated40 valid screenshots, then post-verification failed because the capture8× save had overwritten the baseline project. Production capture failed on an actual Processing button/preview overlap. Both failures are addressed, not hidden. Local follow-up Gradle test+compileClientJava passes151 tests, including newly covered WBMP.
+
+Reviewed GUI3 originals against approved reference01/04/05. Correct physical wing Outside to positive-Z south UV (left38/right14; Inside26/2); keep legacy complete-box migration and vanilla mirrored mesh. Shorten tool tabs, show brush size in pixels, translucent selection overlay preserves visible details, unpause focused screens for live animation. Smart Import now surfaces rejected session edits and reserves Processing rows. Fixture8× save forks identity.
+
+Network architecture: bounded single validation worker (one active/four queued) and single client decode worker (one active/two queued); latest-hash/connection checks; compatible broadcasts; throttled retries; byte-bounded caches rehydrate evicted equipped projects. New integrated-server verification exercises real >1MiB upload/download fragmentation after codec/hash tests. Runtime follow-up and live acceptance remain pending; no release claim.
+
+GIF scheduling uses a separate frame clock so full imported loops do not bypass global effect timing; core test covers independent frame selection. A local compile caught an overbroad edit to a NativeImage constructor; narrowed to compositor calls before publication.
+
+## 2026-10-04 — Focused authoring interaction verification — IN PROGRESS
+
+Source98d39898b406c2880495c8afce9ce46062a48bda: Official Build252 build passes151 tests; Comparison28 passes20/20 jobs and178 captures. Downloaded/decoded40 new authoring PNGs, reviewed all four contact sheets plus compact originals against01/04/05. Outside wings are visible with independent artwork; no new bounds/overlap failures. Large integrated networking passes3,149,342-byte C2S/S2C codec/hash and actual Fabric fragmentation, async validation, equip broadcast and remote decode. Full278 capture remains pending.
+
+Added LoomAuthoringVerification (opt-in only): actual Screen routing for stamp drag and single undo, Wand/Replace, mask flags and hide, Back return, sampled background/palette action, and native GIF textures across both channels. Fitted image coordinates are supplied deterministically before rendering; pixel edit routing and uploaded NativeImage checks use production code. Local compileClientJava passes; runtime assertions still pending. Release acceptance and merge remain the next concrete steps.
+
+### Compact Smart Import drag regression — IN PROGRESS
+
+Full Build252 stopped after66 captures on635×320 logical GUI3: preview widget was32px including24px header, so its middle pointer hit the title and no transform changed. This was a product layout regression, not a failing comparison job. Compact Processing now uses one Adjust/Background/Swatches action instead of three duplicate brightness/contrast/saturation steppers plus another modal button. Dedicated adjustment screen retains all functions; compact panel returns to180px while full242px layout remains. Pending revised-source local compilation and full runtime.
+
+## 2026-10-04 — Bounded immutable layer encoding cache — IN PROGRESS
+
+Why: compressed48-layer8× artwork should not recompress every unchanged layer on each brush edit/preview hash. New32 MiB/64-entry LRU keys immutable layer identity plus canvas dimensions and includes retained artwork/packed bytes in its weight. Raw expansion/envelope limits remain checked on every encode. Regression asserts warm reuse, one-layer recompression, unchanged deterministic bytes, edited round trip, resize isolation and cache bounds. Set Gradle test worker to384 MiB. Local compile caught a duplicate variable name; corrected. Executor temporary tool cache reset before the follow-up local result could be recovered; official152-test result and exact-source runtime remain pending.
+
+829850eae3b0105ad0e69c30c4a005475c58fb3c Comparison30 passes20/20 jobs with real authoring input/GIF and large integrated networking; full278 still running. README, format, protocol, animation, Smart Import and authoring guide now describe current schema4 instead of stale v3 limits. No new external dependencies. Next: official validation, final capture review, acceptance docs and merge.
+
+## 2026-10-04 — Preserve legacy version history through schema4 migration — IN PROGRESS
+
+Official Build255 atc699904ffde8213b845138cd2d143f01d0f755f3 passes152 tests at384 MiB, including encoding-cache regression. Audit found ProjectVersions.read used migrated canonical hash against historical raw-byte filenames, rejecting valid v1–3 snapshots; saving unchanged migrated artwork also skipped its old-format backup. Validate the filename using bounded original file bytes, retain project identity checks, and snapshot the original source before format upgrade. Preserve raw bytes for ordinary changed-save backups as well.
+
+Two new regressions: unchanged-artwork v3 save preserves original bytes in history before v4 overwrite; existing v3 history accepts its original checksum and rejects tampered valid-project bytes. Modern backup/restore behavior remains covered by existing tests. Pending official154-test build/full capture and acceptance; no more feature expansion planned.

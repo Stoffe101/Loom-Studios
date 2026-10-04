@@ -24,11 +24,11 @@ import java.util.UUID;
 public final class LoomProjectCodec {
     private static final int MAGIC = 0x4C4F4F4D; // LOOM
 
-    public static final int MAX_SERIALIZED_BYTES = 1024 * 1024;
+    public static final int MAX_SERIALIZED_BYTES = 8 * 1024 * 1024;
     public static final int MAX_NETWORK_PAYLOAD_BYTES =
             MAX_SERIALIZED_BYTES + 512;
-    public static final int MAX_CANVAS_DIMENSION = 256;
-    public static final int MAX_EMBEDDED_IMAGE_DIMENSION = 256;
+    public static final int MAX_CANVAS_DIMENSION = 512;
+    public static final int MAX_EMBEDDED_IMAGE_DIMENSION = 512;
     public static final int MAX_LAYER_COUNT = 64;
     public static final int MAX_PROJECT_NAME_CHARS = 96;
     public static final int MAX_LAYER_NAME_CHARS = 96;
@@ -47,12 +47,15 @@ public final class LoomProjectCodec {
             case 1 -> encodeVersion1(project);
             case 2 -> encodeVersion2(project);
             case 3 -> encodeVersion3(project);
+            case 4 -> LoomProjectV4Codec.encode(project);
             default -> throw new IllegalArgumentException(
                     "Unsupported Loom project schema "
                             + project.schemaVersion()
             );
         };
     }
+
+    static byte[] encodeVersion3SnapshotForTest(LoomProject project) { return encodeVersion3(project); }
 
     public static LoomProject decode(byte[] data) {
         return LoomProjectMigrations.decodeAndMigrate(data);
@@ -258,7 +261,7 @@ public final class LoomProjectCodec {
         return result;
     }
 
-    private static void writeHeaderAndCommon(
+    static void writeHeaderAndCommon(
             DataOutputStream out,
             int schemaVersion,
             LoomProject project
@@ -277,7 +280,7 @@ public final class LoomProjectCodec {
         out.writeBoolean(runtime.emissiveEnabled());
     }
 
-    private static CommonProjectData readCommonProjectData(
+    static CommonProjectData readCommonProjectData(
             DataInputStream in
     ) throws IOException {
         UUID projectId = readUuid(in);
@@ -301,7 +304,7 @@ public final class LoomProjectCodec {
         );
     }
 
-    private static void requireHeader(
+    static void requireHeader(
             DataInputStream in,
             int expectedSchema
     ) throws IOException {
@@ -399,7 +402,7 @@ public final class LoomProjectCodec {
         );
     }
 
-    private static void writeCanvasV2(
+    static void writeCanvasV2(
             DataOutputStream out,
             LoomCanvas canvas
     ) throws IOException {
@@ -431,7 +434,7 @@ public final class LoomProjectCodec {
         }
     }
 
-    private static LoomCanvas readCanvasV2(DataInputStream in)
+    static LoomCanvas readCanvasV2(DataInputStream in)
             throws IOException {
         CanvasHeader header = readCanvasHeader(in);
         List<LoomLayer> layers =
@@ -683,7 +686,7 @@ public final class LoomProjectCodec {
         );
     }
 
-    private static void writeAnimation(
+    static void writeAnimation(
             DataOutputStream out,
             LoomAnimation animation
     ) throws IOException {
@@ -709,7 +712,7 @@ public final class LoomProjectCodec {
         }
     }
 
-    private static LoomAnimation readAnimation(
+    static LoomAnimation readAnimation(
             DataInputStream in
     ) throws IOException {
         int duration = in.readInt();
@@ -884,7 +887,7 @@ public final class LoomProjectCodec {
         }
     }
 
-    private static void rejectTrailingBytes(
+    static void rejectTrailingBytes(
             DataInputStream in
     ) throws IOException {
         if (in.available() != 0) {
@@ -1007,7 +1010,7 @@ public final class LoomProjectCodec {
     ) {
     }
 
-    private record CommonProjectData(
+    record CommonProjectData(
             UUID projectId,
             String name,
             LoomProjectMetadata metadata,

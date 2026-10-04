@@ -47,8 +47,8 @@ class LibraryPolishTest {
         LoomProject original=p;assertThrows(IllegalArgumentException.class,()->LayerBatch.apply(original,false,Set.copyOf(ids),LayerBatch.Action.DELETE));assertEquals(2,LayerBatch.apply(p,false,selected,LayerBatch.Action.DELETE).cape().layers().size());
     }
     @Test void oversizedBulkDuplicationLeavesTheSessionUnchanged() {
-        LoomProject p=TemplateCatalog.create(TemplateCatalog.Kind.SPACE,1);for(int i=0;i<3;i++)p=ProjectEdits.addCapeLayer(p,"Detail");
+        LoomProject p=TemplateCatalog.create(TemplateCatalog.Kind.SPACE,1);while(p.cape().layers().size()<40)p=ProjectEdits.addCapeLayer(p,"Detail");
         var ids=Set.copyOf(p.cape().layers().stream().map(LoomLayer::id).toList());var session=new ProjectSession(p,new ProjectFileStore(directory));LoomProject original=p;boolean wasDirty=session.isDirty();
-        assertThrows(IllegalArgumentException.class,()->session.apply(v->LayerBatch.apply(v,false,ids,LayerBatch.Action.DUPLICATE)));assertEquals(original,session.project());assertFalse(session.canUndo());assertEquals(wasDirty,session.isDirty());
+        session.apply(v->LayerBatch.apply(v,false,ids,LayerBatch.Action.DUPLICATE));assertNotNull(session.editError());assertEquals(original,session.project());assertFalse(session.canUndo());assertEquals(wasDirty,session.isDirty());
     }
 }

@@ -170,16 +170,20 @@ public final class LoomProjectFactory {
             }
         }
 
-        drawWingFace(pixels, 24, 2, false, accent, secondary, base);
-        drawWingFace(pixels, 36, 2, true, accent, secondary, base);
+        drawWingFace(pixels, 26, 2, false, accent, secondary, base);
+        drawWingFace(pixels, 2, 2, true, accent, secondary, base);
 
         // Keep UV edge faces opaque so custom artwork remains volumetric, but
         // make them recess visually instead of the old bright neon borders.
-        drawRect(pixels, 22, 0, 24, 2, edge);
-        drawRect(pixels, 22, 22, 24, 2, edge);
-        drawRect(pixels, 22, 2, 2, 20, edge);
-        drawRect(pixels, 34, 2, 2, 20, edge);
-        drawRect(pixels, 46, 2, 2, 20, edge);
+        drawRect(pixels, 24, 0, 24, 2, edge);
+        drawRect(pixels,0,0,24,2,edge);
+        drawWingFace(pixels,38,2,false,accent,secondary,base);
+        drawWingFace(pixels,14,2,true,accent,secondary,base);
+        drawRect(pixels,24,2,2,20,edge);
+        drawRect(pixels,0,2,2,20,edge);
+        drawRect(pixels,36,2,2,20,edge);
+        drawRect(pixels,12,2,2,20,edge);
+
 
         LoomLayer baseLayer = new LoomLayer(
                 stableLayerId(projectId, "elytra-base"),

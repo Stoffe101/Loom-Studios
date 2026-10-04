@@ -56,7 +56,7 @@ jobs:
   editor-capture:
     name: Real editor screenshots / Mesa
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -90,7 +90,7 @@ jobs:
           ALSOFT_DRIVERS: "null"
         run: |
           xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture | tee capture.log
-          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 238
+          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 278
           grep -q 'LOOM_UI_CAPTURE COMPLETE' capture.log
       - name: Upload screenshot evidence
         if: always()
