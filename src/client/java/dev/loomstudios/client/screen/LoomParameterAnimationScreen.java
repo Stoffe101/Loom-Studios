@@ -465,8 +465,8 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
                   new AnimationKeyEditing.Address(tr.id(), row.parameter(), k.tick()));
           g.fill(x - 3, y + 6, x + 4, y + 13, sel ? LoomUiTheme.ACCENT_ALT : LoomUiTheme.ACCENT);
         }
+        // Popping the per-lane clip restores the outer timeline clip. Do not push it again.
         g.disableScissor();
-        g.enableScissor(10, timelineTop + 24, right - 10, LoomParameterAnimationScreen.this.height - 30);
       }
       g.fill(tickX(tick), timelineTop + 22, tickX(tick) + 1, LoomParameterAnimationScreen.this.height - 30, LoomUiTheme.ACCENT);
       g.disableScissor();
