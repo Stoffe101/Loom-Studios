@@ -2,11 +2,13 @@ package dev.loomstudios.client.ui;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.ElytraWing;
 import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.ui.CanvasViewportTransform;
+import java.util.UUID;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -17,9 +19,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import java.util.UUID;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 /** Two semantic wing views, sharing the same pixel-boundary transform as Cape. */
 public final class LoomElytraCanvasWidget extends AbstractWidget implements LoomMiddlePanTarget {
@@ -127,8 +126,12 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
             }
             renderedRevision = Long.MIN_VALUE;
         }
-        if (renderedRevision == revisionSupplier.getAsLong()) return;
-        int[] pixels = LoomTextureCompiler.compile(project.elytra(), 0, false, false);
+    long revision =
+        31 * revisionSupplier.getAsLong()
+            + dev.loomstudios.client.project.EditorOverlayState.revision();
+        if (renderedRevision == revision) return;
+        int[] pixels =
+        dev.loomstudios.client.project.EditorOverlayState.composite(project, dev.loomstudios.project.AnimationChannel.ELYTRA);
         for (ElytraWing wing : ElytraWing.values()) {
             int index = wing == ElytraWing.LEFT ? 0 : 1;
             for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
@@ -141,7 +144,7 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
             }
             textures[index].upload();
         }
-        renderedRevision = revisionSupplier.getAsLong();
+        renderedRevision = revision;
     }
     private void drawBounds(GuiGraphics g,CanvasViewportTransform t,int x0,int y0,int x1,int y1){int l=t.screenX(x0),top=t.screenY(y0),r=t.screenX(x1+1),b=t.screenY(y1+1);g.fill(l,top,r,top+1,LoomUiTheme.ACCENT);g.fill(l,b-1,r,b,LoomUiTheme.ACCENT);g.fill(l,top,l+1,b,LoomUiTheme.ACCENT);g.fill(r-1,top,r,b,LoomUiTheme.ACCENT);}
     private void applyAt(double x, double y) {

@@ -8,13 +8,12 @@ import dev.loomstudios.client.ui.LoomImagePreviewWidget;
 import dev.loomstudios.image.*;
 import dev.loomstudios.project.*;
 
+import java.lang.reflect.Field;
+import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.*;
-
-import java.lang.reflect.Field;
-import java.util.*;
 
 /** Opt-in capture assertions exercise real Screen event routing and uploaded GIF textures. */
 final class LoomAuthoringVerification {
@@ -34,7 +33,7 @@ final class LoomAuthoringVerification {
                 new LoomSurfaceToolsScreen(
                         home, false, layer.id(), CapeUvRegion.OUTSIDE, null, null, 0xFF22D7E8);
         client.setScreen(tools);
-        press(tools, "Brushes");
+        press(tools, "Brush");
         gesture(tools, "image", 10, 16, 5, 8, true);
         if (Arrays.equals(
                         pixels,
@@ -115,9 +114,7 @@ final class LoomAuthoringVerification {
                 "LOOM_AUTHORING_INPUT PASS: real stamp drag/single undo, wand/replace, mask"
                     + " flags/painting, parent return, picked background/swatches and Cape/Elytra"
                     + " GIF texture updates");
-    }
-
-    private static Object get(Object target, String name) throws Exception {
+    } static Object get(Object target, String name) throws Exception {
         Field f = target.getClass().getDeclaredField(name);
         f.setAccessible(true);
         return f.get(target);
@@ -131,9 +128,7 @@ final class LoomAuthoringVerification {
 
     private static MouseButtonEvent mouse(double x, double y) {
         return new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0));
-    }
-
-    private static void press(Screen screen, String text) {
+    } static void press(Screen screen, String text) {
         var button =
                 screen.children().stream()
                         .filter(
@@ -150,9 +145,7 @@ final class LoomAuthoringVerification {
                                                 "Missing authoring button: " + text));
         screen.mouseClicked(mouse(button.getX() + 3, button.getY() + 3), false);
         screen.mouseReleased(mouse(button.getX() + 3, button.getY() + 3));
-    }
-
-    private static void gesture(
+    } static void gesture(
             Screen screen, String widget, int w, int h, int px, int py, boolean drag)
             throws Exception {
         var image = (LoomImagePreviewWidget) get(screen, widget);

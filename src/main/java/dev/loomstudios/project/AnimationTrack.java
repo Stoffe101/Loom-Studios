@@ -13,7 +13,25 @@ public record AnimationTrack(
         float speed,
         boolean loop,
         List<AnimationKeyframe> keyframes,
-        EffectParameters parameters) {
+        EffectParameters parameters,
+    List<ParameterLane> lanes) {
+  public AnimationTrack(
+      UUID id,
+      UUID layerId,
+      AnimationChannel channel,
+      AnimationEffectType effect,
+      boolean enabled,
+      float speed,
+      boolean loop,
+      List<AnimationKeyframe> keys,
+      EffectParameters parameters) {
+    this(id, layerId, channel, effect, enabled, speed, loop, keys, parameters, List.of());
+  }
+
+  public AnimationTrack withLanes(List<ParameterLane> value) {
+    return new AnimationTrack(
+        id, layerId, channel, effect, enabled, speed, loop, keyframes, parameters, value);
+  }
     public static final int MAX_KEYFRAMES = 128;
 
     public AnimationTrack(
@@ -39,10 +57,17 @@ public record AnimationTrack(
 
     public AnimationTrack withParameters(EffectParameters next) {
         return new AnimationTrack(
-                id, layerId, channel, effect, enabled, speed, loop, keyframes, next);
+                id, layerId, channel, effect, enabled, speed, loop, keyframes, next, lanes);
     }
 
     public AnimationTrack {
+    lanes = List.copyOf(lanes);
+    if (lanes.size() > 16) throw new IllegalArgumentException("Too many parameter lanes");
+    var unique = new java.util.HashSet<AnimationParameter>();
+    for (var lane : lanes)
+      if (!unique.add(lane.parameter())
+          || !AnimationParameter.forEffect(effect).contains(lane.parameter()))
+        throw new IllegalArgumentException("Invalid effect lane");
         Objects.requireNonNull(parameters, "parameters");
         if (parameters.effect() != effect)
             throw new IllegalArgumentException("Mismatched typed effect parameters");
@@ -81,26 +106,27 @@ public record AnimationTrack(
                 speed,
                 loop,
                 keyframes,
-                next == effect ? parameters : EffectParameters.forAuthoring(next));
+                next == effect ? parameters : EffectParameters.forAuthoring(next),
+        next == effect ? lanes : List.of());
     }
 
     public AnimationTrack withEnabled(boolean next) {
         return new AnimationTrack(
-                id, layerId, channel, effect, next, speed, loop, keyframes, parameters);
+                id, layerId, channel, effect, next, speed, loop, keyframes, parameters, lanes);
     }
 
     public AnimationTrack withSpeed(float next) {
         return new AnimationTrack(
-                id, layerId, channel, effect, enabled, next, loop, keyframes, parameters);
+                id, layerId, channel, effect, enabled, next, loop, keyframes, parameters, lanes);
     }
 
     public AnimationTrack withLoop(boolean next) {
         return new AnimationTrack(
-                id, layerId, channel, effect, enabled, speed, next, keyframes, parameters);
+                id, layerId, channel, effect, enabled, speed, next, keyframes, parameters, lanes);
     }
 
     public AnimationTrack withKeyframes(List<AnimationKeyframe> next) {
         return new AnimationTrack(
-                id, layerId, channel, effect, enabled, speed, loop, next, parameters);
+                id, layerId, channel, effect, enabled, speed, loop, next, parameters, lanes);
     }
 }

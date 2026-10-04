@@ -16,6 +16,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - suite: creative-gui2
+            start: 278
+            end: 286
+            count: 8
+          - suite: creative-gui3
+            start: 286
+            end: 294
+            count: 8
+          - suite: creative-wide-gui2
+            start: 294
+            end: 302
+            count: 8
+          - suite: creative-wide-gui3
+            start: 302
+            end: 310
+            count: 8
           - suite: authoring-gui2
             start: 238
             end: 248

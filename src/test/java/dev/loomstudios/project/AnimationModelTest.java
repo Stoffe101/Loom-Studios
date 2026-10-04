@@ -1,11 +1,11 @@
 package dev.loomstudios.project;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class AnimationModelTest {
     @Test
@@ -78,7 +78,7 @@ class AnimationModelTest {
 
         LoomProject migrated = LoomProjectCodec.decode(v2);
 
-        assertEquals(4, migrated.schemaVersion());
+        assertEquals(5, migrated.schemaVersion());
         assertTrue(migrated.animation().tracks().isEmpty());
         assertEquals(80, migrated.animation().durationTicks());
     }
@@ -114,7 +114,7 @@ class AnimationModelTest {
         );
 
         assertEquals(animated, decoded);
-        assertEquals(4, decoded.schemaVersion());
+        assertEquals(5, decoded.schemaVersion());
         assertEquals(
                 AnimationEffectType.SPARKLE,
                 decoded.animation().tracks().getFirst().effect()

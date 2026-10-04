@@ -1,30 +1,22 @@
 package dev.loomstudios.client.screen;
 
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.ui.LoomWorkspaceLayout;
-import dev.loomstudios.client.ui.LoomInspectorLayout;
-import dev.loomstudios.client.ui.LoomSlider;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-
 import dev.loomstudios.client.project.ClientProjectWorkspace;
+
+import dev.loomstudios.client.project.PixelClipboard;
+import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.client.ui.LoomAnimationTimelineWidget;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
 import dev.loomstudios.client.ui.LoomElytraCanvasWidget;
-import dev.loomstudios.client.render.LoomTextureCompiler;
+import dev.loomstudios.client.ui.LoomInspectorLayout;
 import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
+import dev.loomstudios.client.ui.LoomSlider;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.AnimationAuthoring;
-import dev.loomstudios.project.PixelDrawing.Tool;
-import dev.loomstudios.project.PixelDrawing;
-import dev.loomstudios.project.PixelSelection;
-import dev.loomstudios.project.SurfaceEdits;
-import dev.loomstudios.client.project.PixelClipboard;
 import dev.loomstudios.project.AnimationChannel;
 import dev.loomstudios.project.AnimationEffectType;
 import dev.loomstudios.project.AnimationEvaluator;
@@ -39,15 +31,22 @@ import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.LoomAnimation;
 import dev.loomstudios.project.LoomLayer;
 import dev.loomstudios.project.LoomProject;
+import dev.loomstudios.project.PixelDrawing;
+import dev.loomstudios.project.PixelDrawing.Tool;
+import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-
+import dev.loomstudios.project.SurfaceEdits;
+import dev.loomstudios.ui.LoomWorkspaceLayout;
 import java.io.IOException;
 import java.util.UUID;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 public final class ElytraEditorScreen extends LoomPointerScreen {
     private enum InspectorTab {
@@ -475,11 +474,30 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         );
         addRenderableWidget(timelineWidget);timelineWidget.visible=false;timelineWidget.active=false;
         canvasWidget.setSurface(()->wingSurface);
-        int w=Math.max(64,(centerRight-centerLeft-8)/3),y=timelineTop;
+        int w=Math.max(1,(centerRight-centerLeft- 12)/ 4),y=timelineTop;
         iconButton(centerLeft,y,w,22,"Animate",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId))).setIconOnly(false);
         LoomButton[] surfaceButton={null};
         surfaceButton[0]=iconButton(centerLeft+w+4,y,w,22,wingSurface.label(),LoomButton.Icon.DOWN,()->showChoices(surfaceButton[0],"Wing surface",java.util.Arrays.stream(dev.loomstudios.project.ElytraSurface.values()).map(face->new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(face,face.label(),"Edit both wings on this face")).toList(),wingSurface,face->{wingSurface=face;selection=null;rebuildWidgets();})).setIconOnly(false);
-        iconButton(centerLeft+2*(w+4),y,centerRight-(centerLeft+2*(w+4)),22,"Tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,true,selectedLayerId,null,selectionWing,wingSurface,selectedColor))).setIconOnly(false);
+        iconButton(centerLeft+2*(w+4),y,w,22,"Tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,true,selectedLayerId,null,selectionWing,wingSurface,selectedColor)))
+        .setIconOnly(false);
+    iconButton(
+            centerLeft + 3 * (w + 4),
+            y,
+            centerRight - (centerLeft + 3 * (w + 4)),
+            22,
+            "Assets",
+            LoomButton.Icon.IMAGE,
+            () ->
+                minecraft.setScreen(
+                    new LoomCreativeAssetsScreen(
+                        this,
+                        true,
+                        selectedLayerId,
+                        null,
+                        selectionWing,
+                        wingSurface,
+                        selectedColor,
+                        creativeSelection()))).setIconOnly(false);
     }
 
     private void buildRightPanel(int previewHeight, int tabHeight) {
@@ -2119,4 +2137,13 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     public boolean isInGameUi() {
         return true;
     }
+
+  private java.util.BitSet creativeSelection() {
+    if (selection == null) return null;
+    int w = wingSurface.width(ClientProjectWorkspace.project().elytra().width() / 64);
+    var bits = new java.util.BitSet();
+    for (int y = selection.minY(); y <= selection.maxY(); y++)
+      for (int x = selection.minX(); x <= selection.maxX(); x++) bits.set(y * w + x);
+    return bits;
+}
 }

@@ -111,7 +111,7 @@ public final class AnimationAuthoring {
         boolean replaced = false;
         for (int i = 0; i < next.size(); i++) {
             if (next.get(i).tick() == tick) {
-                next.set(i, new AnimationKeyframe(tick, value, next.get(i).easing()));
+                next.set(i, new AnimationKeyframe(tick, value, next.get(i).easing(), next.get(i).curve()));
                 replaced = true;
                 break;
             }
@@ -138,7 +138,7 @@ public final class AnimationAuthoring {
         if(oldTick==newTick)return track;
         List<AnimationKeyframe> next=new ArrayList<>(track.keyframes());
         next.removeIf(k->k.tick()==oldTick||k.tick()==newTick);
-        next.add(new AnimationKeyframe(newTick,source.value(),source.easing()));next.sort(Comparator.comparingInt(AnimationKeyframe::tick));
+        next.add(source.at(newTick));next.sort(Comparator.comparingInt(AnimationKeyframe::tick));
         return track.withKeyframes(next);
     }
 
@@ -183,18 +183,20 @@ public final class AnimationAuthoring {
                 if (!frames.isEmpty()
                         && frames.getLast().tick() == tick) {
                     frames.set(
-                            frames.size() - 1,
-                            new AnimationKeyframe(tick, frame.value(), frame.easing())
+                            frames.size() - 1, frame.at(tick)
                     );
                 } else {
-                    frames.add(new AnimationKeyframe(
-                            tick,
-                            frame.value(), frame.easing()
+                    frames.add(frame.at(
+                            tick
                     ));
                 }
             }
 
-            tracks.add(track.withKeyframes(frames));
+            tracks.add(track.withKeyframes(frames)
+              .withLanes(
+                  track.lanes().stream()
+                      .map(l -> l.withKeys(clampKeys(l.keys(), duration)))
+                      .toList()));
         }
 
         return new LoomAnimation(
@@ -233,4 +235,10 @@ public final class AnimationAuthoring {
             );
         };
     }
+
+  public static List<AnimationKeyframe> clampKeys(List<AnimationKeyframe> keys, int duration) {
+    var map = new java.util.TreeMap<Integer, AnimationKeyframe>();
+    for (var k : keys) map.put(Math.min(k.tick(), duration), k.at(Math.min(k.tick(), duration)));
+    return List.copyOf(map.values());
+}
 }

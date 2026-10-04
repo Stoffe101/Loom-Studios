@@ -38,6 +38,10 @@ public record LoomAnimation(
             );
         }
 
+    int totalLaneKeys =
+        tracks.stream().flatMap(t -> t.lanes().stream()).mapToInt(l -> l.keys().size()).sum();
+    if (totalLaneKeys > 16384) throw new IllegalArgumentException("Parameter key budget exceeded");
+
         java.util.HashSet<UUID> ids = new java.util.HashSet<>();
         for (AnimationTrack track : tracks) {
             Objects.requireNonNull(track, "track");
@@ -46,6 +50,10 @@ public record LoomAnimation(
                         "Duplicate animation track id"
                 );
             }
+      for (var lane : track.lanes())
+        for (var key : lane.keys())
+          if (key.tick() > durationTicks)
+            throw new IllegalArgumentException("Lane key exceeds duration");
             for (AnimationKeyframe keyframe : track.keyframes()) {
                 if (keyframe.tick() > durationTicks) {
                     throw new IllegalArgumentException(

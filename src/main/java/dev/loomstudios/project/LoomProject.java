@@ -13,7 +13,7 @@ public record LoomProject(
         LoomRuntimeSettings runtime,
         LoomAnimation animation
 ) {
-    public static final int CURRENT_SCHEMA_VERSION = 4;
+    public static final int CURRENT_SCHEMA_VERSION = 5;
     public static final int TEXTURE_WIDTH = 64;
     public static final int TEXTURE_HEIGHT = 32;
 

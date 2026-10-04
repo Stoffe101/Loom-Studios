@@ -5,12 +5,11 @@ import dev.loomstudios.client.ui.*;
 import dev.loomstudios.image.PixelImage;
 import dev.loomstudios.project.*;
 
+import java.util.*;
+import java.util.function.UnaryOperator;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.*;
-import java.util.function.UnaryOperator;
 
 /** Focused color selection, stamp and mask workspace shared by both editors. */
 public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
@@ -149,15 +148,28 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
                                 () -> ClientProjectWorkspace.revision() + revision));
         image.setPixelAction(this::click);
         int x = right + 4, y = top;
-        String[] labels = {"Wand", "Brushes", "Masks"};
-        for (int i = 0; i < 3; i++) {
+        String[] labels = {"Wand", "Brush", "Masks", "Assets"};
+        for (int i = 0; i < 4; i++) {
             int m = i;
             button(
-                    x + i * 64,
+                    x + i * 48,
                     y,
-                    61,
+          45,
                     labels[i],
                     () -> {
+            if (m == 3) {
+              minecraft.setScreen(
+                  new LoomCreativeAssetsScreen(
+                      this,
+                      wing,
+                      id,
+                      capeFace,
+                      selectedWing,
+                      wingFace,
+                      color,
+                      seams ? null : selection));
+              return;
+            }
                         mode = m;
                         maskEdit = false;
                         rebuildWidgets();

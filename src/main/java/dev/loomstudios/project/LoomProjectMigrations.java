@@ -13,19 +13,21 @@ public final class LoomProjectMigrations {
                     case 2 -> migrateV2ToV3(LoomProjectCodec.decodeVersion2(data));
                     case 3 -> LoomProjectCodec.decodeVersion3(data);
                     case 4 -> LoomProjectV4Codec.decode(data);
+          case 5 -> LoomProjectV5Codec.decode(data);
                     default ->
                             throw new IllegalArgumentException(
                                     "Unsupported Loom project schema " + schemaVersion);
                 };
-        return project.schemaVersion() == 4
+        return project.schemaVersion() == 5
                 ? project
                 : new LoomProject(
-                        4,
+            5,
                         project.projectId(),
                         project.name(),
                         project.metadata(),
                         project.cape(),
-                        migrateElytraAtlas(project.elytra()),
+            project.schemaVersion() < 4 ?
+                        migrateElytraAtlas(project.elytra()) : project.elytra(),
                         project.runtime(),
                         project.animation());
     }

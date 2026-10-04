@@ -1,18 +1,17 @@
 package dev.loomstudios.project;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import dev.loomstudios.image.ImagePlacementMode;
 import dev.loomstudios.image.ImageProcessingMode;
 import dev.loomstudios.image.ImageProcessingSettings;
 import dev.loomstudios.image.PixelImage;
 import dev.loomstudios.palette.ColorPalette;
 import dev.loomstudios.palette.ColorPaletteCodec;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class LoomProjectCodecTest {
     private static final UUID PLAYER_ID =
@@ -688,7 +687,7 @@ class LoomProjectCodecTest {
 
         LoomProject migrated = LoomProjectCodec.decode(legacy);
 
-        assertEquals(4, migrated.schemaVersion());
+        assertEquals(5, migrated.schemaVersion());
         assertEquals(LayerKind.PAINT, migrated.cape().layers().getFirst().kind());
         assertFalse(migrated.cape().layers().getFirst().locked());
         assertArrayEquals(
@@ -752,7 +751,7 @@ class LoomProjectCodecTest {
         LoomProject decoded = LoomProjectCodec.decode(typed.encode());
 
         assertEquals(typed, decoded);
-        assertEquals(4, decoded.schemaVersion());
+        assertEquals(5, decoded.schemaVersion());
         assertEquals(
                 LayerKind.IMAGE,
                 decoded.cape().layers().get(1).kind()
@@ -989,7 +988,7 @@ class LoomProjectCodecTest {
     @Test
     void unsupportedSchemaUsesExplicitMigrationGate() {
         byte[] encoded = LoomProjectFactory.forPlayer(PLAYER_ID).encode();
-        encoded[7] = 5;
+        encoded[7] = 6;
 
         IllegalArgumentException error = assertThrows(
                 IllegalArgumentException.class,

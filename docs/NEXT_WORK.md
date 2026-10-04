@@ -1,3 +1,17 @@
+## Animation2.1 core checkpoint — IN PROGRESS (2026-10-04)
+
+164 core tests pass, zero failures/errors/skips, standalone Java21.0.12.1 headless JUnit with384 MiB heap. Includes independent lane evaluation/save/code, Bezier inversion/preservation, cross-lane clipboard, duration/effect migration, frame editing/isolation/timing, onion source immutability, local references/hash exclusion and saved stamp transforms/favorites. Corrected two old schema-number assumptions and PixelPatch array equality found by the first run.
+
+Focused lane/curve/3D preview and reference/frame/stamp/onion screens now connected to both editors. Added32 new actual Minecraft captures across the four profiles (310 total) and real Screen verification. Client build/UI acceptance still pending: local Gradle cannot resolve Fabric Loom through this environment's proxy; official unmodified CI remains authoritative. Do not mark DONE or merge before that evidence.
+
+## Animation 2.1 / creative assets — IN PROGRESS (2026-10-04)
+
+New branch codex/animation21 from main63960f31d6117065eddcf5adb3c55f319173bb75. Isolated worktree leaves two pre-existing modified schema4/test files untouched. Reviewed references01/04/05: cyan/purple selection, inset grouped panels, compact controls and clear labels.
+
+Implementing independent normalized parameter lanes, selected-key clipboard/curve editor/zoom and collapsible layer groups; bounded schema5 metadata preserves compressed schema4 artwork. Existing1–4 load; both peers need protocol3. Image frame editing reuses existing bounded compressed frames. Editor-only references and reusable stamps use bounded local sidecars and never enter exports/equipped hashes.
+
+State: model work underway, no new build/runtime acceptance yet. New controls will use focused tabs rather than extending compact editor rails. Remaining: lane UI, references/onion/frame editor/custom stamps, large-project compatibility tests and four-profile captures, documentation acceptance and publication.
+
 ## 2026-10-04 — Schema-v4 authoring — DONE: Linux runtime and visual verification
 
 Accepted runtime source `2fe83e46df4e4da4be7896ae1ec74bc0f4bf77a7`, final checks completed 02:01 UTC. [Build256](https://github.com/Stoffe101/Loom-Studios/actions/runs/37168936038) passes both jobs: **154 tests, zero failures/errors/skips**, with the official unmodified Fabric Loom toolchain and **384 MiB test heap**, plus **278 actual Minecraft screenshots**. [Comparison32](https://github.com/Stoffe101/Loom-Studios/actions/runs/37168935938) passes all20 jobs and178 screenshots. Minecraft1.21.11, Loader0.18.4, Fabric API0.141.1, Temurin21, Linux/Mesa/Xvfb; no optional mods/shaders.

@@ -1,9 +1,6 @@
 package dev.loomstudios.client.screen;
 
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.ui.LoomWorkspaceLayout;
-import dev.loomstudios.client.ui.LoomInspectorLayout;
-import dev.loomstudios.client.ui.LoomSlider;
 
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.WorkspaceState;
@@ -11,39 +8,39 @@ import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomCapeFaceWidget;
 import dev.loomstudios.client.ui.LoomColorPickerWidget;
+import dev.loomstudios.client.ui.LoomInspectorLayout;
 import dev.loomstudios.client.ui.LoomLayerListWidget;
 import dev.loomstudios.client.ui.LoomPaletteButton;
 import dev.loomstudios.client.ui.LoomPaletteWindow;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
+import dev.loomstudios.client.ui.LoomSlider;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.project.BlendMode;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
-import dev.loomstudios.project.LoomLayer;
-import dev.loomstudios.project.LoomProject;
-import dev.loomstudios.project.LayerKind;
 import dev.loomstudios.project.GradientAuthoring;
 import dev.loomstudios.project.GradientLayerData;
 import dev.loomstudios.project.GradientStop;
+import dev.loomstudios.project.LayerKind;
+import dev.loomstudios.project.LoomLayer;
+import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.NormalizedRect;
 import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.project.ProjectEdits;
 import dev.loomstudios.project.ProjectResizer;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.ScrollableLayout;
-import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.Component;
-
+import dev.loomstudios.ui.LoomWorkspaceLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 public final class CapeEditorScreen extends LoomPointerScreen {
     private final Screen parent;
@@ -225,9 +222,28 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         toolPanelWidth = rightPanelRight - rightPanelLeft; toolPanelHeight = inspectorBottom - inspectorTop;
         buildTopNavigation(layout.headerHeight(), layout.navHeight(), 8);
         buildToolRail(); buildCanvasToolbar(22); buildCanvas(); buildContextBar();
-        int actionWidth=(canvasRight-canvasLeft-4)/2;
+        int actionWidth=(canvasRight-canvasLeft- 8)/ 3;
         iconButton(canvasLeft,canvasBottom+3,actionWidth,22,"Animate cape",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId))).setIconOnly(false);
-        iconButton(canvasLeft+actionWidth+4,canvasBottom+3,actionWidth,22,"Surface tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,false,selectedLayerId,capeRegion,null,null,selectedColor))).setIconOnly(false);
+        iconButton(canvasLeft+actionWidth+4,canvasBottom+3,actionWidth,22,"Surface tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,false,selectedLayerId,capeRegion,null,null,selectedColor)))
+        .setIconOnly(false);
+    iconButton(
+            canvasLeft + 2 * (actionWidth + 4),
+            canvasBottom + 3,
+            canvasRight - (canvasLeft + 2 * (actionWidth + 4)),
+            22,
+            "Assets",
+            LoomButton.Icon.IMAGE,
+            () ->
+                minecraft.setScreen(
+                    new LoomCreativeAssetsScreen(
+                        this,
+                        false,
+                        selectedLayerId,
+                        capeRegion,
+                        null,
+                        null,
+                        selectedColor,
+                        creativeSelection()))).setIconOnly(false);
         buildRightPanel(layout.preview().height(), 22);
         canvasWidget.setShapeFilledSupplier(() -> rectangleFilled);
         canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
@@ -2984,4 +3000,13 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             return values[(ordinal() + 1) % values.length];
         }
     }
+
+  private java.util.BitSet creativeSelection() {
+    if (selection == null) return null;
+    int w = capeRegion.width(ClientProjectWorkspace.project().cape().width() / 64);
+    var bits = new java.util.BitSet();
+    for (int y = selection.minY(); y <= selection.maxY(); y++)
+      for (int x = selection.minX(); x <= selection.maxX(); x++) bits.set(y * w + x);
+    return bits;
+}
 }

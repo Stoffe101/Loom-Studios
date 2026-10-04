@@ -1,3 +1,7 @@
+## Animation2.1 storage decision — 2026-10-04
+
+Schema5 embeds the validated compressed schema4 body and appends bounded independent parameter lanes/Bezier timing metadata. Normalized lane keys map into typed parameter ranges including RGB channels and integer settings; existing primary scalar tracks retain meaning. Protocol3 prevents older peers decoding unsupported projects. Reference overlays and custom stamps are editor-local sidecars, keeping exports/equip/server payloads free of editor-only assets. GIF editing bakes the selected semantic face, not a duplicated overlapping wing atlas.
+
 # Loom Studios — Architectural Decisions
 
 ## 2026-10-03 — Modal choices and clean preview snapshots

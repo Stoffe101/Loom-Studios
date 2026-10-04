@@ -5,7 +5,8 @@ public enum AnimationEasing {
     EASE_IN("Ease In"),
     EASE_OUT("Ease Out"),
     SMOOTH("Smooth"),
-    STEP("Step");
+    STEP("Step"),
+  CUSTOM("Custom curve");
     private final String label;
 
     AnimationEasing(String label) {
@@ -22,7 +23,8 @@ public enum AnimationEasing {
             case EASE_IN -> t * t;
             case EASE_OUT -> 1 - (1 - t) * (1 - t);
             case SMOOTH -> t * t * (3 - 2 * t);
-            case STEP -> t >= 1 ? 1 : 0;
+            case CUSTOM -> KeyframeCurve.DEFAULT.apply(t);
+      case STEP -> t >= 1 ? 1 : 0;
         };
     }
 }
