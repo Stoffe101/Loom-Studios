@@ -1739,3 +1739,9 @@ Added LoomAuthoringVerification (opt-in only): actual Screen routing for stamp d
 ### Compact Smart Import drag regression — IN PROGRESS
 
 Full Build252 stopped after66 captures on635×320 logical GUI3: preview widget was32px including24px header, so its middle pointer hit the title and no transform changed. This was a product layout regression, not a failing comparison job. Compact Processing now uses one Adjust/Background/Swatches action instead of three duplicate brightness/contrast/saturation steppers plus another modal button. Dedicated adjustment screen retains all functions; compact panel returns to180px while full242px layout remains. Pending revised-source local compilation and full runtime.
+
+## 2026-10-04 — Bounded immutable layer encoding cache — IN PROGRESS
+
+Why: compressed48-layer8× artwork should not recompress every unchanged layer on each brush edit/preview hash. New32 MiB/64-entry LRU keys immutable layer identity plus canvas dimensions and includes retained artwork/packed bytes in its weight. Raw expansion/envelope limits remain checked on every encode. Regression asserts warm reuse, one-layer recompression, unchanged deterministic bytes, edited round trip, resize isolation and cache bounds. Set Gradle test worker to384 MiB. Local compile caught a duplicate variable name; corrected. Executor temporary tool cache reset before the follow-up local result could be recovered; official152-test result and exact-source runtime remain pending.
+
+829850eae3b0105ad0e69c30c4a005475c58fb3c Comparison30 passes20/20 jobs with real authoring input/GIF and large integrated networking; full278 still running. README, format, protocol, animation, Smart Import and authoring guide now describe current schema4 instead of stale v3 limits. No new external dependencies. Next: official validation, final capture review, acceptance docs and merge.

@@ -1,6 +1,13 @@
 # Loom Studios — Animation
 
-**Status:** Schema-v3 model/runtime/timeline MVP implemented; local visual-runtime verification pending.
+## Current schema4 authoring
+
+Cape and Elytra have an explicit Animate action that opens the shared studio; Back returns to painting. Presets remain available. Parameters & easing exposes typed Pulse opacity range; Scroll XY/distance; Moving Gradient angle/width/colors/offset; Sparkle density/seed/size/brightness; Glow intensity/falloff; Hue cycles. Keyframes animate each effect’s primary scalar. Outgoing transitions use Linear, Ease In, Ease Out, Smooth or Step. Old tracks retain legacy behavior during migration.
+
+GIF Image layers play composed frames with bounded per-frame ticks on both channels. Their independent frame clock preserves the full imported loop while authored effects obey global timeline loop/speed. Scrubbed previews use their requested tick deterministically. The timeline reserves a ruler band; purple spans show track duration, diamonds are keys and the cyan line is the playhead. See AUTHORING_V4.md for usage and limits. Older v3 foundations follow.
+
+
+**Status:** Schema4 implementation; exact release validation is recorded in CURRENT_STATE.md.
 
 ## Purpose
 

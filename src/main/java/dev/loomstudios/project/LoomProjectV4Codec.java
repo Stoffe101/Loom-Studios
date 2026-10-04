@@ -9,6 +9,42 @@ final class LoomProjectV4Codec {
     static final int MAX_RAW_BYTES = 64 * 1024 * 1024;
     private static final int MAX_BLOCK_BYTES = 20 * 1024 * 1024;
 
+    private static final long ENCODE_CACHE_BYTES = 32L * 1024 * 1024;
+
+    private record LayerKey(LoomLayer layer, int width, int height) {
+        @Override
+        public int hashCode() {
+            return 31 * (31 * System.identityHashCode(layer) + width) + height;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other instanceof LayerKey k
+                    && layer == k.layer
+                    && width == k.width
+                    && height == k.height;
+        }
+    }
+
+    private record PackedLayer(
+            boolean deflated, int rawLength, byte[] stored, long retainedBytes) {}
+
+    private static final BoundedCache<LayerKey, PackedLayer> PACKED_LAYERS =
+            new BoundedCache<>(ENCODE_CACHE_BYTES, 64, PackedLayer::retainedBytes);
+    private static long compressionCount;
+
+    static long compressionCount() {
+        synchronized (PACKED_LAYERS) {
+            return compressionCount;
+        }
+    }
+
+    static long encodedCacheBytes() {
+        synchronized (PACKED_LAYERS) {
+            return PACKED_LAYERS.retainedBytes();
+        }
+    }
+
     private LoomProjectV4Codec() {}
 
     static byte[] encode(LoomProject p) {
@@ -76,57 +112,78 @@ final class LoomProjectV4Codec {
         out.writeInt(canvas.height());
         out.writeInt(canvas.layers().size());
         for (var authored : canvas.layers()) {
-            var layer =
-                    authored.kind() == LayerKind.PAINT && authored.legacyWingUv()
-                            ? authored.withPixels(authored.pixels())
-                            : authored;
-            var raw = new ByteArrayOutputStream();
-            var block = new DataOutputStream(new LimitedOutput(raw, MAX_BLOCK_BYTES));
-            LoomProjectCodec.writeCanvasV2(
-                    block, new LoomCanvas(canvas.width(), canvas.height(), List.of(layer)));
-            block.writeBoolean(layer.legacyWingUv());
-            block.writeBoolean(layer.alphaLocked());
-            block.writeBoolean(layer.clipToBelow());
-            block.writeInt(layer.maskLength());
-            block.write(layer.mask());
-            if (layer.kind() == LayerKind.IMAGE) {
-                var data = layer.imageData();
-                var settings = data.processing();
-                block.writeInt(settings.tintColor());
-                block.writeFloat(settings.tintStrength());
-                var bg = settings.background();
-                block.writeBoolean(bg.enabled());
-                block.writeInt(bg.color());
-                block.writeInt(bg.tolerance());
-                block.writeBoolean(bg.contiguous());
-                block.writeInt(bg.seedX());
-                block.writeInt(bg.seedY());
-                block.writeInt(data.frames().size());
-                for (int i = 0; i < data.frames().size(); i++) {
-                    block.writeInt(data.frameTicks().get(i));
-                    var frame = data.frames().get(i);
-                    block.writeInt(frame.width());
-                    block.writeInt(frame.height());
-                    for (int color : frame.pixels()) block.writeInt(color);
-                }
-            }
-            block.flush();
-            budget[0] += raw.size();
+            var packed = packedLayer(canvas, authored);
+            budget[0] += packed.rawLength();
             if (budget[0] > MAX_RAW_BYTES)
                 throw new IllegalArgumentException("Project exceeds 64 MiB decoded artwork budget");
-            byte[] source = raw.toByteArray();
-            var compressed = new ByteArrayOutputStream();
-            try (var zip = new DeflaterOutputStream(compressed)) {
-                zip.write(source);
-            }
-            byte[] packed = compressed.toByteArray();
-            boolean deflated = packed.length < source.length;
-            byte[] stored = deflated ? packed : source;
-            out.writeBoolean(deflated);
-            out.writeInt(source.length);
-            out.writeInt(stored.length);
-            out.write(stored);
+            out.writeBoolean(packed.deflated());
+            out.writeInt(packed.rawLength());
+            out.writeInt(packed.stored().length);
+            out.write(packed.stored());
         }
+    }
+
+    private static PackedLayer packedLayer(LoomCanvas canvas, LoomLayer authored)
+            throws IOException {
+        var key = new LayerKey(authored, canvas.width(), canvas.height());
+        synchronized (PACKED_LAYERS) {
+            var cached = PACKED_LAYERS.get(key);
+            if (cached != null) return cached;
+        }
+        var layer =
+                authored.kind() == LayerKind.PAINT && authored.legacyWingUv()
+                        ? authored.withPixels(authored.pixels())
+                        : authored;
+        var raw = new ByteArrayOutputStream();
+        var block = new DataOutputStream(new LimitedOutput(raw, MAX_BLOCK_BYTES));
+        LoomProjectCodec.writeCanvasV2(
+                block, new LoomCanvas(canvas.width(), canvas.height(), List.of(layer)));
+        block.writeBoolean(layer.legacyWingUv());
+        block.writeBoolean(layer.alphaLocked());
+        block.writeBoolean(layer.clipToBelow());
+        block.writeInt(layer.maskLength());
+        block.write(layer.mask());
+        if (layer.kind() == LayerKind.IMAGE) {
+            var data = layer.imageData();
+            var settings = data.processing();
+            block.writeInt(settings.tintColor());
+            block.writeFloat(settings.tintStrength());
+            var bg = settings.background();
+            block.writeBoolean(bg.enabled());
+            block.writeInt(bg.color());
+            block.writeInt(bg.tolerance());
+            block.writeBoolean(bg.contiguous());
+            block.writeInt(bg.seedX());
+            block.writeInt(bg.seedY());
+            block.writeInt(data.frames().size());
+            for (int i = 0; i < data.frames().size(); i++) {
+                block.writeInt(data.frameTicks().get(i));
+                var frame = data.frames().get(i);
+                block.writeInt(frame.width());
+                block.writeInt(frame.height());
+                for (int color : frame.pixels()) block.writeInt(color);
+            }
+        }
+        block.flush();
+        byte[] source = raw.toByteArray();
+        var compressed = new ByteArrayOutputStream();
+        try (var zip = new DeflaterOutputStream(compressed)) {
+            zip.write(source);
+        }
+        byte[] compressedBytes = compressed.toByteArray();
+        boolean deflated = compressedBytes.length < source.length;
+        byte[] stored = deflated ? compressedBytes : source;
+        var packed =
+                new PackedLayer(
+                        deflated,
+                        source.length,
+                        stored,
+                        ProjectMemory.layerBytes(authored) + stored.length);
+        synchronized (PACKED_LAYERS) {
+            compressionCount++;
+            if (packed.retainedBytes() <= ENCODE_CACHE_BYTES) PACKED_LAYERS.put(key, packed);
+        }
+        return packed;
     }
 
     private static LoomCanvas readCanvas(DataInputStream in, long[] budget) throws IOException {

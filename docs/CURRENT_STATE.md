@@ -1,3 +1,9 @@
+## Large-project encoding performance checkpoint — IN PROGRESS
+
+Source829850eae3b0105ad0e69c30c4a005475c58fb3c: Build254 build passes151 tests; Comparison30 passes all20 jobs, including focused authoring Screen/GIF/input and3 MiB live networking. Full278 capture still running.
+
+Added32 MiB/64-entry layer block LRU with immutable identity + canvas-dimension keys; budget counts retained artwork and packed bytes. Warm48-layer edits recompress only the changed layer, while raw expansion and envelope budgets still apply. A new regression checks reuse, changed artwork, resize and cache bounds. Set Gradle test heap to384 MiB to make the large-project memory check repeatable in official CI. Local compile first caught a duplicate variable name, corrected before publication; the temporary Java/tool cache was reset before the follow-up result could be recovered. New152-test official result remains pending. Updated README/current format/network/animation/import usage; next: exact-source official test/runtime acceptance, final evidence and merge.
+
 ## Compact import preview correction — IN PROGRESS
 
 Full Build252 screenshot job at98d39898b406c2880495c8afce9ce46062a48bda failed at the635×320 logical window import drag assertion. New Processing rows had reduced the preview to32px including its24px header; its middle hit landed on the title. Compact Processing now routes brightness/contrast/saturation/background/tint/swatches into the dedicated modal instead of duplicating those rows. Restore the180px compact panel while keeping242px for full controls. Placement preview has usable drag space again. All20 Comparison28 jobs still pass; focused authoring assertions and exact revised-source full capture remain pending.

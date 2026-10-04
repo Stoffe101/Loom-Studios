@@ -1,5 +1,12 @@
 # Loom Studios — Project Format
 
+## Current schema-v4 implementation
+
+Schema4 preserves typed Paint/Image/Gradient layers, flags, editable alpha masks, bounded GIF frames, non-destructive background/tint settings, typed effect parameters and per-key outgoing easing. Versions1–3 migrate on load. Each layer is an independently bounded DEFLATE block when smaller than raw. Exact raw lengths, cumulative expansion, masks, frame counts and dimensions are validated before accepting input.
+
+Limits:8 MiB serialized;64 MiB expanded blocks;60 MiB combined artwork;20 MiB per raw block;64 layers per channel;512×256 maximum atlas;512px embedded images;64 GIF frames with4M combined embedded pixels. Independent1/2/4/6/8× resolutions use the same64×32 base atlas for Cape and Elytra. A32 MiB/64-entry immutable-layer encoding cache includes retained artwork in its byte weight and preserves identical output. See AUTHORING_V4.md for the current contract; older sections below describe the evolution.
+
+
 ## Goals
 
 The .loom format must preserve editable intent rather than only the flattened final texture.

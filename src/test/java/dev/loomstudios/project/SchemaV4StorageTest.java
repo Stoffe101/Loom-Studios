@@ -42,6 +42,38 @@ class SchemaV4StorageTest {
     }
 
     @Test
+    void largeEditReusesUnchangedBlocksWithoutStaleArtworkOrResize() {
+        var p = large(32, 16);
+        byte[] baseline = p.encode();
+        long count = LoomProjectV4Codec.compressionCount();
+        assertArrayEquals(baseline, p.encode());
+        assertEquals(count, LoomProjectV4Codec.compressionCount());
+        var id = p.cape().layers().getLast().id();
+        var edited =
+                ProjectEdits.paintCapeRegionBrush(
+                        p, id, CapeUvRegion.OUTSIDE, 42, 88, 1, 0xFF22CC99);
+        byte[] changed = edited.encode();
+        assertEquals(count + 1, LoomProjectV4Codec.compressionCount());
+        assertFalse(Arrays.equals(baseline, changed));
+        assertEquals(edited, LoomProjectCodec.decode(changed));
+        assertTrue(LoomProjectV4Codec.encodedCacheBytes() <= 32L * 1024 * 1024);
+        var source = new PixelImage(1, 1, new int[] {0xFFAA3399});
+        var small =
+                ProjectEdits.addCapeImageLayer(
+                        LoomProjectFactory.blank("Resize cache", 1),
+                        "Image",
+                        ImageLayerData.placed(
+                                source,
+                                64,
+                                32,
+                                new NormalizedRect(0, 0, 1, 1),
+                                ImagePlacementMode.STRETCH));
+        small.encode();
+        var resized = ProjectResizer.resizeCape(small, CanvasResolution.MAXIMUM);
+        assertEquals(resized, LoomProjectCodec.decode(resized.encode()));
+    }
+
+    @Test
     void allResolutionStepsKeepCapeWingAndMaskPixels() {
         var p = LoomProjectFactory.blank("Steps", 1);
         var layer = p.cape().layers().getFirst();
