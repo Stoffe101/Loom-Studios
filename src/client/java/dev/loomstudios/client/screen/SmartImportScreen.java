@@ -241,7 +241,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
         controlPanelX = margin + leftWidth + gap;
         controlPanelY = top;
         controlPanelWidth = rightX - gap - controlPanelX;
-        controlPanelHeight = compactMode ? 202 : 242;
+        controlPanelHeight = compactMode ? 180 : 242;
         int workWidth = controlPanelWidth;
         int halfWidth = (workWidth - gap) / 2;
         originalPreview = addRenderableWidget(new LoomImagePreviewWidget(
@@ -473,6 +473,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
         );
         y += h + gap;
 
+        if (!compactMode) {
         brightnessButton = placeStepper(
                 processingControls,
                 left,
@@ -517,6 +518,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 () -> changeSaturation(0.1F)
         );
         y += h + gap;
+
+        } else {
+            brightnessButton = contrastButton = saturationButton = null;
+            placeAction(processingControls,left,y,width,h,"Adjust / Background / Swatches…",LoomButton.Icon.IMAGE,this::openImageAdjustments);
+            y += h + gap;
+        }
 
         colorLimitButton = placeStepper(
                 processingControls,
@@ -565,7 +572,11 @@ public final class SmartImportScreen extends LoomPointerScreen {
                 () -> changePosterize(1)
         );
         y += h + gap;
-        placeAction(processingControls,left,y,width,h,"Background, tint & swatches…",LoomButton.Icon.IMAGE,()->{if(loaded!=null)minecraft.setScreen(new LoomImageEffectsScreen(this,loaded.embedded(),processing,value->{processing=value;touch();}));});
+        if(!compactMode) placeAction(processingControls,left,y,width,h,"Background, tint & swatches…",LoomButton.Icon.IMAGE,this::openImageAdjustments);
+    }
+
+    private void openImageAdjustments() {
+        if(loaded!=null)minecraft.setScreen(new LoomImageEffectsScreen(this,loaded.embedded(),processing,value->{processing=value;touch();}));
     }
 
     private LoomButton placeAction(
@@ -1299,13 +1310,13 @@ public final class SmartImportScreen extends LoomPointerScreen {
         posterizeButton.setMessage(Component.literal(
                 "Levels " + processing.posterizeLevels()
         ));
-        brightnessButton.setMessage(Component.literal(
+        if(brightnessButton!=null)brightnessButton.setMessage(Component.literal(
                 "Brightness " + percent(processing.brightness())
         ));
-        contrastButton.setMessage(Component.literal(
+        if(contrastButton!=null)contrastButton.setMessage(Component.literal(
                 "Contrast " + percent(processing.contrast())
         ));
-        saturationButton.setMessage(Component.literal(
+        if(saturationButton!=null)saturationButton.setMessage(Component.literal(
                 "Saturation " + percent(processing.saturation())
         ));
         scaleButton.setMessage(Component.literal(

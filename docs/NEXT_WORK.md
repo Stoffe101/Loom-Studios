@@ -1,3 +1,7 @@
+## Compact import preview correction — IN PROGRESS
+
+Full Build252 screenshot job at98d39898b406c2880495c8afce9ce46062a48bda failed at the635×320 logical window import drag assertion. New Processing rows had reduced the preview to32px including its24px header; its middle hit landed on the title. Compact Processing now routes brightness/contrast/saturation/background/tint/swatches into the dedicated modal instead of duplicating those rows. Restore the180px compact panel while keeping242px for full controls. Placement preview has usable drag space again. All20 Comparison28 jobs still pass; focused authoring assertions and exact revised-source full capture remain pending.
+
 ## 2026-10-04 — Runtime integration checkpoint
 
 **IN PROGRESS**, source98d39898b406c2880495c8afce9ce46062a48bda. Official Build252 build passes151 tests. Comparison28 passes all20 jobs and178 actual captures. All40 new authoring originals decoded and four profile contact sheets reviewed against approved references01/04/05. Outer wing artwork now renders correctly; compact tabs, sizes, mask workspace, timeline ruler and8× canvases are aligned. Real3,149,342-byte C2S/S2C codec and integrated Fabric fragmentation/async validation/equip/client decode checks pass. Full278 capture suite is still running.
