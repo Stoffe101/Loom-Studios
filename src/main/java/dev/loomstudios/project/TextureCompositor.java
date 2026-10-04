@@ -92,7 +92,7 @@ public final class TextureCompositor {
             for (AnimationTrack track : tracks) {
                 float value = AnimationEvaluator.valueAt(track, animation, timelineTick);
 
-                switch (track.parameters()) {
+                switch (AnimationEvaluator.parametersAt(track, animation, timelineTick)) {
                     case EffectParameters.Pulse v ->
                             alphaMultiplier *=
                                     v.minOpacity()

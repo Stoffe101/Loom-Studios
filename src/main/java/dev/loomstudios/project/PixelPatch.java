@@ -2,7 +2,20 @@ package dev.loomstudios.project;
 
 /** Small immutable semantic-face image used by drawing and the internal pixel clipboard. */
 public record PixelPatch(int width,int height,int[] data) {
-    public PixelPatch { if(width<1||height<1||width>256||height>256||data.length!=width*height)throw new IllegalArgumentException("Invalid pixel patch");data=data.clone(); }
+    public PixelPatch { if(width<1||height<1||width>256||height>256||data.length!=width*height)throw new IllegalArgumentException("Invalid pixel patch");data=data.clone();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof PixelPatch p
+        && width == p.width
+        && height == p.height
+        && java.util.Arrays.equals(data, p.data);
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 * (31 * width + height) + java.util.Arrays.hashCode(data); }
     @Override public int[] data(){return data.clone();}
     public PixelPatch crop(PixelSelection s){validate(s);int[] out=new int[s.width()*s.height()];for(int y=0;y<s.height();y++)System.arraycopy(data,(s.minY()+y)*width+s.minX(),out,y*s.width(),s.width());return new PixelPatch(s.width(),s.height(),out);}
     public PixelPatch paste(PixelPatch patch,int x,int y){if(x<0||y<0||x+patch.width>width||y+patch.height>height)throw new IllegalArgumentException("Selection does not fit this face");int[] out=data.clone();for(int row=0;row<patch.height;row++)System.arraycopy(patch.data,row*patch.width,out,(y+row)*width+x,patch.width);return new PixelPatch(width,height,out);}

@@ -3,11 +3,11 @@ package dev.loomstudios.client.screen;
 import dev.loomstudios.client.project.*;
 import dev.loomstudios.client.ui.*;
 import dev.loomstudios.project.*;
+import java.util.*;
+import java.util.function.UnaryOperator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import java.util.*;
-import java.util.function.UnaryOperator;
 
 /** Shared Cape/Elytra animation workspace with explicit effects and drag handles. */
 public final class LoomAnimationScreen extends LoomPointerScreen implements LoomAnimationTimelineWidget.Controller {
@@ -19,7 +19,9 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private boolean playing,refreshPending;
     private AnimationEffectType chosen=AnimationEffectType.PULSE;
     private LoomAnimationTimelineWidget timeline;
-    private String message="Purple bars: track span · Diamonds: keys · Cyan line: playhead · 1. Choose a layer · 2. Pick a preset · 3. Apply & preview · 4. Save";
+    private String message=
+      "Purple bars: track span · Diamonds: keys · Cyan line: playhead · 1. Choose a layer · 2. Pick"
+          + " a preset · 3. Apply & preview · 4. Save";
     private AnimationPreset preset=AnimationPreset.GLOW;
     private float presetRate=.5F;
     private LoomPlayerPreviewWidget preview;
@@ -54,7 +56,8 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             button(right+8,y+120,60,"+ Key",()->{if(track()!=null)addKeyframe(trackId);});
             button(right+72,y+120,60,"- Key",()->{if(track()!=null)removeKeyframe(trackId);});
             button(right+136,y+120,60,"Speed",()->{if(track()!=null)cycleTrackSpeed(trackId);});
-            button(right+8,y+144,188,"Parameters & easing…",()->{if(track()!=null)minecraft.setScreen(new LoomEffectParametersScreen(this,trackId,tick));});
+            button(right+8,y+144,188,
+          "Lanes & curve editor…",()->{if(track()!=null)minecraft.setScreen(new LoomParameterAnimationScreen(this, channel,trackId,tick));});
         }
         guideTop=workTop;guideWidth=right-24;
         timeline=addRenderableWidget(new LoomAnimationTimelineWidget(8,workTop+66,right-8,bottom-workTop-66,ClientProjectWorkspace::project,channel,()->trackId,()->tick,()->playing,this,false));
@@ -79,7 +82,8 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
 
     private LoomButton button(int x,int y,int w,String label,Runnable action){
         var button=addRenderableWidget(new LoomButton(x,y,w,22,Component.literal(label),action));
-        String hint=label.startsWith("Preset:")?"Open the animation preset dropdown":label.startsWith("Rate ")?"Choose 0.25, 0.5, 1 or 2 cycles per second; then Apply":label.equals("Apply & play")?"Create or replace the selected track, then preview it. Ctrl+Z undoes the whole application":label.equals("Advanced")?"Edit the effect, keyframe values and track speed":label;
+        String hint=label.startsWith("Preset:")?"Open the animation preset dropdown":label.startsWith("Rate ")?"Choose 0.25, 0.5, 1 or 2 cycles per second; then Apply":label.equals("Apply & play")? "Create or replace the selected track, then preview it. Ctrl+Z undoes the"
+                          + " whole application":label.equals("Advanced")?"Edit the effect, keyframe values and track speed":label;
         button.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(hint)));return button;
     }
     private void changeTrack(UnaryOperator<AnimationTrack> edit){AnimationTrack current=track();if(current!=null)ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(p.animation(),edit.apply(current))));}

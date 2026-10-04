@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import dev.loomstudios.image.*;
 
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 
 class SchemaV4StorageTest {
     @TempDir Path directory;
@@ -84,7 +83,8 @@ class SchemaV4StorageTest {
         var versions=new ProjectVersions(store);var saved=versions.list(project.projectId());
         assertEquals(1,saved.size());assertArrayEquals(legacy,Files.readAllBytes(saved.getFirst()));
         assertEquals(migrated,versions.read(project.projectId(),saved.getFirst()));
-        assertEquals(4,LoomProjectCodec.peekSchemaVersion(Files.readAllBytes(store.pathFor(project.projectId()))));
+        assertEquals(
+        5,LoomProjectCodec.peekSchemaVersion(Files.readAllBytes(store.pathFor(project.projectId()))));
     }
 
     @Test
@@ -124,7 +124,7 @@ class SchemaV4StorageTest {
 
     @Test
     void forgedCompressedExpansionIsRejectedBeforeAllocation() throws Exception {
-        byte[] bytes = LoomProjectFactory.blank("Bomb", 1).encode();
+        byte[] bytes = LoomProjectV4Codec.encode( LoomProjectFactory.blank("Bomb", 1));
         var in = new DataInputStream(new ByteArrayInputStream(bytes));
         LoomProjectCodec.requireHeader(in, 4);
         LoomProjectCodec.readCommonProjectData(in);
@@ -261,7 +261,7 @@ class SchemaV4StorageTest {
                                                 .toList()));
         byte[] old = LoomProjectCodec.encodeVersion3SnapshotForTest(p);
         var migrated = LoomProjectCodec.decode(old);
-        assertEquals(4, migrated.schemaVersion());
+        assertEquals(5, migrated.schemaVersion());
         var typed = migrated.elytra().layers().getLast();
         assertEquals(data, typed.imageData());
         assertTrue(typed.legacyWingUv());

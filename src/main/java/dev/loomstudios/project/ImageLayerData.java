@@ -15,7 +15,23 @@ public record ImageLayerData(
         NormalizedRect clip,
         ImageProcessingSettings processing,
         java.util.List<PixelImage> frames,
-        java.util.List<Integer> frameTicks) {
+        java.util.List<Integer> frameTicks,
+    boolean editableAnimation) {
+  public ImageLayerData(
+      PixelImage source,
+      NormalizedRect crop,
+      LayerTransform transform,
+      NormalizedRect clip,
+      ImageProcessingSettings processing,
+      java.util.List<PixelImage> frames,
+      java.util.List<Integer> ticks) {
+    this(source, crop, transform, clip, processing, frames, ticks, false);
+  }
+
+  public ImageLayerData withEditableAnimation(boolean value) {
+    return new ImageLayerData(
+        source, sourceCrop, transform, clip, processing, frames, frameTicks, value);
+  }
     public static final int MAX_FRAMES = 64, MAX_FRAME_PIXELS = 4 * 1024 * 1024;
 
     public ImageLayerData(
@@ -29,7 +45,7 @@ public record ImageLayerData(
 
     public ImageLayerData withFrames(
             java.util.List<PixelImage> frames, java.util.List<Integer> ticks) {
-        return new ImageLayerData(source, sourceCrop, transform, clip, processing, frames, ticks);
+        return new ImageLayerData(source, sourceCrop, transform, clip, processing, frames, ticks, editableAnimation);
     }
 
     public PixelImage frameAt(int tick) {
@@ -118,14 +134,14 @@ public record ImageLayerData(
     }
 
     public ImageLayerData withTransform(LayerTransform next) {
-        return new ImageLayerData(source, sourceCrop, next, clip, processing, frames, frameTicks);
+        return new ImageLayerData(source, sourceCrop, next, clip, processing, frames, frameTicks, editableAnimation);
     }
 
     public ImageLayerData withSourceCrop(NormalizedRect next) {
-        return new ImageLayerData(source, next, transform, clip, processing, frames, frameTicks);
+        return new ImageLayerData(source, next, transform, clip, processing, frames, frameTicks, editableAnimation);
     }
 
     public ImageLayerData withProcessing(ImageProcessingSettings next) {
-        return new ImageLayerData(source, sourceCrop, transform, clip, next, frames, frameTicks);
+        return new ImageLayerData(source, sourceCrop, transform, clip, next, frames, frameTicks, editableAnimation);
     }
 }

@@ -9,6 +9,10 @@ import dev.loomstudios.network.payload.ProjectNeededS2CPayload;
 import dev.loomstudios.network.payload.ProjectRequestC2SPayload;
 import dev.loomstudios.project.LoomProjectCodec;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -16,14 +20,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 /** SPIKE-05 server-authoritative cosmetic synchronization proof. */
 public final class LoomNetworking {
-    public static final int PROTOCOL_VERSION = 2;
+    public static final int PROTOCOL_VERSION = 3;
 
     private static final dev.loomstudios.project.BoundedCache<String, byte[]> PROJECTS =
             new dev.loomstudios.project.BoundedCache<>(

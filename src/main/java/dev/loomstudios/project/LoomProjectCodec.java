@@ -18,9 +18,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Deterministic bounded binary codec for versioned .loom projects.
- */
+/** Deterministic bounded binary codec for versioned .loom projects. */
 public final class LoomProjectCodec {
     private static final int MAGIC = 0x4C4F4F4D; // LOOM
 
@@ -47,7 +45,20 @@ public final class LoomProjectCodec {
             case 1 -> encodeVersion1(project);
             case 2 -> encodeVersion2(project);
             case 3 -> encodeVersion3(project);
-            case 4 -> LoomProjectV4Codec.encode(project);
+            case 4 -> {
+        if (java.util.stream.Stream.concat(
+                    project.cape().layers().stream(), project.elytra().layers().stream())
+                .anyMatch(l -> l.kind() == LayerKind.IMAGE && l.imageData().editableAnimation())
+            || project.animation().tracks().stream()
+                .anyMatch(
+                    t ->
+                        !t.lanes().isEmpty()
+                            || t.keyframes().stream()
+                                .anyMatch(k -> k.easing() == AnimationEasing.CUSTOM)))
+          yield LoomProjectV5Codec.encode(project);
+        yield LoomProjectV4Codec.encode(project);
+      }
+      case 5 -> LoomProjectV5Codec.encode(project);
             default -> throw new IllegalArgumentException(
                     "Unsupported Loom project schema "
                             + project.schemaVersion()

@@ -2,12 +2,16 @@ package dev.loomstudios.client.ui;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.loomstudios.LoomStudios;
-import dev.loomstudios.client.render.LoomTextureCompiler;
 import dev.loomstudios.project.CanvasResolution;
 import dev.loomstudios.project.CapeUvRegion;
 import dev.loomstudios.project.LoomProject;
 import dev.loomstudios.project.PixelSelection;
 import dev.loomstudios.ui.CanvasViewportTransform;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -19,15 +23,9 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
-
 /**
- * Focused cape-face editor with revision-cached GPU preview, crisp zoom,
- * middle-mouse panning, temporary brush-size preview and shape previews.
+ * Focused cape-face editor with revision-cached GPU preview, crisp zoom, middle-mouse panning,
+ * temporary brush-size preview and shape previews.
  */
 public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMiddlePanTarget {
     @FunctionalInterface
@@ -535,6 +533,7 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
             int regionHeight,
             long revision
     ) {
+    revision = 31 * revision + dev.loomstudios.client.project.EditorOverlayState.revision();
         boolean dimensionsChanged = previewImage == null
                 || previewImage.getWidth() != regionWidth
                 || previewImage.getHeight() != regionHeight;
@@ -570,13 +569,18 @@ public final class LoomCapeFaceWidget extends AbstractWidget implements LoomMidd
             return;
         }
 
-        int[] pixels = LoomTextureCompiler.compileCapeRegion(
-                project.cape(),
-                region,
-                0,
-                false,
-                false
-        );
+        int[]
+        atlas =
+            dev.loomstudios.client.project.EditorOverlayState.composite(
+                project, dev.loomstudios.project.AnimationChannel.CAPE), pixels = new int[regionWidth * regionHeight];
+    int scale =
+                project.cape().width() / 64;
+    for (int y = 0; y < regionHeight; y++)
+      for (int x = 0; x < regionWidth; x++)
+        pixels[y * regionWidth + x] =
+            atlas[region.atlasY(y, scale) * project.cape().width() +
+                region.atlasX(x, scale
+        )];
 
         for (int y = 0; y < regionHeight; y++) {
             for (int x = 0; x < regionWidth; x++) {
