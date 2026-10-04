@@ -24,9 +24,12 @@ import java.util.UUID;
  * SPIKE-05 server-authoritative cosmetic synchronization proof.
  */
 public final class LoomNetworking {
-    public static final int PROTOCOL_VERSION = 1;
+    public static final int PROTOCOL_VERSION = 2;
 
-    private static final Map<String, byte[]> PROJECTS = new HashMap<>();
+    private static final dev.loomstudios.project.BoundedCache<String, byte[]> PROJECTS =
+            new dev.loomstudios.project.BoundedCache<>(64L * 1024 * 1024, 64, bytes -> bytes.length);
+    private static final Map<UUID, Long> LAST_UPLOAD = new HashMap<>();
+    private static final java.util.Set<UUID> COMPATIBLE = new java.util.HashSet<>();
     private static final Map<UUID, String> EQUIPPED = new HashMap<>();
 
     private LoomNetworking() {
@@ -63,6 +66,7 @@ public final class LoomNetworking {
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             UUID playerId = handler.player.getUUID();
+            LAST_UPLOAD.remove(playerId);COMPATIBLE.remove(playerId);
             if (EQUIPPED.remove(playerId) != null) {
                 broadcast(server, new EquippedStateS2CPayload(playerId, ""));
             }
@@ -70,7 +74,7 @@ public final class LoomNetworking {
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             PROJECTS.clear();
-            EQUIPPED.clear();
+            EQUIPPED.clear();LAST_UPLOAD.clear();COMPATIBLE.clear();
         });
 
         LoomStudios.LOGGER.info("SPIKE-05 networking payloads registered.");
@@ -86,6 +90,7 @@ public final class LoomNetworking {
             return;
         }
 
+        COMPATIBLE.add(player.getUUID());
         syncExistingStatesTo(player);
 
         if (PROJECTS.containsKey(payload.projectHash())) {
@@ -102,6 +107,9 @@ public final class LoomNetworking {
             ServerPlayer player,
             ProjectBlobC2SPayload payload
     ) {
+        long now = System.nanoTime();
+        if (!COMPATIBLE.contains(player.getUUID()) || now - LAST_UPLOAD.getOrDefault(player.getUUID(), 0L) < 1_000_000_000L) return;
+        LAST_UPLOAD.put(player.getUUID(), now);
         if (!validateProjectBlob(payload.projectHash(), payload.data())) {
             LoomStudios.LOGGER.warn(
                     "Rejected invalid Loom project blob from {}",
@@ -125,7 +133,7 @@ public final class LoomNetworking {
             ServerPlayer player,
             ProjectRequestC2SPayload payload
     ) {
-        if (!LoomProjectCodec.isValidHash(payload.projectHash())) {
+        if (!COMPATIBLE.contains(player.getUUID()) || !LoomProjectCodec.isValidHash(payload.projectHash())) {
             return;
         }
 

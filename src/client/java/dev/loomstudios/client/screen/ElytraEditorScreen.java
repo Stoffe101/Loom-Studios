@@ -284,6 +284,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private boolean shapeFilled;
     private PixelSelection selection;
     private ElytraWing selectionWing=ElytraWing.LEFT;
+    private dev.loomstudios.project.ElytraSurface wingSurface=dev.loomstudios.project.ElytraSurface.OUTSIDE;
     private java.util.List<LoomButton> selectionButtons=new java.util.ArrayList<>();
     private LoomButton filledButton;
     private void buildToolRail() {
@@ -472,7 +473,13 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                 },
                 false
         );
-        addRenderableWidget(timelineWidget);
+        addRenderableWidget(timelineWidget);timelineWidget.visible=false;timelineWidget.active=false;
+        canvasWidget.setSurface(()->wingSurface);
+        int w=Math.max(64,(centerRight-centerLeft-8)/3),y=timelineTop;
+        iconButton(centerLeft,y,w,22,"Animate",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId))).setIconOnly(false);
+        LoomButton[] surfaceButton={null};
+        surfaceButton[0]=iconButton(centerLeft+w+4,y,w,22,wingSurface.label(),LoomButton.Icon.DOWN,()->showChoices(surfaceButton[0],"Wing surface",java.util.Arrays.stream(dev.loomstudios.project.ElytraSurface.values()).map(face->new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(face,face.label(),"Edit both wings on this face")).toList(),wingSurface,face->{wingSurface=face;selection=null;rebuildWidgets();})).setIconOnly(false);
+        iconButton(centerLeft+2*(w+4),y,centerRight-(centerLeft+2*(w+4)),22,"Tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,true,selectedLayerId,null,selectionWing,wingSurface,selectedColor))).setIconOnly(false);
     }
 
     private void buildRightPanel(int previewHeight, int tabHeight) {
@@ -1133,22 +1140,22 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
 
     private void editWing(ElytraWing wing,int x,int y) {
         if(tool!=Tool.ERASER&&tool!=Tool.SELECT&&tool!=Tool.EYEDROPPER)dev.loomstudios.client.palette.EditorColors.use(selectedColor);
-        if(tool==Tool.EYEDROPPER){int[] p=LoomTextureCompiler.compile(ClientProjectWorkspace.project().elytra(),0,false,false);int scale=ClientProjectWorkspace.project().elytra().width()/64;setSelectedColor(p[wing.atlasY(y,scale)*ClientProjectWorkspace.project().elytra().width()+wing.atlasX(x,scale)]);return;}
+        if(tool==Tool.EYEDROPPER){int[] p=LoomTextureCompiler.compile(ClientProjectWorkspace.project().elytra(),0,false,false);int scale=ClientProjectWorkspace.project().elytra().width()/64;setSelectedColor(p[wingSurface.atlasY(y,scale)*ClientProjectWorkspace.project().elytra().width()+wingSurface.atlasX(wing,x,scale)]);return;}
         LoomLayer layer=selectedLayer();if(layer==null||!layer.editableAsPaint())return;
-        if(tool==Tool.FILL)ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x,y,x,y,1,selectedColor,false)));
-        else ClientProjectWorkspace.apply(p->ProjectEdits.paintElytraWingBrush(p,selectedLayerId,wing,x,y,brushSize,tool==Tool.ERASER?0:selectedColor,linkedMirror));
+        if(tool==Tool.FILL)ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,wingSurface,linkedMirror,patch->PixelDrawing.shape(patch,tool,x,y,x,y,1,selectedColor,false)));
+        else ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,wingSurface,linkedMirror,patch->PixelDrawing.shape(patch,tool,x,y,x,y,brushSize,tool==Tool.ERASER?0:selectedColor,false)));
     }
     private void finishShape(ElytraWing wing,int x0,int y0,int x1,int y1){
         if(selectedLayer()==null||!selectedLayer().editableAsPaint())return;
         if(tool==Tool.SELECT){selectionWing=wing;selection=PixelSelection.between(x0,y0,x1,y1);canvasWidget.setSelection(wing,selection);updateButtonStates();return;}
         dev.loomstudios.client.palette.EditorColors.use(selectedColor);
-        ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,linkedMirror,patch->PixelDrawing.shape(patch,tool,x0,y0,x1,y1,brushSize,selectedColor,shapeFilled)));
+        ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,wing,wingSurface,linkedMirror,patch->PixelDrawing.shape(patch,tool,x0,y0,x1,y1,brushSize,selectedColor,shapeFilled)));
     }
-    private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing).crop(selection);statusMessage="Pixels copied";updateButtonStates();}}
-    private void pasteWingSelection(){if(PixelClipboard.patch==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(PixelClipboard.patch,x,y)));selection=new PixelSelection(x,y,x+PixelClipboard.patch.width()-1,y+PixelClipboard.patch.height()-1);canvasWidget.setSelection(selectionWing,selection);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
-    private void flipWingSelection(boolean horizontal){if(selection==null)return;PixelSelection sel=selection;ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.paste(patch.crop(sel).flip(horizontal),sel.minX(),sel.minY())));}
-    private void rotateWingSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);canvasWidget.setSelection(selectionWing,selection);}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
-    private void nudgeWingSelection(int dx,int dy){if(selection==null)return;PixelSelection sel=selection;var patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing);int x=Math.max(0,Math.min(patch.width()-sel.width(),sel.minX()+dx)),y=Math.max(0,Math.min(patch.height()-sel.height(),sel.minY()+dy));ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,linkedMirror,face->face.clear(sel).paste(face.crop(sel),x,y)));selection=new PixelSelection(x,y,x+sel.width()-1,y+sel.height()-1);canvasWidget.setSelection(selectionWing,selection);}
+    private void copyWingSelection(){if(selection!=null){PixelClipboard.patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing,wingSurface).crop(selection);statusMessage="Pixels copied";updateButtonStates();}}
+    private void pasteWingSelection(){if(PixelClipboard.patch==null)return;int x=selection==null?0:selection.minX(),y=selection==null?0:selection.minY();try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,wingSurface,linkedMirror,patch->patch.paste(PixelClipboard.patch,x,y)));selection=new PixelSelection(x,y,x+PixelClipboard.patch.width()-1,y+PixelClipboard.patch.height()-1);canvasWidget.setSelection(selectionWing,selection);updateButtonStates();}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
+    private void flipWingSelection(boolean horizontal){if(selection==null)return;PixelSelection sel=selection;ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,wingSurface,linkedMirror,patch->patch.paste(patch.crop(sel).flip(horizontal),sel.minX(),sel.minY())));}
+    private void rotateWingSelection(){if(selection==null)return;PixelSelection sel=selection;try{ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,wingSurface,linkedMirror,patch->patch.clear(sel).paste(patch.crop(sel).rotate(),sel.minX(),sel.minY())));selection=new PixelSelection(sel.minX(),sel.minY(),sel.minX()+sel.height()-1,sel.minY()+sel.width()-1);canvasWidget.setSelection(selectionWing,selection);}catch(IllegalArgumentException e){statusMessage=e.getMessage();}}
+    private void nudgeWingSelection(int dx,int dy){if(selection==null)return;PixelSelection sel=selection;var patch=SurfaceEdits.wing(ClientProjectWorkspace.project(),selectedLayerId,selectionWing,wingSurface);int x=Math.max(0,Math.min(patch.width()-sel.width(),sel.minX()+dx)),y=Math.max(0,Math.min(patch.height()-sel.height(),sel.minY()+dy));ClientProjectWorkspace.apply(p->SurfaceEdits.wing(p,selectedLayerId,selectionWing,wingSurface,linkedMirror,face->face.clear(sel).paste(face.crop(sel),x,y)));selection=new PixelSelection(x,y,x+sel.width()-1,y+sel.height()-1);canvasWidget.setSelection(selectionWing,selection);}
 
 
     private void toggleLinked() {
@@ -1424,7 +1431,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     }
 
     private void importImage() {
-        this.minecraft.setScreen(SmartImportScreen.forElytra(this));
+        this.minecraft.setScreen(SmartImportScreen.forElytra(this,wingSurface));
     }
 
     private void editSelectedImage() {
@@ -1721,7 +1728,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         }
         if (resolutionUpButton != null) {
             resolutionUpButton.active =
-                    resolution != CanvasResolution.ULTRA;
+                    resolution != CanvasResolution.MAXIMUM;
         }
         if (resolutionLabelButton != null) {
             resolutionLabelButton.setMessage(Component.literal(

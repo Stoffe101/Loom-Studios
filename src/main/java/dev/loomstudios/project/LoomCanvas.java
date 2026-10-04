@@ -38,6 +38,7 @@ public record LoomCanvas(
             }
         }
 
+        for(LoomLayer layer:layers)if(layer.maskLength()!=0&&layer.maskLength()!=width*height)throw new IllegalArgumentException("Layer mask size mismatch");
         layers = List.copyOf(layers);
     }
 

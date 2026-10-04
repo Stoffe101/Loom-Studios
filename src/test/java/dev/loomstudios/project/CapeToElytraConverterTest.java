@@ -95,8 +95,8 @@ class CapeToElytraConverterTest {
         NormalizedRect right =
                 ElytraWing.RIGHT.normalizedRect(project.elytra());
 
-        assertEquals(24.0 / 64.0, left.x(), 1.0E-9);
-        assertEquals(36.0 / 64.0, right.x(), 1.0E-9);
+        assertEquals(26.0 / 64.0, left.x(), 1.0E-9);
+        assertEquals(2.0 / 64.0, right.x(), 1.0E-9);
         assertEquals(10.0 / 64.0, left.width(), 1.0E-9);
         assertEquals(20.0 / 32.0, left.height(), 1.0E-9);
     }

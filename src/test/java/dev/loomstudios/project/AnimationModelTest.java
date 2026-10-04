@@ -78,7 +78,7 @@ class AnimationModelTest {
 
         LoomProject migrated = LoomProjectCodec.decode(v2);
 
-        assertEquals(3, migrated.schemaVersion());
+        assertEquals(4, migrated.schemaVersion());
         assertTrue(migrated.animation().tracks().isEmpty());
         assertEquals(80, migrated.animation().durationTicks());
     }
@@ -114,7 +114,7 @@ class AnimationModelTest {
         );
 
         assertEquals(animated, decoded);
-        assertEquals(3, decoded.schemaVersion());
+        assertEquals(4, decoded.schemaVersion());
         assertEquals(
                 AnimationEffectType.SPARKLE,
                 decoded.animation().tracks().getFirst().effect()

@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 public final class LoomAnimationTimelineWidget extends AbstractWidget {
     private static final int HEADER_PRIMARY = 22;
     private static final int HEADER_SECONDARY = 20;
-    private static final int RULER_HEIGHT = 12;
+    private static final int RULER_HEIGHT = 20;
     private static final int ROW_HEIGHT = 20;
     private static final int FOOTER_HEIGHT = 22;
 
@@ -181,7 +181,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
                 LoomUiTheme.PANEL_INNER
         );
 
-        graphics.fill(getX() + 1, getY() + 1, getRight() - 1, getY() + 2, LoomUiTheme.ACCENT_ALT);
+        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Purple bars: track duration · Diamonds: keyframes · Cyan line: playback position · Drag a diamond to move its key")));
         renderPrimaryHeader(graphics, animation);
         if (!compactTimeline()) {
             renderSecondaryHeader(graphics, animation);
@@ -941,7 +941,7 @@ public final class LoomAnimationTimelineWidget extends AbstractWidget {
     }
 
     private int rulerHeight() {
-        return compactTimeline() ? 10 : RULER_HEIGHT;
+        return compactTimeline() ? 18 : RULER_HEIGHT;
     }
 
     private int footerHeight() {

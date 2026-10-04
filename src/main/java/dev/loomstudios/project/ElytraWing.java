@@ -1,15 +1,15 @@
 package dev.loomstudios.project;
 
 /**
- * Semantic front-face regions for the vanilla Minecraft Elytra texture.
+ * Independent outside faces for Loom schema v4 wing geometry.
  *
- * <p>The two 10x20 wing faces live in the normal 64x32 atlas. RIGHT is
+ * <p>The two 10x20 wing faces live in a 64x32 atlas. RIGHT is
  * horizontally mirrored in the vanilla UV layout, so linked authoring mirrors
  * local X when copying between wings.</p>
  */
 public enum ElytraWing {
-    LEFT("Left Wing", 24, 2, 10, 20),
-    RIGHT("Right Wing", 36, 2, 10, 20);
+    LEFT("Left Wing", 26, 2, 10, 20),
+    RIGHT("Right Wing", 2, 2, 10, 20);
 
     private final String displayName;
     private final int textureX;

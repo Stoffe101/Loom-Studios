@@ -1711,3 +1711,11 @@ Next in this active pass: complete useful template packs and import handles/proc
 ### First milestone compile checkpoint
 
 Actions #195 on `638a5b552b4047e8fae616ab6fd54edd029ae8d7` failed client compilation in three Cape clipboard feedback lines referring to absent statusMessage. Corrected to existing notifyPlayer; other new source including pose fields compiled. Added original layered templates and direct imported-image move/scale/rotate handles, plus help/preferences safeguards. Current verification pending; do not call this milestone DONE.
+
+## 2026-10-04 — Schema-v4 authoring foundations (IN PROGRESS)
+
+Base `82ca0a9db3f7093d2fd24d17ea6bee1f401be0d7`, branch `codex/schema4-authoring`; working tree checkpoint, no release SHA yet. Audited all seven supplied screenshots and serialization/UV/model paths. The old 1 MiB raw-pixel envelope explains the >7-layer crash at 4×. Vanilla ElytraModel uses tex(22,0) for both cuboids, so the previous LEFT/RIGHT authoring rectangles were the outside/inside faces of one shared UV block. Inspected official mapped Minecraft 1.21.11 bytecode to confirm geometry, deformation and texture origin.
+
+Implemented bounded compressed layer blocks and schema migration, five resolution steps, typed parameters/easing, masks, alpha lock/clipping, bounded multi-format/GIF import, local image processing, exact selections/stamps/seam tools, independent wing geometry and face editing, animation entry/layout cleanup, bounded caches/history. See AUTHORING_V4.md and DECISIONS.md for contracts.
+
+Validation: Java21.0.12 standalone compilation and 150 tests PASS at 384 MiB heap (128 previous +22 new). Large 48-layer 8× project round-trips file and portable code; oversized entropy edit remains unchanged; compressed expansion forgery fails; GIF frame offsets/timing/restore-to-previous pass; mask/clip selection/UV isolation tests pass. Full client/runtime and official Fabric toolchain evidence remain pending. Local Loom Unix-domain socket probe needs an environment-only fallback; that cached tool edit is excluded from repository changes. Risks: prototype integration not visually accepted yet, protocol2 requires matching versions, real multiplayer soak not yet performed. Next: full client, 40 new screenshots across four profiles and actual input/payload checks, then official CI and final merge.

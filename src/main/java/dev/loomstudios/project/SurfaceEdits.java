@@ -6,6 +6,13 @@ public final class SurfaceEdits {
     private SurfaceEdits(){}
     public static PixelPatch cape(LoomProject p,UUID id,CapeUvRegion face){return read(p.cape(),id,face.atlasX(0,p.cape().width()/64),face.atlasY(0,p.cape().width()/64),face.width(p.cape().width()/64),face.height(p.cape().width()/64));}
     public static PixelPatch wing(LoomProject p,UUID id,ElytraWing wing){int s=p.elytra().width()/64;return read(p.elytra(),id,wing.atlasX(0,s),wing.atlasY(0,s),wing.width(s),wing.height(s));}
+    public static PixelPatch wing(LoomProject p,UUID id,ElytraWing wing,ElytraSurface face){int s=p.elytra().width()/64;return read(p.elytra(),id,face.atlasX(wing,0,s),face.atlasY(0,s),face.width(s),face.height(s));}
+    public static LoomProject wing(LoomProject p,UUID id,ElytraWing wing,ElytraSurface face,boolean linked,UnaryOperator<PixelPatch> change){
+        var before=wing(p,id,wing,face);var after=change.apply(before);if(after.width()!=before.width()||after.height()!=before.height())throw new IllegalArgumentException("Face dimensions changed");
+        var canvas=p.elytra();var layer=layer(canvas,id);int s=canvas.width()/64;int[] pixels=layer.pixels(),a=after.data(),b=before.data();
+        for(int y=0;y<before.height();y++)for(int x=0;x<before.width();x++){int i=y*before.width()+x;if(a[i]==b[i])continue;pixels[face.atlasY(y,s)*canvas.width()+face.atlasX(wing,x,s)]=a[i];if(linked)pixels[face.atlasY(y,s)*canvas.width()+face.atlasX(wing.opposite(),before.width()-1-x,s)]=a[i];}
+        return p.withElytra(canvas.replaceLayer(id,layer.withPixels(pixels)));
+    }
     private static LoomLayer layer(LoomCanvas c,UUID id){return c.layers().stream().filter(l->l.id().equals(id)).findFirst().orElseThrow(()->new IllegalArgumentException("Missing layer"));}
     private static PixelPatch read(LoomCanvas c,UUID id,int ax,int ay,int w,int h){LoomLayer l=layer(c,id);if(!l.editableAsPaint())throw new IllegalArgumentException("Select an unlocked Paint layer");int[] data=l.pixels(),out=new int[w*h];for(int y=0;y<h;y++)System.arraycopy(data,(ay+y)*c.width()+ax,out,y*w,w);return new PixelPatch(w,h,out);}
     public static LoomProject cape(LoomProject p,UUID id,CapeUvRegion face,UnaryOperator<PixelPatch> change){int s=p.cape().width()/64;PixelPatch before=cape(p,id,face),after=change.apply(before);return p.withCape(write(p.cape(),id,face.atlasX(0,s),face.atlasY(0,s),before,after,null,false));}

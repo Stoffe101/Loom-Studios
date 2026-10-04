@@ -44,6 +44,8 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
     private int startX,startY,endX,endY;
     private dev.loomstudios.project.PixelSelection selection;
     private ElytraWing selectionWing;
+    private java.util.function.Supplier<dev.loomstudios.project.ElytraSurface> surface=()->dev.loomstudios.project.ElytraSurface.OUTSIDE;
+    public void setSurface(java.util.function.Supplier<dev.loomstudios.project.ElytraSurface> surface){this.surface=surface;renderedRevision=Long.MIN_VALUE;}
     public void setDrawing(java.util.function.Supplier<dev.loomstudios.project.PixelDrawing.Tool> tool,java.util.function.IntSupplier color,java.util.function.IntSupplier brush,java.util.function.BooleanSupplier filled,Gesture gesture){this.tool=tool;this.color=color;this.brush=brush;this.filled=filled;this.gesture=gesture;}
     public void setSelection(ElytraWing wing,dev.loomstudios.project.PixelSelection selection){selectionWing=wing;this.selection=selection;}
     private boolean delayed(){return switch(tool.get()){case LINE,RECTANGLE,CIRCLE,SELECT->true;default->false;};}
@@ -67,13 +69,13 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
         int scale = CanvasResolution.fromCanvas(projectSupplier.get().elytra()).scale();
         // Four logical texture cells form the gap, so fit/zoom/pan apply to the pair as one object.
         return CanvasViewportTransform.fit(getX() + 8, getY() + 24, getRight() - 8, getBottom() - 8,
-                ElytraWing.LEFT.width(scale) * 2 + 4 * scale, ElytraWing.LEFT.height(scale), ZOOMS[zoomIndex], panX, panY);
+                surface.get().width(scale) * 2 + 4 * scale, surface.get().height(scale), ZOOMS[zoomIndex], panX, panY);
     }
     private CanvasViewportTransform wingTransform(ElytraWing wing) {
         var pair = pairTransform();
         int scale = CanvasResolution.fromCanvas(projectSupplier.get().elytra()).scale();
-        int left = wing == ElytraWing.LEFT ? pair.left() : pair.screenX(ElytraWing.LEFT.width(scale) + 4 * scale);
-        return new CanvasViewportTransform(left, pair.top(), wing.width(scale), wing.height(scale), pair.pixelScale(),
+        int left = wing == ElytraWing.LEFT ? pair.left() : pair.screenX(surface.get().width(scale) + 4 * scale);
+        return new CanvasViewportTransform(left, pair.top(), surface.get().width(scale), surface.get().height(scale), pair.pixelScale(),
                 pair.clipLeft(), pair.clipTop(), pair.clipRight(), pair.clipBottom());
     }
 
@@ -114,7 +116,7 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
 
     private void ensureTextures() {
         var project = projectSupplier.get(); int scale = CanvasResolution.fromCanvas(project.elytra()).scale();
-        int width = ElytraWing.LEFT.width(scale), height = ElytraWing.LEFT.height(scale);
+        int width = surface.get().width(scale), height = surface.get().height(scale);
         boolean resized = images[0] == null || images[0].getWidth() != width || images[0].getHeight() != height;
         if (resized) {
             releaseTextures();
@@ -130,7 +132,7 @@ public final class LoomElytraCanvasWidget extends AbstractWidget implements Loom
         for (ElytraWing wing : ElytraWing.values()) {
             int index = wing == ElytraWing.LEFT ? 0 : 1;
             for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
-                int color = pixels[wing.atlasY(y, scale) * project.elytra().width() + wing.atlasX(x, scale)];
+                int color = pixels[surface.get().atlasY(y, scale) * project.elytra().width() + surface.get().atlasX(wing,x, scale)];
                 int checker = ((x + y) & 1) == 0 ? 0xFF303E51 : 0xFF233044;
                 int alpha = color >>> 24;
                 int result = 0xFF000000;

@@ -20,7 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ClientCosmeticSync {
-    private static final Map<String, LoomProject> PROJECTS = new HashMap<>();
+    private static final dev.loomstudios.project.BoundedCache<String, LoomProject> PROJECTS =
+            new dev.loomstudios.project.BoundedCache<>(128L * 1024 * 1024, 64, dev.loomstudios.project.ProjectMemory::artworkBytes);
     private static final Map<UUID, String> EQUIPPED = new HashMap<>();
 
     private static UUID localPlayerId;

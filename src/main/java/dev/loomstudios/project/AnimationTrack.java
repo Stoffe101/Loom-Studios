@@ -12,11 +12,40 @@ public record AnimationTrack(
         boolean enabled,
         float speed,
         boolean loop,
-        List<AnimationKeyframe> keyframes
-) {
+        List<AnimationKeyframe> keyframes,
+        EffectParameters parameters) {
     public static final int MAX_KEYFRAMES = 128;
 
+    public AnimationTrack(
+            UUID id,
+            UUID layerId,
+            AnimationChannel channel,
+            AnimationEffectType effect,
+            boolean enabled,
+            float speed,
+            boolean loop,
+            List<AnimationKeyframe> keys) {
+        this(
+                id,
+                layerId,
+                channel,
+                effect,
+                enabled,
+                speed,
+                loop,
+                keys,
+                EffectParameters.defaults(effect));
+    }
+
+    public AnimationTrack withParameters(EffectParameters next) {
+        return new AnimationTrack(
+                id, layerId, channel, effect, enabled, speed, loop, keyframes, next);
+    }
+
     public AnimationTrack {
+        Objects.requireNonNull(parameters, "parameters");
+        if (parameters.effect() != effect)
+            throw new IllegalArgumentException("Mismatched typed effect parameters");
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(layerId, "layerId");
         Objects.requireNonNull(channel, "channel");
@@ -24,23 +53,17 @@ public record AnimationTrack(
         Objects.requireNonNull(keyframes, "keyframes");
 
         if (!Float.isFinite(speed) || speed < 0.1F || speed > 8.0F) {
-            throw new IllegalArgumentException(
-                    "Animation track speed out of range"
-            );
+            throw new IllegalArgumentException("Animation track speed out of range");
         }
         if (keyframes.isEmpty() || keyframes.size() > MAX_KEYFRAMES) {
-            throw new IllegalArgumentException(
-                    "Animation keyframe count out of range"
-            );
+            throw new IllegalArgumentException("Animation keyframe count out of range");
         }
 
         int previousTick = -1;
         for (AnimationKeyframe keyframe : keyframes) {
             Objects.requireNonNull(keyframe, "keyframe");
             if (keyframe.tick() <= previousTick) {
-                throw new IllegalArgumentException(
-                        "Animation keyframes must be strictly ordered"
-                );
+                throw new IllegalArgumentException("Animation keyframes must be strictly ordered");
             }
             previousTick = keyframe.tick();
         }
@@ -50,37 +73,34 @@ public record AnimationTrack(
 
     public AnimationTrack withEffect(AnimationEffectType next) {
         return new AnimationTrack(
-                id, layerId, channel,
+                id,
+                layerId,
+                channel,
                 Objects.requireNonNull(next, "next"),
-                enabled, speed, loop, keyframes
-        );
+                enabled,
+                speed,
+                loop,
+                keyframes,
+                next == effect ? parameters : EffectParameters.forAuthoring(next));
     }
 
     public AnimationTrack withEnabled(boolean next) {
         return new AnimationTrack(
-                id, layerId, channel, effect,
-                next, speed, loop, keyframes
-        );
+                id, layerId, channel, effect, next, speed, loop, keyframes, parameters);
     }
 
     public AnimationTrack withSpeed(float next) {
         return new AnimationTrack(
-                id, layerId, channel, effect,
-                enabled, next, loop, keyframes
-        );
+                id, layerId, channel, effect, enabled, next, loop, keyframes, parameters);
     }
 
     public AnimationTrack withLoop(boolean next) {
         return new AnimationTrack(
-                id, layerId, channel, effect,
-                enabled, speed, next, keyframes
-        );
+                id, layerId, channel, effect, enabled, speed, next, keyframes, parameters);
     }
 
     public AnimationTrack withKeyframes(List<AnimationKeyframe> next) {
         return new AnimationTrack(
-                id, layerId, channel, effect,
-                enabled, speed, loop, next
-        );
+                id, layerId, channel, effect, enabled, speed, loop, next, parameters);
     }
 }

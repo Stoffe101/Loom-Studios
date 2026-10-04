@@ -1,3 +1,10 @@
+## Current authoring-v4 pass
+
+1. Full local client compilation passes; confirm the unmodified official toolchain in CI and fix any integration differences.
+2. Capture new surfaces, background/tint, typed parameters and 8× Cape/Elytra on all four required profiles. Exercise real controls, clipboard/history and wing geometry.
+3. Verify large protocol-v2 payload codec/integrated server paths, cache eviction and malformed input. Record limits and remaining multiplayer soak coverage honestly.
+4. Review captures against references 01/04/05, correct any bounds/overlaps, run official CI, update documentation to exact SHAs and merge the verified change.
+
 # Loom Studios — Next Work
 
 ## 2026-10-03 — Dropdowns and cosmetic-only preview — DONE: Linux runtime and visual verification

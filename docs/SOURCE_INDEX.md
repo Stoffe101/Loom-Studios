@@ -257,3 +257,10 @@ Version-specific questions: suppress preview body without hiding cosmetic layers
 Exact Mojang-mapped MC1.21.11 client jar from repository Fabric Loom cache inspected: ArmedEntityRenderState exposes left/rightHandItemState and left/rightHandItemStack; ItemStackRenderState has clear/isEmpty; HumanoidRenderState exposes head/chest/legs/feet equipment; AvatarRenderState exposes heldOnHead, shoulder parrots, arrows/stingers. Clearing extracted snapshot fields avoids ItemInHand/armor/head feature leaks without touching player inventory. ScreenEvents.afterRender uses the established Fabric screen event API already used by PremiumControls. CI compilation/runtime remains required evidence.
 
 - Fabric ScreenEvents lifecycle: https://maven.fabricmc.net/docs/fabric-api-0.136.0%2B1.21.8/net/fabricmc/fabric/api/client/screen/v1/ScreenEvents.html — screen callbacks register during initialization; implementation follows the existing AFTER_INIT pattern in PremiumControls. Initial constructor registration failed at runtime and was corrected.
+
+## Schema-v4 authoring sources — 2026-10-04
+
+- Fabric API0.141.1+1.21.11 PayloadTypeRegistry: https://maven.fabricmc.net/docs/fabric-api-0.141.1%2B1.21.11/net/fabricmc/fabric/api/networking/v1/PayloadTypeRegistry.html — `registerLarge` already fragments payloads exceeding vanilla packet limits.
+- Oracle ImageIO GIF metadata: https://docs.oracle.com/en/java/javase/23/docs/api/java.desktop/javax/imageio/metadata/doc-files/gif_metadata.html — logical screen, frame offsets, disposal and centisecond delays.
+- Oracle Java21 ImageIO package: https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/imageio/package-summary.html — built-in readers and bounded header-first ImageReader usage.
+- Official Mojang-mapped Minecraft1.21.11 ElytraModel/createLayer and ModelPart bytecode, inspected locally with Java21 `javap -c -p`: both vanilla cuboids tex(22,0), right mirrored, 10×20×2 boxes with CubeDeformation(1). New UV origins are isolated to Loom assets.

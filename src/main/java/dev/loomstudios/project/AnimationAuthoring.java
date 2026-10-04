@@ -37,7 +37,7 @@ public final class AnimationAuthoring {
 
         List<AnimationTrack> next =
                 new ArrayList<>(animation.tracks());
-        next.add(track);
+        next.add(track.withParameters(EffectParameters.forAuthoring(effect)));
         return animation.withTracks(next);
     }
 
@@ -111,7 +111,7 @@ public final class AnimationAuthoring {
         boolean replaced = false;
         for (int i = 0; i < next.size(); i++) {
             if (next.get(i).tick() == tick) {
-                next.set(i, new AnimationKeyframe(tick, value));
+                next.set(i, new AnimationKeyframe(tick, value, next.get(i).easing()));
                 replaced = true;
                 break;
             }
@@ -138,7 +138,7 @@ public final class AnimationAuthoring {
         if(oldTick==newTick)return track;
         List<AnimationKeyframe> next=new ArrayList<>(track.keyframes());
         next.removeIf(k->k.tick()==oldTick||k.tick()==newTick);
-        next.add(new AnimationKeyframe(newTick,source.value()));next.sort(Comparator.comparingInt(AnimationKeyframe::tick));
+        next.add(new AnimationKeyframe(newTick,source.value(),source.easing()));next.sort(Comparator.comparingInt(AnimationKeyframe::tick));
         return track.withKeyframes(next);
     }
 
@@ -184,12 +184,12 @@ public final class AnimationAuthoring {
                         && frames.getLast().tick() == tick) {
                     frames.set(
                             frames.size() - 1,
-                            new AnimationKeyframe(tick, frame.value())
+                            new AnimationKeyframe(tick, frame.value(), frame.easing())
                     );
                 } else {
                     frames.add(new AnimationKeyframe(
                             tick,
-                            frame.value()
+                            frame.value(), frame.easing()
                     ));
                 }
             }

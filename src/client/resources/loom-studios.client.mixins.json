@@ -8,7 +8,8 @@
     "AvatarRendererMixin",
     "AvatarRenderStateMixin",
     "LivingEntityRendererMixin",
-    "ElytraModelMixin"
+    "ElytraModelMixin",
+    "ModelPartCubesAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

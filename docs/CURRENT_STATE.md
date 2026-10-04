@@ -1,3 +1,15 @@
+## Active schema-v4 authoring pass — 2026-10-04
+
+**IN PROGRESS**, branch `codex/schema4-authoring`, base main `82ca0a9db3f7093d2fd24d17ea6bee1f401be0d7`. This working tree is not yet a verified release or merged to main.
+
+Implemented: per-layer bounded compression; 1/2/4/6/8× canvases; typed effect parameters and outgoing easing; masks/alpha lock/clipping; content-detected PNG/JPEG/GIF/BMP/TIFF/WBMP import; local background removal/tint; image-to-swatches; independent wing face UVs and legacy UV migration; exact color selection, Replace Color, stamp presets and unfolded cape seam editing; explicit animation entry/return; ruler cleanup; decoded/history/network/runtime/raster-cache bounds. See AUTHORING_V4.md for the requirement checklist and limits.
+
+Core validation: **150/150 tests PASS**, Java 21.0.12 Ubuntu, headless standalone JUnit, `-Xmx384m`, including 8× / 48-layer save/load and Loom Code round trips, incompressible edit rollback, forged expansion rejection, GIF disposal/timing, masks, exact selections and non-overlapping wing faces. This test result belongs to the uncommitted checkpoint, not a CI commit.
+
+Full local client compilation and Gradle tests PASS (environment-only Loom probe fallback). Pending: real Minecraft 1.21.11 captures/input checks at 1920×1080 and 3440×1440 GUI2/3; large payload codec/integrated server checks; visual corrections; official unmodified Fabric Loom CI; final documentation and merge. Local Loom 1.17.21 platform probing fails because Unix-domain sockets are unavailable in this execution environment. A temporary local dependency-cache fallback treats that probe as unsupported for local compilation only; no such dependency edit is in the project or published artifact. Official CI must confirm the unmodified toolchain.
+
+All seven user images were inspected before implementation: both new problem screenshots and references 01–05 (Elytra, Sharing, Home, Import, Cape). New tools target references 01/04/05; focused tool/parameter screens intentionally keep the compact editor readable rather than enlarging its rail.
+
 # Loom Studios — Current State
 
 ## 2026-10-03 — Dropdowns and cosmetic-only preview — DONE: Linux runtime and visual verification

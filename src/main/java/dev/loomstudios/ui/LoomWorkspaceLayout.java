@@ -29,8 +29,7 @@ public record LoomWorkspaceLayout(
         int centerLeft = margin + rail + gap;
         int centerRight = rightLeft - gap;
         int toolbarBottom = top + 22;
-        int timelineHeight = !elytra ? 0 : tracks == 0 ? 66
-                : Math.min(compact ? 100 : 154, 56 + Math.min(tracks, 5) * 20);
+        int timelineHeight = elytra ? 22 : 0;
         timelineHeight = Math.min(timelineHeight, Math.max(0, bottom - toolbarBottom - 90 - 26 - gap * 3));
         int timelineTop = bottom - timelineHeight;
         int contextBottom = elytra ? timelineTop - gap : bottom;

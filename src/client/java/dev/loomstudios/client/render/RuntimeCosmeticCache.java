@@ -18,10 +18,18 @@ import java.util.Map;
  * Owns compiled GPU-backed runtime textures keyed by immutable project hash.
  */
 public final class RuntimeCosmeticCache {
-    private static final Map<String, RuntimeBundle> BUNDLES = new HashMap<>();
+    private static final Map<String, RuntimeBundle> BUNDLES = new java.util.LinkedHashMap<>(16,.75f,true);
     private static final Map<Identifier, RuntimeBundle> BY_CAPE_TEXTURE = new HashMap<>();
     private static final Map<Identifier, RuntimeBundle> BY_ELYTRA_TEXTURE = new HashMap<>();
 
+    private static boolean hasImageFrames(dev.loomstudios.project.LoomCanvas canvas){return canvas.layers().stream().anyMatch(l->l.visible()&&l.imageData()!=null&&!l.imageData().frames().isEmpty());}
+    private static long bundleBytes(RuntimeBundle bundle){return dev.loomstudios.project.ProjectMemory.artworkBytes(bundle.project)+8L*((long)bundle.project.cape().width()*bundle.project.cape().height()+(long)bundle.project.elytra().width()*bundle.project.elytra().height());}
+    private static void trimBundles(Minecraft client){
+        long retained=BUNDLES.values().stream().mapToLong(RuntimeCosmeticCache::bundleBytes).sum();
+        var iterator=BUNDLES.entrySet().iterator();
+        while((retained>96L*1024*1024||BUNDLES.size()>32)&&BUNDLES.size()>1){var old=iterator.next().getValue();retained-=bundleBytes(old);iterator.remove();BY_CAPE_TEXTURE.remove(old.capeTextureId);BY_ELYTRA_TEXTURE.remove(old.elytraTextureId);client.getTextureManager().release(old.capeTextureId);client.getTextureManager().release(old.elytraTextureId);client.getTextureManager().release(old.emissiveTextureId);client.getTextureManager().release(old.elytraEmissiveTextureId);}
+    }
+    private static int frameStamp(dev.loomstudios.project.LoomCanvas canvas,int tick){int stamp=1;for(var layer:canvas.layers())if(layer.visible()&&layer.imageData()!=null&&!layer.imageData().frames().isEmpty())stamp=31*stamp+System.identityHashCode(layer.imageData().frameAt(tick));return stamp;}
     private RuntimeCosmeticCache() {
     }
 
@@ -51,6 +59,7 @@ public final class RuntimeCosmeticCache {
             Integer fixedTimelineTick,boolean alphaGuide) {
         RuntimeBundle existing = BUNDLES.get(projectHash);
         if (existing != null) {
+            existing.lastUseNanos=System.nanoTime();
             if (fixedTimelineTick != null
                     && !fixedTimelineTick.equals(
                             existing.fixedTimelineTick
@@ -59,11 +68,11 @@ public final class RuntimeCosmeticCache {
                 existing.capeTimelineTick = fixedTimelineTick;
                 existing.elytraTimelineTick = fixedTimelineTick;
                 existing.legacyPhase = 0;
-                if(existing.project.animation().hasEnabledTracks(AnimationChannel.CAPE)) {
+                if(existing.project.animation().hasEnabledTracks(AnimationChannel.CAPE)||hasImageFrames(existing.project.cape())) {
                     redrawCape(existing,fixedTimelineTick); redrawEmissive(existing,fixedTimelineTick);
                     existing.capeTexture.upload(); existing.emissiveTexture.upload();
                 }
-                if(existing.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)) {
+                if(existing.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)||hasImageFrames(existing.project.elytra())) {
                     redrawElytra(existing,fixedTimelineTick); redrawElytraEmissive(existing,fixedTimelineTick);
                     existing.elytraTexture.upload(); if(existing.hasElytraEmissive)existing.elytraEmissiveTexture.upload();
                 }
@@ -165,6 +174,7 @@ public final class RuntimeCosmeticCache {
         BUNDLES.put(projectHash, bundle);
         BY_CAPE_TEXTURE.put(capeId, bundle);
         BY_ELYTRA_TEXTURE.put(elytraId, bundle);
+        trimBundles(client);
 
         LoomStudios.LOGGER.info(
                 "Compiled runtime Loom textures for project {}",
@@ -182,7 +192,7 @@ public final class RuntimeCosmeticCache {
         long gameTime = client.level.getGameTime();
 
         for (RuntimeBundle bundle : BUNDLES.values()) {
-            if (bundle.fixedTimelineTick != null) {
+            if (bundle.fixedTimelineTick != null || System.nanoTime()-bundle.lastUseNanos>2_000_000_000L) {
                 continue;
             }
 
@@ -192,25 +202,26 @@ public final class RuntimeCosmeticCache {
                                     .animationPeriodTicks())
                             % 4L
             );
-            int timelineTick = AnimationEvaluator.timelineTick(
-                    bundle.project.animation(),
-                    gameTime
-            );
+            int timelineTick = hasImageFrames(bundle.project.cape())||hasImageFrames(bundle.project.elytra())
+                    ? (int)Math.floorMod(gameTime, Integer.MAX_VALUE)
+                    : AnimationEvaluator.timelineTick(bundle.project.animation(),gameTime);
 
             boolean capeAnimated =
                     bundle.project.animation()
-                            .hasEnabledTracks(AnimationChannel.CAPE)
+                            .hasEnabledTracks(AnimationChannel.CAPE) || hasImageFrames(bundle.project.cape())
                             || bundle.project.runtime()
                                     .hueCycleEnabled();
 
             boolean elytraAnimated =
                     bundle.project.animation()
-                            .hasEnabledTracks(AnimationChannel.ELYTRA);
+                            .hasEnabledTracks(AnimationChannel.ELYTRA) || hasImageFrames(bundle.project.elytra());
 
+            int capeStamp=bundle.project.animation().hasEnabledTracks(AnimationChannel.CAPE)?timelineTick:frameStamp(bundle.project.cape(),timelineTick);
+            int wingStamp=bundle.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)?timelineTick:frameStamp(bundle.project.elytra(),timelineTick);
             if (capeAnimated
-                    && (bundle.capeTimelineTick != timelineTick
+                    && (bundle.capeFrameStamp != capeStamp
                     || bundle.legacyPhase != legacyPhase)) {
-                bundle.capeTimelineTick = timelineTick;
+                bundle.capeTimelineTick = timelineTick;bundle.capeFrameStamp=capeStamp;
                 bundle.legacyPhase = legacyPhase;
                 redrawCape(bundle, timelineTick);
                 redrawEmissive(bundle, timelineTick);
@@ -219,8 +230,8 @@ public final class RuntimeCosmeticCache {
             }
 
             if (elytraAnimated
-                    && bundle.elytraTimelineTick != timelineTick) {
-                bundle.elytraTimelineTick = timelineTick;
+                    && bundle.elytraFrameStamp != wingStamp) {
+                bundle.elytraTimelineTick = timelineTick;bundle.elytraFrameStamp=wingStamp;
                 redrawElytra(bundle, timelineTick);
                 redrawElytraEmissive(bundle,timelineTick);
                 bundle.elytraTexture.upload();
@@ -377,6 +388,8 @@ public final class RuntimeCosmeticCache {
     }
 
     public static final class RuntimeBundle {
+        private long lastUseNanos=System.nanoTime();
+        private int capeFrameStamp=Integer.MIN_VALUE,elytraFrameStamp=Integer.MIN_VALUE;
         final String projectHash;
         final LoomProject project;
         final Identifier capeTextureId;
