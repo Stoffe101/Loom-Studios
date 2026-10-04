@@ -48,3 +48,5 @@ Every meaningful pass must record:
 When documentation conflicts, the newest verified entry in `CURRENT_STATE.md`, `PASS_LOG.md`, and `DECISIONS.md` takes precedence over older planning text.
 
 The design specification remains authoritative for product intent unless a newer decision record explicitly supersedes it.
+
+- [Animation 2.1 user testing](ANIMATION21_TESTING.md) — installation, new workflows and platform acceptance.

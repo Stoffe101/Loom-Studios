@@ -1,6 +1,6 @@
 # Creative authoring / Animation2.1
 
-Status: IN PROGRESS. Official first checkpoint build passes164 tests; compact Screen assertions pass. Final visual acceptance and exact-source final build are pending.
+Status: DONE — ready for user testing. See CURRENT_STATE.md for exact runtime acceptance; see ANIMATION21_TESTING.md for the install/test route.
 
 ## Usage
 
@@ -19,6 +19,6 @@ Local guides:8 per project,512px image dimensions,8 MiB sidecar. Stamp library:6
 
 ## Verification
 
-Core164 tests pass at384 MiB: lane evaluation/save/code, cubic inversion/preservation, clipboard bounds, duration/effect compatibility, frame editing/timing/face isolation, ghost source immutability, references/hash exclusion, stamp data/transforms/favorites and malformed metadata/assets. Official Build259 passes;32 new four-profile captures and real Screen assertions are running alongside the310 full suite.
+Core164 tests pass at384 MiB: lane evaluation/save/code, cubic inversion/preservation, clipboard bounds, duration/effect compatibility, frame editing/timing/face isolation, ghost source immutability, references/hash exclusion, stamp data/transforms/favorites and malformed metadata/assets. Official Build263 passes164 tests and310 captures at runtime7288c5877fcc5b708ae1ef945096e8a119323b49. Comparison38 passes24 suites/210 captures. All32 new four-profile screenshots were extracted and visually reviewed after the timeline/preview/menu corrections. Real Screen parameter-key/curve-handle Undo and creative-assets assertions pass.
 
 Reference targets01/04/05: cyan/purple selection, inset panels, clear grouped controls. Focused tabs intentionally preserve the compact editing area instead of adding another long rail. Actual hardware FPS, optional mods, Windows/macOS and dedicated-server concurrency still require manual tests.
