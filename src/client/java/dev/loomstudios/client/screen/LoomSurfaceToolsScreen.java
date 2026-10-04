@@ -97,7 +97,13 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
             if (maskEdit && map[i] >= 0) {
                 int value = layer().maskAt(map[i]);
                 pixels[i] = 0xFF000000 | value << 16 | value << 8 | value;
-            } else if (selection != null && selection.get(i)) pixels[i] = 0xFF55DDE0;
+            } else if (selection != null && selection.get(i)) {
+                int original = pixels[i];
+                int r = (((original >>> 16) & 255) + 85) / 2,
+                        g = (((original >>> 8) & 255) + 221) / 2,
+                        b = ((original & 255) + 224) / 2;
+                pixels[i] = 0xFF000000 | r << 16 | g << 8 | b;
+            }
         }
         return new PixelImage(p.width(), p.height(), pixels);
     }
@@ -143,7 +149,7 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
                                 () -> ClientProjectWorkspace.revision() + revision));
         image.setPixelAction(this::click);
         int x = right + 4, y = top;
-        String[] labels = {"Wand / color", "Brush stamps", "Layer masks"};
+        String[] labels = {"Wand", "Brushes", "Masks"};
         for (int i = 0; i < 3; i++) {
             int m = i;
             button(
@@ -172,14 +178,15 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
             y += 26;
             addRenderableWidget(
                     new LoomSlider(
-                            x,
-                            y,
-                            192,
-                            "Tolerance",
-                            () -> tolerance / 255.0,
-                            v -> {
-                                tolerance = (int) Math.round(v * 255);
-                            }));
+                                    x,
+                                    y,
+                                    192,
+                                    "Tolerance",
+                                    () -> tolerance / 255.0,
+                                    v -> {
+                                        tolerance = (int) Math.round(v * 255);
+                                    })
+                            .format(v -> Math.round(v * 255) + " / 255"));
             y += 26;
             button(
                     x,
@@ -258,14 +265,15 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
             y += 26;
             addRenderableWidget(
                     new LoomSlider(
-                            x,
-                            y,
-                            192,
-                            "Size",
-                            () -> (brushSize - 1) / 31.0,
-                            v -> {
-                                brushSize = 1 + (int) Math.round(v * 31);
-                            }));
+                                    x,
+                                    y,
+                                    192,
+                                    "Size",
+                                    () -> (brushSize - 1) / 31.0,
+                                    v -> {
+                                        brushSize = 1 + (int) Math.round(v * 31);
+                                    })
+                            .format(v -> (1 + Math.round(v * 31)) + " px"));
             y += 26;
             if (!wing)
                 button(
@@ -281,7 +289,7 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
                         });
             message =
                     "Click or drag to stamp · Selection limits painting · Seam mode unfolds all"
-                        + " four outside edges";
+                            + " four outside edges";
         } else {
             button(
                     x,
@@ -361,7 +369,7 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
                     });
             message =
                     "Alpha lock preserves transparency · Clip uses the layer immediately below ·"
-                        + " White mask reveals, black hides";
+                            + " White mask reveals, black hides";
         }
     }
 
@@ -467,6 +475,11 @@ public final class LoomSurfaceToolsScreen extends LoomPointerScreen {
         if (image != null) image.close();
         ClientProjectWorkspace.endCompoundEdit();
         super.removed();
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override

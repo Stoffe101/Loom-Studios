@@ -178,5 +178,9 @@ class AdvancedAuthoringTest {
         assertEquals(
                 0xFFFF0000,
                 TextureCompositor.compileAnimated(p, AnimationChannel.CAPE, 5, 0, false)[0]);
+        // Independent GIF clock is not truncated to the effect timeline loop.
+        assertEquals(
+                0xFF0000FF,
+                TextureCompositor.compileAnimated(p, AnimationChannel.CAPE, 0, 0, false, 2)[0]);
     }
 }

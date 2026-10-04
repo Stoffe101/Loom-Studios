@@ -66,6 +66,7 @@ public final class RuntimeCosmeticCache {
                     )) {
                 existing.fixedTimelineTick = fixedTimelineTick;
                 existing.capeTimelineTick = fixedTimelineTick;
+                existing.imageTick = fixedTimelineTick;
                 existing.elytraTimelineTick = fixedTimelineTick;
                 existing.legacyPhase = 0;
                 if(existing.project.animation().hasEnabledTracks(AnimationChannel.CAPE)||hasImageFrames(existing.project.cape())) {
@@ -140,6 +141,7 @@ public final class RuntimeCosmeticCache {
                 : fixedTimelineTick;
         bundle.legacyPhase = 0;
         bundle.capeTimelineTick = initialTimelineTick;
+        bundle.imageTick = initialTimelineTick;
         bundle.elytraTimelineTick = initialTimelineTick;
         bundle.alphaGuide = alphaGuide;
         redrawCape(bundle, initialTimelineTick);
@@ -202,9 +204,8 @@ public final class RuntimeCosmeticCache {
                                     .animationPeriodTicks())
                             % 4L
             );
-            int timelineTick = hasImageFrames(bundle.project.cape())||hasImageFrames(bundle.project.elytra())
-                    ? (int)Math.floorMod(gameTime, Integer.MAX_VALUE)
-                    : AnimationEvaluator.timelineTick(bundle.project.animation(),gameTime);
+            int timelineTick = AnimationEvaluator.timelineTick(bundle.project.animation(),gameTime);
+            bundle.imageTick=(int)Math.floorMod((long)Math.floor(gameTime*bundle.project.animation().playbackSpeed()),Integer.MAX_VALUE);
 
             boolean capeAnimated =
                     bundle.project.animation()
@@ -216,8 +217,8 @@ public final class RuntimeCosmeticCache {
                     bundle.project.animation()
                             .hasEnabledTracks(AnimationChannel.ELYTRA) || hasImageFrames(bundle.project.elytra());
 
-            int capeStamp=bundle.project.animation().hasEnabledTracks(AnimationChannel.CAPE)?timelineTick:frameStamp(bundle.project.cape(),timelineTick);
-            int wingStamp=bundle.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)?timelineTick:frameStamp(bundle.project.elytra(),timelineTick);
+            int capeStamp=31*(bundle.project.animation().hasEnabledTracks(AnimationChannel.CAPE)?timelineTick:0)+frameStamp(bundle.project.cape(),bundle.imageTick);
+            int wingStamp=31*(bundle.project.animation().hasEnabledTracks(AnimationChannel.ELYTRA)?timelineTick:0)+frameStamp(bundle.project.elytra(),bundle.imageTick);
             if (capeAnimated
                     && (bundle.capeFrameStamp != capeStamp
                     || bundle.legacyPhase != legacyPhase)) {
@@ -287,7 +288,8 @@ public final class RuntimeCosmeticCache {
                         AnimationChannel.CAPE,
                         timelineTick,
                         bundle.legacyPhase,
-                        false
+                        false,
+                        bundle.imageTick
                 )
         );
         if (bundle.alphaGuide) applyAlphaGuide(bundle.capeImage);
@@ -304,7 +306,8 @@ public final class RuntimeCosmeticCache {
                         AnimationChannel.ELYTRA,
                         timelineTick,
                         0,
-                        false
+                        false,
+                        bundle.imageTick
                 )
         );
         if (bundle.alphaGuide) applyAlphaGuide(bundle.elytraImage);
@@ -340,13 +343,14 @@ public final class RuntimeCosmeticCache {
                         AnimationChannel.CAPE,
                         timelineTick,
                         bundle.legacyPhase,
-                        true
+                        true,
+                        bundle.imageTick
                 )
         );
     }
 
     private static void redrawElytraEmissive(RuntimeBundle bundle,int tick){
-        if(bundle.hasElytraEmissive)writePixels(bundle.elytraEmissiveImage,LoomTextureCompiler.compileAnimated(bundle.project,AnimationChannel.ELYTRA,tick,0,true));
+        if(bundle.hasElytraEmissive)writePixels(bundle.elytraEmissiveImage,LoomTextureCompiler.compileAnimated(bundle.project,AnimationChannel.ELYTRA,tick,0,true,bundle.imageTick));
         else clear(bundle.elytraEmissiveImage);
     }
 
@@ -409,6 +413,7 @@ public final class RuntimeCosmeticCache {
         DynamicTexture elytraTexture;
         DynamicTexture emissiveTexture;
         DynamicTexture elytraEmissiveTexture;
+        int imageTick;
         int legacyPhase = -1;
         int capeTimelineTick = -1;
         int elytraTimelineTick = -1;

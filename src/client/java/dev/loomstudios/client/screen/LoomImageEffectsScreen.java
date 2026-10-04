@@ -276,6 +276,9 @@ public final class LoomImageEffectsScreen extends LoomPointerScreen {
                                             String.format("%06X", settings.tintColor() & 0xFFFFFF),
                                             value -> {
                                                 try {
+                                                    if (!value.replace("#", "")
+                                                            .matches("[0-9a-fA-F]{6}"))
+                                                        throw new NumberFormatException();
                                                     settings =
                                                             settings.withTint(
                                                                     0xFF000000
@@ -343,6 +346,11 @@ public final class LoomImageEffectsScreen extends LoomPointerScreen {
         if (before != null) before.close();
         if (after != null) after.close();
         super.removed();
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override

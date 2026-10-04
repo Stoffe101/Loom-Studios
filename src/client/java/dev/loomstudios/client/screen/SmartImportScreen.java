@@ -241,7 +241,7 @@ public final class SmartImportScreen extends LoomPointerScreen {
         controlPanelX = margin + leftWidth + gap;
         controlPanelY = top;
         controlPanelWidth = rightX - gap - controlPanelX;
-        controlPanelHeight = compactMode ? 180 : 210;
+        controlPanelHeight = compactMode ? 202 : 242;
         int workWidth = controlPanelWidth;
         int halfWidth = (workWidth - gap) / 2;
         originalPreview = addRenderableWidget(new LoomImagePreviewWidget(
@@ -1234,6 +1234,12 @@ public final class SmartImportScreen extends LoomPointerScreen {
                     e.getMessage()
             );
             status = "Import result is too large or invalid";
+            updateButtonLabels();
+            return;
+        }
+
+        if (ClientProjectWorkspace.session().editError() != null) {
+            status = "Import not applied: " + ClientProjectWorkspace.session().editError();
             updateButtonLabels();
             return;
         }

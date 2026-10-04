@@ -31,6 +31,17 @@ class ImageImportReaderTest {
     }
 
     @Test
+    void importsMonochromeWbmp() throws Exception {
+        var image = new BufferedImage(7, 5, BufferedImage.TYPE_BYTE_BINARY);
+        image.setRGB(3, 2, 0xFFFFFFFF);
+        Path file = directory.resolve("monochrome.wbmp");
+        assertTrue(ImageIO.write(image, "wbmp", file.toFile()));
+        var result = ImageImportReader.load(file);
+        assertEquals(7, result.original().width());
+        assertEquals(0xFFFFFFFF, result.original().pixelAt(3, 2));
+    }
+
+    @Test
     void oversizedHeaderAndUnknownContentAreRejected() throws Exception {
         Path bad = directory.resolve("fake.jpg");
         Files.writeString(bad, "not an image");

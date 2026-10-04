@@ -3,13 +3,12 @@ package dev.loomstudios.project;
 /**
  * Independent outside faces for Loom schema v4 wing geometry.
  *
- * <p>The two 10x20 wing faces live in a 64x32 atlas. RIGHT is
- * horizontally mirrored in the vanilla UV layout, so linked authoring mirrors
- * local X when copying between wings.</p>
+ * <p>The two 10x20 wing faces live in a 64x32 atlas. RIGHT is horizontally mirrored in the vanilla
+ * UV layout, so linked authoring mirrors local X when copying between wings.
  */
 public enum ElytraWing {
-    LEFT("Left Wing", 26, 2, 10, 20),
-    RIGHT("Right Wing", 2, 2, 10, 20);
+    LEFT("Left Wing", 38, 2, 10, 20),
+    RIGHT("Right Wing", 14, 2, 10, 20);
 
     private final String displayName;
     private final int textureX;
@@ -17,13 +16,7 @@ public enum ElytraWing {
     private final int width;
     private final int height;
 
-    ElytraWing(
-            String displayName,
-            int textureX,
-            int textureY,
-            int width,
-            int height
-    ) {
+    ElytraWing(String displayName, int textureX, int textureY, int width, int height) {
         this.displayName = displayName;
         this.textureX = textureX;
         this.textureY = textureY;
@@ -59,11 +52,10 @@ public enum ElytraWing {
         int scale = CanvasResolution.fromCanvas(canvas).scale();
 
         return new NormalizedRect(
-                atlasX(0, scale) / (double)canvas.width(),
-                atlasY(0, scale) / (double)canvas.height(),
-                width(scale) / (double)canvas.width(),
-                height(scale) / (double)canvas.height()
-        );
+                atlasX(0, scale) / (double) canvas.width(),
+                atlasY(0, scale) / (double) canvas.height(),
+                width(scale) / (double) canvas.width(),
+                height(scale) / (double) canvas.height());
     }
 
     public ElytraWing opposite() {

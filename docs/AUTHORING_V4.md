@@ -6,7 +6,7 @@ Status: IN PROGRESS; core tests and full local compilation verified, runtime acc
 
 | Request | Implementation | Verification |
 | --- | --- | --- |
-| More formats | Header-first PNG/JPEG/JPG/GIF/BMP/TIFF/WBMP content decoding | PNG/JPEG/BMP/GIF/TIFF tests pass; WBMP runtime fixture pending |
+| More formats | Header-first PNG/JPEG/JPG/GIF/BMP/TIFF/WBMP content decoding | PNG/JPEG/BMP/GIF/TIFF/WBMP tests pass |
 | GIF animation | Bounded composed frames, offsets/disposal, per-frame delays, runtime frame scheduling | Core timing/disposal/serialization pass; real preview pending |
 | 1/2/4/6/8× Cape and Elytra | 512×256 maximum atlas; resolution shown in both editors | Core resize/mask tests pass; all-profile UI pending |
 | Layer crash and storage | Per-layer compressed v4; exact expansion/serialized/artwork budgets; rejected edits keep history | 48 layers at8× round-trip, entropy rollback and forged expansion tests pass |
@@ -38,6 +38,6 @@ Status: IN PROGRESS; core tests and full local compilation verified, runtime acc
 
 A project allows up to64 layers per channel, subject to the combined60 MiB artwork/64 MiB expansion and8 MiB serialized budgets. Thus not every maximum can be used simultaneously. High-entropy GIFs/images can reach the serialized limit sooner than sparse paint. A rejected edit leaves artwork and undo history intact and reports a budget message. Portable codes can become long; use a `.loom` file for large transfers.
 
-Schema4 is not readable by older releases. Existing1–3 projects migrate on load and retain source payloads, layer IDs and animation tracks. Both client and server require protocol2 for larger multiplayer projects. Existing Fabric fragmentation is retained; caches are byte/entry bounded and idle bundles stop animation work. Local preview remains available without a compatible server.
+Schema4 is not readable by older releases. Existing1–3 projects migrate on load and retain source payloads, layer IDs and animation tracks. Both client and server require protocol2 for larger multiplayer projects. Existing Fabric fragmentation is retained; caches are byte/entry bounded and idle bundles stop animation work. Single bounded workers validate uploads and decode downloads off game threads; evicted equipped artwork is requested again. Actual integrated upload/download verification is pending. Local preview remains available without a compatible server.
 
 No format decoder service, cloud image processing or new runtime image dependency is required. Formats beyond Java’s installed ImageIO readers (such as WebP/HEIC/AVIF) are explicitly unsupported rather than advertised without a decoder.

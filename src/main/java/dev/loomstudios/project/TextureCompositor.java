@@ -1,6 +1,5 @@
 package dev.loomstudios.project;
 
-
 import java.awt.Color;
 import java.util.List;
 
@@ -45,6 +44,17 @@ public final class TextureCompositor {
             int timelineTick,
             int legacyHuePhase,
             boolean emissiveOnly) {
+        return compileAnimated(
+                project, channel, timelineTick, legacyHuePhase, emissiveOnly, timelineTick);
+    }
+
+    public static int[] compileAnimated(
+            LoomProject project,
+            AnimationChannel channel,
+            int timelineTick,
+            int legacyHuePhase,
+            boolean emissiveOnly,
+            int imageTick) {
         LoomCanvas canvas = channel == AnimationChannel.CAPE ? project.cape() : project.elytra();
         LoomAnimation animation = project.animation();
         int[] output = new int[Math.multiplyExact(canvas.width(), canvas.height())];
@@ -70,7 +80,7 @@ public final class TextureCompositor {
                             .anyMatch(track -> track.effect() == AnimationEffectType.EMISSIVE_GLOW);
 
             int[] raster =
-                    LayerRasterizer.rasterize(layer, canvas.width(), canvas.height(), timelineTick);
+                    LayerRasterizer.rasterize(layer, canvas.width(), canvas.height(), imageTick);
 
             int shiftX = 0;
             int shiftY = 0;

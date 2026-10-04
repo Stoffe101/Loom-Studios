@@ -31,6 +31,10 @@ public final class LoomUiCapture {
     private static boolean pending, prepared, fixturesPrepared, importHandleChecked;
     private static Path fixturePath;
     private static LoomProject fixtureProject;
+    private static boolean workflowsVerified;
+    private static String networkFixtureHash;
+    private static int networkWaitTicks;
+    private static java.util.concurrent.CompletableFuture<Boolean> networkCheck;
     private static final java.util.Set<Integer> cacheProbes=new java.util.HashSet<>();
     private LoomUiCapture() {}
     public static void tick(Minecraft client) {
@@ -47,7 +51,14 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd",278)) { pending=true; verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); verifyAuthoringPayload(client); System.out.println("LOOM_UI_CAPTURE COMPLETE"); client.stop(); return; }
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd",278)) {
+                if(!workflowsVerified) {
+                    verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); verifyAuthoringPayload(client);
+                    workflowsVerified=true;
+                }
+                if(!verifyLiveAuthoringNetwork(client))return;
+                pending=true;System.out.println("LOOM_UI_CAPTURE COMPLETE");client.stop();return;
+            }
             if (!fixturesPrepared) {
                 String[] names = {"Moonlit", "Void Walker", "Alpine", "Crimson Flight"};
                 for(int i=3;i>=0;i--) {
@@ -368,7 +379,7 @@ public final class LoomUiCapture {
             if(actual.cape().layers().size()!=fixtureProject.cape().layers().size()+1
                     || !java.util.Arrays.equals(dev.loomstudios.client.render.LoomTextureCompiler.compile(candidate.cape(),0,false,false),
                             dev.loomstudios.client.render.LoomTextureCompiler.compile(actual.cape(),0,false,false)))
-                throw new IllegalStateException("Applied import differs from candidate preview");
+                throw new IllegalStateException("Applied import differs from candidate preview: base="+fixtureProject.cape().layers().size()+" actual="+actual.cape().layers().size()+" error="+ClientProjectWorkspace.session().editError());
         }
         System.out.println("LOOM_UI_WORKFLOWS PASS: project/portable/PNG export and both import pages");
     }
@@ -451,7 +462,7 @@ public final class LoomUiCapture {
         ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
         ClientProjectWorkspace.apply(p->{p=dev.loomstudios.project.ProjectResizer.resizeCape(p,dev.loomstudios.project.CanvasResolution.MAXIMUM);p=dev.loomstudios.project.ProjectResizer.resizeElytra(p,dev.loomstudios.project.CanvasResolution.MAXIMUM);while(p.cape().layers().size()<12)p=dev.loomstudios.project.ProjectEdits.addCapeLayer(p,"Detail");return p;});
         int view=(stage-238)%10;var home=new LoomHomeScreen();var p=ClientProjectWorkspace.project();var cape=p.cape().layers().getFirst().id();var wing=p.elytra().layers().getFirst().id();
-        if(view==0){ClientProjectWorkspace.save();ClientProjectWorkspace.equipCurrent();client.setScreen(new CapeEditorScreen(home));}
+        if(view==0){ClientProjectWorkspace.replaceWith(dev.loomstudios.project.LoomProjectCode.forkImported(p,System.currentTimeMillis()),client.player.getUUID());ClientProjectWorkspace.save();ClientProjectWorkspace.equipCurrent();client.setScreen(new CapeEditorScreen(home));}
         else if(view<3){var screen=new ElytraEditorScreen(home);client.setScreen(screen);if(view==2){set(screen,"wingSurface",dev.loomstudios.project.ElytraSurface.INSIDE);call(screen,"rebuildWidgets");}}
         else if(view<6){var screen=new dev.loomstudios.client.screen.LoomSurfaceToolsScreen(home,false,cape,dev.loomstudios.project.CapeUvRegion.OUTSIDE,null,null,0xFF45DAEE);client.setScreen(screen);if(view==3){Method click=screen.getClass().getDeclaredMethod("click",int.class,int.class);click.setAccessible(true);click.invoke(screen,24,24);}else if(view==4){set(screen,"mode",1);set(screen,"seams",true);call(screen,"rebuildWidgets");}else{ClientProjectWorkspace.apply(current->{var layer=current.cape().layers().getFirst();byte[] mask=new byte[current.cape().width()*current.cape().height()];java.util.Arrays.fill(mask,(byte)255);return current.withCape(current.cape().replaceLayer(cape,layer.withMask(mask)));});set(screen,"mode",2);set(screen,"maskEdit",true);call(screen,"rebuildWidgets");}}
         else if(view<8){var source=LoomCaptureFixtures.source(fixtureProject);var settings=dev.loomstudios.image.ImageProcessingSettings.defaults().withTint(0xFF78CAFF,.5f);if(view==7)settings=settings.withBackground(new dev.loomstudios.image.BackgroundRemoval(true,source.pixelAt(0,0),16,true,0,0));var screen=new dev.loomstudios.client.screen.LoomImageEffectsScreen(home,source,settings,value->{});client.setScreen(screen);if(view==7){set(screen,"backgroundTab",true);call(screen,"rebuildWidgets");}}
@@ -473,6 +484,32 @@ public final class LoomUiCapture {
         finally{buffer.release();}
         Method validate=dev.loomstudios.network.LoomNetworking.class.getDeclaredMethod("validateProjectBlob",String.class,byte[].class);validate.setAccessible(true);if(!(Boolean)validate.invoke(null,hash,data))throw new IllegalStateException("Server rejects large valid project");byte[] corrupt=data.clone();corrupt[corrupt.length-1]^=1;if((Boolean)validate.invoke(null,hash,corrupt))throw new IllegalStateException("Server accepts corrupt project hash");
         System.out.println("LOOM_AUTHORING_PAYLOAD PASS schema4 protocol2 bytes="+data.length+" save/load/core384MiB=COVERED");
+        ClientProjectWorkspace.replaceWith(dev.loomstudios.project.LoomProjectCode.forkImported(p,System.currentTimeMillis()),client.player.getUUID());
+        ClientProjectWorkspace.save();ClientProjectWorkspace.equipCurrent();networkFixtureHash=ClientProjectWorkspace.equippedProjectHash();
+        client.setScreen(new LoomHomeScreen());
+        dev.loomstudios.client.network.ClientCosmeticSync.tick(client);
+    }
+    private static Field staticField(Class<?> type,String name)throws Exception{Field f=type.getDeclaredField(name);f.setAccessible(true);return f;}
+    private static boolean verifyLiveAuthoringNetwork(Minecraft client)throws Exception {
+        if(++networkWaitTicks>400)throw new IllegalStateException("Large live project upload/download timed out");
+        var server=client.getSingleplayerServer();if(server==null)throw new IllegalStateException("Missing integrated server");
+        if(networkCheck==null){
+            networkCheck=new java.util.concurrent.CompletableFuture<>();var check=networkCheck;
+            server.execute(()->{try {
+                var projects=staticField(dev.loomstudios.network.LoomNetworking.class,"PROJECTS").get(null);
+                var equipped=(java.util.Map<?,?>)staticField(dev.loomstudios.network.LoomNetworking.class,"EQUIPPED").get(null);
+                boolean cached=(Boolean)projects.getClass().getMethod("containsKey",Object.class).invoke(projects,networkFixtureHash);
+                check.complete(cached&&networkFixtureHash.equals(equipped.get(client.player.getUUID())));
+            }catch(Exception e){check.completeExceptionally(e);}});
+            return false;
+        }
+        if(!networkCheck.isDone())return false;
+        boolean serverAccepted=networkCheck.join();networkCheck=null;
+        var remote=staticField(dev.loomstudios.client.network.ClientCosmeticSync.class,"PROJECTS").get(null);
+        boolean downloaded=(Boolean)remote.getClass().getMethod("containsKey",Object.class).invoke(remote,networkFixtureHash);
+        if(!serverAccepted||!downloaded)return false;
+        System.out.println("LOOM_AUTHORING_NETWORK PASS: >1MiB C2S fragmentation, async validation, equip broadcast, S2C fragmentation and client decode");
+        return true;
     }
     private static void prepareChoices(Minecraft client)throws Exception{
         if(!Files.exists(fixturePath))LocalProjectLibrary.store().restore(fixtureProject.projectId());

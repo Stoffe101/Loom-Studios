@@ -2,8 +2,8 @@ package dev.loomstudios.project;
 
 /** Full box UVs: each wing owns a distinct 24×22 block in the 64×32 atlas. */
 public enum ElytraSurface {
-    OUTSIDE("Outside", 2, 2, 10, 20),
-    INSIDE("Inside", 14, 2, 10, 20),
+    OUTSIDE("Outside", 14, 2, 10, 20),
+    INSIDE("Inside", 2, 2, 10, 20),
     LEFT_EDGE("Left edge", 0, 2, 2, 20),
     RIGHT_EDGE("Right edge", 12, 2, 2, 20),
     TOP("Top", 2, 0, 10, 2),

@@ -19,7 +19,7 @@ public final class LoomEffectParametersScreen extends LoomPointerScreen {
     private LoomPlayerPreviewWidget preview;
     private String message =
             "Changes are live · Easing controls the transition after the selected key · Ctrl+Z"
-                + " undoes";
+                    + " undoes";
     private int x, y;
 
     public LoomEffectParametersScreen(Screen parent, UUID id, int tick) {
@@ -340,7 +340,7 @@ public final class LoomEffectParametersScreen extends LoomPointerScreen {
                                                                         e,
                                                                         e.label(),
                                                                         "Transition after the key"
-                                                                            + " at "
+                                                                                + " at "
                                                                                 + key.tick()
                                                                                 + " ticks"))
                                                 .toList(),
@@ -449,6 +449,11 @@ public final class LoomEffectParametersScreen extends LoomPointerScreen {
     public void removed() {
         ClientProjectWorkspace.endCompoundEdit();
         super.removed();
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override
