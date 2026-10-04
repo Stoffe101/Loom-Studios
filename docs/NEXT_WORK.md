@@ -1,3 +1,9 @@
+## Legacy version-history preservation — IN PROGRESS
+
+Official Build255 atc699904ffde8213b845138cd2d143f01d0f755f3 passes152 tests with384 MiB test heap, including warm48-layer compression reuse, cache budget and resized typed layers. Full runtime capture remains pending.
+
+Migration audit found that old version filenames identify original serialized bytes, while ProjectVersions.read compared a newly migrated v4 hash. Now validate snapshots against raw SHA-256 and preserve original source bytes when replacing a legacy file, even when artwork is unchanged. Two regressions cover existing v3 history/tampering and unchanged-artwork upgrade backups. New154-test official validation remains pending. Final scope is complete; next work is validation, evidence and merge.
+
 ## Large-project encoding performance checkpoint — IN PROGRESS
 
 Source829850eae3b0105ad0e69c30c4a005475c58fb3c: Build254 build passes151 tests; Comparison30 passes all20 jobs, including focused authoring Screen/GIF/input and3 MiB live networking. Full278 capture still running.

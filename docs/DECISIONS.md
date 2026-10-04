@@ -1182,3 +1182,7 @@ Original full-size screenshot review showed Outside mapped to the body's side of
 ### 2026-10-04 — Reuse compressed immutable layer blocks
 
 Cache encoded layer blocks by object identity and exact canvas dimensions. Layers are immutable; normalized Image/Gradient sources may persist across a resize, so dimensions must be part of the key. Cache32 MiB/64 entries and include retained source/layer/mask plus packed bytes in the weight; skip individually overweight blocks. Synchronize only lookup/commit; compression happens outside the lock. This does not change wire bytes or remove per-project/raw/envelope checks. Regression covers deterministic output, edited content, resize isolation and warm compression counts. Run all core tests with384 MiB heap in official Gradle builds.
+
+### 2026-10-04 — Check historical snapshots against original bytes
+
+A snapshot filename identifies the SHA-256 of its stored bytes, not the current-schema re-encoding after migration. Read snapshots with bounded regular-file input, verify raw checksum and project identity, then return the migrated project. Before replacing a legacy-schema save, snapshot its exact source bytes even if canonical artwork is unchanged. This keeps existing v1–3 version history usable and original upgrade input recoverable.

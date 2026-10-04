@@ -74,6 +74,32 @@ class SchemaV4StorageTest {
     }
 
     @Test
+    void savingLegacyProjectPreservesOriginalBytesEvenWithoutArtworkChanges() throws Exception {
+        var store=new ProjectFileStore(directory);
+        var project=LoomProjectFactory.blank("Legacy upgrade",1);
+        byte[] legacy=LoomProjectCodec.encodeVersion3SnapshotForTest(project);
+        Files.write(store.pathFor(project.projectId()),legacy);
+        var migrated=store.load(store.pathFor(project.projectId()));
+        store.save(migrated);
+        var versions=new ProjectVersions(store);var saved=versions.list(project.projectId());
+        assertEquals(1,saved.size());assertArrayEquals(legacy,Files.readAllBytes(saved.getFirst()));
+        assertEquals(migrated,versions.read(project.projectId(),saved.getFirst()));
+        assertEquals(4,LoomProjectCodec.peekSchemaVersion(Files.readAllBytes(store.pathFor(project.projectId()))));
+    }
+
+    @Test
+    void existingLegacyHistoryUsesItsOriginalChecksumAndRejectsTampering() throws Exception {
+        var project=LoomProjectFactory.blank("Old history",1);
+        byte[] legacy=LoomProjectCodec.encodeVersion3SnapshotForTest(project);
+        Path d=directory.resolve("history").resolve(project.projectId().toString());Files.createDirectories(d);
+        Path file=d.resolve("1791072000000-"+LoomProjectCodec.sha256(legacy)+".loom");Files.write(file,legacy);
+        var versions=new ProjectVersions(new ProjectFileStore(directory));
+        assertEquals(LoomProjectCodec.decode(legacy),versions.read(project.projectId(),file));
+        var changed=project.withName("Tampered history");Files.write(file,LoomProjectCodec.encodeVersion3SnapshotForTest(changed));
+        assertThrows(IOException.class,()->versions.read(project.projectId(),file));
+    }
+
+    @Test
     void allResolutionStepsKeepCapeWingAndMaskPixels() {
         var p = LoomProjectFactory.blank("Steps", 1);
         var layer = p.cape().layers().getFirst();
