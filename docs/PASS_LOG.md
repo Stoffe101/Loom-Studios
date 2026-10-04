@@ -1729,3 +1729,9 @@ Reviewed GUI3 originals against approved reference01/04/05. Correct physical win
 Network architecture: bounded single validation worker (one active/four queued) and single client decode worker (one active/two queued); latest-hash/connection checks; compatible broadcasts; throttled retries; byte-bounded caches rehydrate evicted equipped projects. New integrated-server verification exercises real >1MiB upload/download fragmentation after codec/hash tests. Runtime follow-up and live acceptance remain pending; no release claim.
 
 GIF scheduling uses a separate frame clock so full imported loops do not bypass global effect timing; core test covers independent frame selection. A local compile caught an overbroad edit to a NativeImage constructor; narrowed to compositor calls before publication.
+
+## 2026-10-04 — Focused authoring interaction verification — IN PROGRESS
+
+Source98d39898b406c2880495c8afce9ce46062a48bda: Official Build252 build passes151 tests; Comparison28 passes20/20 jobs and178 captures. Downloaded/decoded40 new authoring PNGs, reviewed all four contact sheets plus compact originals against01/04/05. Outside wings are visible with independent artwork; no new bounds/overlap failures. Large integrated networking passes3,149,342-byte C2S/S2C codec/hash and actual Fabric fragmentation, async validation, equip broadcast and remote decode. Full278 capture remains pending.
+
+Added LoomAuthoringVerification (opt-in only): actual Screen routing for stamp drag and single undo, Wand/Replace, mask flags and hide, Back return, sampled background/palette action, and native GIF textures across both channels. Fitted image coordinates are supplied deterministically before rendering; pixel edit routing and uploaded NativeImage checks use production code. Local compileClientJava passes; runtime assertions still pending. Release acceptance and merge remain the next concrete steps.

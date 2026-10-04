@@ -1,3 +1,9 @@
+## 2026-10-04 — Runtime integration checkpoint
+
+**IN PROGRESS**, source98d39898b406c2880495c8afce9ce46062a48bda. Official Build252 build passes151 tests. Comparison28 passes all20 jobs and178 actual captures. All40 new authoring originals decoded and four profile contact sheets reviewed against approved references01/04/05. Outer wing artwork now renders correctly; compact tabs, sizes, mask workspace, timeline ruler and8× canvases are aligned. Real3,149,342-byte C2S/S2C codec and integrated Fabric fragmentation/async validation/equip/client decode checks pass. Full278 capture suite is still running.
+
+Added a focused opt-in verification class for actual stamp drag/single undo, Wand/Replace actions, mask flags/hide brush, parent return, background sample/Create Swatches and uploaded GIF frame changes on Cape and Elytra. Local client compilation passes; these new runtime assertions remain pending. No product changes in this checkpoint. Next: verify this harness, complete the full capture, review Processing regressions, record final evidence and merge.
+
 ## Active schema-v4 authoring pass — 2026-10-04
 
 **IN PROGRESS**, branch `codex/schema4-authoring`, base main `82ca0a9db3f7093d2fd24d17ea6bee1f401be0d7`. This working tree is not yet a verified release or merged to main.

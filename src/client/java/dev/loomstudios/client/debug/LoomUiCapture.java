@@ -53,7 +53,7 @@ public final class LoomUiCapture {
             if (client.player == null || client.level == null || wait-- > 0) return;
             if (stage >= Integer.getInteger("loom.uiCaptureEnd",278)) {
                 if(!workflowsVerified) {
-                    verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); verifyAuthoringPayload(client);
+                    verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client); verifyAuthoringPayload(client);
                     workflowsVerified=true;
                 }
                 if(!verifyLiveAuthoringNetwork(client))return;
