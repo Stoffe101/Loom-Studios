@@ -1,6 +1,12 @@
 # Loom Studios — Project Format
 
-## Current schema-v4 implementation
+## Current schema-v5 implementation
+
+Schema5 embeds a length-bounded schema4 compressed-artwork body and appends per-primary-key cubic timing handles, up to16 unique compatible normalized parameter lanes per track, up to128 sorted keys per lane, at most16,384 parameter keys across the project, and Image-layer editable-frame flags. Every lane key validates0–1 values/easing/curve bounds and timeline duration. Unknown ordinals, trailing bytes, inconsistent nested lengths and duplicate/incompatible lanes reject atomically. The8 MiB envelope and existing artwork/expansion budgets still apply. Versions1–4 migrate on load; v4 wings are not migrated twice.
+
+References/stamps are local sidecars managed by EditorAssetStore, never part of .loom/Loom Code/export/equipped/network payloads. Ref assets: max8 per project,512px each,8 MiB sidecar. Stamp assets: max64 unique entries,128px each,8 MiB sidecar. Atomic writes keep prior assets when limits reject.
+
+## Historical schema-v4 implementation
 
 Schema4 preserves typed Paint/Image/Gradient layers, flags, editable alpha masks, bounded GIF frames, non-destructive background/tint settings, typed effect parameters and per-key outgoing easing. Versions1–3 migrate on load. Saving an upgrade snapshots the original bytes first, and historical file checksums remain tied to those original bytes. Each layer is an independently bounded DEFLATE block when smaller than raw. Exact raw lengths, cumulative expansion, masks, frame counts and dimensions are validated before accepting input.
 

@@ -1,3 +1,7 @@
+## Animation 2.1 visual correction — IN PROGRESS (2026-10-04)
+
+Checkpoint d10d62bc40c7bd075f1649fd11e3d2ce42b4b15d passed official Build259 (164 tests,310 captures) and Comparison34 (24 suites,210 captures). Visual review nevertheless found clipped timeline rows and an empty preview at compact GUI3: inner Canvas.height shadowed Screen.height, producing truncated/inverted scissors. Corrected all timeline panel/scissor/playhead bounds to use the screen height. Retained 12px ruler padding, fixed null primary-lane choices, bounded portrait stamp scaling, cached idle creative previews, updated loop frame labels and displayed actual ticks/pixels. Real Screen verification now drags parameter-lane keys and curve handles. New exact-SHA CI and four-profile visual acceptance pending; do not merge yet. Approved references01/04/05 guide inset panels and cyan/purple selection; no new dependencies.
+
 ## Animation2.1 core checkpoint — IN PROGRESS (2026-10-04)
 
 164 core tests pass, zero failures/errors/skips, standalone Java21.0.12.1 headless JUnit with384 MiB heap. Includes independent lane evaluation/save/code, Bezier inversion/preservation, cross-lane clipboard, duration/effect migration, frame editing/isolation/timing, onion source immutability, local references/hash exclusion and saved stamp transforms/favorites. Corrected two old schema-number assumptions and PixelPatch array equality found by the first run.

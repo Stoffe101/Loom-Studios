@@ -33,8 +33,9 @@ Every meaningful pass must record:
 - `NETWORK_PROTOCOL.md` — multiplayer synchronization design
 - `PROJECT_FORMAT.md` — Loom project/code serialization
 - `SMART_IMPORT.md` — Smart Import transform/processing architecture and status
+- `CREATIVE_AUTHORING.md` — Animation2.1 lanes/curves, reference guides, editable frames/onion skins and custom stamps
 - `AUTHORING_V4.md` — higher-resolution tools, format limits, image processing and usage
-- `ANIMATION.md` — schema-v4 animation model, runtime evaluation, timeline authoring and preview isolation
+- `ANIMATION.md` — schema-v5 animation model, runtime evaluation, timeline authoring and preview isolation
 - `LOOM_CODES.md` — local/offline project sharing, portable codes, imports/exports and hosted-service boundary
 - `IMPLEMENTATION_ROADMAP.md` — staged build roadmap
 - `REFERENCE_FIDELITY_ROADMAP.md` — per-reference-screen implementation/status map

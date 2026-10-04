@@ -1,13 +1,19 @@
 # Loom Studios — Animation
 
-## Current schema4 authoring
+## Animation2.1 (schema5), implementation checkpoint
+
+Independent parameter lanes now animate each typed effect setting in normalized0–1 storage, mapped to its actual numeric/RGB range at evaluation. Primary scalar tracks retain legacy behavior. The focused lane workspace supports Ctrl/Shift key selection, copy/paste relative to playhead, atomic multi-key dragging, collapsible layer groups, wheel scrolling, Ctrl/Shift wheel panning, zoom and a drag-handle cubic timing editor. Five existing easing modes plus Custom curve; Bezier X is inverted rather than treated as time.
+
+Editable GIF frames are baked to the selected semantic face with per-frame duration/duplicate/delete/reorder/direct painting and loop preview. Ghosts use pink previous/cyan next with configurable opacity and are never exported/equipped. Reference guides and saved stamps are editor-local sidecars. See CREATIVE_AUTHORING.md and CURRENT_STATE.md for acceptance state.
+
+## Historical schema4 authoring
 
 Cape and Elytra have an explicit Animate action that opens the shared studio; Back returns to painting. Presets remain available. Parameters & easing exposes typed Pulse opacity range; Scroll XY/distance; Moving Gradient angle/width/colors/offset; Sparkle density/seed/size/brightness; Glow intensity/falloff; Hue cycles. Keyframes animate each effect’s primary scalar. Outgoing transitions use Linear, Ease In, Ease Out, Smooth or Step. Old tracks retain legacy behavior during migration.
 
 GIF Image layers play composed frames with bounded per-frame ticks on both channels. Their independent frame clock preserves the full imported loop while authored effects obey global timeline loop/speed. Scrubbed previews use their requested tick deterministically. The timeline reserves a ruler band; purple spans show track duration, diamonds are keys and the cyan line is the playhead. See AUTHORING_V4.md for usage and limits. Older v3 foundations follow.
 
 
-**Status:** Schema4 implementation; exact release validation is recorded in CURRENT_STATE.md.
+**Status:** Schema5 implementation; exact release validation is recorded in CURRENT_STATE.md.
 
 ## Purpose
 

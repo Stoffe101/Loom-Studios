@@ -1,6 +1,10 @@
 # Loom Studios — Network Protocol
 
-## Implemented protocol2
+## Current protocol3
+
+Protocol3 negotiates schema5 parameter lanes/custom timing/editable frames. The8 MiB payload envelope, Fabric fragmentation, async queues, rate limits and cache budgets are unchanged. Both client and server must update; old peers retain local preview but cannot upload/equip unsupported projects. Reference guides/onion settings/stamp assets are local and never transmitted. Large transfer regression runs alongside the new UI tests. Dedicated-server concurrency remains a separate manual check.
+
+## Historical protocol2
 
 Schema4 increases the project envelope to8 MiB. Both client and server must run compatible protocol2 builds; ordinary or incompatible servers still allow local cosmetics. Fabric registerLarge performs transport fragmentation with512 bytes reserved above the serialized budget. Every blob is bounded, SHA-256 checked and fully decoded before use. Only compatible clients with an expected current hash may upload. Equipped state remains server authoritative; edits and animation frames stay local until Save + Equip.
 

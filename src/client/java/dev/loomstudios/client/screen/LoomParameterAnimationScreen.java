@@ -409,7 +409,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         }
         g.disableScissor();
       }
-      LoomScreenChrome.panel(g, 8, timelineTop, right - 8, height - 28);
+      LoomScreenChrome.panel(g, 8, timelineTop, right - 8, LoomParameterAnimationScreen.this.height - 28);
       label(
           g,
           "Time · " + tick + " ticks · zoom " + zoom + "×",
@@ -422,7 +422,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         label(
             g,
             String.format(java.util.Locale.ROOT, "%.1fs", at / 20f),
-            Math.min(right - 44, x),
+            Math.min(right - 52, x),
             timelineTop + 6,
             40,
             LoomUiTheme.TEXT_MUTED);
@@ -430,7 +430,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
       var rows = rows();
       int count = Math.max(1, (timelineHeight - 26) / 20);
       scroll = Math.max(0, Math.min(scroll, Math.max(0, rows.size() - count)));
-      g.enableScissor(10, timelineTop + 24, right - 10, height - 30);
+      g.enableScissor(10, timelineTop + 24, right - 10, LoomParameterAnimationScreen.this.height - 30);
       for (int i = 0; i < count && i + scroll < rows.size(); i++) {
         var row = rows.get(i + scroll);
         int y = timelineTop + 24 + i * 20;
@@ -457,7 +457,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
                 .filter(a -> a.id().equals(row.track()))
                 .findFirst()
                 .orElseThrow();
-        g.enableScissor(laneLeft(), timelineTop + 24, right - 12, height - 30);
+        g.enableScissor(laneLeft(), timelineTop + 24, right - 12, LoomParameterAnimationScreen.this.height - 30);
         for (var k : AnimationKeyEditing.keys(tr, row.parameter())) {
           int x = tickX(k.tick());
           boolean sel =
@@ -466,9 +466,9 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
           g.fill(x - 3, y + 6, x + 4, y + 13, sel ? LoomUiTheme.ACCENT_ALT : LoomUiTheme.ACCENT);
         }
         g.disableScissor();
-        g.enableScissor(10, timelineTop + 24, right - 10, height - 30);
+        g.enableScissor(10, timelineTop + 24, right - 10, LoomParameterAnimationScreen.this.height - 30);
       }
-      g.fill(tickX(tick), timelineTop + 22, tickX(tick) + 1, height - 30, LoomUiTheme.ACCENT);
+      g.fill(tickX(tick), timelineTop + 22, tickX(tick) + 1, LoomParameterAnimationScreen.this.height - 30, LoomUiTheme.ACCENT);
       g.disableScissor();
     }
 

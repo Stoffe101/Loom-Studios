@@ -35,6 +35,7 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
   private String message = "Editor-only guides never appear in exports or equipped designs";
   private LoomImagePreviewWidget image, stampPreview;
   private int playClock;
+  private LoomButton frameChoice;
 
   public LoomCreativeAssetsScreen(
       Screen parent,
@@ -186,7 +187,10 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
   }
 
   private void slider(String label, DoubleSupplier value, DoubleConsumer set) {
-    addRenderableWidget(new LoomSlider(right + 8, y, 188, label, value, set));
+    var slider = new LoomSlider(right + 8, y, 188, label, value, set);
+    if (label.equals("Duration (ticks)")) slider.format(v -> (1 + Math.round(v * 1199)) + " ticks");
+    if (label.equals("Size")) slider.format(v -> (1 + Math.round(v * 127)) + " px");
+    addRenderableWidget(slider);
     y += 24;
   }
 
@@ -471,6 +475,7 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
                       syncTime();
                       rebuildWidgets();
                     }));
+    frameChoice=choose[0];
     y += 24;
     pair("Previous", () -> selectFrame(-1), "Next", () -> selectFrame(1));
     pair(
@@ -733,7 +738,8 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
             fy = Math.min(data().source().height() - 1, y);
         int[] p = data().frames().get(index).pixels();
         if (x >= data().source().width() || y >= data().source().height()) return;
-        p[fy * data().source().width() + fx] = erase ? 0 : color;
+        int pi=fy*data().source().width()+fx;int nextColor=erase?0:color;
+        p[pi]=layer().alphaLocked()?(p[pi]&0xFF000000)|(nextColor&0xFFFFFF):nextColor;
         editData(
             d ->
                 EditableFrames.replace(
@@ -764,7 +770,7 @@ public final class LoomCreativeAssetsScreen extends LoomPointerScreen {
       if (playClock >= data().frameTicks().get(index)) {
         playClock = 0;
         index = (index + 1) % data().frames().size();
-        syncTime();
+        syncTime();if(frameChoice!=null)frameChoice.setMessage(Component.literal("Frame "+(index+1)+" / "+data().frames().size()));
       }
     }
   }

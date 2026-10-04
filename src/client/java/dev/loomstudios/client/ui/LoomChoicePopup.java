@@ -24,7 +24,7 @@ public final class LoomChoicePopup<T> {
         x=Math.max(8,Math.min(screenWidth-width-8,anchor.getRight()-width));
         int below=anchor.getBottom()+4;
         y=Math.max(8,Math.min(screenHeight-28-h,below+h<=screenHeight-28?below:anchor.getY()-h-4));
-        for(int i=0;i<options.size();i++)if(options.get(i).value().equals(selected))focused=i;
+        for(int i=0;i<options.size();i++)if(java.util.Objects.equals(options.get(i).value(),selected))focused=i;
         keepVisible();narrate();
     }
     private void narrate(){var option=options.get(focused);net.minecraft.client.Minecraft.getInstance().getNarrator().saySystemNow(Component.literal(title+". "+option.label()+". "+option.detail()+". Up/down to choose, Enter to apply, Escape to cancel."));}

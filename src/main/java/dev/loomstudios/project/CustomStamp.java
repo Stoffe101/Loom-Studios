@@ -52,7 +52,8 @@ public record CustomStamp(UUID id, String name, PixelPatch patch, boolean favori
     PixelPatch p = patch;
     for (int i = 0; i < Math.floorMod(turns, 4); i++) p = p.rotate();
     if (mirror) p = p.flip(true);
-    int w = Math.max(1, size), h = Math.max(1, Math.round(size * p.height() / (float) p.width()));
+    int longest=Math.max(p.width(),p.height());
+    int w=Math.max(1,Math.round(size*p.width()/(float)longest)),h=Math.max(1,Math.round(size*p.height()/(float)longest));
     int[] src = p.data(), dst = source.data();
     for (int y = 0; y < h; y++)
       for (int x = 0; x < w; x++) {

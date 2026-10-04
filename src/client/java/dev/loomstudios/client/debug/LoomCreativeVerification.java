@@ -124,9 +124,9 @@ final class LoomCreativeVerification {
     int left = callInt(lanes, "laneLeft"),
         top = (int) LoomAuthoringVerification.get(lanes, "timelineTop");
     var original = ClientProjectWorkspace.project().animation();
-    lanes.mouseClicked(mouse(left, top + 24 + 20 + 10), false);
-    lanes.mouseDragged(mouse(left + 20, top + 24 + 20 + 10), 20, 0);
-    lanes.mouseReleased(mouse(left + 20, top + 24 + 20 + 10));
+    lanes.mouseClicked(mouse(left, top + 24 + 40 + 10), false);
+    lanes.mouseDragged(mouse(left + 20, top + 24 + 40 + 10), 20, 0);
+    lanes.mouseReleased(mouse(left + 20, top + 24 + 40 + 10));
     if (original.equals(ClientProjectWorkspace.project().animation()))
       throw new IllegalStateException("Parameter workspace key drag failed");
     ClientProjectWorkspace.undo();
@@ -137,6 +137,25 @@ final class LoomCreativeVerification {
     LoomAuthoringVerification.press(lanes, "Copy keys");
     var clipboard = (List<?>) LoomAuthoringVerification.get(lanes, "clipboard");
     if (clipboard.size() < 2) throw new IllegalStateException("Multiple keys were not copied");
+    // Curve handles must edit the selected parameter lane, with a single Undo.
+    LoomAuthoringVerification.press(lanes, "Reset curve");
+    int graphTop = (int) LoomAuthoringVerification.get(lanes, "graphTop");
+    int graphHeight = (int) LoomAuthoringVerification.get(lanes, "graphHeight");
+    int right = (int) LoomAuthoringVerification.get(lanes, "right");
+    var curveBefore = ClientProjectWorkspace.project().animation();
+    var curve = curveBefore.tracks().getLast().lanes().getFirst().keys().getFirst().curve();
+    double hx = 24 + curve.x1() * (right - 48);
+    double hy = graphTop + graphHeight - 10 - curve.y1() * (graphHeight - 32);
+    lanes.mouseClicked(mouse(hx, hy), false);
+    lanes.mouseDragged(mouse(hx + 8, hy - 8), 8, -8);
+    lanes.mouseReleased(mouse(hx + 8, hy - 8));
+    if (curveBefore.equals(ClientProjectWorkspace.project().animation()))
+      throw new IllegalStateException("Curve handle drag did not edit the parameter keys");
+    ClientProjectWorkspace.undo();
+    if (!curveBefore.equals(ClientProjectWorkspace.project().animation()))
+      throw new IllegalStateException("Curve handle drag did not undo once");
+    // Null is the supported primary-lane choice: opening the chooser must be safe.
+    LoomAuthoringVerification.press(lanes, "Distance");
     EditorOverlayState.references(p.projectId(), List.of());
     EditorOverlayState.onion(0, .3f);
     EditorOverlayState.time(0, 0, 1);
