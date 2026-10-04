@@ -97,7 +97,9 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
     top = LoomScreenChrome.headerHeight(LoomUiTheme.compact(width, height)) + 8;
     right = width - 204;
     graphTop = top + 30;
-    graphHeight = Math.max(64, Math.min(110, (height - graphTop - 64) / 3));
+    graphHeight = previewMode
+        ? Math.max(96, Math.min(200, (height - graphTop - 64) / 2))
+        : Math.max(64, Math.min(110, (height - graphTop - 64) / 3));
     timelineTop = graphTop + graphHeight + 8;
     timelineHeight = height - 28 - timelineTop;
     button(8, top, 60, "Back", this::onClose);

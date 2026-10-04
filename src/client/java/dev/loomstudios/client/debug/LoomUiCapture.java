@@ -554,6 +554,13 @@ public final class LoomUiCapture {
       client.setScreen(screen);
       set(screen, "parameter", dev.loomstudios.project.AnimationParameter.DENSITY);
       if (view == 1) {
+        ClientProjectWorkspace.apply(p -> p.withAnimation(
+            dev.loomstudios.project.AnimationKeyEditing.edit(p.animation(), java.util.Set.of(
+                new dev.loomstudios.project.AnimationKeyEditing.Address(t.id(),
+                    dev.loomstudios.project.AnimationParameter.DENSITY, 0)),
+                k -> new dev.loomstudios.project.AnimationKeyframe(k.tick(), k.value(),
+                    dev.loomstudios.project.AnimationEasing.CUSTOM,
+                    new dev.loomstudios.project.KeyframeCurve(.15f, 0, .85f, 1)), false)));
         var selected =
             (java.util.Set<dev.loomstudios.project.AnimationKeyEditing.Address>)
                 field(screen, "selected").get(screen);
