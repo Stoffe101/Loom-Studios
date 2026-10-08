@@ -1,5 +1,8 @@
 # Loom Studios — UI Compatibility Contract
 
+> **Current-resolution note (2026-10-08):** The runtime supports editable **1×/2×/4×/6×/8×** projects, subject to bounded storage, cache and editor limits. This contract applies to all five scales; some older checkpoint examples below mention only 4×, and those are historical. Required GUI viewport checks remain the four profiles listed below; new M1 work must additionally validate actual Image/Asset Library placement and Animation lanes on populated designs, not only empty screens.
+
+
 This document defines the minimum desktop GUI profiles Loom Studios must support cleanly.
 
 It is a hard UI compatibility gate. New editor panels, floating windows, tool rows, preview controls, and future Elytra/animation interfaces must be checked against every profile below.
@@ -38,7 +41,7 @@ At every required profile:
 
 ## High-resolution canvas performance
 
-1x, 2x, and 4x project resolution must not change the editor layout contract.
+1×, 2×, 4×, 6× and 8× project resolution must not change the editor layout contract.
 
 The canvas renderer uses a revision-cached DynamicTexture so project resolution should primarily affect edit/upload cost rather than per-frame GUI draw-call count.
 
@@ -47,7 +50,7 @@ A continuous brush stroke is one compound history entry.
 Performance regressions should be tested especially at:
 
 - 1920×1080 / GUI 3, because it is the tightest required logical viewport;
-- 4x / 256×128 project resolution, because it is the heaviest currently supported editable texture.
+- 8× / 512×256 project resolution, especially with imported multi-frame GIFs and numerous layers; 6× is also required.
 
 ## Bounded inspector
 
@@ -77,7 +80,7 @@ For each required profile:
 5. open the Palettes window;
 6. move it to each side/corner;
 7. pin/unpin it;
-8. paint at 1x, 2x, and 4x;
+8. paint at 1×, 2×, 4×, 6× and 8× (including bounded heavy multi-layer/GIF cases);
 9. open/close 3D Preview;
 10. confirm Save / Save + Equip remain reachable;
 11. resize/re-enter the screen and verify no window becomes inaccessible.

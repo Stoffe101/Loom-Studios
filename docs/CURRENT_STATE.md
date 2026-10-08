@@ -14,6 +14,22 @@ A separate M1 prototype branch based on the unmerged Asset Library work improves
 
 **No new dependency, project format, renderer, or network protocol**. This is a targeted UI improvement reusing existing LoomPreviewBackground, LoomPreferences, LoomPlayerPreviewWidget and premium UI primitives. Branch is not merged and has **no fresh Minecraft CI or screenshot validation**; regression/test and four-profile review are mandatory after M0 integration.
 
+## 2026-10-08 — Mission M0 complete: stable integrated UI baseline — DONE
+
+**Main integration:** PR #28 merged as `c6ac027374c68eea4165f643ab10294ad4ea3886` (editable Asset Library with 29 original illustrations, true 2D/worn Cape/Elytra previews, 16 focused screenshot profiles, bounded project-owned Image layers). PR #26 merged as `0ce5420c6ee0d0dde99c4eee5472791772523df4` (actual animation layer selector, clearer Simple/Advanced entry, correct separated curve/timeline/3D preview hitboxes). Source and UI data remain schema-v5/protocol3.
+
+**Evidence:** Asset [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) passed Java21/326 actual Minecraft captures; focused [16-image real worn review](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878) and [24 comparison suites](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879) passed. Animation standalone [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) passed and combined [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153) passed Java and **326** actual Minecraft captures. Accepted automated checks are Linux/Mesa/Xvfb, **not Windows/Iris/dedicated-server validation**, which remains M7.
+
+**CI/storage:** [Prune workflow](https://github.com/Stoffe101/Loom-Studios/actions/runs/37712798078) succeeded and deleted 875 obsolete artifacts (~13.8 GiB reclaimed); Builds retain curated original screenshots while running full capture assertions. Documentation PR #30 corrected old PNG-only, schema-v3 and 4×-maximum claims while preserving historical notes. This entry supersedes older IN PROGRESS notes below.
+
+**Next:** proceed to M1 editor UI/UX, beginning with preview background/tooltip clarity and selected-item contextual Browse/Edit controls, then user screenshot review. The M1 branch is unverified and not yet merged.
+
+## 2026-10-08 — Studio UX 3.0 / animation first slice — IN PROGRESS, CI pending
+
+First implementation on `feature/animation-ux-first-pass-2026-10-08`: actual layer chooser instead of cycling on click in Animation Studio; clearer Simple/Advanced labels, contextual beginner help and disabled Parameters/Curves until a track exists; Space toggles playback. Advanced Parameters & Curves shows **live cosmetic preview alongside curve on wide logical viewports** (>=1100×520), keeps the established focused Curve/3D preview toggle on compact layouts, preserves camera state across rebuilds, and labels the advanced screen without internal version numbers. Modified `LoomAnimationScreen` and `LoomParameterAnimationScreen`.
+
+**Status:** not yet accepted or merged, no new persisted schema/network data or asset-library implementation. Await Minecraft 1.21.11 CI, all 164 tests, all 310 screenshot assertions, and visual review of actual animation screenshots at four profiles before claiming DONE. Existing Animation 2.1 runtime remains last fully accepted. Next: review captures, fix layout/input issues, then begin editable Asset Library browser as a separate tested slice.
+
 ## 2026-10-08 — Real 2D/3D asset preview and 29-artwork diversity pass — CI PENDING
 
 On Asset Library PR28's feature branch: 17 original illustrated premium assets extended by **12 distinct original ARGB assets** (Ocean koi/wave/coral; Creatures owl/moth/fox; Seasons maple/snow-globe/rose; Heraldry compass/dragon/shield), bringing the Featured quality-first set to **29**. Existing monochrome/basic stamps remain in their own categories. The browser now adds a **live worn-cosmetic preview**: 2D artwork beside actual 3D player/cape/Elytra on comfortable/wide GUIs, and a single focused 2D↔3D toggle on compact GUI3. Preview reuses existing Minecraft player rendering, Loom NanoVG theme and actual unsaved project data; it neither equips nor uploads content.
@@ -35,6 +51,12 @@ The Asset Library grid now performs bounded nearest-neighbor thumbnail fitting i
 Initial code on `feature/editable-asset-placement-core-2026-10-08` adds a **project-owned, individually editable Image layer** placement core `AssetPlacement`; original categorized `CreativeAssetCatalog` seed artwork (celestial, cloud/mist, trees/nature, fantasy, decorative categories); `LoomAssetLibraryScreen` with thumbnails, filtering/search, drag-thumbnail-to-design and click-to-arm/click-or-drag to place. The library opens from both Cape and Elytra editor Assets buttons. Art is copied into .loom source pixels, independent from local stamp-pack IDs. Image source editing, transform handles and selected-layer return are connected. The old reference/GIF/onion/custom-stamp tools remain behind the **Tools** button.
 
 This is **stage-one architecture only**: one Image layer per placed asset within the existing 64-layer/channel budget. Large independent star collections and hundreds of curated icons are *future* work requiring compatible collection-object persistence. No schema/protocol revision is introduced here. Paint vs placing is separate. Tests added for save/code roundtrip, wing isolation, source pixel edits, bounds and catalog data. Four actual in-game Asset Library screenshots (GUI2/3 at 1920x1080 and 3440x1440) added to the capture workflow; expected captures increment to 314. **No test/screenshot result confirmed yet**, and this branch is not accepted or merged.
+
+## 2026-10-08 — Active mission-board planning checkpoint — DOCUMENTATION ONLY
+
+Created [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md), a living, checkable product queue grounded in approved reference screens and the real 2D/worn Cape screenshots. Distinguishes accepted current baseline on main, open Animation UX PR26 and open Asset Library PR28 (29 original illustrated starter assets, focused real-client capture) from still-planned work. Orders stable UI hierarchy, animation usability and asset-art quality ahead of a future ElvUI-like layout editor. Includes exact splitters/numeric sizes before complex docking, 4 required GUI profiles, visible reset, actual Windows/mod compatibility, and schema/network safety.
+
+**No Java, art, CI, runtime, test or schema change in this pass.** No open PR is newly verified or merged merely by creating a board. When a mission is implemented, update this canonical state with **exact SHA and CI evidence** and then check it off.
 
 ## 2026-10-08 — Actions artifact retention and compact visual evidence — IMPLEMENTATION PENDING CI
 

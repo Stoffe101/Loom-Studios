@@ -1,5 +1,8 @@
 # Loom Studios — Smart Import
 
+> **Current-status note (2026-10-08):** This file contains historical initial PNG import architecture after the current multi-format overview. Follow the current capability/status in [CURRENT_STATE.md](CURRENT_STATE.md), the product contract in [AUTHORING_V4.md](AUTHORING_V4.md), and [EDITOR_CREATIVE_UX_SPEC.md](EDITOR_CREATIVE_UX_SPEC.md) for proposed Smart Import UX. Do not infer PNG-only or 256px embedded-source limits from older sections: current embedded art limit is 512px per dimension, bounded by the project/storage budget. Treat WebP and future codecs as proposed only.
+
+
 ## Current multi-format/local processing workflow
 
 Import detects PNG, JPG/JPEG, GIF, BMP, TIFF or WBMP by content through header-first ImageIO bounds. Files are limited to32 MiB, source dimensions4096px/16M pixels, and embedded artwork512px. GIF offsets/disposal/delays are composed locally and bounded to64 frames/4M embedded pixels. High resolution improves placement detail when the original image contains it.
@@ -7,8 +10,8 @@ Import detects PNG, JPG/JPEG, GIF, BMP, TIFF or WBMP by content through header-f
 Processing → Image adjustments offers brightness, contrast, saturation and dedicated tint; background removal samples a pixel and applies RGB tolerance in connected/global mode. Checkerboard previews explain transparency. Create Swatches from Image saves/selects an extracted palette. Image layers retain original embedded pixels and settings for later reopening. Compact Processing routes adjustments into this dedicated workspace so the texture preview keeps drag space. Elytra import targets the selected face, with independent wing UVs and a mirrored linked copy confined to that face. See AUTHORING_V4.md for usage and limits.
 
 
-**Status:** Functional implementation complete / exact-head CI and local visual verification pending  
-**Reference target:** `Loom_Studios_03_Smart_Import.png`
+**Current scope:** multi-format ImageIO import (PNG, JPEG, GIF, BMP, TIFF and WBMP), bounded embedded source images and non-destructive processing through the live Image-layer pipeline. The 2026-10-04 accepted runtime/CI checkpoint is documented in CURRENT_STATE; Windows/mod/shader compatibility still requires target hardware testing. WebP is **not** currently supported. The earlier PNG-only walkthrough below is retained as **historical implementation context**, not as today's supported-formats list.  
+**Reference target:** `references/ui/Loom_Studios_03_Smart_Import.webp`
 
 ## Product rule
 
@@ -27,7 +30,7 @@ The persistent Image layer keeps:
 
 Runtime/editor textures are compiled products, not the editable source of truth.
 
-## Implemented import flow
+## Historical baseline: original PNG import flow (superseded by multi-format support)
 
 Smart Import is reachable from:
 - Loom Home through **Import PNG with Smart Import**;
@@ -46,7 +49,7 @@ The current screen provides:
 
 The candidate 3D preview uses the normal Loom render compiler through a scoped preview project. It does not mutate the equipped project or multiplayer state.
 
-## PNG safety and persistence
+## Historical PNG-specific safety notes (later multi-format limits take precedence)
 
 Client PNG decoding is handled by `PngImportAdapter`.
 

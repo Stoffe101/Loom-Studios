@@ -16,6 +16,22 @@ The Asset Library now separates **Assets** (search/category/thumbnail and click/
 
 After accepting/merging PR26 and PR28 into main, integrate the M1 preview-usability prototype, run the full 326-image capture and 16 focused Asset Library captures at GUI2/3 with both Cape and Elytra. Verify the new backdrop icon never overlaps "3D · Pose", visibility or fullscreen icon at compact widths; confirms focus/hover/hitboxes, avoids screen-wide tooltip obstructions, uses neutral backdrop consistently with local preferences and shows selected layer name/opacities. Follow with canvas-first panel organization, intelligent inspector and numeric layout sizing. This branch is **not DONE** until tests/screenshots pass.
 
+## 2026-10-08 — M0 accepted; active next work = M1 core editor UI/UX
+
+M0-01 through M0-06 are complete on main (see [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md) and CURRENT_STATE for merged SHAs/CI proof). No more broad unrelated subsystem work is needed to claim M0 done.
+
+**Next implementation order:** (1) integrate the staged M1 preview/asset inspector branch onto verified main, using the already existing Loom premium UI infrastructure; (2) run Java21 tests and focused 20-image Cape/Elytra/selected Edit inspector screenshots, then all 330 actual-client captures and premium comparisons; (3) inspect 1920×1080 GUI3 and 3440×1440 GUI2 with real populated artwork and reject overlapping tooltips, clipped labels, offscreen controls; (4) continue Animation Simple/Advanced redesign, adaptive canvas/preview layout, frame filmstrip and reference drag controls; (5) return to art curation/scatter/soft mist once daily authoring workflows are intuitive. Exact pixel/drag resizing of arbitrary panels and full ElvUI-style docking are separately staged M5 features, after working default layouts.
+
+**Known visual UX debt:** Animation 3440 GUI2 leaves unused right-side vertical space under the 3D preview, while 1920 GUI3 truncates lengthy footer guidance; the M0 curve/widget overlap is fixed, but the overall experience still needs M1/M2 work. Windows optional-mod and dedicated-server acceptance remains M7.
+
+## 2026-10-08 — Studio UX 3.0 first slice — CI / visual acceptance pending
+
+1. Run Java21 Minecraft 1.21.11 build and existing 164 tests on `feature/animation-ux-first-pass-2026-10-08`.
+2. Capture all 310 editor screenshots. **Individually inspect** the new Animation studio, parameter lanes, curve graph and live preview (1920×1080 GUI2/3 and 3440×1440 GUI2/3); test the wide split preview doesn't steal or misplace curve handles and compact layout remains unchanged.
+3. Exercise new layer dropdown, failed/no-track Parameters button, Simple/Advanced switches and Space playback; save/undo/preview isolation.
+4. After acceptance/merge, start editable Asset Library work in independently tested slices: editor Assets button, thumbnail browser, drag/click-to-place as **independent editable layers by default**, then original curated packs, starfield collection architecture, scatter, mist/recipes.
+5. Capture/share actual artifact screenshots with user for visual feedback. Do not merge layout failures merely because screenshots decode.
+
 ## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
 
 1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
@@ -40,6 +56,12 @@ After accepting/merging PR26 and PR28 into main, integrate the M1 preview-usabil
 4. Review UI state changes after browsing and returning to editors, no lost draft/false equip/scale drift or texture cache leak. If any failures, fix before merging.
 5. M2 follow-up: expand original quality-controlled art catalog, asset collections with individually addressable children for many stars, scalable thumbnail atlas, scatter mode and editable theme recipes. This is not part of the stage-one deliverable.
 6. Share actual screenshot artifact images with user for look/feel feedback before broader expansion.
+
+## 2026-10-08 — Active mission queue / visual review — PLANNING ONLY
+
+The current ordered check-off board is [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md). Immediate emphasis: (1) verify/accept PR28's real worn Cape/Elytra + 2D results and all latest CI, investigate the extra cyan crescent; (2) verify/accept PR26 animation changes without merging unchecked state; (3) fix obstructive tooltips/weak canvas & cosmetic focus at GUI3 and ultrawide; (4) contextual edit properties and Simple Animation; (5) curate art quality before growing the catalog.
+
+**ElvUI-inspired editable layout:** accepted for roadmap consideration, **not implemented or next in line**. Stage splitters and numeric sizes after stable workspace semantics; later Edit Layout unlock/snap/dock, named profiles and recoverable reset. No code or functionality is claimed by this documentation entry.
 
 ## 2026-10-08 — Actions artifact storage — TODO verification after merge
 
