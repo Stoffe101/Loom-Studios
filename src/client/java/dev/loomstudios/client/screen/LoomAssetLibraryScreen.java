@@ -4,6 +4,7 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.EditorOverlayState;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
+import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
 import dev.loomstudios.client.ui.premium.PremiumText;
@@ -38,9 +39,11 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   private CreativeAssetCatalog.Entry selectedAsset;
   private String category = "Featured", query = "", message = "Choose artwork · drag or click to place";
   private int size = 9, page;
-  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject;
+  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject, wornMode;
   private int startPixelX, startPixelY, lastX, lastY;
   private LoomImagePreviewWidget preview;
+  private LoomPlayerPreviewWidget wornPreview;
+  private LoomPlayerPreviewWidget.ViewState lastWornView;
   private EditBox search;
   private LoomButton categoryButton, previous, next, modeButton, pixelButton;
   private final List<Tile> tiles = new ArrayList<>();
@@ -128,7 +131,22 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     message=selected.name()+" opacity "+Math.round(value*100)+"%";
   }
 
+  private boolean splitWornPreview() {
+    return width >= 1050 && height >= 450 && !editPixels;
+  }
+
+  /** Also used by the Minecraft screenshot fixtures to capture the equipped-looking view. */
+  public void showWornPreview(boolean value) {
+    wornMode=value;
+    armed=false;
+    editPixels=false;
+    draggingTile=false;
+    placing=false;
+    rebuildWidgets();
+  }
+
   private void showPreviewController() {
+    if(preview==null)return;
     if (editPixels) {
       preview.setPixelAction((x,y) -> {
         try {
@@ -160,6 +178,9 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
 
   @Override protected void init() {
     if (preview != null) preview.close();
+    if (wornPreview != null) lastWornView=wornPreview.viewState();
+    preview=null;
+    wornPreview=null;
     tiles.clear();
     int top = LoomScreenChrome.headerHeight(LoomUiTheme.compact(width, height)) + 8;
     // Let the illustrated catalog breathe on ultrawide without starving the
@@ -168,17 +189,45 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
         : Math.max(182, Math.min(244, width / 3));
     int right = width - sideWidth - 8;
     addRenderableWidget(new LoomButton(8,top,52,20,Component.literal("Back"),this::onClose));
-    addRenderableWidget(new LoomButton(64,top,Math.max(100,right-140),20,
+    int viewX=right-165;
+    addRenderableWidget(new LoomButton(64,top,Math.max(100,viewX-68),20,
         Component.literal(wing ? "Elytra · " + surface.label() : "Cape · " + face.displayName()),
         () -> {})).active=false;
+    var view=addRenderableWidget(new LoomButton(viewX,top,85,20,
+        Component.literal(splitWornPreview() ? "2D + 3D" : wornMode ? "2D Design" : "3D Worn"),
+        () -> showWornPreview(!wornMode)));
+    view.active=!splitWornPreview();
+    view.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(
+        splitWornPreview() ? "Both views are visible side by side"
+            : wornMode ? "Return to the drawing surface to place/edit assets"
+                : "Inspect the actual cape or Elytra on your character")));
     addRenderableWidget(new LoomButton(right-76,top,72,20,Component.literal("Done"),this::onClose));
-    preview = addRenderableWidget(new LoomImagePreviewWidget(8,top+25,right-12,
-        height-top-82,
-        Component.literal(editPixels ? "Edit Asset Pixels" : "Your Design · Drop assets here"),
-        this::image,
-        () -> 37 * ClientProjectWorkspace.revision()
-            + 11 * EditorOverlayState.revision() + (editPixels ? 1 : 0)));
-    showPreviewController();
+
+    // On comfortable/wide displays the artwork and actual 3D cosmetic are both
+    // visible, as in approved reference02/04. Compact GUI3 focuses on one at
+    // a time so we do not crush two previews into unusable postage stamps.
+    int previewW=right-12;
+    boolean split=splitWornPreview();
+    int artW=split ? Math.max(220,(int)(previewW*.64)) : previewW;
+    if(!wornMode || split || editPixels) {
+      preview=addRenderableWidget(new LoomImagePreviewWidget(8,top+25,artW,
+          height-top-82,
+          Component.literal(editPixels ? "Edit Asset Pixels" : "Your Design · Drop assets here"),
+          this::image,
+          () -> 37 * ClientProjectWorkspace.revision()
+              + 11 * EditorOverlayState.revision() + (editPixels ? 1 : 0)));
+      showPreviewController();
+    }
+    if ((wornMode || split) && !editPixels) {
+      int wornX=split ? artW+12 : 8;
+      int wornW=split ? Math.max(140,previewW-artW-4) : previewW;
+      wornPreview=addRenderableWidget(new LoomPlayerPreviewWidget(
+          wornX,top+25,wornW,height-top-82,
+          ClientProjectWorkspace::project,
+          wing ? LoomPlayerPreviewWidget.Mode.ELYTRA : LoomPlayerPreviewWidget.Mode.CAPE));
+      wornPreview.restoreViewState(lastWornView);
+      if(wing)wornPreview.setPose(dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING);
+    }
 
     int x=right+4, w=width-x-8;
     categoryButton=addRenderableWidget(new LoomButton(x,top,w,20,
@@ -365,6 +414,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     super.removed();
   }
   @Override public void onClose() {
+    if(wornPreview!=null)lastWornView=wornPreview.viewState();
     if(parent instanceof CapeEditorScreen c)c.focusAssetLayer(layerId);
     if(parent instanceof ElytraEditorScreen e)e.focusAssetLayer(layerId);
     minecraft.setScreen(parent);
