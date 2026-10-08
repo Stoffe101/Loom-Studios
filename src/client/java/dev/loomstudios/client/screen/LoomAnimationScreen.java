@@ -14,6 +14,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private final Screen parent;
     private final AnimationChannel channel;
     private UUID layerId,trackId;
+    private final LinkedHashSet<UUID> selectedLayerIds=new LinkedHashSet<>();
     private int tick;
     private double cursor;
     private boolean playing,refreshPending;
@@ -29,8 +30,25 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private String draftKey;
     private int guideTop,guideWidth,studioRight;
     private LoomButton presetButton,rateButton,effectButton;
-    public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;this.previewLoop=ClientProjectWorkspace.project().animation().loop();}
-    private List<LoomLayer> layers(){return(channel==AnimationChannel.CAPE?ClientProjectWorkspace.project().cape():ClientProjectWorkspace.project().elytra()).layers();}
+    public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;if(layerId!=null)selectedLayerIds.add(layerId);this.previewLoop=ClientProjectWorkspace.project().animation().loop();}
+    private LoomCanvas canvas(){return channel==AnimationChannel.CAPE
+        ? ClientProjectWorkspace.project().cape() : ClientProjectWorkspace.project().elytra();}
+    private List<LoomLayer> layers(){return canvas().layers();}
+    private List<UUID> targetIds(){return List.copyOf(selectedLayerIds);}
+    private boolean batch(){return selectedLayerIds.size()>1;}
+    private void selectAnimationLayer(UUID id,net.minecraft.client.input.MouseButtonEvent event){
+        if(event.hasControlDown()){
+            if(!selectedLayerIds.add(id))selectedLayerIds.remove(id);
+        }else{
+            selectedLayerIds.clear();selectedLayerIds.add(id);
+        }
+        if(selectedLayerIds.contains(id)){layerId=id;trackId=null;}
+        if(!selectedLayerIds.isEmpty()&&!selectedLayerIds.contains(layerId))
+            layerId=selectedLayerIds.iterator().next();
+        draftCache=null;draftKey=null;
+        message=selectedLayerIds.size()+" layers selected · Try or Apply";
+        rebuildWidgets();
+    }
     private AnimationTrack track(){return ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.id().equals(trackId)).findFirst().orElse(null);}
     @Override protected void init(){
         int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8;
@@ -39,6 +57,8 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         studioRight=right;
         int sideW=inspectorWidth-16,halfW=(sideW-4)/2;
         if(layerId==null||layers().stream().noneMatch(l->l.id().equals(layerId)))layerId=layers().getFirst().id();
+        selectedLayerIds.retainAll(layers().stream().map(LoomLayer::id).toList());
+        if(selectedLayerIds.isEmpty())selectedLayerIds.add(layerId);
         if(track()==null)trackId=ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.channel()==channel&&t.layerId().equals(layerId)).map(AnimationTrack::id).findFirst().orElse(null);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
         LoomButton[] layerChoice = {null};
@@ -51,7 +71,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                     l.id(), l.name(), l.locked() ? "Locked layer" : "Animate this layer"))
                     .toList(),
                 layerId,
-                id -> { layerId = id; trackId = null; rebuildWidgets(); })));
+                id -> { layerId = id; trackId = null; selectedLayerIds.clear(); selectedLayerIds.add(id); rebuildWidgets(); })));
         layerChoice[0].setIcon(LoomButton.Icon.DOWN);
         layerChoice[0].setTooltip(net.minecraft.client.gui.components.Tooltip.create(
             Component.literal("Choose the Cape or Elytra layer to animate. Existing keyframes stay intact.")));
@@ -66,9 +86,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         int y=workTop+previewHeight+5;
         presetButton=button(right+8,y,sideW,"Preset: "+preset.label(),()->showChoices(presetButton,"Animation preset",Arrays.stream(AnimationPreset.values()).map(p->new LoomChoicePopup.Option<>(p,p.label(),p.description())).toList(),preset,p->{preset=p;rebuildWidgets();}));presetButton.setIcon(LoomButton.Icon.DOWN);
         rateButton=button(right+8,y+24,halfW,"Rate "+presetRate+" Hz",()->showChoices(rateButton,"Cycles per second",List.of(.25F,.5F,1F,2F).stream().map(r->new LoomChoicePopup.Option<>(r,r+" Hz",r==.25F?"One cycle every four seconds":r==.5F?"One cycle every two seconds":r==1F?"One cycle per second":"Two cycles per second")).toList(),presetRate,r->{presetRate=r;rebuildWidgets();}));rateButton.setIcon(LoomButton.Icon.DOWN);
-        boolean customLanes=track()!=null&&!track().lanes().isEmpty();
-        var applyButton=button(right+12+halfW,y+24,sideW-halfW-4,"Apply & play",this::applyPreset);
-        applyButton.active=!customLanes;
+        boolean customLanes=track()!=null&&!track().lanes().isEmpty()&&!batch();
+        var applyButton=button(right+12+halfW,y+24,sideW-halfW-4,
+            batch()?"Apply to "+selectedLayerIds.size():"Apply & play",this::applyPreset);
+        applyButton.active=!customLanes&&!selectedLayerIds.isEmpty();
         if(customLanes)applyButton.setTooltip(
             net.minecraft.client.gui.components.Tooltip.create(
                 Component.literal("Customized parameter lanes: edit this track in Advanced.")));
@@ -99,7 +120,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                 Component.literal("Controls this preview. Only Apply saves the Loop setting.")));
             tryButton.setIcon(tryPreview?LoomButton.Icon.PAUSE:LoomButton.Icon.PLAY);
             tryButton.setPrimary(tryPreview);
-            tryButton.active=!customLanes;
+            tryButton.active=!customLanes&&!selectedLayerIds.isEmpty();
             if(customLanes)tryButton.setTooltip(
                 net.minecraft.client.gui.components.Tooltip.create(Component.literal(
                     "Customized animation: use Advanced to edit this track safely.")));
@@ -123,8 +144,23 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                 bottom-workTop-66,ClientProjectWorkspace::project,channel,()->trackId,
                 ()->tick,()->playing,this,false));
         } else {
-            addRenderableWidget(new LoomAnimationPresetGallery(8,workTop+66,right-16,
-                bottom-workTop-68,()->preset,chosen->{
+            int layerW=Math.max(130,Math.min(230,(right-28)/3));
+            addRenderableWidget(new LoomLayerListWidget(8,workTop+66,layerW,
+                bottom-workTop-68,this::canvas,()->layerId,
+                id->{layerId=id;},id->{
+                    var l=layers().stream().filter(a->a.id().equals(id)).findFirst().orElseThrow();
+                    ClientProjectWorkspace.apply(p->LayerBatch.apply(p,
+                        channel==AnimationChannel.ELYTRA,Set.of(id),
+                        l.visible()?LayerBatch.Action.HIDE:LayerBatch.Action.SHOW));
+                },id->{
+                    var l=layers().stream().filter(a->a.id().equals(id)).findFirst().orElseThrow();
+                    ClientProjectWorkspace.apply(p->LayerBatch.apply(p,
+                        channel==AnimationChannel.ELYTRA,Set.of(id),
+                        l.locked()?LayerBatch.Action.UNLOCK:LayerBatch.Action.LOCK));
+                }).setElytraThumbnails(channel==AnimationChannel.ELYTRA)
+                    .setMultiSelection(selectedLayerIds,this::selectAnimationLayer));
+            addRenderableWidget(new LoomAnimationPresetGallery(14+layerW,workTop+66,
+                right-layerW-22,bottom-workTop-68,()->preset,chosen->{
                     preset=chosen;draftCache=null;
                     message=chosen.label()+": "+chosen.description()+" · Try or Apply";
                     rebuildWidgets();
@@ -138,11 +174,13 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private LoomProject previewProject(){
         LoomProject source=ClientProjectWorkspace.project();
         if(!tryPreview || advanced)return source;
-        String key=ClientProjectWorkspace.revision()+":"+layerId+":"+trackId+":"+preset+
+        String key=ClientProjectWorkspace.revision()+":"+targetIds()+":"+layerId+":"+trackId+":"+preset+
             ":"+presetRate+":"+channel+":"+previewLoop;
         if(draftCache!=null&&key.equals(draftKey))return draftCache;
         try {
-            draftCache=AnimationPresetDraft.compose(source,layerId,channel,trackId,preset,presetRate,previewLoop);
+            draftCache=batch()
+                ? AnimationPresetBatch.compose(source,channel,targetIds(),preset,presetRate,previewLoop)
+                : AnimationPresetDraft.compose(source,layerId,channel,trackId,preset,presetRate,previewLoop);
             draftKey=key;
             return draftCache;
         } catch(IllegalArgumentException|IllegalStateException ex) {
@@ -162,14 +200,16 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     public void applyPreset(){
         try{
             UUID previous=trackId;
-            var next=ClientProjectWorkspace.apply(p->
-                AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate,previewLoop));
-            trackId=previous!=null?previous:next.animation().tracks().stream()
+            var next=ClientProjectWorkspace.apply(p->batch()
+                ? AnimationPresetBatch.compose(p,channel,targetIds(),preset,presetRate,previewLoop)
+                : AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate,previewLoop));
+            trackId=!batch()&&previous!=null?previous:next.animation().tracks().stream()
                 .filter(t->t.channel()==channel&&t.layerId().equals(layerId))
                 .reduce((a,b)->b).orElseThrow().id();
             tryPreview=false;draftCache=null;draftKey=null;
             tick=0;cursor=0;playing=true;
-            message=preset.label()+" applied · Save when ready · Ctrl+Z to undo";
+            message=preset.label()+" applied to "+selectedLayerIds.size()+
+                " layer(s) · Save when ready · Ctrl+Z to undo";
             rebuildWidgets();
         }catch(IllegalArgumentException|IllegalStateException e){message=e.getMessage();}
     }
@@ -201,7 +241,8 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves"
             : track()!=null&&!track().lanes().isEmpty()
                 ? "Customized animation · switch to Advanced to edit"
-                : "1. Choose an effect   2. Try it in 3D   3. Apply & Save",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
+                : "Ctrl-click layers ("+selectedLayerIds.size()+" selected) · Try · Apply",
+            16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
         var lines=new ArrayList<String>();String line="";
         for(String word:preset.description().split(" ")){if(!line.isEmpty()&&f.width(line+" "+word)>guideWidth){lines.add(line);line=word;}else line=line.isEmpty()?word:line+" "+word;}
         if(!line.isEmpty())lines.add(line);
