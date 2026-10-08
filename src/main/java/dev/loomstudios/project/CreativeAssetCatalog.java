@@ -26,13 +26,14 @@ public final class CreativeAssetCatalog {
 
   public static List<Entry> all() { return ALL; }
   public static List<String> categories() {
-    return List.of("All", "Celestial", "Clouds & Mist", "Nature", "Fantasy", "Decorations");
+    return List.of("Featured", "All", "Celestial", "Clouds & Mist", "Nature", "Fantasy", "Decorations");
   }
 
   public static List<Entry> search(String query, String category) {
     String q = query == null ? "" : query.strip().toLowerCase(Locale.ROOT);
     String c = category == null || category.isBlank() ? "All" : category;
-    return ALL.stream().filter(e -> c.equals("All") || c.equals(e.category()))
+    return ALL.stream().filter(e -> c.equals("All") || c.equals(e.category())
+        || (c.equals("Featured") && e.tags().contains("featured")))
         .filter(e -> q.isEmpty() || e.stamp().name().toLowerCase(Locale.ROOT).contains(q)
             || e.category().toLowerCase(Locale.ROOT).contains(q)
             || e.tags().stream().anyMatch(t -> t.toLowerCase(Locale.ROOT).contains(q)))
@@ -41,6 +42,21 @@ public final class CreativeAssetCatalog {
 
   private static List<Entry> build() {
     var a = new ArrayList<Entry>();
+    // Premium original illustrations first. The tiny existing glyphs below remain
+    // in All and their own categories as deliberately simple/pixel-classic tools.
+    for (var illustration : PremiumAssetArtwork.all()) {
+      String[] words = illustration.keywords().split(" ");
+      var tags = new ArrayList<String>();
+      tags.add("featured");
+      tags.add("detailed");
+      tags.addAll(List.of(words));
+      a.add(new Entry(illustration.category(), new CustomStamp(
+          UUID.nameUUIDFromBytes(("loom-premium-" + illustration.category() + "-"
+              + illustration.name()).getBytes(StandardCharsets.UTF_8)),
+          illustration.name(), illustration.pixels(), false), tags));
+    }
+    // Simple geometry / pixel classics: available, but not advertised as the
+    // quality bar of the premium library.
     // Celestial: deliberately distinct silhouettes, not just rotated duplicates.
     add(a,"Celestial","Tiny Spark","star twinkle",
         ".#.","###",".#.");
