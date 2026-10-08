@@ -152,7 +152,10 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     if (preview != null) preview.close();
     tiles.clear();
     int top = LoomScreenChrome.headerHeight(LoomUiTheme.compact(width, height)) + 8;
-    int sideWidth = Math.max(182, Math.min(236, width / 3));
+    // Let the illustrated catalog breathe on ultrawide without starving the
+    // canvas at GUI3. This is not a uniformly scaled mobile layout.
+    int sideWidth = width >= 1300 ? Math.min(350, width / 4)
+        : Math.max(182, Math.min(244, width / 3));
     int right = width - sideWidth - 8;
     addRenderableWidget(new LoomButton(8,top,52,20,Component.literal("Back"),this::onClose));
     addRenderableWidget(new LoomButton(64,top,Math.max(100,right-140),20,
@@ -180,10 +183,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     search.setValue(query);
     search.setResponder(v -> {query=v;page=0;updateTiles();});
     int gridTop=top+47, gridBottom=height-73;
-    int tileWidth=(w-6)/2, tileHeight=52;
+    int columns=w>=300?3:2;
+    int tileWidth=(w-(columns-1)*6)/columns;
+    int tileHeight=height>=510?72:height>=420?61:52;
     int rows=Math.max(1,(gridBottom-gridTop)/tileHeight);
-    for(int i=0;i<rows*2;i++){
-      var tile=addRenderableWidget(new Tile(x+(i%2)*(tileWidth+6),gridTop+(i/2)*tileHeight,
+    for(int i=0;i<rows*columns;i++){
+      var tile=addRenderableWidget(new Tile(
+          x+(i%columns)*(tileWidth+6),gridTop+(i/columns)*tileHeight,
           tileWidth, tileHeight-3));
       tiles.add(tile);
     }
