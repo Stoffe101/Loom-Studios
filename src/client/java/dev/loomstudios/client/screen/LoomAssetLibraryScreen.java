@@ -4,6 +4,7 @@ import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.EditorOverlayState;
 import dev.loomstudios.client.ui.LoomButton;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
+import dev.loomstudios.client.ui.LoomSlider;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
 import dev.loomstudios.client.ui.LoomUiTheme;
@@ -39,7 +40,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   private CreativeAssetCatalog.Entry selectedAsset;
   private String category = "Featured", query = "", message = "Choose artwork · drag or click to place";
   private int size = 9, page;
-  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject, wornMode, propertiesTab;
+  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject, wornMode, propertiesTab, transformTab;
   private int startPixelX, startPixelY, lastX, lastY;
   private LoomImagePreviewWidget preview;
   private LoomPlayerPreviewWidget wornPreview;
@@ -330,59 +331,101 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     updateTiles();
   }
 
+  private boolean assetHasAnimation() {
+    return layerId!=null && ClientProjectWorkspace.project().animation().tracks().stream()
+        .anyMatch(t -> t.channel()==channel() && t.layerId().equals(layerId));
+  }
+
+  private void openAssetAnimation() {
+    var selected=layer();
+    if(selected==null || selected.kind()!=LayerKind.IMAGE){
+      message="Select an editable asset before animating";
+      return;
+    }
+    if(selected.locked()){
+      message="Unlock this layer before animating it";
+      return;
+    }
+    // The studio receives the persistent UUID, not a catalog or local screen
+    // index. Back returns to this very inspector and keeps the selected asset.
+    propertiesTab=true;
+    minecraft.setScreen(new LoomAnimationScreen(this,channel(),layerId));
+  }
+
+  private LoomButton inspectorButton(int x,int y,int w,String label,Runnable action) {
+    return addRenderableWidget(new LoomButton(x,y,w,20,Component.literal(label),action));
+  }
+
   private void buildAssetProperties(int x,int y,int w) {
-    var l=layer();
-    if(l==null||l.kind()!=LayerKind.IMAGE) {
-      var hint=addRenderableWidget(new LoomButton(x,y,w,20,
-          Component.literal("Select an editable layer"),()->{}));
+    var selected=layer();
+    if(selected==null||selected.kind()!=LayerKind.IMAGE) {
+      var hint=inspectorButton(x,y,w,"Select an editable asset",()->{});
       hint.active=false;
       return;
     }
-    String shortName=l.name();
+    boolean canEdit=!selected.locked();
+    String shortName=selected.name();
     if(font.width(shortName)>w-16)
       shortName=font.plainSubstrByWidth(shortName,
           Math.max(8,w-16-font.width("…")))+"…";
-    var header=addRenderableWidget(new LoomButton(x,y,w,20,
-        Component.literal(shortName),()->{}));
+    var header=inspectorButton(x,y,w,shortName,()->{});
     header.active=false;
     header.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
-        Component.literal(l.name()+" · "+Math.round(l.opacity()*100)+"% opacity")));
+        Component.literal(selected.name()+" · "+Math.round(selected.opacity()*100)+"% opacity")));
+    y+=25;
+    boolean animated=assetHasAnimation();
+    var animate=inspectorButton(x,y,w,animated?"Edit Animation":"Animate Asset",
+        this::openAssetAnimation).setIcon(LoomButton.Icon.PLAY).setPrimary(true);
+    animate.active=canEdit;
+    animate.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(
+        canEdit ? animated ? "Edit the existing tracks for this layer without resetting them"
+            : "Choose an animation preset or build custom keyframes for this asset"
+            : "Unlock the asset layer before animating")));
+    y+=27;
+    var opacity=addRenderableWidget(new LoomSlider(x,y,w,"Opacity",
+        ()->layer()==null?0:layer().opacity(),value->{
+          var current=layer();
+          if(current==null||current.locked())return;
+          float normalized=(float)Math.max(0,Math.min(1,value));
+          ClientProjectWorkspace.apply(p->wing
+              ? ProjectEdits.setElytraLayerOpacity(p,layerId,normalized)
+              : ProjectEdits.setCapeLayerOpacity(p,layerId,normalized));
+        }));
+    opacity.active=canEdit;
+    opacity.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(
+        "Drag or use arrow keys for exact 1% opacity changes. One drag is one Undo step.")));
+    y+=28;
     int half=(w-4)/2;
-    boolean canEdit=!l.locked();
-    // Reserve two concise live readouts beneath the selected item.
-    y+=55;
-    var minus=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Opacity −10%"),
-        ()->nudgeSelectedOpacity(-.1f)));
-    var plus=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Opacity +10%"),
-        ()->nudgeSelectedOpacity(.1f)));
+    var position=inspectorButton(x,y,half,transformTab?"Position":"● Position",
+        ()->{transformTab=false;rebuildWidgets();}).setSelected(!transformTab);
+    var transform=inspectorButton(x+half+4,y,w-half-4,transformTab?"● Transform":"Transform",
+        ()->{transformTab=true;rebuildWidgets();}).setSelected(transformTab);
+    position.active=canEdit;transform.active=canEdit;
     y+=26;
-    var left=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("◀ Move 1px"),
-        ()->nudgeAsset(-1,0)));
-    var rightButton=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("Move 1px ▶"),()->nudgeAsset(1,0)));
-    y+=26;
-    var up=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("▲ Up 1px"),
-        ()->nudgeAsset(0,-1)));
-    var down=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("▼ Down 1px"),()->nudgeAsset(0,1)));
-    y+=26;
-    var smaller=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Size −1px"),
-        ()->resizeAsset(-1)));
-    var bigger=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Size +1px"),
-        ()->resizeAsset(1)));
-    y+=26;
-    var ccw=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Rotate −15°"),
-        ()->editTransform(t->t.withRotation(t.rotationDegrees()-15))));
-    var cw=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("Rotate +15°"),
-        ()->editTransform(t->t.withRotation(t.rotationDegrees()+15))));
-    y+=26;
-    var flipH=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Flip H"),
-        ()->editTransform(t->t.withMirrors(!t.mirrorHorizontal(),t.mirrorVertical()))));
-    var flipV=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Flip V"),
-        ()->editTransform(t->t.withMirrors(t.mirrorHorizontal(),!t.mirrorVertical()))));
-    for(var control:new LoomButton[]{minus,plus,left,rightButton,up,down,smaller,bigger,ccw,cw,flipH,flipV})
-      control.active=canEdit;
+    if(transformTab) {
+      var smaller=inspectorButton(x,y,half,"Size −1px",()->resizeAsset(-1));
+      var bigger=inspectorButton(x+half+4,y,w-half-4,"Size +1px",()->resizeAsset(1));
+      y+=26;
+      var ccw=inspectorButton(x,y,half,"Rotate −15°",
+          ()->editTransform(t->t.withRotation(t.rotationDegrees()-15)));
+      var cw=inspectorButton(x+half+4,y,w-half-4,"Rotate +15°",
+          ()->editTransform(t->t.withRotation(t.rotationDegrees()+15)));
+      y+=26;
+      var flipH=inspectorButton(x,y,half,"Flip Horizontal",
+          ()->editTransform(t->t.withMirrors(!t.mirrorHorizontal(),t.mirrorVertical())));
+      var flipV=inspectorButton(x+half+4,y,w-half-4,"Flip Vertical",
+          ()->editTransform(t->t.withMirrors(t.mirrorHorizontal(),!t.mirrorVertical())));
+      for(var button:new LoomButton[]{smaller,bigger,ccw,cw,flipH,flipV})
+        button.active=canEdit;
+    } else {
+      var up=inspectorButton(x,y,w,"Move 1px up",()->nudgeAsset(0,-1));
+      y+=26;
+      var left=inspectorButton(x,y,half,"◀ Left",()->nudgeAsset(-1,0));
+      var right=inspectorButton(x+half+4,y,w-half-4,"Right ▶",()->nudgeAsset(1,0));
+      y+=26;
+      var down=inspectorButton(x,y,w,"Move 1px down",()->nudgeAsset(0,1));
+      for(var button:new LoomButton[]{up,left,right,down})button.active=canEdit;
+    }
   }
 
   private void nudgeAsset(int dx,int dy) {
