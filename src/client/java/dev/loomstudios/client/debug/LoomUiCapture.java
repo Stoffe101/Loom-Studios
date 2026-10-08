@@ -51,7 +51,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 310)) {
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 326)) {
                 if(!workflowsVerified) {
                     verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client);
           LoomCreativeVerification.verify(client); verifyAuthoringPayload(client);
@@ -76,7 +76,9 @@ public final class LoomUiCapture {
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
                 int[] target =
-            stage >= 278
+            stage >= 310
+                ? PROFILES[(stage - 310) / 4]
+                : stage >= 278
                 ? PROFILES[(stage - 278) / 8]
                 : stage>=238?PROFILES[(stage-238)/10]:stage>=218?PROFILES[(stage-218)/5]:stage>=190?PROFILES[(stage-190)/7]:stage>=182?PROFILES[(stage-182)/2]:stage == 21 ? new int[]{854,480,2} : stage>=176?new int[]{1904,960,3}:stage>=128?PROFILES[(stage-128)/12]:stage>=124?new int[]{1904,960,3}:stage>=100?PROFILES[(stage-100)/6]:stage >= 96 ? new int[]{1904,960,3} : stage >= 68 ? PROFILES[(stage-68)/7] : stage >= 42 ? new int[]{stage>=57?1904:1920,stage>=57?960:1000,3} : stage >= 22 ? PROFILES[(stage-22)/5] : stage < 8 ? p : PROFILES[1];
                 client.options.guiScale().set(target[2]);
@@ -85,7 +87,9 @@ public final class LoomUiCapture {
             }
             if (stage != 20) {
                 client.options.guiScale().set(
-                stage >= 278
+                stage >= 310
+                    ? PROFILES[(stage - 310) / 4][2]
+                    : stage >= 278
                     ? PROFILES[(stage - 278) / 8][2]
                     :stage>=238?PROFILES[(stage-238)/10][2]:stage>=218?PROFILES[(stage-218)/5][2]:stage>=190?PROFILES[(stage-190)/7][2]:stage>=182?PROFILES[(stage-182)/2][2]:stage == 21 ? 2 : stage>=176?3:stage>=128?PROFILES[(stage-128)/12][2]:stage>=124?3:stage>=100?PROFILES[(stage-100)/6][2]:stage >= 96 ? 3 : stage >= 68 ? PROFILES[(stage-68)/7][2] : stage >= 42 ? 3 : stage >= 22 ? PROFILES[(stage-22)/5][2] : stage < 8 ? p[2] : 3);
                 client.resizeDisplay();
@@ -220,7 +224,8 @@ public final class LoomUiCapture {
                 client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
                 client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
             }
-            if(stage>= 278) prepareCreative(client);
+            if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
+             else if(stage>= 278) prepareCreative(client);
       else if (stage >=238)prepareAuthoring(client);else if(stage>=218)prepareChoices(client);else if(stage>=190)prepareUsability(client);
             client.screen.setFocused(null);
             org.lwjgl.glfw.GLFW.glfwSetCursorPos(client.getWindow().handle(),2,2);
@@ -279,7 +284,9 @@ public final class LoomUiCapture {
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
             String name =
-          index >= 278
+          index >= 310
+              ? assetLibraryCaptureName(index)
+              : index >= 278
               ? creativeCaptureName(index)
               : index>=238?authoringCaptureName(index):index>=218?"choices-"+new String[]{"home-insets","preset-dropdown","studio-effect-dropdown","elytra-effect-dropdown","hidden-held-items"}[(index-218)%5]+"-"+PROFILES[(index-218)/5][0]+"x"+PROFILES[(index-218)/5][1]+"-gui"+PROFILES[(index-218)/5][2]:index>=190?"usability-"+new String[]{"home","swatches-scroll","cape-only","elytra-only","animation-presets","animation-advanced","expanded-cape-only"}[(index-190)%7]+"-"+PROFILES[(index-190)/7][0]+"x"+PROFILES[(index-190)/7][1]+"-gui"+PROFILES[(index-190)/7][2]:index>=182?"premium-"+(index%2==0?"smooth":"native")+"-"+PROFILES[(index-182)/2][0]+"x"+PROFILES[(index-182)/2][1]+"-gui"+PROFILES[(index-182)/2][2]:index>=128?polishCaptureName(index):index>=100?safetyCaptureName(index):index>=96 ? new String[]{"library-context-635x320","library-drafts-635x320","library-trash-635x320","rename-635x320"}[index-96] : index>=68 ? new String[]{"library","templates","settings","cape-animation-studio","elytra-animation-studio","preview-open","preview-gliding"}[(index-68)%7]+"-"+PROFILES[(index-68)/7][0]+"x"+PROFILES[(index-68)/7][1]+"-gui"+PROFILES[(index-68)/7][2] : index>=42 ? new String[]{"cape-windowed-gui3","elytra-windowed-gui3","cape-properties-windowed-gui3","elytra-animation-windowed-gui3","home-windowed-gui3","share-windowed-gui3","smart-import-windowed-gui3","cape-palette-windowed-gui3","elytra-palette-windowed-gui3","circle-live-windowed-gui3","circle-committed-windowed-gui3","cape-middle-pan-windowed-gui3","elytra-middle-pan-windowed-gui3","cape-transparent-guide-windowed-gui3","elytra-transparent-guide-windowed-gui3","cape-635x320-gui3","elytra-properties-635x320-gui3","cape-expanded-635x320-gui3","elytra-expanded-635x320-gui3","circle-filled-live-gui3","circle-filled-committed-gui3","cape-3d-pan-gui3","elytra-3d-pan-gui3","home-3d-pan-gui3","smart-import-3d-pan-gui3","share-3d-pan-gui3"}[index-42] : index >= 22 ? new String[]{"home","share-export","share-import","smart-import-placement","smart-import-processing"}[(index-22)%5] + "-" + PROFILES[(index-22)/5][0]+"x"+PROFILES[(index-22)/5][1]+"-gui"+PROFILES[(index-22)/5][2]
                     : index < 8 ? (index % 2 == 0 ? "cape" : "elytra") + "-" + PROFILES[index/2][0] + "x" + PROFILES[index/2][1] + "-gui" + PROFILES[index/2][2]
@@ -472,6 +479,152 @@ public final class LoomUiCapture {
         System.out.println(
         "LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit,"
             + " isolated draft recovery and explicit save cleanup");
+  }
+
+  private static String assetLibraryCaptureName(int index) {
+    int[] p = PROFILES[(index - 310) / 4];
+    String view = new String[] {
+      "cape-design", "cape-worn", "elytra-design", "elytra-worn"
+    }[(index - 310) % 4];
+    return "asset-library-" + view + "-" + p[0] + "x" + p[1] + "-gui" + p[2];
+  }
+
+  /** Complete opaque atlas background, including edges and inside wing panels. */
+  private static dev.loomstudios.project.LoomProject addGalleryAtlas(
+      dev.loomstudios.project.LoomProject project, boolean wing) {
+    var canvas=wing?project.elytra():project.cape();
+    int[] pixels=new int[32*16];
+    for(int y=0;y<16;y++)for(int x=0;x<32;x++)
+      pixels[y*32+x]=((x+y)%9==0?0xFF142649:0xFF0D1935);
+    var img=new dev.loomstudios.image.PixelImage(32,16,pixels);
+    var data=dev.loomstudios.project.ImageLayerData.placed(
+        img,canvas.width(),canvas.height(),
+        new dev.loomstudios.project.NormalizedRect(0,0,1,1),
+        dev.loomstudios.image.ImagePlacementMode.STRETCH);
+    return wing
+        ? dev.loomstudios.project.ProjectEdits.addElytraImageLayer(project,"Night Fabric",data)
+        : dev.loomstudios.project.ProjectEdits.addCapeImageLayer(project,"Night Fabric",data);
+  }
+
+  /** Semantic-face background, stored as ordinary project-owned ARGB pixels. */
+  private static dev.loomstudios.project.LoomProject addGalleryBackdrop(
+      dev.loomstudios.project.LoomProject project, boolean wing,
+      dev.loomstudios.project.ElytraWing selectedWing) {
+    var canvas = wing ? project.elytra() : project.cape();
+    int scale = dev.loomstudios.project.CanvasResolution.fromCanvas(canvas).scale();
+    int x, y, w, h;
+    if (wing) {
+      var face = dev.loomstudios.project.ElytraSurface.OUTSIDE;
+      x = face.atlasX(selectedWing, 0, scale);
+      y = face.atlasY(0, scale);
+      w = face.width(scale);
+      h = face.height(scale);
+    } else {
+      var face = dev.loomstudios.project.CapeUvRegion.OUTSIDE;
+      x = face.atlasX(0, scale);
+      y = face.atlasY(0, scale);
+      w = face.width(scale);
+      h = face.height(scale);
+    }
+    var clip = new dev.loomstudios.project.NormalizedRect(
+        x/(double)canvas.width(), y/(double)canvas.height(),
+        w/(double)canvas.width(), h/(double)canvas.height());
+    int bw=32,bh=64;
+    int[] raw = new int[bw*bh];
+    for (int iy=0; iy<bh; iy++) {
+      double t=iy/(double)(bh-1);
+      int red=(int)(12 + 13*t), green=(int)(20 + 10*t), blue=(int)(48 + 25*t);
+      for(int ix=0;ix<bw;ix++) {
+        int d=(int)(Math.sin(ix*.39+iy*.27)*2);
+        raw[iy*bw+ix] = 0xFF000000 | ((red+d)<<16) | ((green+d)<<8) | (blue+d);
+      }
+    }
+    var img = new dev.loomstudios.image.PixelImage(bw,bh,raw);
+    var data = dev.loomstudios.project.ImageLayerData.placed(
+        img,canvas.width(),canvas.height(),clip,
+        dev.loomstudios.image.ImagePlacementMode.STRETCH);
+    return wing
+        ? dev.loomstudios.project.ProjectEdits.addElytraImageLayer(project,"Midnight Sky",data)
+        : dev.loomstudios.project.ProjectEdits.addCapeImageLayer(project,"Midnight Sky",data);
+  }
+
+  private static dev.loomstudios.project.CustomStamp galleryStamp(String name) {
+    return dev.loomstudios.project.CreativeAssetCatalog.search(name,"Featured")
+        .stream().filter(e->e.stamp().name().equals(name))
+        .findFirst().orElseThrow().stamp();
+  }
+
+  private static void prepareAssetLibrary(Minecraft client,int mode) throws Exception {
+    // Use a dedicated clean 4× design. The older generic Moonlit capture
+    // fixture contains a bright cyan crescent on other UV faces that could
+    // appear in the worn preview and falsify our artwork-quality evidence.
+    var clean=dev.loomstudios.project.LoomProjectFactory.blank(
+        "Asset Review · Clean Night",System.currentTimeMillis());
+    clean=dev.loomstudios.project.ProjectResizer.resizeCape(
+        clean,dev.loomstudios.project.CanvasResolution.ULTRA);
+    clean=dev.loomstudios.project.ProjectResizer.resizeElytra(
+        clean,dev.loomstudios.project.CanvasResolution.ULTRA);
+    ClientProjectWorkspace.open(LocalProjectLibrary.save(clean),client.player.getUUID());
+    // Each fixture uses ORIGINAL pixel assets in independently editable project-owned
+    // image layers. Do not merely show preview tiles and claim these are worn art.
+    boolean elytra=mode>=2;
+    ClientProjectWorkspace.apply(p -> {
+      if (!elytra) {
+        p=addGalleryAtlas(p,false);
+        p=addGalleryBackdrop(p,false,null);
+        var moon=galleryStamp("Moonstone Crescent");
+        var star=galleryStamp("Frostfire Star");
+        var pine=galleryStamp("Snowkissed Fir");
+        p=dev.loomstudios.project.AssetPlacement.place(p,
+            dev.loomstudios.project.AnimationChannel.CAPE,moon.name(),moon.patch(),
+            dev.loomstudios.project.CapeUvRegion.OUTSIDE,null,null,
+            .69,.30,22,false,0);
+        p=dev.loomstudios.project.AssetPlacement.place(p,
+            dev.loomstudios.project.AnimationChannel.CAPE,star.name(),star.patch(),
+            dev.loomstudios.project.CapeUvRegion.OUTSIDE,null,null,
+            .24,.20,10,false,0);
+        return dev.loomstudios.project.AssetPlacement.place(p,
+            dev.loomstudios.project.AnimationChannel.CAPE,pine.name(),pine.patch(),
+            dev.loomstudios.project.CapeUvRegion.OUTSIDE,null,null,
+            .56,.84,24,false,0);
+      }
+      var left=dev.loomstudios.project.ElytraWing.LEFT;
+      var right=dev.loomstudios.project.ElytraWing.RIGHT;
+      var face=dev.loomstudios.project.ElytraSurface.OUTSIDE;
+      p=addGalleryAtlas(p,true);
+      p=addGalleryBackdrop(p,true,left);
+      p=addGalleryBackdrop(p,true,right);
+      var crystal=galleryStamp("Prismatic Crystal");
+      var halo=galleryStamp("Runic Halo");
+      var aurora=galleryStamp("Aurora Ribbon");
+      p=dev.loomstudios.project.AssetPlacement.place(p,
+          dev.loomstudios.project.AnimationChannel.ELYTRA,aurora.name(),aurora.patch(),
+          null,left,face,.5,.33,29,false,0);
+      p=dev.loomstudios.project.AssetPlacement.place(p,
+          dev.loomstudios.project.AnimationChannel.ELYTRA,crystal.name(),crystal.patch(),
+          null,left,face,.47,.64,21,false,0);
+      p=dev.loomstudios.project.AssetPlacement.place(p,
+          dev.loomstudios.project.AnimationChannel.ELYTRA,aurora.name(),aurora.patch(),
+          null,right,face,.5,.33,29,false,0);
+      return dev.loomstudios.project.AssetPlacement.place(p,
+          dev.loomstudios.project.AnimationChannel.ELYTRA,halo.name(),halo.patch(),
+          null,right,face,.52,.67,20,false,0);
+    });
+    var project=ClientProjectWorkspace.project();
+    var selected=elytra?project.elytra().layers().getLast():project.cape().layers().getLast();
+    // Fail closed if the new layers were not actually materialized in the
+    // player-preview project and are not independently editable Image layers.
+    if (selected.kind()!=dev.loomstudios.project.LayerKind.IMAGE
+        || selected.imageData().source().pixels().length==0
+        || (elytra?project.elytra().layers().size():project.cape().layers().size())<5)
+      throw new IllegalStateException("Asset preview fixture lacks placed editable artwork");
+    var screen=new dev.loomstudios.client.screen.LoomAssetLibraryScreen(
+        new LoomHomeScreen(),elytra,selected.id(),
+        dev.loomstudios.project.CapeUvRegion.OUTSIDE,
+        dev.loomstudios.project.ElytraWing.LEFT,
+        dev.loomstudios.project.ElytraSurface.OUTSIDE,0xFF45DDE8);
+    client.setScreen(screen);
+    if(mode%2==1)screen.showWornPreview(true);
   }
 
   private static String creativeCaptureName(int index) {

@@ -1,3 +1,28 @@
+## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
+
+1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
+2. Run **focused 16-capture** job at 1920×1080 GUI2/3 and 3440×1440 GUI2/3: Cape 2D and worn, Elytra 2D and worn. Confirm each screenshot **actually shows the multicolor artwork on the canvas/cosmetic**, not merely catalog thumbnails, and previews reflect project-owned layers. Inspect both wing faces and clipping independently.
+3. Run all 326 standard screenshots and premium comparison suites on latest SHA. Verify responsive dual-pane layout, focused mobile-like GUI3, selected-asset toolbar, frame-rate/cache, scissor and no overlapping controls. Document any failed test without calling work DONE.
+4. Once all four categories are visually approved, provide representative original PNGs directly in chat and ask user for art-direction feedback. A passing Gradle build alone is not a visual acceptance.
+5. Future work: curated pack expansion, browsing/favorites, deterministic starfield collections/scatter/mist and editable recipes; do not ship 120–150 low-quality near-identical icons for a count target.
+
+## 2026-10-08 — Illustrated asset quality gate — TESTING NEXT
+
+- Check CI Build Java21 and `PremiumAssetArtworkTest` for every new 28–48px source image: >5 palette values, transparency, no duplicate rasters, exact embedded multicolor save/portable roundtrip.
+- Run all 314 real-client captures and focused Asset Library four-profile workflow on the **latest** SHA (do not cite an earlier passing image run as evidence for new artwork).
+- Extract actual original PNGs and review at 1920×1080 GUI3/GUI2 and 3440×1440 GUI3/GUI2; evaluate star, moon, cloud, tree thumbnails, long names, centered canvas, visible headers, controls, no overlap, clipped text or unsafely small targets. Curated art may need more iterations, especially small-screen legibility.
+- Test placing multiple illustrated assets as editable Image layers, moving/rotating/painting on source, preserving alpha/crop/face and color over saves/equip/network. Test at 1×, 4× and 8×; do not falsely promise true soft detail at 1×.
+- Present new actual screenshots to user for art-direction acceptance. Only then consider expanding to 120–150 distinctive, original licensed assets, editable collections and scatter.
+
+## 2026-10-08 — Asset Library implementation first slice — CI and visual review pending
+
+1. Build Java21 Minecraft1.21.11 / Fabric and run full tests including `AssetPlacementTest`, `CreativeAssetCatalogTest`; inspect compile and schema5 round-trip.
+2. Run all **314** real Minecraft captures; individually inspect `asset-library-cape-*` at four profiles against approved reference02 and visual collection focus. Review dense GUI3 for grid clipping/preview proportions.
+3. Exercise user journey: open Assets from Cape/Elytra, select star/cloud/tree, drag tile over artwork **or** click then drag/place, check one newly selected editable IMAGE layer, move/rotate/recolor/opacity through existing layer UI, edit source pixels, Undo/Redo, save/reopen and portable code. Verify no outside-face/other-wing bleed.
+4. Review UI state changes after browsing and returning to editors, no lost draft/false equip/scale drift or texture cache leak. If any failures, fix before merging.
+5. M2 follow-up: expand original quality-controlled art catalog, asset collections with individually addressable children for many stars, scalable thumbnail atlas, scatter mode and editable theme recipes. This is not part of the stage-one deliverable.
+6. Share actual screenshot artifact images with user for look/feel feedback before broader expansion.
+
 ## 2026-10-08 — Active mission queue / visual review — PLANNING ONLY
 
 The current ordered check-off board is [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md). Immediate emphasis: (1) verify/accept PR28's real worn Cape/Elytra + 2D results and all latest CI, investigate the extra cyan crescent; (2) verify/accept PR26 animation changes without merging unchecked state; (3) fix obstructive tooltips/weak canvas & cosmetic focus at GUI3 and ultrawide; (4) contextual edit properties and Simple Animation; (5) curate art quality before growing the catalog.
