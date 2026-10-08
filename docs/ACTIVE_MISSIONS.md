@@ -32,6 +32,13 @@
 
 **Exit:** `main` is a reliable, CI-verified base; no unmerged PR is presented as production-ready.
 
+### M1 progress checkpoint (2026-10-08)
+
+- **Merged in main:** PR #31 delivered the contextual Assets/Edit tab, per-pixel movement, opacity, rotation, flips, improved 2D/worn preview focus and contextual tooltips; build + screenshot + comparison checks passed. These are **partial progress on M1-01/02/03/04**, not the complete mission.
+- **Separate recovery PR #32 under test:** responsive inspector sizing and bounded drag handles across Cape/Elytra, the workspace-layout helper and focused four-profile visual review. Do not claim delivered until files are visible on main after merge.
+- **Not yet done:** numeric inspector/property field editing, full shared primary-editor tool hierarchy, robust reference/mask modes, all panel-size recovery cases and remaining GUI3 clipping. General ElvUI-style Edit Layout remains M5.
+- **M2 work is staged independently:** visual recipe cards, read-only Try mode and undisturbed Advanced tracks are an M2-01 increment, not the completed animation mission.
+
 ### Mission 1 — Fix the editor's basic ergonomics (**highest product priority**)
 
 - [ ] **M1-01 · TODO** Organize one clear tool rail, one context inspector, and distinct **Browse → Place → Edit** states; eliminate ambiguous text/button walls.
