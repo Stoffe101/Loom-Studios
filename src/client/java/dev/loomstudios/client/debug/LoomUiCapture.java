@@ -573,7 +573,7 @@ public final class LoomUiCapture {
   private static void prepareSimpleAnimation(Minecraft client) throws Exception {
     // Review actual star artwork in a real Simple Animation UI, not empty tabs.
     prepareAssetLibrary(client,0);
-    UUID star=ClientProjectWorkspace.project().cape().layers().stream()
+    java.util.UUID star=ClientProjectWorkspace.project().cape().layers().stream()
         .filter(l->l.name().equals("Frostfire Star"))
         .map(dev.loomstudios.project.LoomLayer::id).findFirst().orElseThrow();
     var studio=new dev.loomstudios.client.screen.LoomAnimationScreen(
