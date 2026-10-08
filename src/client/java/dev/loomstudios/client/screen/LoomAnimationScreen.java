@@ -61,7 +61,12 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         int y=workTop+previewHeight+5;
         presetButton=button(right+8,y,188,"Preset: "+preset.label(),()->showChoices(presetButton,"Animation preset",Arrays.stream(AnimationPreset.values()).map(p->new LoomChoicePopup.Option<>(p,p.label(),p.description())).toList(),preset,p->{preset=p;rebuildWidgets();}));presetButton.setIcon(LoomButton.Icon.DOWN);
         rateButton=button(right+8,y+24,92,"Rate "+presetRate+" Hz",()->showChoices(rateButton,"Cycles per second",List.of(.25F,.5F,1F,2F).stream().map(r->new LoomChoicePopup.Option<>(r,r+" Hz",r==.25F?"One cycle every four seconds":r==.5F?"One cycle every two seconds":r==1F?"One cycle per second":"Two cycles per second")).toList(),presetRate,r->{presetRate=r;rebuildWidgets();}));rateButton.setIcon(LoomButton.Icon.DOWN);
-        button(right+104,y+24,92,"Apply & play",this::applyPreset);
+        boolean customLanes=track()!=null&&!track().lanes().isEmpty();
+        var applyButton=button(right+104,y+24,92,"Apply & play",this::applyPreset);
+        applyButton.active=!customLanes;
+        if(customLanes)applyButton.setTooltip(
+            net.minecraft.client.gui.components.Tooltip.create(
+                Component.literal("Customized parameter lanes: edit this track in Advanced.")));
         button(right+8,y+48,92,advanced?"Simple mode":"Advanced",()->{
             advanced=!advanced;
             // Switching workspace mode must NEVER rewrite a keyframe or apply a draft.
@@ -79,6 +84,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                     rebuildWidgets();});
             tryButton.setIcon(tryPreview?LoomButton.Icon.PAUSE:LoomButton.Icon.PLAY);
             tryButton.setPrimary(tryPreview);
+            tryButton.active=!customLanes;
+            if(customLanes)tryButton.setTooltip(
+                net.minecraft.client.gui.components.Tooltip.create(Component.literal(
+                    "Customized animation: use Advanced to edit this track safely.")));
         }
         if(advanced){
             effectButton=button(right+8,y+72,188,"Effect: "+(track()==null?chosen:track().effect()).displayName(),()->showChoices(effectButton,"Animation effect",Arrays.stream(AnimationEffectType.values()).map(e->new LoomChoicePopup.Option<>(e,e.displayName(),e.description())).toList(),track()==null?chosen:track().effect(),e->{chosen=e;if(track()!=null)changeTrack(t->t.withEffect(e));rebuildWidgets();}));effectButton.setIcon(LoomButton.Icon.DOWN);
@@ -174,7 +183,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(hasChoices())return super.keyPressed(e);if(e.hasControlDownWithQuirk()&&e.key()==90){ClientProjectWorkspace.undo();rebuildWidgets();return true;}if(e.hasControlDownWithQuirk()&&e.key()==89){ClientProjectWorkspace.redo();rebuildWidgets();return true;}if(e.key()==32){togglePlayback();rebuildWidgets();return true;}return super.keyPressed(e);}
     @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));LoomScreenChrome.panel(g,8,guideTop,width-204,guideTop+61);
         var f=minecraft.font;
-        dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves" : "1. Choose an effect   2. Try it in 3D   3. Apply & Save",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
+        dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves"
+            : track()!=null&&!track().lanes().isEmpty()
+                ? "Customized animation · switch to Advanced to edit"
+                : "1. Choose an effect   2. Try it in 3D   3. Apply & Save",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
         var lines=new ArrayList<String>();String line="";
         for(String word:preset.description().split(" ")){if(!line.isEmpty()&&f.width(line+" "+word)>guideWidth){lines.add(line);line=word;}else line=line.isEmpty()?word:line+" "+word;}
         if(!line.isEmpty())lines.add(line);
