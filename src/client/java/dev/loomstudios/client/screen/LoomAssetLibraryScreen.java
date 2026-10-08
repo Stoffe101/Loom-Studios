@@ -226,7 +226,11 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
           ClientProjectWorkspace::project,
           wing ? LoomPlayerPreviewWidget.Mode.ELYTRA : LoomPlayerPreviewWidget.Mode.CAPE));
       wornPreview.restoreViewState(lastWornView);
-      if(wing)wornPreview.setPose(dev.loomstudios.client.render.LoomPreviewState.PreviewPose.GLIDING);
+      // Show the decorated outside wing surfaces when first inspecting the
+      // artwork. Gliding is still available by clicking the 3D preview header,
+      // but its nearly horizontal wings obscure the painted outer faces.
+      if(wing && lastWornView==null)wornPreview.setPose(
+          dev.loomstudios.client.render.LoomPreviewState.PreviewPose.STANDING);
     }
 
     int x=right+4, w=width-x-8;
