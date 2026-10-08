@@ -46,6 +46,51 @@ public final class LoomImagePreviewWidget extends AbstractWidget {
     private double lastX,lastY;
     private int imageLeft,imageTop,drawWidth,drawHeight;
     public void setTransformController(TransformController controller){this.controller=controller;setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Drag artwork: move · Corner handle: scale · Top handle: rotate")));}
+    /**
+     * Canvas-relative image pixel under the pointer. The exact fitted image rectangle is used,
+     * so pointer location matches the visual even under unusual GUI scales.
+     */
+    public int[] imagePixelAt(double mouseX, double mouseY) {
+        if (imageSupplier.get() == null || drawWidth < 1 || drawHeight < 1
+                || mouseX < imageLeft || mouseY < imageTop
+                || mouseX >= imageLeft + drawWidth || mouseY >= imageTop + drawHeight)
+            return null;
+        PixelImage image = imageSupplier.get();
+        return new int[] {
+            Math.min(image.width() - 1, (int) ((mouseX - imageLeft) * image.width() / drawWidth)),
+            Math.min(image.height() - 1, (int) ((mouseY - imageTop) * image.height() / drawHeight))
+        };
+    }
+
+    /** Temporary exact-pixel artwork ghost; it is never added to the saved project by rendering. */
+    public void renderAssetGhost(GuiGraphics graphics, dev.loomstudios.project.PixelPatch source,
+            int centerX, int centerY, int longestPixels, boolean recolor, int tint) {
+        PixelImage base = imageSupplier.get();
+        if (base == null || drawWidth < 1 || drawHeight < 1 || source == null) return;
+        int[] raw = source.data();
+        double scale = longestPixels / (double) Math.max(source.width(), source.height());
+        int w = Math.max(1, (int) Math.round(source.width() * scale));
+        int h = Math.max(1, (int) Math.round(source.height() * scale));
+        int left = centerX - w / 2, top = centerY - h / 2;
+        graphics.enableScissor(imageLeft, imageTop, imageLeft + drawWidth, imageTop + drawHeight);
+        for (int py = 0; py < h; py++)
+            for (int px = 0; px < w; px++) {
+                int srcX = Math.min(source.width() - 1, px * source.width() / w);
+                int srcY = Math.min(source.height() - 1, py * source.height() / h);
+                int argb = raw[srcY * source.width() + srcX];
+                int alpha = argb >>> 24;
+                if (alpha == 0) continue;
+                int rgb = recolor ? (tint & 0x00FFFFFF) : (argb & 0x00FFFFFF);
+                int ghost = (Math.max(40, Math.round(alpha * .7f)) << 24) | rgb;
+                int x0 = imageLeft + (left + px) * drawWidth / base.width();
+                int y0 = imageTop + (top + py) * drawHeight / base.height();
+                int x1 = imageLeft + (left + px + 1) * drawWidth / base.width();
+                int y1 = imageTop + (top + py + 1) * drawHeight / base.height();
+                if (x1 > x0 && y1 > y0) graphics.fill(x0, y0, x1, y1, ghost);
+            }
+        graphics.disableScissor();
+    }
+
     private int sourceWidth;
     private int sourceHeight;
 

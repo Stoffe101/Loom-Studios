@@ -10,6 +10,52 @@
 
 **Next:** inspect screenshots and test results, correct UX if needed, then begin editable asset layer/browser implementation. Update DONE only after verified runtime and screens.
 
+## 2026-10-08 — Artwork diversity and true worn-cosmetic CI — IN PROGRESS
+
+**Why:** user was not satisfied with thumbnails-only captures or limited icon diversity; demanded art that actually looks good on the Cape/Elytra and requested improved CI.
+
+**Changes:** corrected initial compile failure in contextual toolbar (duplicate `step` local). Added `LoomPlayerPreviewWidget` inside Asset Library, displaying 2D editing alongside actual 3D wearable cosmetic on wide displays and a focused switch for compact GUI3, no runtime format change. Replaced screenshot fixture with 16 real 2D/worn snapshots on a clean dark backdrop, populated by independently editable Moonstone Crescent/Frostfire Star/Snowkissed Fir or left/right-wing Prismatic Crystal/Aurora Ribbon/Runic Halo. Added 12 colored illustrations to the 17-piece starter set, now 29, with new Ocean/Creatures/Seasons/Heraldry categories. Added actual-layer validation to screenshot fixture. CI capture total 326; focused review job asserts 4 screenshots of each mode and builds 4×4 contact sheet. CI workflows now cancel obsolete PR runs, preserving main-branch checks and reducing storage costs.
+
+**Architecture:** uses existing Image/Layer/3D rendering, original ARGB pixels embedded into .loom, stable v5/schema/protocol and local preview isolation. Two wings retain independent UVs. New art is original code-authored pixel drawings, not external assets. Collection-instance storage and scatter remain future scope.
+
+**Verification:** prior successful isolated 4-profile visual pass shows shaded thumbnails, but **does not test this 29-item/worn-3D commit**. Compile/tests, 16-image focused CI, full 326-image CI and comparison suites are pending. No Windows/shader/manual user acceptance. Latest failed runs on previous commit exposed a duplicate local variable, now corrected; do not conceal failed history or claim new runs green prematurely.
+
+**Next:** retrieve actual successful latest 3D screenshots and review at all four GUI profiles; fix bugs and update this log with exact runs/SHA and approval, then show representative images inline to user.
+
+## 2026-10-08 — Illustrated Asset Library visual review and context controls — IN PROGRESS
+
+**Screenshots inspected:** focused real Minecraft build at source `e41c7a37` generated all four profiles successfully (1920×1080 GUI2/3, 3440×1440 GUI2/3). The Featured art has visibly different palettes/shading (moonstone/gem/cloud/forest), and 2-column compact / 3-column ultrawide layouts display category navigation and readable clipped names. The old original fixture's cyan moon still occupied the central canvas and did not demonstrate actual placed premium asset quality, so later capture fixture `prepareAssetLibrary` now embeds and shows **Moonstone Crescent** and **Snowkissed Fir** as separate Image layers. A small crescent alpha cutout issue discovered during review was also corrected. Latest capture results still pending.
+
+**Additional UI changes:** selectable asset metadata tooltips with actual source size, compact footer guidance, horizontal-color-run thumbnail fill batching, selected Image-layer opacity decrement/increment and 45-degree rotation actions confined to the otherwise unused contextual toolbar strip. This complements existing on-canvas transform handles; avoids permanently adding more controls when no asset is selected.
+
+**Verification:** New original sprite unit/roundtrip tests and earlier branch Java builds passed. The screenshot displayed from `e41c7a37` is **pre-cutout/fixture/toolbar** and must not be mistaken for final acceptance. Latest SHA and Windows/modded clients remain unverified; PR remains open.
+
+**Next:** inspect focused screenshot after these corrections, verify toolbar bounds/interaction and independent placement, then obtain feedback. Wider pack rollout still future.
+
+## 2026-10-08 — Illustrated Asset Library quality correction — IN PROGRESS
+
+**Feedback:** first in-game Asset Library screenshots were functional but showed crude white silhouettes. User requested genuinely attractive high-quality editable artwork, not a quota of low-resolution placeholder icons.
+
+**Changes:** added `PremiumAssetArtwork.java` quality-first collection of 17 original detailed, shaded, multi-color, partly translucent sprites with distinctive forms and intended creative themes. `CreativeAssetCatalog` now surfaces these first under Featured and retains classics under All. `LoomAssetLibraryScreen` has correct down/upscale nearest-neighbor thumbnail bounds, safe ellipsis labels, responsive 2/3-column library, wider ultrawide allocation, automatic per-resolution initial size and optional tint. Existing project Image layer source retains full ARGB palette on save and after transforms.
+
+**Decisions:** use source-native original ARGB art and embed in placed Image layers. 1× is a realistic pixel-detail constraint; recommended detailed artwork at 4×/8×. Do not replace core layer types, discard basic icons, or depend on shaders. Collection-instance model remains future, not implemented.
+
+**Testing:** added `PremiumAssetArtworkTest` for shading, uniqueness, alpha, original pixels and serialization. GitHub Java build/full screenshot workflow **not yet verified on this art commit**. Actual screenshot inspection and user approval still required. Asset art is provisional rather than proven polished.
+
+**Next:** run new CI, inspect the real GUI2/3 artifacts, refine shapes/contrast/transparency based on actual output, then broaden the catalog.
+
+## 2026-10-08 — Editable Asset Library first implementation — IN PROGRESS
+
+**Why:** user explicitly clarified that the library is a **button and visual browser** where dragging an asset thumbnail onto the design, or clicking then dragging/placing, should create an **independently editable** element, not a flattened brush mark.
+
+**Implementation on feature branch:** `AssetPlacement` produces bounded ImageLayerData clipped to the selected Cape/Elytra semantic face and copied into .loom, with precise source-pixel edit and transform methods; `CreativeAssetCatalog` seeds original themed shapes independent of six existing stamps; both editors open a new `LoomAssetLibraryScreen` with search/category/tiles, selected ghost, drag/drop and click placement, transform handles, pixel-edit mode and return selection. The focused original Creative Assets screen remains reachable through Tools.
+
+**Architecture:** stage one uses **one schema5 Image layer per object**. This retains validated serialization, undo and network compatibility without a new data type; a future bounded collection layer with child instances is still required for dense compositions over 64 layers. Catalog assets are authoring-only but placed pixels are project-owned. Both wing surface and Cape region clipping are enforced.
+
+**Tests added:** unit tests for exact asset isolation, embedded source/pixel editing, serializer/portable roundtrip and invalid bounds; catalog stability/search. Capture fixture adds four real Minecraft display profiles (expected 314). **CI pending, not yet a verified success**. No Windows/GPU/modpack acceptance; performance must be measured and files reviewed.
+
+**Next:** GitHub build and screenshots; correct compilation/UI issues; inspect user-facing images and take feedback before declaring milestone DONE or moving to mass catalog/scatter. No status claimed beyond IN PROGRESS.
+
 ## 2026-10-08 — Living roadmap + ElvUI-inspired layout editor prioritization — DONE (docs only)
 
 **Why:** after seeing the actual Cape 2D/worn previews, user requested a frank critique and a continuously checkable mission list, with a possible fully customizable WoW ElvUI-style UI but acknowledged earlier UX gaps have priority.

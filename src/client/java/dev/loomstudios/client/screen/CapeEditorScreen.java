@@ -235,15 +235,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             LoomButton.Icon.IMAGE,
             () ->
                 minecraft.setScreen(
-                    new LoomCreativeAssetsScreen(
-                        this,
-                        false,
-                        selectedLayerId,
-                        capeRegion,
-                        null,
-                        null,
-                        selectedColor,
-                        creativeSelection()))).setIconOnly(false);
+                    new LoomAssetLibraryScreen(
+                        this, false, selectedLayerId, capeRegion, null, null, selectedColor))).setIconOnly(false);
         buildRightPanel(layout.preview().height(), 22);
         canvasWidget.setShapeFilledSupplier(() -> rectangleFilled);
         canvasWidget.restoreViewState(viewState); previewWidget.restoreViewState(previewState);
@@ -251,6 +244,14 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         updateButtonStates(); updateInspectorVisibility();
     }
 
+
+    /** Restore selection after placing an independently editable asset in the library. */
+    public void focusAssetLayer(UUID id) {
+        if (id != null && (ClientProjectWorkspace.project().cape())
+                .layers().stream().anyMatch(layer -> layer.id().equals(id))) {
+            selectedLayerId = id;
+        }
+    }
 
     private void buildTopNavigation(int headerHeight, int navHeight, int margin) {
         int x = margin, y = headerHeight + 2, h = navHeight - 4;
