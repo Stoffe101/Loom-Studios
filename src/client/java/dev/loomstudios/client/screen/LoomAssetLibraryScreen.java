@@ -39,7 +39,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   private CreativeAssetCatalog.Entry selectedAsset;
   private String category = "Featured", query = "", message = "Choose artwork · drag or click to place";
   private int size = 9, page;
-  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject, wornMode;
+  private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject, wornMode, propertiesTab;
   private int startPixelX, startPixelY, lastX, lastY;
   private LoomImagePreviewWidget preview;
   private LoomPlayerPreviewWidget wornPreview;
@@ -409,6 +409,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   }
   private void pick(CreativeAssetCatalog.Entry entry) {
     selectedAsset=entry;
+    propertiesTab=false;
     armed=true;
     editPixels=false;
     if (preview != null) {
@@ -440,6 +441,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
               (pos[0]+.5)/aw,(pos[1]+.5)/ah,longest,recolor,color));
       var c=wing?p.elytra():p.cape();
       layerId=c.layers().getLast().id();
+      propertiesTab=true;
       armed=false;
       message=selectedAsset.stamp().name()+" placed as editable layer · drag handles to modify";
       cachedComposite=null;
