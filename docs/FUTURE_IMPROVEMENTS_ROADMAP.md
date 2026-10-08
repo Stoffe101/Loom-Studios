@@ -62,7 +62,8 @@ Do not make a new schema/protocol revision just to move buttons. Do not trade aw
 | UX-07 | Status-rich layer rows, contextual inspector and uncluttered navigation | P1 | Layer rows/tabs CURRENT; discoverability enhancements PROPOSED | Editor UX |
 | UX-08 | Searchable actions, inline help, onboarding, shortcut/focus/narration audit | P1 | Help/tooltips CURRENT; systematic discoverability PROPOSED | Editor UX |
 | AS-01 | Large curated categorized stamp/asset library, variants and illustrated browser | P0/P1 | Six pattern packs/custom stamps CURRENT; collection/browser PROPOSED | Asset library |
-| AS-02 | Stamp hover ghost, direct on-canvas placement, smart transforms, target-new-layer | P1 | Basic stamping CURRENT; visual placement workflow PROPOSED | Asset library |
+| AS-02 | **Assets button → drag thumbnail onto design OR click-to-arm then click/drag place**; live ghost, transform handles and always-visible editing entry | P0/P1 | Existing stamp painting CURRENT; asset-object placement is PROPOSED | Asset library |
+| AS-05 | **Independent editable asset layers by default**; later collection layer for many individually editable objects without 64-layer overload | P1/P2 | Paint/Image/Gradient and 64 layers/channel CURRENT; asset instances/collections PROPOSED | Asset library |
 | AS-03 | Deterministic scatter brush for stars/leaves/snow/embers | P1 | Simple stamps CURRENT; scatter PROPOSED | Asset library |
 | AS-04 | Editable theme recipes: misty night, aurora, enchanted forest, emberfall, etc. | P1 | Existing static templates/presets CURRENT; layered design recipes PROPOSED | Asset library |
 | PA-01 | Brush opacity vs flow, hardness/airbrush, organic fog/mist, fade masks | P1 | Layer/color alpha CURRENT; dedicated paint semantics PROPOSED | Editor UX |
@@ -99,9 +100,9 @@ Scope: UX-01/02/03/04/05/06/07/08 and IM-01. Redesign the animation workspace an
 
 ### M2 — Large asset library and guided creativity (P0/P1)
 
-Scope: AS-01/02/03/04 and first PA-01 painting controls. Deliver **read-only built-in asset packs** independent from the existing custom-stamp cap; thumbnail search, favorites, recently used; drag/drop/stamp preview; night/sky/nature packs; scatter; editable theme examples.
+Scope: AS-01/02/03/04/05 and first PA-01 painting controls. Deliver **read-only built-in asset packs** independent from the existing custom-stamp cap; an **Assets button** in both editors; thumbnail search, favorites, recently used; **drag item directly onto the design or click asset then click/drag to place**; editable placed layer by default; night/sky/nature packs; scatter; editable theme examples. Support many repeated decorations with an explicitly planned editable collection-object model, not by creating unbounded full layers.
 
-**Exit gate:** a player can make a cohesive **Misty Night** design using a gradient, clouds/fog, several star shapes and optional animation without manually drawing those shapes. The result survives save/reload and looks identical equipped and transferred.
+**Exit gate:** a player can make a cohesive **Misty Night** design using a gradient, clouds/fog, several star shapes and optional animation without manually drawing those shapes. Place a star via **library drag-and-drop**, place a tree via **click-then-drag**, move/recolor/resize one asset **after** placement, then **Edit Pixels**; confirm that all are independently editable across save/reload and rendered identically equipped/transferred. A dense starfield must not exhaust the layer limit: prove bounded editable collection semantics or explicitly scope a first-stage layer-per-object limit.
 
 ### M3 — Atmosphere and non-destructive compositing (P1/P2)
 
@@ -160,12 +161,13 @@ These are **not** architecture decisions yet:
 
 1. Docking model: fixed layout presets first or full resizable splitters with saved workspace state?
 2. Brush opacity semantics: whole-stroke opacity vs per-dab flow, alpha compositing and gradient masks.
-3. Stamp internal format: small immutable per-resolution pixel assets with optional tint channels or bounded parametric shapes.
-4. Template/recipe serialization: apply into existing Paint/Image/Gradient layers first; consider new procedural layer types only with an explicit migration plan.
-5. Compositing hierarchy: group masks and clipping across nested groups, layer IDs and animation target integrity.
-6. Animated exports: codec/dependencies, frame budget, disposal/alpha behavior, GIF indexed palette loss and per-tick frame scheduling.
-7. Hosted/service sharing: privacy, moderation, permission model and server ownership. Never fake this UI.
-8. 3D painting: picking algorithm and how non-vanilla/mixin geometry maps to semantic UVs.
+3. Placed asset persistence: stage-one project-owned Image layer with independent transforms vs a bounded `Asset Collection` typed layer containing editable child instances. For the latter, design a v5-to-new-schema migration, stable object IDs, embedded source, deterministic render and correct Undo. Avoid creating one full layer per star indefinitely.
+4. Stamp internal format: small immutable per-resolution pixel assets with optional tint channels or bounded parametric shapes.
+5. Template/recipe serialization: apply into existing Paint/Image/Gradient layers first; consider new procedural layer types only with an explicit migration plan.
+6. Compositing hierarchy: group masks and clipping across nested groups, layer IDs and animation target integrity.
+7. Animated exports: codec/dependencies, frame budget, disposal/alpha behavior, GIF indexed palette loss and per-tick frame scheduling.
+8. Hosted/service sharing: privacy, moderation, permission model and server ownership. Never fake this UI.
+9. 3D painting: picking algorithm and how non-vanilla/mixin geometry maps to semantic UVs.
 
 Record accepted decisions in DECISIONS.md **when they are made**, not speculatively in this proposal.
 
