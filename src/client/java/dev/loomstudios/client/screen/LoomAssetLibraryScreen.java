@@ -328,15 +328,16 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     var t=selected.imageData().transform();
     var canvas=canvas();
     int top=y;
+    boolean tight=height<350;
     // Selected asset header is drawn in render(), never an inert button.
-    y+=45;
+    y+=tight?37:45;
     var opacity=addRenderableWidget(new LoomSlider(x,y,w,"Opacity",
         ()->layer()==null?1:layer().opacity(),
         this::setSelectedOpacity));
     opacity.active=editable;
     opacity.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
         Component.literal("Drag to adjust transparency · arrow keys change by 1%")));
-    y+=31;
+    y+=tight?27:31;
     var rotation=addRenderableWidget(new LoomSlider(x,y,w,"Rotation",
         ()->layer()==null?0:normalizedRotation(layer().imageData().transform().rotationDegrees()),
         v->editTransform(transform->transform.withRotation(Math.round(v*72)*5.0))));
@@ -344,7 +345,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     rotation.active=editable;
     rotation.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
         Component.literal("Drag to rotate by 5° · direct canvas handles also work")));
-    y+=31;
+    y+=tight?27:31;
     var scale=addRenderableWidget(new LoomSlider(x,y,w,"Width",
         ()->layer()==null?0:normalizedWidth(layer().imageData().transform()),
         this::setSelectedWidth));
@@ -352,7 +353,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     scale.active=editable;
     scale.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
         Component.literal("Scale proportionally, preserving the artwork's aspect ratio")));
-    y+=37;
+    y+=tight?33:37;
     int column=(w-6)/2;
     positionX=addRenderableWidget(new EditBox(font,x,y,column,19,
         Component.literal("Position X in pixels")));
@@ -367,11 +368,11 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
         Component.literal("Horizontal center on selected face in texture pixels")));
     positionY.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
         Component.literal("Vertical center on selected face in texture pixels")));
-    y+=24;
+    y+=tight?21:24;
     var apply=addRenderableWidget(new LoomButton(x,y,w,20,
         Component.literal("Apply precise X / Y position"),this::applyPosition));
     apply.setIcon(LoomButton.Icon.MOVE).setPrimary(true);apply.active=editable;
-    y+=26;
+    y+=tight?23:26;
     int half=(w-4)/2;
     var flipH=addRenderableWidget(new LoomButton(x,y,half,20,
         Component.literal("Mirror X"),()->editTransform(tr->
@@ -552,7 +553,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
             Component.literal(font.plainSubstrByWidth(sub,Math.max(16,bound))),
             inset,headerTop+17,LoomUiTheme.TEXT_MUTED,false);
         PremiumText.drawString(g,font,Component.literal("POSITION  ·  X / Y (px)"),
-            inset,headerTop+145,LoomUiTheme.TEXT_MUTED,false);
+            inset,headerTop+(height<350?113:129),LoomUiTheme.TEXT_MUTED,false);
       }
     }
     if(!editPixels&&selectedAsset!=null&&(armed||draggingTile||placing)&&preview!=null){
