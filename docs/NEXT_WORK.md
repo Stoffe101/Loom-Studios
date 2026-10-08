@@ -1,3 +1,7 @@
+## 2026-10-08 — M0 doc cleanup — AWAITING MERGE
+
+Review the terminology and limit corrections in `SMART_IMPORT.md`, `LOOM_CODES.md`, and `UI_COMPATIBILITY.md`, then integrate after Animation UX PR26 reaches accepted CI status. Confirm docs retain historical details as explicitly historical, with main CURRENT_STATE as shipped-state authority. Mark M0-06 checked in ACTIVE_MISSIONS only after the doc branch actually merges. No runtime tests necessary for text-only corrections; check Markdown links and terms.
+
 ## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
 
 1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
