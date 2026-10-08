@@ -1,3 +1,7 @@
+## 2026-10-08 — Actions artifact-storage cleanup confirmed — DONE (CI infrastructure)
+
+[Prune outdated workflow artifacts run #1](https://github.com/Stoffe101/Loom-Studios/actions/runs/37712798078) completed **success** on merged CI commit `6a1bf5361ebc368f2e98f9f19f8c563d702dd9d3`. The cleanup removed **875 older artifacts**, freeing approximately **13.8 GiB** of GitHub Actions storage, while keeping recent JAR/full-capture evidence by retention policy. Future Build and comparison workflows use shorter retention and curated original screenshots (full screenshot assertions still execute). This supersedes the historical "implementation pending" note below. Current Java/GUI functional acceptance remains a separate per-commit requirement.
+
 ## 2026-10-08 — M0 live-document accuracy correction — DOCS BRANCH ONLY
 
 Historical implementation notes in SMART_IMPORT, LOOM_CODES and UI_COMPATIBILITY were clearly separated from current capabilities: multi-format JPEG/GIF/BMP/TIFF/WBMP import alongside PNG, 512px embedded source limit, schema-v5 portable animation contents, and 1×/2×/4×/6×/8× canvas performance obligations. New WebP/hosted services/animated-export features remain proposed. This is **documentation-only**, no Java, assets, CI pipeline or runtime change. Branch `docs/m0-current-docs-audit-2026-10-08` remains pending integration into `main` after the Animation UX PR26 acceptance; do not check off M0-06 until merged and reviewed.
