@@ -1,3 +1,11 @@
+## 2026-10-08 — M2-06 safe layer multiselect/batch animation — IMPLEMENTED ON PR, VERIFICATION NEXT
+
+- Fix prior compile regression of AnimationPresetDraftTest lambda; verify Java21 full tests and `AnimationPresetBatchTest` for exactly three independent tracks, original-project purity, existing tracks untouched, duplicate/missing/channel-invalid cases, rate and track-limit refusal.
+- Verify Ctrl+click layer selection **both in Cape/Elytra editor and inside Simple Animation**; visually show three selected rows/count, Try in actual worn preview, one atomic Apply/Undo. Check that clicking visibility/lock controls still works.
+- Test screen rebuild, scrolling, compact/ultrawide interaction hitboxes, true canvas/wing target fidelity and profile screenshot expectations with populated assets.
+- Reconcile M2 PR with current `main`, incorporating M1 Inspector handoff and resizable-panel implementation when those are accepted. Do not overwrite their CSS-like/native panel layout code with stale branch copies. No false DONE until latest SHA checks pass.
+- Defer blanket art catalog expansion; finish premium asset Inspector/resize first, then M2 Simple/Advanced timeline, reference handles, frames and masking.
+
 ## 2026-10-08 — M2 visual preset and isolated preview acceptance — NEXT
 
 1. Verify `AnimationPresetDraftTest` and full Java21 project tests; Preview must not change source project/hash or undo state, and switching Simple/Advanced must preserve custom lanes/keyframes. Explicit Apply is the only destructive replacement path and must be one undoable action.
