@@ -298,13 +298,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       // Placement size is continuous and instantly previewed in the ghost,
       // not buried behind repeated Smaller/Larger clicks.
       int maxStampSize=Math.max(2,Math.min(256,Math.max(faceW(),faceH())));
-      var stampSize=addRenderableWidget(new LoomSlider(x,bottom+23,w-69,"Asset size",
+      var stampSize=addRenderableWidget(new LoomSlider(x,bottom+22,w-69,"Asset size",
           ()->(size-1)/(double)(maxStampSize-1),
           v->size=Math.max(1,Math.min(maxStampSize,1+(int)Math.round(v*(maxStampSize-1))))));
       stampSize.format(v->size+" px");
       stampSize.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
           Component.literal("Scale artwork before placing · source pixels stay editable")));
-      modeButton=addRenderableWidget(new LoomButton(x+w-65,bottom+23,65,22,
+      modeButton=addRenderableWidget(new LoomButton(x+w-65,bottom+22,65,22,
           Component.literal("Tint"),() -> {
             recolor=!recolor;
             modeButton.setSelected(recolor);
