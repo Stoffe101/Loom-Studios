@@ -230,6 +230,12 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     selectedAsset=entry;
     armed=true;
     editPixels=false;
+    if (preview != null) {
+      // Selecting a new asset disables transform/pixel gestures on the previous object.
+      // Only the placement ghost handles pointer input until this asset is committed.
+      preview.setPixelAction(null);
+      preview.setTransformController(null);
+    }
     message="Selected "+entry.stamp().name()+" · click or drag onto the design";
   }
   private void placeAt(double mx,double my,int longest) {
