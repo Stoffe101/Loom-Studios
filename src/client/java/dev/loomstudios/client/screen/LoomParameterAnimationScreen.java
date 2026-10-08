@@ -27,8 +27,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
   private List<AnimationKeyEditing.CopiedKey> clipboard = List.of();
   private final Set<UUID> collapsed = new HashSet<>();
   private String message =
-      "Ctrl/Shift-click keys to select · Ctrl+C/V copy/paste · drag curve handles · wheel scrolls"
-          + " lanes";
+      "Select a keyframe diamond, then edit its value or outgoing curve · Ctrl+C/V copy/paste";
   private int top, right, graphTop, graphHeight, timelineTop, timelineHeight;
   private Canvas widget;
   private int draggedHandle = -1, dragStart, dragDelta;
@@ -36,6 +35,16 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
   private Set<AnimationKeyEditing.Address> dragSelection = Set.of();
   private LoomPlayerPreviewWidget preview;
   private boolean additive;
+
+  /** Wide displays can show curves and the actual cosmetic together, without hiding the timeline. */
+  private boolean splitPreview() {
+    return !previewMode && width >= 1100 && height >= 520;
+  }
+
+  private int curveRight() {
+    return splitPreview() ? Math.max(240, right - Math.max(180, (right - 16) / 3)) - 12
+        : right - 24;
+  }
 
   private record Row(
       UUID layer, UUID track, AnimationParameter parameter, String label, boolean heading) {}
@@ -99,7 +108,9 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
     graphTop = top + 30;
     graphHeight = previewMode
         ? Math.max(96, Math.min(200, (height - graphTop - 64) / 2))
-        : Math.max(64, Math.min(110, (height - graphTop - 64) / 3));
+        : splitPreview()
+            ? Math.max(110, Math.min(172, (height - graphTop - 64) / 3))
+            : Math.max(64, Math.min(110, (height - graphTop - 64) / 3));
     timelineTop = graphTop + graphHeight + 8;
     timelineHeight = height - 28 - timelineTop;
     button(8, top, 60, "Back", this::onClose);
@@ -135,7 +146,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         294,
         top,
         78,
-        previewMode ? "Curve" : "3D preview",
+        previewMode ? "Show curve" : splitPreview() ? "Focus preview" : "3D preview",
         () -> {
           previewMode = !previewMode;
           rebuildWidgets();
@@ -257,6 +268,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         188,
         "Static settings…",
         () -> minecraft.setScreen(new LoomEffectParametersScreen(this, trackId, tick)));
+    var previousPreview = preview == null ? null : preview.viewState();
     widget =
         addRenderableWidget(
             new Canvas(
@@ -264,19 +276,24 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
                 previewMode ? timelineTop : graphTop,
                 right - 16,
                 height - (previewMode ? timelineTop : graphTop) - 28));
-    if (previewMode) {
+    if (previewMode || splitPreview()) {
+      int previewX = previewMode ? 8 : curveRight() + 12;
+      int previewWidth = previewMode ? right - 16 : right - 8 - previewX;
       preview =
           addRenderableWidget(
               new LoomPlayerPreviewWidget(
-                  8,
+                  previewX,
                   graphTop,
-                  right - 16,
+                  previewWidth,
                   graphHeight,
                   ClientProjectWorkspace::project,
                   channel == AnimationChannel.CAPE
                       ? LoomPlayerPreviewWidget.Mode.CAPE
                       : LoomPlayerPreviewWidget.Mode.ELYTRA));
+      preview.restoreViewState(previousPreview);
       preview.setTimelineTickSupplier(() -> tick);
+    } else {
+      preview = null;
     }
   }
 
@@ -384,13 +401,13 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
     protected void renderWidget(GuiGraphics g, int mx, int my, float dt) {
       if (!previewMode) {
         LoomScreenChrome.panel(g, 8, graphTop, right - 8, graphTop + graphHeight);
-        int l = 24, r = right - 24, t = graphTop + 22, b = graphTop + graphHeight - 10;
+        int l = 24, r = curveRight(), t = graphTop + 22, b = graphTop + graphHeight - 10;
         label(
             g,
-            "Outgoing curve · " + selectedKey().easing().label() + " · drag control points",
+            "Selected key → next · " + selectedKey().easing().label() + " easing",
             16,
             graphTop + 6,
-            right - 40,
+            curveRight() - 24,
             LoomUiTheme.TEXT_MUTED);
         g.enableScissor(l, t, r + 1, b + 1);
         for (int i = 0; i <= 4; i++) {
@@ -414,7 +431,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
       LoomScreenChrome.panel(g, 8, timelineTop, right - 8, LoomParameterAnimationScreen.this.height - 28);
       label(
           g,
-          "Time · " + tick + " ticks · zoom " + zoom + "×",
+          "Time " + String.format(java.util.Locale.ROOT, "%.2fs", tick / 20f) + " · " + zoom + "×",
           16,
           timelineTop + 6,
           laneLeft() - 24,
@@ -477,8 +494,9 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
     @Override
     public void onClick(MouseButtonEvent e, boolean twice) {
       if (e.y() < graphTop + graphHeight) {
+        if (e.x() > curveRight()) return;
         var k = selectedKey();
-        int l = 24, r = right - 24, t = graphTop + 22, b = graphTop + graphHeight - 10;
+        int l = 24, r = curveRight(), t = graphTop + 22, b = graphTop + graphHeight - 10;
         var c = k.curve();
         double d1 = Math.hypot(e.x() - (l + c.x1() * (r - l)), e.y() - (b - c.y1() * (b - t))),
             d2 = Math.hypot(e.x() - (l + c.x2() * (r - l)), e.y() - (b - c.y2() * (b - t)));
@@ -654,7 +672,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
   public void render(GuiGraphics g, int mx, int my, float dt) {
     LoomScreenChrome.renderBackdrop(g, width, height);
     LoomScreenChrome.renderBrandHeader(
-        g, width, "Animation 2.1 · Parameter lanes", LoomUiTheme.compact(width, height));
+        g, width, "Advanced Animation", LoomUiTheme.compact(width, height));
     super.render(g, mx, my, dt);
     LoomScreenChrome.footer(g, width, height, message, selected.size() + " selected");
     renderChoices(g, mx, my);
