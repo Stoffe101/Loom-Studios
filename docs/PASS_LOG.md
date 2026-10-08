@@ -1,3 +1,15 @@
+## 2026-10-08 — Canonical live-doc status cleanup — DONE ON BRANCH (not merged)
+
+**Why:** new UI/creative roadmap links coexist with historical Smart Import PNG-only notes, outdated schema-v3 code-sharing prose and UI_COMPATIBILITY examples incorrectly treating 4× as the heaviest supported artwork resolution.
+
+**Changes:** clarified current multi-format ImageIO import and 512px embedded-bound baseline; labeled historical PNG-only notes explicitly; corrected portable project code to schema-v5 animation, leaving hosted/public gallery and animated exports as future; updated UI four-profile compatibility to include 6×/8× project textures and 512×256 memory/performance tests.
+
+**Architecture/decisions:** no code/serialization/renderer change or new dependency; documentation harmonization only, source of truth remains CURRENT_STATE/PASS_LOG/DECISIONS. No runtime ADR adopted.
+
+**Testing:** reviewed existing accepted runtime/proposed-feature docs and target strings; Markdown link and content consistency check pending review. **Status:** docs branch has changes; not yet merged or M0-06 accepted.
+
+**Next:** integrate the branch after PR26, verify links and check off M0-06.
+
 ## 2026-10-08 — Artwork diversity and true worn-cosmetic CI — IN PROGRESS
 
 **Why:** user was not satisfied with thumbnails-only captures or limited icon diversity; demanded art that actually looks good on the Cape/Elytra and requested improved CI.
