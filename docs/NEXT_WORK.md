@@ -1,3 +1,7 @@
+## 2026-10-08 — Animation screenshot review findings (not yet fixed)
+
+The accepted standalone Animation UX screenshot artifact from [Build d7e4aee2](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) confirms the dual curve/3D layout does not overlap. However, **3440×1440 GUI2** leaves substantial unused empty space beneath the right-side 3D preview while the timeline remains constrained to the left; **1920×1080 GUI3** clips the long footer hint mid-sentence. Track keys and control legends remain low-discoverability. These are genuine observed UX defects for M1-02/M2-02, not a failure of the narrow M0 overlap fix. Proposed correction: shorter compact context tips and responsive timeline/preview allocation with movable or resizeable panel boundaries. Keep animation engine data and user keyframes untouched.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
