@@ -1,3 +1,15 @@
+## 2026-10-08 — Premium contextual Asset Inspector instead of button wall — CI/visual review PENDING
+
+Following user feedback from real screenshots, the Edit tab uses three native continuous LoomSlider controls for opacity (percent), rotation (degrees) and proportional artwork width (texture pixels); precise X/Y texture-pixel EditBox fields with one Apply operation, and two H/V mirror actions. Direct preview handles and Edit Pixels remain available. The Browse tab uses one asset-size slider instead of repeated Smaller/Larger buttons, and a Tint toggle. The layout adapts vertical spacing for 320–360 logical-pixel screens.
+
+Separately, M1 PR #32 restores actual draggable Cape/Elytra inspector dividers absent from PR #31's merged output. The focused layout-review workflow must provide eight resized editor screenshots, not merely Asset Library screenshots. The focused Asset Library workflow must show the actual slider inspector at four profiles and assert the obsolete opacity button-wall is absent.
+
+**Status:** code committed but not merged or visually approved. Pending exact-head Java tests, eight-profile layout review, twenty Asset Library captures, complete 338-image real-client suite and premium comparisons. Project/codec/network format unchanged.
+
+## 2026-10-08 — M1 resize integration check — NEXT
+
+Verify separate M1 inspector resizing PR on exact head. Require clickable drag handles at Cape and Elytra, preference persistence and clamp on 1920×1080 GUI3 and 3440×1440 GUI2/3, all 330 screenshot captures, and its focused `layout-review.yml`. Confirm merged `main` actually contains `LoomInspectorResize`, `LoomWorkspaceLayout` updates, and both editor integrations. Do not mark M1 panel-resize task delivered based solely on the previously successful #31 branch's CI. The broader M1 and full M5 Edit Layout remain open.
+
 ## 2026-10-08 — Animation screenshot review findings (not yet fixed)
 
 The accepted standalone Animation UX screenshot artifact from [Build d7e4aee2](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) confirms the dual curve/3D layout does not overlap. However, **3440×1440 GUI2** leaves substantial unused empty space beneath the right-side 3D preview while the timeline remains constrained to the left; **1920×1080 GUI3** clips the long footer hint mid-sentence. Track keys and control legends remain low-discoverability. These are genuine observed UX defects for M1-02/M2-02, not a failure of the narrow M0 overlap fix. Proposed correction: shorter compact context tips and responsive timeline/preview allocation with movable or resizeable panel boundaries. Keep animation engine data and user keyframes untouched.

@@ -3,6 +3,7 @@ package dev.loomstudios.client.screen;
 import dev.loomstudios.client.project.ClientProjectWorkspace;
 import dev.loomstudios.client.project.EditorOverlayState;
 import dev.loomstudios.client.ui.LoomButton;
+import dev.loomstudios.client.ui.LoomSlider;
 import dev.loomstudios.client.ui.LoomImagePreviewWidget;
 import dev.loomstudios.client.ui.LoomPlayerPreviewWidget;
 import dev.loomstudios.client.ui.LoomScreenChrome;
@@ -44,7 +45,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   private LoomImagePreviewWidget preview;
   private LoomPlayerPreviewWidget wornPreview;
   private LoomPlayerPreviewWidget.ViewState lastWornView;
-  private EditBox search;
+  private EditBox search, positionX, positionY;
   private LoomButton categoryButton, previous, next, modeButton, pixelButton;
   private final List<Tile> tiles = new ArrayList<>();
   private PixelImage cachedComposite;
@@ -294,13 +295,24 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       addRenderableWidget(new LoomButton(x+2*(step+4),bottom,w-2*(step+4),20,
           Component.literal("More Tools"),() -> minecraft.setScreen(
               new LoomCreativeAssetsScreen(this,wing,layerId,face,selectedWing,surface,color,null))));
-      addRenderableWidget(new LoomButton(x,bottom+23,step,20,Component.literal("Smaller"),
-          () -> {size=Math.max(1,size-1);}));
-      addRenderableWidget(new LoomButton(x+step+4,bottom+23,step,20,
-          Component.literal("Larger"),() -> {size=Math.min(256,size+1);}));
-      modeButton=addRenderableWidget(new LoomButton(x+2*(step+4),bottom+23,
-          w-2*(step+4),20,Component.literal(recolor?"Tint ON":"Tint OFF"),
-          () -> {recolor=!recolor;modeButton.setMessage(Component.literal(recolor?"Tint ON":"Tint OFF"));}));
+      // Placement size is continuous and instantly previewed in the ghost,
+      // not buried behind repeated Smaller/Larger clicks.
+      int maxStampSize=Math.max(2,Math.min(256,Math.max(faceW(),faceH())));
+      var stampSize=addRenderableWidget(new LoomSlider(x,bottom+22,w-69,"Asset size",
+          ()->(size-1)/(double)(maxStampSize-1),
+          v->size=Math.max(1,Math.min(maxStampSize,1+(int)Math.round(v*(maxStampSize-1))))));
+      stampSize.format(v->size+" px");
+      stampSize.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+          Component.literal("Scale artwork before placing · source pixels stay editable")));
+      modeButton=addRenderableWidget(new LoomButton(x+w-65,bottom+22,65,22,
+          Component.literal("Tint"),() -> {
+            recolor=!recolor;
+            modeButton.setSelected(recolor);
+            message=recolor?"Tint selected asset with active color":"Original asset colors";
+          }));
+      modeButton.setIcon(LoomButton.Icon.PALETTE).setSelected(recolor);
+      modeButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+          Component.literal("Optional tint. Off preserves each artwork's original colors")));
     }
     pixelButton=addRenderableWidget(new LoomButton(8,height-51,112,20,
         Component.literal(editPixels?"Return to Design":"Edit Selected Pixels"),
@@ -311,94 +323,124 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     if(editPixels) addRenderableWidget(new LoomButton(124,height-51,66,20,
         Component.literal(erasePixels?"Eraser":"Pencil"),
         () -> {erasePixels=!erasePixels;rebuildWidgets();}));
-    else if(!propertiesTab&&layer()!=null&&layer().kind()==LayerKind.IMAGE) {
-      // A minimal *contextual* property strip. Do not add permanent chrome
-      // while nothing is selected; transform handles stay on the artwork.
-      int controls=Math.max(0,right-12-124), propertyStep=Math.min(86,(controls-8)/3);
-      if(propertyStep>=52){
-        var less=addRenderableWidget(new LoomButton(124,height-51,propertyStep,20,
-            Component.literal("Opacity −"),()->nudgeSelectedOpacity(-.1f)));
-        var more=addRenderableWidget(new LoomButton(128+propertyStep,height-51,propertyStep,20,
-            Component.literal("Opacity +"),()->nudgeSelectedOpacity(.1f)));
-        var rotate=addRenderableWidget(new LoomButton(132+2*propertyStep,height-51,propertyStep,20,
-            Component.literal("Rotate ↻"),()->editTransform(t->
-                t.withRotation(t.rotationDegrees()+45))));
-        boolean editable=!layer().locked();
-        less.active=editable;more.active=editable;rotate.active=editable;
-      }
-    }
     updateTiles();
   }
 
+  /**
+   * Studio-style contextual inspector. Use continuous reversible sliders for
+   * visual properties and numeric fields for precise atlas-pixel positioning.
+   * The artwork itself remains draggable with the existing preview handles.
+   */
   private void buildAssetProperties(int x,int y,int w) {
-    var l=layer();
-    if(l==null||l.kind()!=LayerKind.IMAGE) {
-      var hint=addRenderableWidget(new LoomButton(x,y,w,20,
-          Component.literal("Select an editable layer"),()->{}));
-      hint.active=false;
-      return;
-    }
-    String shortName=l.name();
-    if(font.width(shortName)>w-16)
-      shortName=font.plainSubstrByWidth(shortName,
-          Math.max(8,w-16-font.width("…")))+"…";
-    var header=addRenderableWidget(new LoomButton(x,y,w,20,
-        Component.literal(shortName),()->{}));
-    header.active=false;
-    header.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
-        Component.literal(l.name()+" · "+Math.round(l.opacity()*100)+"% opacity")));
+    var selected=layer();
+    positionX=null;positionY=null;
+    if(selected==null||selected.kind()!=LayerKind.IMAGE)return;
+    boolean editable=!selected.locked();
+    var t=selected.imageData().transform();
+    var canvas=canvas();
+    int top=y;
+    boolean tight=height<350;
+    // Selected asset header is drawn in render(), never an inert button.
+    y+=tight?37:45;
+    var opacity=addRenderableWidget(new LoomSlider(x,y,w,"Opacity",
+        ()->layer()==null?1:layer().opacity(),
+        this::setSelectedOpacity));
+    opacity.active=editable;
+    opacity.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal("Drag to adjust transparency · arrow keys change by 1%")));
+    y+=tight?27:31;
+    var rotation=addRenderableWidget(new LoomSlider(x,y,w,"Rotation",
+        ()->layer()==null?0:normalizedRotation(layer().imageData().transform().rotationDegrees()),
+        v->editTransform(transform->transform.withRotation(Math.round(v*72)*5.0))));
+    rotation.format(v->Math.round(v*360)+"°");
+    rotation.active=editable;
+    rotation.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal("Drag to rotate by 5° · direct canvas handles also work")));
+    y+=tight?27:31;
+    var scale=addRenderableWidget(new LoomSlider(x,y,w,"Width",
+        ()->layer()==null?0:normalizedWidth(layer().imageData().transform()),
+        this::setSelectedWidth));
+    scale.format(v->Math.round(1+v*Math.max(1,faceW()-1))+" px");
+    scale.active=editable;
+    scale.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal("Scale proportionally, preserving the artwork's aspect ratio")));
+    y+=tight?33:37;
+    int column=(w-6)/2;
+    positionX=addRenderableWidget(new EditBox(font,x,y,column,19,
+        Component.literal("Position X in pixels")));
+    positionY=addRenderableWidget(new EditBox(font,x+column+6,y,w-column-6,19,
+        Component.literal("Position Y in pixels")));
+    int cx=(int)Math.round(t.centerX()*canvas.width()-faceLeft());
+    int cy=(int)Math.round(t.centerY()*canvas.height()-faceTop());
+    positionX.setValue(Integer.toString(cx));positionY.setValue(Integer.toString(cy));
+    positionX.setHint(Component.literal("X (px)"));positionY.setHint(Component.literal("Y (px)"));
+    positionX.setEditable(editable);positionY.setEditable(editable);
+    positionX.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal("Horizontal center on selected face in texture pixels")));
+    positionY.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal("Vertical center on selected face in texture pixels")));
+    y+=tight?21:24;
+    var apply=addRenderableWidget(new LoomButton(x,y,w,20,
+        Component.literal("Apply precise X / Y position"),this::applyPosition));
+    apply.setIcon(LoomButton.Icon.MOVE).setPrimary(true);apply.active=editable;
+    y+=tight?23:26;
     int half=(w-4)/2;
-    boolean canEdit=!l.locked();
-    // Reserve two concise live readouts beneath the selected item.
-    y+=55;
-    var minus=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Opacity −10%"),
-        ()->nudgeSelectedOpacity(-.1f)));
-    var plus=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Opacity +10%"),
-        ()->nudgeSelectedOpacity(.1f)));
-    y+=26;
-    var left=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("◀ Move 1px"),
-        ()->nudgeAsset(-1,0)));
-    var rightButton=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("Move 1px ▶"),()->nudgeAsset(1,0)));
-    y+=26;
-    var up=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("▲ Up 1px"),
-        ()->nudgeAsset(0,-1)));
-    var down=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("▼ Down 1px"),()->nudgeAsset(0,1)));
-    y+=26;
-    var smaller=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Size −1px"),
-        ()->resizeAsset(-1)));
-    var bigger=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Size +1px"),
-        ()->resizeAsset(1)));
-    y+=26;
-    var ccw=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Rotate −15°"),
-        ()->editTransform(t->t.withRotation(t.rotationDegrees()-15))));
-    var cw=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
-        Component.literal("Rotate +15°"),
-        ()->editTransform(t->t.withRotation(t.rotationDegrees()+15))));
-    y+=26;
-    var flipH=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Flip H"),
-        ()->editTransform(t->t.withMirrors(!t.mirrorHorizontal(),t.mirrorVertical()))));
-    var flipV=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Flip V"),
-        ()->editTransform(t->t.withMirrors(t.mirrorHorizontal(),!t.mirrorVertical()))));
-    for(var control:new LoomButton[]{minus,plus,left,rightButton,up,down,smaller,bigger,ccw,cw,flipH,flipV})
-      control.active=canEdit;
+    var flipH=addRenderableWidget(new LoomButton(x,y,half,20,
+        Component.literal("Mirror X"),()->editTransform(tr->
+            tr.withMirrors(!tr.mirrorHorizontal(),tr.mirrorVertical()))));
+    var flipV=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
+        Component.literal("Mirror Y"),()->editTransform(tr->
+            tr.withMirrors(tr.mirrorHorizontal(),!tr.mirrorVertical()))));
+    flipH.setIcon(LoomButton.Icon.FLIP_H);
+    flipV.setIcon(LoomButton.Icon.FLIP_V);
+    flipH.active=editable;flipV.active=editable;
+    // The button set ends above the persistent application footer, including
+    // compact 1920×1080 GUI3. No scroll is necessary in the Edit inspector.
+    if(y+20>height-28)throw new IllegalStateException(
+        "Asset Edit inspector exceeds safe viewport: "+top+".."+(y+20));
   }
 
-  private void nudgeAsset(int dx,int dy) {
-    var c=canvas();
-    editTransform(t->t.withCenter(t.centerX()+dx/(double)c.width(),
-        t.centerY()+dy/(double)c.height()));
+  private static double normalizedRotation(double degrees) {
+    return ((degrees%360+360)%360)/360;
   }
-
-  private void resizeAsset(int pixelDelta) {
-    var c=canvas();
-    editTransform(t->{
-      double current=t.width()*c.width();
-      double adjusted=Math.max(1.0,current+pixelDelta);
-      double ratio=adjusted/current;
-      return t.withSize(t.width()*ratio,t.height()*ratio);
+  private double normalizedWidth(LayerTransform transform){
+    double width=transform.width()*canvas().width();
+    return Math.max(0,Math.min(1,(width-1)/Math.max(1,faceW()-1)));
+  }
+  private void setSelectedOpacity(double value){
+    var selected=layer();
+    if(selected==null||selected.locked())return;
+    float opacity=(float)Math.max(0,Math.min(1,value));
+    if(Math.abs(selected.opacity()-opacity)<.0001)return;
+    ClientProjectWorkspace.apply(p->wing
+        ? ProjectEdits.setElytraLayerOpacity(p,layerId,opacity)
+        : ProjectEdits.setCapeLayerOpacity(p,layerId,opacity));
+  }
+  private void setSelectedWidth(double value){
+    double width=1+Math.max(0,Math.min(1,value))*Math.max(1,faceW()-1);
+    editTransform(transform->{
+      double old=Math.max(.0001,transform.width()*canvas().width());
+      double ratio=width/old;
+      return transform.withSize(transform.width()*ratio,transform.height()*ratio);
     });
+  }
+  private void applyPosition(){
+    var selected=layer();
+    if(selected==null||selected.locked()||positionX==null||positionY==null)return;
+    try {
+      int x=Integer.parseInt(positionX.getValue().trim());
+      int y=Integer.parseInt(positionY.getValue().trim());
+      if(x<0||y<0||x>faceW()||y>faceH()) {
+        message="Position must be inside this face: X 0–"+faceW()+
+            ", Y 0–"+faceH()+" px";return;
+      }
+      editTransform(transform->transform.withCenter(
+          (faceLeft()+x)/(double)canvas().width(),
+          (faceTop()+y)/(double)canvas().height()));
+      message="Position updated · X "+x+" px, Y "+y+" px";
+    }catch(NumberFormatException ex){
+      message="Use whole numbers for X and Y (texture pixels)";
+    }
   }
 
   private List<CreativeAssetCatalog.Entry> filtered() {
@@ -506,20 +548,23 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     if(propertiesTab){
       var selected=layer();
       if(selected!=null&&selected.kind()==LayerKind.IMAGE){
-        var t=selected.imageData().transform();
-        var c=canvas();
-        int leftPanel=width-(width>=1300?Math.min(350,width/4)
+        int inset=width-(width>=1300?Math.min(350,width/4)
             :Math.max(182,Math.min(244,width/3)))-8+8;
-        int headerTop=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8;
-        int centerX=(int)Math.round(t.centerX()*c.width()-faceLeft());
-        int centerY=(int)Math.round(t.centerY()*c.height()-faceTop());
+        int headerTop=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8+25;
+        int bound=width-inset-12;
+        String name=font.plainSubstrByWidth(selected.name(),Math.max(16,bound));
+        PremiumText.drawString(g,font,Component.literal(name),inset,headerTop+2,
+            LoomUiTheme.TEXT,false);
+        var t=selected.imageData().transform();
+        int cx=(int)Math.round(t.centerX()*canvas().width()-faceLeft());
+        int cy=(int)Math.round(t.centerY()*canvas().height()-faceTop());
+        String sub="LAYER  ·  "+Math.round(t.width()*canvas().width())+" × "
+            +Math.round(t.height()*canvas().height())+" px  ·  "+cx+", "+cy;
         PremiumText.drawString(g,font,
-            Component.literal("Center: "+centerX+", "+centerY+" px"),
-            leftPanel,headerTop+52,LoomUiTheme.TEXT_MUTED,false);
-        PremiumText.drawString(g,font,
-            Component.literal("Size: "+Math.round(t.width()*c.width())+"×"
-                +Math.round(t.height()*c.height())+" · "+Math.round(t.rotationDegrees())+"°"),
-            leftPanel,headerTop+65,LoomUiTheme.TEXT_MUTED,false);
+            Component.literal(font.plainSubstrByWidth(sub,Math.max(16,bound))),
+            inset,headerTop+17,LoomUiTheme.TEXT_MUTED,false);
+        PremiumText.drawString(g,font,Component.literal("POSITION  ·  X / Y (px)"),
+            inset,headerTop+(height<350?113:132),LoomUiTheme.TEXT_MUTED,false);
       }
     }
     if(!editPixels&&selectedAsset!=null&&(armed||draggingTile||placing)&&preview!=null){

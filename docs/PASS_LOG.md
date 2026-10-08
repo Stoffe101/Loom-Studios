@@ -1,3 +1,21 @@
+## 2026-10-08 — Premium contextual Asset Inspector instead of button wall — CI/visual review PENDING
+
+Following user feedback from real screenshots, the Edit tab uses three native continuous LoomSlider controls for opacity (percent), rotation (degrees) and proportional artwork width (texture pixels); precise X/Y texture-pixel EditBox fields with one Apply operation, and two H/V mirror actions. Direct preview handles and Edit Pixels remain available. The Browse tab uses one asset-size slider instead of repeated Smaller/Larger buttons, and a Tint toggle. The layout adapts vertical spacing for 320–360 logical-pixel screens.
+
+Separately, M1 PR #32 restores actual draggable Cape/Elytra inspector dividers absent from PR #31's merged output. The focused layout-review workflow must provide eight resized editor screenshots, not merely Asset Library screenshots. The focused Asset Library workflow must show the actual slider inspector at four profiles and assert the obsolete opacity button-wall is absent.
+
+**Status:** code committed but not merged or visually approved. Pending exact-head Java tests, eight-profile layout review, twenty Asset Library captures, complete 338-image real-client suite and premium comparisons. Project/codec/network format unchanged.
+
+## 2026-10-08 — M1 resize files missing from squash reconciliation — IN PROGRESS
+
+**Finding:** after merging PR31, the resulting main commit's changed-files list omitted six files even though PR31's feature branch contained them and its CI passed. Verified via main Git tree: `LoomInspectorResize.java` and `layout-review.yml` were absent, and Cape/Elytra/WorkspaceLayout remained earlier versions. Thus no resize delivery should be claimed yet.
+
+**Correction:** a six-file follow-up branch layers the resize implementation, focused screenshot workflow and unit test changes onto the actual main head in one isolated commit. Check code review, all Java tests and real-capture workflows before merge.
+
+**Architecture:** local inspector sizing and layout safety; no project schema/network/equip changes. Numeric width and general ElvUI-style panel docking remain future.
+
+**Tests:** previous PR branch tests passed, but the new exact integration commit **is pending**. Follow-up must confirm files exist in main after merge.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.

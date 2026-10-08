@@ -32,14 +32,21 @@
 
 **Exit:** `main` is a reliable, CI-verified base; no unmerged PR is presented as production-ready.
 
+### M1 progress checkpoint (2026-10-08)
+
+- **Merged in main:** PR #31 delivered the contextual Assets/Edit tab, per-pixel movement, opacity, rotation, flips, improved 2D/worn preview focus and contextual tooltips; build + screenshot + comparison checks passed. These are **partial progress on M1-01/02/03/04**, not the complete mission.
+- **Separate recovery PR #32 under test:** responsive inspector sizing and bounded drag handles across Cape/Elytra, the workspace-layout helper and focused four-profile visual review. Do not claim delivered until files are visible on main after merge.
+- **Not yet done:** numeric inspector/property field editing, full shared primary-editor tool hierarchy, robust reference/mask modes, all panel-size recovery cases and remaining GUI3 clipping. General ElvUI-style Edit Layout remains M5.
+- **M2 work is staged independently:** visual recipe cards, read-only Try mode and undisturbed Advanced tracks are an M2-01 increment, not the completed animation mission.
+
 ### Mission 1 — Fix the editor's basic ergonomics (**highest product priority**)
 
-- [ ] **M1-01 · TODO** Organize one clear tool rail, one context inspector, and distinct **Browse → Place → Edit** states; eliminate ambiguous text/button walls.
+- [ ] **M1-01 · IN PROGRESS (PR #32, visual review pending)** Organize one clear tool rail, one context inspector, and distinct **Browse → Place → Edit** states; eliminate ambiguous text/button walls.
 - [ ] **M1-02 · TODO** Fix clipped/overlapping text, giant tooltips over headers, missing focus/hover/selected states, nested/unnecessary scrolling, tiny targets and inconsistent Escape/Cancel.
 - [ ] **M1-03 · TODO** Make Cape and Elytra 2D canvas the primary artwork area, with **cosmetic-focused 3D preview** nearby or as a compact focus mode. Provide neutral/light-checker inspection background as an alternative to the scenic courtyard; default zoom should highlight the cosmetic rather than scenery.
-- [ ] **M1-04 · TODO** Selected asset/layer Inspector: move, numeric X/Y/size/rotation, mirror, tint/palette, opacity/blend, lock, mask, duplicate, delete, animate and **real Edit Pixels** entry. Keep frequent controls visible while hiding rare ones contextually.
+- [ ] **M1-04 · IN PROGRESS (sliders and precise placement in PR #32, remaining inspector features pending)** Selected asset/layer Inspector: move, numeric X/Y/size/rotation, mirror, tint/palette, opacity/blend, lock, mask, duplicate, delete, animate and **real Edit Pixels** entry. Keep frequent controls visible while hiding rare ones contextually.
 - [ ] **M1-05 · TODO** Make reference-image handles and mask/selection overlays understandable (direct drag/resize/rotate, Fit/Fill/Reset, mask/art side-by-side modes), reusing current transform/selection systems.
-- [ ] **M1-06 · TODO** Define layout profiles for compact 1920×1080 GUI3 and comfortable ultrawide 3440×1440 GUI2, with no feature silently inaccessible at other required profiles.
+- [ ] **M1-06 · IN PROGRESS (eight resized-editor profiles in PR #32 pending)** Define layout profiles for compact 1920×1080 GUI3 and comfortable ultrawide 3440×1440 GUI2, with no feature silently inaccessible at other required profiles.
 
 **Exit:** novice can create, select, move, recolor and save a Cape/Elytra asset without reading documentation or fighting scrolling; advanced tools remain discoverable. Human-reviewed screenshot captures at four profiles show readable workspace hierarchy.
 
@@ -80,7 +87,7 @@
 This is a **good direction, not the very next task**. The default layout must first work well. Implement progressively rather than shipping an empty "unlock everything" system.
 
 - [ ] **M5-01 · TODO / early alongside M1** Provide a few professionally designed workspace presets: **Painting / Animation / Asset Placement / Preview**, with saved local preferences.
-- [ ] **M5-02 · TODO** Drag **splitters** to resize left Layers, central canvas, right Inspector/Assets and bottom Timeline. Offer precise numeric width/height controls with a clear distinction between **Minecraft GUI units** and physical monitor pixels; show live dimensions, min/max bounds and Reset.
+- [ ] **M5-02 · PARTIAL (PR #32 divider; numeric layout widths and timeline docking still TODO)** Drag **splitters** to resize left Layers, central canvas, right Inspector/Assets and bottom Timeline. Offer precise numeric width/height controls with a clear distinction between **Minecraft GUI units** and physical monitor pixels; show live dimensions, min/max bounds and Reset.
 - [ ] **M5-03 · TODO** Add an **Edit Layout** mode inspired by ElvUI: move and dock panels, anchor/snap grid, align/distribute, resize handles, panel visibility, keyboard nudges, lock/unlock, Undo/Redo, Reset to Safe Default. The editor's tools must not activate while the user drags the layout.
 - [ ] **M5-04 · TODO** Save **named workspace profiles**, optionally per physical resolution/GUI scale; switch/import/export/reset layouts without corrupting a project's authored artwork.
 - [ ] **M5-05 · TODO** Responsive safety rules: no panels off-screen after switching GUI scale, no clipped Save/Equip or inaccessible critical actions, recovery/reset shortcut even from a broken saved layout, local-only preferences by default.

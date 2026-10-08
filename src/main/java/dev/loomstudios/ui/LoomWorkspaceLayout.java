@@ -15,6 +15,26 @@ public record LoomWorkspaceLayout(
     }
 
     public static LoomWorkspaceLayout create(int width, int height, boolean elytra, int tracks) {
+        return create(width, height, elytra, tracks, 0);
+    }
+
+    /**
+     * Optional user-sized inspector width in logical GUI pixels, not physical display pixels.
+     * Zero means the responsive default. Always leave the editing canvas useful.
+     */
+    public static int safeInspectorWidth(int width, int height, int requestedWidth) {
+        boolean compact = width <= 700 || height <= 420;
+        int baseline = compact ? 204 : Math.min(286, Math.max(230, width / 4));
+        int minimum = compact ? 190 : 210;
+        int rail = compact ? 30 : 106;
+        int maximum = Math.max(minimum, Math.min(width / 2,
+                width - rail - 16 - (compact ? 220 : 300)));
+        int value = requestedWidth <= 0 ? baseline : requestedWidth;
+        return Math.max(minimum, Math.min(maximum, value));
+    }
+
+    public static LoomWorkspaceLayout create(int width, int height, boolean elytra,
+                                             int tracks, int requestedInspectorWidth) {
         boolean compact = width <= 700 || height <= 420;
         int margin = 8;
         int gap = compact ? 4 : 6;
@@ -23,7 +43,7 @@ public record LoomWorkspaceLayout(
         int top = header + nav + gap;
         int bottom = height - 28;
         int rail = compact ? 30 : 106;
-        int rightWidth = compact ? 204 : Math.min(286, Math.max(230, width / 4));
+        int rightWidth = safeInspectorWidth(width, height, requestedInspectorWidth);
         int right = width - margin;
         int rightLeft = right - rightWidth;
         int centerLeft = margin + rail + gap;

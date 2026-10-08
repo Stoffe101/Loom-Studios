@@ -51,7 +51,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 330)) {
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 338)) {
                 if(!workflowsVerified) {
                     verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client);
           LoomCreativeVerification.verify(client); verifyAuthoringPayload(client);
@@ -76,7 +76,9 @@ public final class LoomUiCapture {
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
                 int[] target =
-            stage >= 326
+            stage >= 330
+                ? PROFILES[(stage - 330) / 2]
+                : stage >= 326
                 ? PROFILES[stage - 326]
                 : stage >= 310
                 ? PROFILES[(stage - 310) / 4]
@@ -89,7 +91,9 @@ public final class LoomUiCapture {
             }
             if (stage != 20) {
                 client.options.guiScale().set(
-                stage >= 326
+                stage >= 330
+                    ? PROFILES[(stage - 330) / 2][2]
+                    : stage >= 326
                     ? PROFILES[stage - 326][2]
                     : stage >= 310
                     ? PROFILES[(stage - 310) / 4][2]
@@ -228,7 +232,8 @@ public final class LoomUiCapture {
                 client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
                 client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
             }
-            if(stage>=326)prepareAssetLibrary(client,0,true);
+            if(stage>=330)prepareInspectorResize(client,(stage-330)%2);
+             else if(stage>=326)prepareAssetLibrary(client,0,true);
             else if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
              else if(stage>= 278) prepareCreative(client);
       else if (stage >=238)prepareAuthoring(client);else if(stage>=218)prepareChoices(client);else if(stage>=190)prepareUsability(client);
@@ -289,7 +294,12 @@ public final class LoomUiCapture {
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
             String name =
-          index >= 326
+          index >= 330
+              ? "resized-" + ((index - 330)%2 == 0 ? "cape" : "elytra") + "-"
+                  + PROFILES[(index - 330)/2][0] + "x"
+                  + PROFILES[(index - 330)/2][1] + "-gui"
+                  + PROFILES[(index - 330)/2][2]
+              : index >= 326
               ? "asset-library-edit-cape-" + PROFILES[index - 326][0] + "x"
                   + PROFILES[index - 326][1] + "-gui" + PROFILES[index - 326][2]
               : index >= 310
@@ -562,6 +572,32 @@ public final class LoomUiCapture {
         .findFirst().orElseThrow().stamp();
   }
 
+  private static void prepareInspectorResize(Minecraft client,int mode) throws Exception {
+    ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+    boolean wing=mode==1;
+    Screen screen=wing?new ElytraEditorScreen(new LoomHomeScreen())
+        :new CapeEditorScreen(new LoomHomeScreen());
+    client.setScreen(screen);
+    var initial=(dev.loomstudios.ui.LoomWorkspaceLayout)field(screen,"workspaceLayout").get(screen);
+    int target=dev.loomstudios.ui.LoomWorkspaceLayout.safeInspectorWidth(
+        screen.width,screen.height,initial.preview().width()+36);
+    int divider=initial.preview().left()-3;
+    int mid=(initial.tools().top()+initial.tools().bottom())/2;
+    var press=mouse(divider,mid,0);
+    if(!screen.mouseClicked(press,false))
+        throw new IllegalStateException("Panel divider was not clickable");
+    int atX=screen.width-8-target;
+    if(!screen.mouseDragged(mouse(atX,mid,0),atX-divider,0)
+        ||!screen.mouseReleased(mouse(atX,mid,0)))
+        throw new IllegalStateException("Panel resize drag/release was lost");
+    var changed=(dev.loomstudios.ui.LoomWorkspaceLayout)field(screen,"workspaceLayout").get(screen);
+    if(changed.preview().width()!=target || changed.canvas().width()<210)
+        throw new IllegalStateException("Widened inspector exceeds layout bounds");
+    System.out.println("LOOM_LAYOUT_RESIZE PASS "
+        +(wing?"Elytra":"Cape")+" "+screen.width+"x"+screen.height
+        +" inspector "+initial.preview().width()+" -> "+changed.preview().width());
+  }
+
   private static void prepareAssetLibrary(Minecraft client,int mode) throws Exception {
     prepareAssetLibrary(client,mode,false);
   }
@@ -637,7 +673,23 @@ public final class LoomUiCapture {
         dev.loomstudios.project.ElytraSurface.OUTSIDE,0xFF45DDE8);
     client.setScreen(screen);
     if(mode%2==1)screen.showWornPreview(true);
-    if(showInspector)screen.showEditInspector();
+    if(showInspector) {
+      screen.showEditInspector();
+      var sliders=screen.children().stream()
+          .filter(c->c instanceof dev.loomstudios.client.ui.LoomSlider)
+          .map(c->(dev.loomstudios.client.ui.LoomSlider)c).toList();
+      var labels=sliders.stream().map(c->c.getMessage().getString()).toList();
+      if(!labels.equals(java.util.List.of("Opacity","Rotation","Width")))
+        throw new IllegalStateException("Asset Inspector must expose the three responsive sliders: "+labels);
+      long numeric=screen.children().stream().filter(c->
+          c instanceof net.minecraft.client.gui.components.EditBox).count();
+      if(numeric!=2)throw new IllegalStateException("Asset Inspector needs two editable pixel coordinates");
+      if(screen.children().stream().anyMatch(c -> c instanceof AbstractWidget w &&
+          w.getMessage().getString().startsWith("Opacity −")))
+        throw new IllegalStateException("Legacy button-wall inspector is still present");
+      System.out.println("LOOM_ASSET_SLIDER_INSPECTOR PASS "+
+          screen.width+"x"+screen.height+" 3 sliders, 2 numeric fields");
+    }
   }
 
   private static String creativeCaptureName(int index) {
