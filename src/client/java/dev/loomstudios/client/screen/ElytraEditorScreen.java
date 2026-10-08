@@ -489,15 +489,16 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
             LoomButton.Icon.IMAGE,
             () ->
                 minecraft.setScreen(
-                    new LoomCreativeAssetsScreen(
-                        this,
-                        true,
-                        selectedLayerId,
-                        null,
-                        selectionWing,
-                        wingSurface,
-                        selectedColor,
-                        creativeSelection()))).setIconOnly(false);
+                    new LoomAssetLibraryScreen(
+                        this, true, selectedLayerId, null, selectionWing, wingSurface, selectedColor))).setIconOnly(false);
+    }
+
+    /** Restore selection after placing an independently editable asset in the library. */
+    public void focusAssetLayer(UUID id) {
+        if (id != null && (ClientProjectWorkspace.project().elytra())
+                .layers().stream().anyMatch(layer -> layer.id().equals(id))) {
+            selectedLayerId = id;
+        }
     }
 
     private void buildRightPanel(int previewHeight, int tabHeight) {
