@@ -142,6 +142,8 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private int timelineTop;
     private int timelineBottom;
     private int rightPanelLeft;
+    private boolean inspectorDividerDragging;
+    private int proposedInspectorWidth;
     private int rightPanelRight;
     private int previewBottom;
     private int inspectorTop;
@@ -181,7 +183,8 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         }
         ensureSelectedLayerExists(); ensureSelectedTrackExists();
         laidOutTrackCount = (int)ClientProjectWorkspace.project().animation().tracks().stream().filter(t -> t.channel() == AnimationChannel.ELYTRA).count();
-        workspaceLayout = LoomWorkspaceLayout.create(width, height, true, laidOutTrackCount);
+        workspaceLayout = LoomWorkspaceLayout.create(width, height, true, laidOutTrackCount,
+                dev.loomstudios.client.ui.LoomInspectorResize.preference(width,height));
         var layout = workspaceLayout;
         compactMode = layout.compact();
         shellLeft = 0; shellTop = 0; shellRight = width; shellBottom = height;
@@ -2050,6 +2053,21 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
 
         super.render(graphics, mouseX, mouseY, partialTick);
         updateButtonStates();
+        if(!hasChoices()) {
+            int divider=rightPanelLeft-3;
+            boolean hover=dev.loomstudios.client.ui.LoomInspectorResize.onDivider(
+                mouseX,mouseY,divider,contentTop,contentBottom);
+            int pendingRight=inspectorDividerDragging
+                ? width-8-proposedInspectorWidth : rightPanelLeft;
+            dev.loomstudios.client.ui.LoomInspectorResize.render(
+                graphics,divider,contentTop,contentBottom,hover||inspectorDividerDragging,
+                inspectorDividerDragging,pendingRight);
+            if(inspectorDividerDragging)
+                dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font,
+                    Component.literal(proposedInspectorWidth+" GUI px"),
+                    Math.min(width-115,Math.max(10,pendingRight+9)),
+                    (contentTop+contentBottom)/2-26,LoomUiTheme.ACCENT,false);
+        }
     }
 
     private void closePaletteWindow() {
@@ -2059,6 +2077,20 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         updateButtonStates();
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if(!workspaceTooSmall && !hasChoices()
+            && dev.loomstudios.client.ui.LoomInspectorResize.onDivider(
+                event.x(),event.y(),rightPanelLeft-3,contentTop,contentBottom)) {
+            if(event.button()==1) {
+                dev.loomstudios.client.ui.LoomInspectorResize.reset(width,height);
+                rebuildWidgets();
+                return true;
+            }
+            if(event.button()==0) {
+                inspectorDividerDragging=true;
+                proposedInspectorWidth=workspaceLayout.preview().width();
+                return true;
+            }
+        }
         if(hasChoices())return super.mouseClicked(event,doubleClick);
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.isMouseOver(event.x(),event.y())) {
             boolean handled=paletteWindow.mouseClicked(event,doubleClick);
@@ -2068,10 +2100,22 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         return super.mouseClicked(event,doubleClick);
     }
     @Override public boolean mouseDragged(MouseButtonEvent event,double dx,double dy) {
+        if(inspectorDividerDragging && event.button()==0) {
+            proposedInspectorWidth=dev.loomstudios.client.ui.LoomInspectorResize
+                .requestedAtX(width,height,event.x());
+            return true;
+        }
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseDragged(event,dx,dy)) return true;
         return super.mouseDragged(event,dx,dy);
     }
     @Override public boolean mouseReleased(MouseButtonEvent event) {
+        if(inspectorDividerDragging && event.button()==0) {
+            inspectorDividerDragging=false;
+            dev.loomstudios.client.ui.LoomInspectorResize.persist(
+                width,height,proposedInspectorWidth);
+            rebuildWidgets();
+            return true;
+        }
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible && paletteWindow.mouseReleased(event)) return true;
         return super.mouseReleased(event);
     }
