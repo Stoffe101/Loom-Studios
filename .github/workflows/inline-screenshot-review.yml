@@ -23,7 +23,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/loom-ci docs/review-screenshots
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11537095257/zip" > /tmp/loom-ci/asset.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11536067452/zip" > /tmp/loom-ci/asset.zip
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11536641881/zip" > /tmp/loom-ci/animation.zip
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11535267949/zip" > /tmp/loom-ci/layout.zip
       - name: Select the real screenshots without resizing or regenerating
@@ -43,13 +43,13 @@ jobs:
             ("asset", "asset-library-elytra-worn-3440x1440-gui2.png", "elytra-worn-ultrawide-gui2.png"),
             ("animation", "animation-simple-cape-1920x1080-gui3.png", "simple-animation-1920-gui3.png"),
             ("animation", "animation-simple-cape-3440x1440-gui2.png", "simple-animation-ultrawide-gui2.png"),
-            ("layout", "inspector-layout-cape-1920x1080-gui3.png", "panel-resize-1920-gui3.png"),
+            
           ]
           out=Path("docs/review-screenshots")
           for name,zippath in sources.items():
             with zipfile.ZipFile(zippath) as z:
               names=[n for n in z.namelist() if n.lower().endswith(".png")]
-              print(f"{name} contains {len(names)} PNG images")
+              print(f"{name} contains {len(names)} PNG images:",names[:8])
               for origin, requested, alias in [p for p in patterns if p[0]==name]:
                 exact=next((n for n in names if Path(n).name == requested),None)
                 if exact is None:
@@ -62,6 +62,17 @@ jobs:
                   raise ValueError("Not an original PNG: "+exact)
                 (out/alias).write_bytes(content)
                 print("SELECTED",alias,len(content))
+          # Layout capture names differ from the main editor filename convention.
+          with zipfile.ZipFile(sources["layout"]) as z:
+              layout=[n for n in z.namelist() if n.lower().endswith(".png")]
+              print("LAYOUT IMAGE NAMES",layout[:35])
+              for surface in ("cape","elytra"):
+                  choices=[n for n in layout if surface in Path(n).name.lower()
+                      and ("gui3" in Path(n).name.lower() or "compact" in Path(n).name.lower())]
+                  if choices:
+                      dest=out/f"panel-resize-{surface}-gui3.png"
+                      dest.write_bytes(z.read(choices[0]))
+                      print("SELECTED LAYOUT",dest,choices[0])
           files=list(out.glob("*.png"))
           print("PUBLISHED",len(files),"original PNG screenshots")
           if len(files)<4:
