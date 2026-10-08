@@ -38,6 +38,8 @@
 - [ ] **M1-02 · TODO** Fix clipped/overlapping text, giant tooltips over headers, missing focus/hover/selected states, nested/unnecessary scrolling, tiny targets and inconsistent Escape/Cancel.
 - [ ] **M1-03 · TODO** Make Cape and Elytra 2D canvas the primary artwork area, with **cosmetic-focused 3D preview** nearby or as a compact focus mode. Provide neutral/light-checker inspection background as an alternative to the scenic courtyard; default zoom should highlight the cosmetic rather than scenery.
 - [ ] **M1-04 · TODO** Selected asset/layer Inspector: move, numeric X/Y/size/rotation, mirror, tint/palette, opacity/blend, lock, mask, duplicate, delete, animate and **real Edit Pixels** entry. Keep frequent controls visible while hiding rare ones contextually.
+- [ ] **M1-04A · HIGH PRIORITY / NEXT · TODO — Animate Asset from Inspector.** With a placed cape/Elytra asset selected, show a prominent **Animate Asset** action beside **Edit Pixels**. Open the existing animation workflow **targeting that exact asset's persistent layer ID**, offering **Simple presets** or **Advanced keyframes**, a non-destructive **Try** preview, and explicit Apply/Cancel. On return, preserve selected asset, artwork edits and inspector state; display an animated badge / **Edit Animation** for an existing track. Reuse the current Animation 2.1 engine; do not invent another animation model. Block locked/unsupported targets with an understandable reason. Gate with 2D and worn 3D Cape/Elytra screenshots in all four GUI profiles, save/reopen, Undo, and no unintended track changes. This bridge takes precedence over less critical inspector refinements and mass asset-pack expansion. See [interaction contract](EDITOR_CREATIVE_UX_SPEC.md#2b-priority-animate-asset-directly-from-the-inspector).
+
 - [ ] **M1-05 · TODO** Make reference-image handles and mask/selection overlays understandable (direct drag/resize/rotate, Fit/Fill/Reset, mask/art side-by-side modes), reusing current transform/selection systems.
 - [ ] **M1-06 · TODO** Define layout profiles for compact 1920×1080 GUI3 and comfortable ultrawide 3440×1440 GUI2, with no feature silently inaccessible at other required profiles.
 
@@ -45,6 +47,7 @@
 
 ### Mission 2 — Animation people can actually understand (**highest feature UX priority**)
 
+- [ ] **M2-00 · HIGH PRIORITY / TODO — Inspector-to-animation handoff.** Receive a selected Cape/Elytra asset from **Animate Asset**, default to Simple presets for a new animation and offer immediate Advanced editing. If that asset already has custom tracks, focus its existing animation (do not silently reset keys); communicate when only Advanced can faithfully edit it. Treat Try/Preview as temporary and Apply as one undoable authoring change. **M1-04A + M2-00 form one acceptance flow**, not two separate user journeys.
 - [ ] **M2-01 · TODO** Build real **Simple Animation**: visual effect cards with previews, understandable Speed/Strength/Direction/Loop controls, Try/Apply/Cancel and a five-minute first animation path.
 - [ ] **M2-02 · TODO** Full **Advanced Animation** with one legible resizable timeline, collapsed parameter lanes, colored keyframes, clear playhead/ruler, selected target, seconds/ticks, keyboard operations and contextual help.
 - [ ] **M2-03 · TODO** Rework Bézier editor: named easing thumbnails, value axes/units, live cosmetic preview, key→next-key context, predictable drag/hitboxes and Undo; keep current rich underlying engine.
@@ -109,7 +112,8 @@ This is a **good direction, not the very next task**. The default layout must fi
 1. **M0-05 completed.** Maintain the accepted Asset Library code/screenshot baseline. The cyan fixture issue was corrected using a clean 4× project and full-atlas background before the accepted screenshot captures.
 2. **M0-04 completed.** Begin M1 core editor UX with the prepared contextual Browse/Edit Asset Inspector, cosmetic-focused neutral preview and compact-label fixes; verify 330 capture gates.
 3. **M1-02 / M1-03** Solve obstructive tooltips, clipping and preview-camera hierarchy; add neutral background and proper GUI3 view.
-4. **M1-04 / M2-01** Improve the contextual asset inspector and make Simple Animation clearly navigable.
-5. **M3-02** Review actual art in 2D/3D, reject weak pieces, and only then expand toward M3-03.
+4. **M1-04A / M2-00 · NEXT:** add a prominent **Animate Asset** action to the selected asset's Inspector, opening Simple/Advanced Animation focused on that exact layer, with safe Try/Apply/Cancel and a return path. This is more urgent than additional button rows or cosmetic polish.
+5. **M1-04 / M2-01:** replace button-heavy basic properties (especially opacity) with intuitive slider/field controls and make Simple Animation clear enough for first-time users.
+6. **M3-02** Review actual art in 2D/3D, reject weak pieces, and only then expand toward M3-03.
 
 **Checkoff protocol:** after each merged, screenshot-reviewed slice, tick only its verified subitems here, add merge SHA and workflow evidence in PASS_LOG/CURRENT_STATE, then update the "immediate next five" list. This board itself does not authorize automatically merging or publishing unfinished code.

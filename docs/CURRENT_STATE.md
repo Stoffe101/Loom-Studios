@@ -12,6 +12,10 @@ Adds `AnimationPresetDraftTest` for preview purity, layer targeting, schema-v5/p
 
 **Status:** implementation open for review. Java build, UI screenshot checks and user visual acceptance are **not yet verified**. This is first M2-01 increment, **not** the full M2 animation redesign (strength/direction, filmstrip, named curve easing still outstanding). M1 resize recovery PR32 is independent and should be integrated before M2.
 
+## 2026-10-08 — Animate Asset Inspector roadmap priority — DOCUMENTATION ONLY
+
+The user prioritized a first-class **Animate Asset** action in the placed-asset Inspector. The [active mission board](ACTIVE_MISSIONS.md) now tracks **M1-04A** and linked **M2-00** as high priority: selected layer UUID/channel to Simple or Advanced Animation, animated-state/Edit Animation recognition, contextual sliders, non-destructive Try, explicit Apply/Cancel, and reliable return to the same Cape/Elytra asset. [Editor interaction specification](EDITOR_CREATIVE_UX_SPEC.md#2b-priority-animate-asset-directly-from-the-inspector) and [Animation specification](ANIMATION_UX_REDESIGN_SPEC.md) define the required tests and 2D/worn 3D screenshots. **These documents do not implement the UI action**; current code and CI status are unchanged by this planning update.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.

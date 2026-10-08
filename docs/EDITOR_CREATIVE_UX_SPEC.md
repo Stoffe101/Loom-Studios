@@ -68,6 +68,31 @@ The library drawer and layer selection must work together:
 
 Acceptance: without knowing Loom internals, a user drags a star from the library onto the cape, recolors and resizes it, reopens later and still moves that star independently. A second user clicks a pine-tree asset and drags to place it on one Elytra wing. Both outcomes must look correct in 2D and 3D, and neither requires a custom texture pack on another multiplayer client.
 
+## 2B. PRIORITY: Animate Asset directly from the Inspector
+
+**Status: PLANNED, NOT IMPLEMENTED.** Track this as [M1-04A / M2-00](ACTIVE_MISSIONS.md). This is the **first requested Inspector-to-Animation workflow**, prioritized ahead of optional menu polish, new asset counts or the fully dockable UI. The Animation 2.1 parameter-track engine is already implemented, but that does **not** imply an integrated, usable **Animate Asset** entry exists.
+
+### Player flow
+
+1. **Place or select** a named independent Image asset on the Cape or a particular Elytra wing. The asset Inspector remains in **Edit**, showing its name, a useful thumbnail, a legible **Opacity slider (0–100% plus number)**, transform/color controls and two high-value actions: **Edit Pixels** and **Animate Asset**. Low-frequency options belong in a secondary group, not twelve equally prominent buttons.
+2. Choose **Animate Asset**. Show a compact transition/header `Cape > [Crescent Moon] > Animation` (or the exact Elytra wing/face). Open the **existing Animation Studio**, with **the same selected layer UUID, channel, and current project**. Do not reselect a random/default layer or confuse another wing.
+3. If no animation exists for that layer, start with visual **Simple preset cards** (Twinkle, Float, Glow/Pulse, Drift etc., only when the actual engine supports them), with short descriptions and sensible defaults. Expose **Speed / Strength / Direction / Loop** using sliders, clear units and optional values, not a wall of `+` and `-` buttons. Provide an obvious **Advanced** route to the existing parameter lanes, timeline and curves.
+4. **Try** plays a **temporary 3D preview** of the selected asset on the actual worn Cape/Elytra, alongside its 2D artwork when there is room. No `.loom` mutation, history entry, auto-equip, publish or network transfer occurs during Try; **Cancel** restores the prior preview/time/inspector state. **Apply** is one undoable project edit and only then makes the animation persist (Save remains explicit).
+5. If the asset already has tracks, show **Edit Animation** with animated-state badge and the existing effect(s), keeping the corresponding track IDs and all advanced keyframes. A custom Advanced track must open intact; do not silently replace it with a stock Simple preset. Switching workspace modes is presentation-only.
+6. **Back to Asset** restores the same selected asset and inspection mode, timeline/editor settings that remain valid, the current Cape/Elytra face and unsaved-artwork state. New playback survives project save/reopen, offline portable sharing and supported multiplayer equip. Any attempted replacement of existing animation requires a clear explicit action.
+
+### Interaction and safety contract
+
+- No animation CTA without a valid editable layer. Locked or unsupported targets explain why editing is unavailable; unlocking or switching the correct target remains discoverable.
+- If selected animation is already complex, Simple mode may **play it read-only** and explain `Customized animation · Edit in Advanced`, not flatten, approximate, overwrite or silently reset it.
+- Use existing UI theme, premium typography, NanoVG surfaces, native widgets and existing animation model. No replacement track engine, new schema, duplicate Animation popup or unrelated inspector button grid.
+- On **1920×1080 GUI3**, prioritize one contextual inspector and a meaningful 3D preview; cards may scroll **within their bounded collection** only. On **3440×1440 GUI2**, use the spare width for preview and timing controls rather than empty scenery.
+- Numeric labels, slider values and selected/warning states must be legible at all four official profiles; mouse, keyboard and focus navigation must work with Escape/Back/Undo.
+
+### Definition of done
+
+A person can drag a **star** onto a Cape, click **Animate Asset → Twinkle → Try → Apply**, return to its Inspector, save/reopen and edit the resulting animation without losing authored pixels. Repeat with a **cloud drifting on a specific Elytra wing**. Automated tests prove preserved layer/track identity, Try purity, Cancel, Undo/Redo, old schema-v5 project migration/roundtrip and correct preview/equip. Capture the actual **Inspector action**, **Simple animation**, and **worn 3D result** at 1920×1080 and 3440×1440 GUI2/GUI3; inspect overlapping text, clickable bounds and directionality before marking M1-04A/M2-00 DONE.
+
 ## 3. Selection, masks and guided editing (UX-04/06/07)
 
 **Current:** Wand, exact selection, mask paint/reveal/hide/invert, alpha lock, clipping and color/gradient controls are present.
