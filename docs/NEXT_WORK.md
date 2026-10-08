@@ -1,3 +1,11 @@
+## 2026-10-08 — M2 visual preset and isolated preview acceptance — NEXT
+
+1. Verify `AnimationPresetDraftTest` and full Java21 project tests; Preview must not change source project/hash or undo state, and switching Simple/Advanced must preserve custom lanes/keyframes. Explicit Apply is the only destructive replacement path and must be one undoable action.
+2. Capture **all 334** actual Minecraft screenshots, plus fast four-profile `animation-simple-cape-*` images from workflow `animation-review.yml` (1920×1080 GUI2/3 and 3440×1440 GUI2/3). Inspect card labels, hover/selection, authentic worn 3D visual and no sidebar overflow or tooltips over graphics.
+3. Ensure old Advanced timeline and parameter editor remain reachable and unchanged across 1×–8× Cape/Elytra. Screen capture must show a real star Image layer, not an empty placeholder.
+4. Integrate M1 resize PR32 and reconcile M2 branch against the accepted main SHA before M2 merge.
+5. After accepting M2-01 visual foundation, implement Try/Apply/Cancel feedback, plain-language Speed/Strength/Direction/Loop controls where effects support them, clearer parameter icons, collapsed timeline and editable frame filmstrip. Do not claim M2 DONE after this slice.
+
 ## 2026-10-08 — Animation screenshot review findings (not yet fixed)
 
 The accepted standalone Animation UX screenshot artifact from [Build d7e4aee2](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) confirms the dual curve/3D layout does not overlap. However, **3440×1440 GUI2** leaves substantial unused empty space beneath the right-side 3D preview while the timeline remains constrained to the left; **1920×1080 GUI3** clips the long footer hint mid-sentence. Track keys and control legends remain low-discoverability. These are genuine observed UX defects for M1-02/M2-02, not a failure of the narrow M0 overlap fix. Proposed correction: shorter compact context tips and responsive timeline/preview allocation with movable or resizeable panel boundaries. Keep animation engine data and user keyframes untouched.
