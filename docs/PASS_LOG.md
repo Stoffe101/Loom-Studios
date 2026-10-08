@@ -2,7 +2,7 @@
 
 **Why:** after seeing the actual Cape 2D/worn previews, user requested a frank critique and a continuously checkable mission list, with a possible fully customizable WoW ElvUI-style UI but acknowledged earlier UX gaps have priority.
 
-**Work:** authored [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md) with seven operational missions (foundation/CI, core editor UX, animation, asset quality, atmosphere/compositing, ElvUI-inspired optional layout configuration, export/home/advanced features, and Windows release acceptance). It tracks verified-baseline tasks separately from implementation-only work on PR26 and PR28, plus user review of real source screenshots, explicit exit gates, and immediate next five.
+**Work:** authored [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md) with eight operational missions, M0–M7 (foundation/CI, core editor UX, animation, asset quality, atmosphere/compositing, ElvUI-inspired optional layout configuration, export/home/advanced features, and Windows release acceptance). It tracks verified-baseline tasks separately from implementation-only work on PR26 and PR28, plus user review of real source screenshots, explicit exit gates, and immediate next five.
 
 **Learned:** the 3D worn preview is valuable and shows real art; scenery and header/tooltips compete with cosmetic, some catalog artwork/labels are still uneven, and a cyan shape not matched by the 2D fixture needs investigation. Fully user-adjustable panel docking should **follow** sound default compact/ultrawide layouts, animation clarity and reliable inspector selection. Smaller resizable dividers + exact GUI unit dimensions can arrive earlier than full docking.
 
