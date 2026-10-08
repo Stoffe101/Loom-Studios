@@ -43,6 +43,17 @@ Every meaningful pass must record:
 - `DECISIONS.md` — architecture decision record
 - `references/ui/` — visual reference mockups
 
+## Proposed future-development specifications (NOT implemented)
+
+A documentation-only creative-workflow planning pass dated **2026-10-08** prepared the following proposals from the five approved references, accepted workflow screenshots and current source:
+
+- [Complete improvements roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md) — baseline versus proposed features, all prioritized gaps, dependencies, milestones and release gates.
+- [Large Creative Asset Library](CREATIVE_ASSET_LIBRARY_SPEC.md) — diverse stars, clouds, trees, nature/fantasy stamps, browsing, custom stamps, scatter painting, opacity and editable theme recipes.
+- [Animation UI/UX redesign](ANIMATION_UX_REDESIGN_SPEC.md) — Simple/Advanced animation, effect gallery, resizable timeline, key/curve discoverability and visual frame authoring.
+- [Editor UX and Creative Tools](EDITOR_CREATIVE_UX_SPEC.md) — adaptive layouts, preview, reference transforms, atmospheric paint, compositing/adjustment layers, import/export, accessibility and 3D proof-of-concept.
+
+**Status rule:** these four documents are a proposed backlog, not verified implementation. [CURRENT_STATE.md](CURRENT_STATE.md) remains authoritative for shipped functionality. Feature acceptance requires new code, test and screenshot evidence and updates to CURRENT_STATE / PASS_LOG / NEXT_WORK.
+
 ## Source of truth
 
 When documentation conflicts, the newest verified entry in `CURRENT_STATE.md`, `PASS_LOG.md`, and `DECISIONS.md` takes precedence over older planning text.
