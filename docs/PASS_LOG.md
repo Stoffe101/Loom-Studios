@@ -1,3 +1,9 @@
+## 2026-10-08 — M1 Asset Browse / Edit contextual workflow — IMPLEMENTED ON BRANCH, CI PENDING
+
+The Asset Library now separates **Assets** (search/category/thumbnail and click/drag to place) from **Edit** (selected layer controls). Placing a new asset opens the Edit tab directly. The contextual controls nudge by 1 actual atlas pixel, resize uniformly by 1 pixel, adjust opacity in 10% steps, rotate 15°, and flip H/V, with locked layers disabled. This sits beside the existing 2D+3D preview without changing schema-v5 or equipped-state semantics. `LoomAssetLibraryScreen` and the existing `LayerTransform`/`AssetPlacement` APIs are reused.
+
+**Pending acceptance:** screenshots at all required GUI2/GUI3 profiles, test actual hitboxes/correct selected object/Undo/save, and confirm the inspector never overlaps Save/Back or collection scrolling. This is **not merged or verified**, and future numeric position textboxes/dockable layout remain distinct later work.
+
 ## 2026-10-08 — M1 preview context and unobstructed tooltips — IN PROGRESS
 
 **Why:** actual in-game Asset Library screenshots showed a tooltip floating over major controls, artwork not fully centered on initial worn view, hidden neutral inspection background choice, and footer sometimes saying "Select an asset" even when a selected layer exists.
