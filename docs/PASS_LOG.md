@@ -1,3 +1,13 @@
+## 2026-10-08 — M2 multi-select and atomic batch animation — IN PROGRESS
+
+**User intent:** select Moon, Star and Cloud with Ctrl+left-click in Cape/Elytra Layers, enter Animation retaining the selection, choose Pulse, Try on all at once, Apply with one Undo rather than editing each layer separately.
+
+**Architecture:** new pure `AnimationPresetBatch.compose` validates every persistent ID and track budget before composition; adds one independent track per selected layer, explicitly non-destructive to prior custom Advanced tracks. The existing `AnimationPresetDraft` is reused and preview remains temporary. `LoomAnimationScreen` uses `LoomLayerListWidget.setMultiSelection` for Ctrl-click selection with visual highlight and grouped Try/Apply. Both editors pass ordered selection via an overloaded studio constructor. This uses current schema5/protocol3, no migration.
+
+**Tests added:** `AnimationPresetBatchTest` exercises 3 layers, preview purity, serialization, prior custom track preservation and invalid input; screenshot fixture selects 3 real illuminated artwork layers. Also fixed a pre-existing test Java lambda capture failure in `AnimationPresetDraftTest`.
+
+**Status/risks:** CI **not yet verified** on this new head. Source changes to editors are based on the M2 branch's original baseline and must be reconciled with current/main M1 layout/inspector changes before merge. Correct Ctrl-click row state, Undo, failed validation and GUI3 screenshot bounds are open.
+
 ## 2026-10-08 — M2 simple visual preset workspace — IN PROGRESS, TESTING REQUIRED
 
 **Why:** user's repeated complaint was animation being difficult to understand/use despite powerful Animation 2.1 internals; the original Simple mode was still just text dropdowns above a confusing keyframe timeline.
