@@ -37,7 +37,7 @@ public final class LoomAnimationPresetGallery extends AbstractWidget {
         int rows=(PRESETS.length+columns-1)/columns;
         int gap=7;
         cardWidth=Math.max(48, Math.min(getWidth()/columns, (getWidth()-(columns-1)*gap)/columns));
-        cardHeight=Math.max(34,Math.min(100,(getHeight()-(rows-1)*gap)/rows));
+        cardHeight=Math.max(34,Math.min(150,(getHeight()-(rows-1)*gap)/rows));
         gridX=getX()+Math.max(0,(getWidth()-(cardWidth*columns+(columns-1)*gap))/2);
         gridY=getY()+Math.max(0,(getHeight()-(cardHeight*rows+(rows-1)*gap))/2);
     }
@@ -61,7 +61,7 @@ public final class LoomAnimationPresetGallery extends AbstractWidget {
             int background=active?0xFF203E52:(hovered==i?0xFF213344:LoomUiTheme.PANEL_INNER);
             g.fill(x,y,x+w,y+h,border);
             g.fill(x+1,y+1,x+w-1,y+h-1,background);
-            int graphX=x+7,graphY=y+7,graphW=Math.min(w-16, h>=60?45:28),graphH=Math.min(23,h-16);
+            int graphX=x+7,graphY=y+7,graphW=Math.min(w-16, h>=95?68:h>=60?45:28),graphH=Math.min(h>=95?42:23,h-16);
             renderSignal(g,graphX,graphY,graphW,graphH,preset);
             int textX=graphX+graphW+5;
             int maxText=Math.max(8,x+w-textX-5);
@@ -100,7 +100,7 @@ public final class LoomAnimationPresetGallery extends AbstractWidget {
                 case WAVE -> .5+.45*Math.sin(4*Math.PI*t);
             };
             int yy=y+2+(int)Math.round((h-5)*Math.max(0,Math.min(1,v)));
-            if(last!=-1)g.fill(x+i,y+Math.min(last,yy),x+i+1,y+Math.max(last,yy)+1,accent);
+            if(last!=-1)g.fill(x+i,Math.min(last,yy),x+i+1,Math.max(last,yy)+1,accent);
             last=yy;
         }
     }
