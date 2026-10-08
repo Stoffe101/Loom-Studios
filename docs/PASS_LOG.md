@@ -1,3 +1,15 @@
+## 2026-10-08 — Illustrated Asset Library quality correction — IN PROGRESS
+
+**Feedback:** first in-game Asset Library screenshots were functional but showed crude white silhouettes. User requested genuinely attractive high-quality editable artwork, not a quota of low-resolution placeholder icons.
+
+**Changes:** added `PremiumAssetArtwork.java` quality-first collection of 17 original detailed, shaded, multi-color, partly translucent sprites with distinctive forms and intended creative themes. `CreativeAssetCatalog` now surfaces these first under Featured and retains classics under All. `LoomAssetLibraryScreen` has correct down/upscale nearest-neighbor thumbnail bounds, safe ellipsis labels, responsive 2/3-column library, wider ultrawide allocation, automatic per-resolution initial size and optional tint. Existing project Image layer source retains full ARGB palette on save and after transforms.
+
+**Decisions:** use source-native original ARGB art and embed in placed Image layers. 1× is a realistic pixel-detail constraint; recommended detailed artwork at 4×/8×. Do not replace core layer types, discard basic icons, or depend on shaders. Collection-instance model remains future, not implemented.
+
+**Testing:** added `PremiumAssetArtworkTest` for shading, uniqueness, alpha, original pixels and serialization. GitHub Java build/full screenshot workflow **not yet verified on this art commit**. Actual screenshot inspection and user approval still required. Asset art is provisional rather than proven polished.
+
+**Next:** run new CI, inspect the real GUI2/3 artifacts, refine shapes/contrast/transparency based on actual output, then broaden the catalog.
+
 ## 2026-10-08 — Editable Asset Library first implementation — IN PROGRESS
 
 **Why:** user explicitly clarified that the library is a **button and visual browser** where dragging an asset thumbnail onto the design, or clicking then dragging/placing, should create an **independently editable** element, not a flattened brush mark.
