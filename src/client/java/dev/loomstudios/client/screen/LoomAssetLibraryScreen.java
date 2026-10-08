@@ -132,7 +132,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   }
 
   private boolean splitWornPreview() {
-    return width >= 1050 && height >= 450 && !editPixels;
+    return width >= 1050 && height >= 450 && !editPixels && !wornMode;
   }
 
   /** Also used by the Minecraft screenshot fixtures to capture the equipped-looking view. */
@@ -194,12 +194,12 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
         Component.literal(wing ? "Elytra · " + surface.label() : "Cape · " + face.displayName()),
         () -> {})).active=false;
     var view=addRenderableWidget(new LoomButton(viewX,top,85,20,
-        Component.literal(splitWornPreview() ? "2D + 3D" : wornMode ? "2D Design" : "3D Worn"),
+        Component.literal(wornMode ? (width>=1050 ? "2D + 3D" : "2D Design") : splitWornPreview() ? "Focus 3D" : "3D Worn"),
         () -> showWornPreview(!wornMode)));
-    view.active=!splitWornPreview();
+    view.active=true;
     view.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(
-        splitWornPreview() ? "Both views are visible side by side"
-            : wornMode ? "Return to the drawing surface to place/edit assets"
+        wornMode ? "Return to the drawing surface and the side-by-side preview"
+            : splitWornPreview() ? "Focus on the full-size 3D worn cosmetic"
                 : "Inspect the actual cape or Elytra on your character")));
     addRenderableWidget(new LoomButton(right-76,top,72,20,Component.literal("Done"),this::onClose));
 
