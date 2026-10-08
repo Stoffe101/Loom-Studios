@@ -51,7 +51,10 @@ public final class PremiumAssetArtwork {
     for(int y=2;y<34;y++)for(int x=4;x<34;x++) {
       double outer=Math.pow((x-17)/13.0,2)+Math.pow((y-17)/15.0,2);
       double inner=Math.pow((x-24)/11.6,2)+Math.pow((y-13)/14.2,2);
-      if(outer<=1 && inner>1) {
+      // A crescent must have a genuinely transparent cutout. The previous
+      // translucent aura filled its center as an unintended grey circle.
+      if(inner<=1){p.put(x,y,0);continue;}
+      if(outer<=1) {
         int c=outer>.88?0xFFF5FAFF:x<13?0xFFFFDA83:y<12?0xFFFFF1BE:0xFFF5C56F;
         p.put(x,y,c);
       }
