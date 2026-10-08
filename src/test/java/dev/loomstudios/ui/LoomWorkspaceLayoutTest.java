@@ -27,6 +27,24 @@ class LoomWorkspaceLayoutTest {
                     if (elytra) assertTrue(layout.context().bottom() < layout.timeline().top());
                 }
     }
+    @Test void userInspectorWidthsClampSafelyAtAllMandatoryGuiProfiles() {
+        int[][] windows = {{640,360},{960,540},{1720,720},{1147,480},{600,321}};
+        for(int[] window:windows)for(boolean wing:new boolean[]{false,true})
+            for(int wanted:new int[]{Integer.MIN_VALUE,-1,0,150,190,204,230,285,400,600,10000,Integer.MAX_VALUE}){
+                var layout=LoomWorkspaceLayout.create(window[0],window[1],wing,8,wanted);
+                var original=LoomWorkspaceLayout.create(window[0],window[1],wing,8);
+                if(wanted<=0)assertEquals(original,layout,"Default layout changed");
+                int panelWidth=layout.preview().width();
+                assertEquals(LoomWorkspaceLayout.safeInspectorWidth(window[0],window[1],wanted),panelWidth);
+                assertTrue(layout.canvas().width()>=210,"Canvas crushed by inspector resize: "+window[0]+" wanted="+wanted);
+                assertTrue(layout.canvas().right()+1<layout.preview().left(),"Panels overlap");
+                assertTrue(layout.inspector().width()>=190,"Inspector controls are unusably narrow");
+                assertEquals(window[0]-8,layout.preview().right(),"Panel extends past window");
+                assertEquals(layout.preview().left(),layout.inspector().left());
+                assertEquals(layout.preview().right(),layout.inspector().right());
+            }
+    }
+
     @Test void emptyTimelineReturnsSpaceToWingCanvas() {
         var empty = LoomWorkspaceLayout.create(640,360,true,0);
         var tracks = LoomWorkspaceLayout.create(640,360,true,5);
