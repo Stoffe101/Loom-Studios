@@ -41,6 +41,20 @@ public final class PremiumAssetArtwork {
     a.add(art("Fantasy", "Runic Halo", "rune glowing magic circle sigil cyan", halo()));
     a.add(art("Decorations", "Roseglass Heart", "heart love blush pink red shine", heart()));
     a.add(art("Decorations", "Golden Laurel", "laurel wreath crest heraldry leaves", laurel()));
+    // New families add fundamentally different silhouettes and use-cases,
+    // not reskins of the celestial shapes already in Featured.
+    a.add(art("Ocean", "Sunset Koi", "fish koi orange white flowing ocean", koi()));
+    a.add(art("Ocean", "Tidal Crest", "wave sea water foam surf", tidalWave()));
+    a.add(art("Ocean", "Coral Garden", "reef coral pink sea plants", coral()));
+    a.add(art("Creatures", "Midnight Owl", "owl bird night eyes forest", owl()));
+    a.add(art("Creatures", "Lunar Moth", "butterfly moth wings moon nocturnal", moth()));
+    a.add(art("Creatures", "Foxfire Mask", "fox kitsune spirit animal", fox()));
+    a.add(art("Seasons", "Autumn Maple", "leaf falling autumn ember", maple()));
+    a.add(art("Seasons", "Winter Globe", "snow winter miniature fir globe", snowGlobe()));
+    a.add(art("Seasons", "Velvet Rose", "rose flower blooming pink red stem", rose()));
+    a.add(art("Heraldry", "Astral Compass", "compass direction celestial emblem gold", compass()));
+    a.add(art("Heraldry", "Verdant Dragon", "dragon serpent crest green fantasy", dragon()));
+    a.add(art("Heraldry", "Sunforged Shield", "shield badge armor gold crest", shield()));
     return List.copyOf(a);
   }
 
@@ -341,6 +355,264 @@ public final class PremiumAssetArtwork {
     }
     p.line(17,38,22,38,0xFFFFD994);
     p.star(20,9,3,0xFFFFF2BE,0xFFEEBA68);
+    return p;
+  }
+
+
+  private static Painter koi() {
+    Painter p=new Painter(48,40);
+    p.oval(9,10,37,30,0xFF294E75);
+    p.oval(11,11,37,28,0xFFFFEDD4);
+    p.oval(12,12,32,24,0xFFFFF7E8);
+    p.oval(23,15,36,27,0xFFDC6547);
+    p.oval(15,13,22,20,0xFFF3A460);
+    p.oval(28,22,33,27,0xFFA8473C);
+    p.line(9,21,2,11,0xFFE69A5A);p.line(9,21,1,28,0xFFCF624A);
+    p.line(2,11,1,28,0xFFFFC781);
+    p.line(20,25,15,34,0xFF8AA7D0);p.line(24,25,23,35,0xFFA3D1DC);
+    p.line(19,13,17,6,0xFFE7D4B6);p.line(17,6,26,14,0xFFE7D4B6);
+    p.oval(32,17,35,20,0xFF29364A);
+    p.dot(34,18,0xFFFFFFFF);
+    p.star(41,7,2,0xFFC6FBFF,0xFF70BED8);
+    p.dot(42,30,0x888CD9F1);p.dot(7,35,0x66B7D8EE);
+    return p;
+  }
+
+  private static Painter tidalWave() {
+    Painter p=new Painter(48,36);
+    for(int x=2;x<47;x++) {
+      double ridge=12+7*Math.sin(x*.115+1.2);
+      for(int y=9;y<32;y++) {
+        double d=y-ridge;
+        if(d>=0&&d<20) {
+          int col=d<2?0xFFE9FAFF:d<5?0xFF7EE4E8:d<11?0xFF349BC3:0xFF1E6489;
+          if(x<12||x>39)col=d<3?0xFF9FDFEA:0xFF236F9A;
+          p.put(x,y,col);
+        }
+      }
+    }
+    p.oval(13,4,33,20,0xFF2A8FB8);
+    p.oval(16,5,32,17,0xFF63D4E4);
+    p.oval(19,7,31,15,0xFFE7FCFF);
+    p.oval(22,8,34,17,0); // Curl opening is transparent.
+    p.line(29,14,34,19,0xFFB8F4FF);
+    for(int[] dot:new int[][]{{10,6},{39,7},{42,11},{5,25}})p.star(dot[0],dot[1],1,0xFFD8F8FF,0xFF76CFE6);
+    return p;
+  }
+
+  private static Painter coral() {
+    Painter p=new Painter(40,48);
+    p.rect(17,34,22,46,0xFF8D4772);
+    for(int[] branch:new int[][]{{19,36,9,20},{20,37,32,16},{19,33,16,11},{21,29,27,7},{15,25,7,8},{26,22,34,10}}) {
+      p.line(branch[0],branch[1],branch[2],branch[3],0xFFAA527F);
+      p.line(branch[0]+1,branch[1],branch[2]+1,branch[3],0xFFEA7FA4);
+      p.dot(branch[2],branch[3],0xFFFFC5D2);
+    }
+    for(int[] b:new int[][]{{11,23},{32,20},{15,12},{26,11},{8,9},{34,11}})
+      p.oval(b[0]-3,b[1]-2,b[0]+3,b[1]+2,0xFFFF91A6);
+    p.oval(3,43,37,47,0xFF366F78);
+    p.dot(8,38,0xFF7BD2CE);p.dot(32,35,0xFF7BD2CE);
+    p.star(4,5,2,0xFFDAFFFF,0xFF87D9E6);
+    return p;
+  }
+
+  private static Painter owl() {
+    Painter p=new Painter(44,48);
+    p.oval(8,10,36,43,0xFF253B54);
+    p.oval(11,15,33,41,0xFF566B85);
+    p.oval(15,25,29,39,0xFFB6B6B5);
+    p.line(9,16,7,4,0xFF253B54);
+    p.line(7,4,18,13,0xFF8393AA);
+    p.line(35,16,37,4,0xFF253B54);
+    p.line(37,4,26,13,0xFF8393AA);
+    p.oval(11,14,24,28,0xFFEAD9BE);
+    p.oval(21,14,34,28,0xFFEAD9BE);
+    p.oval(16,18,21,25,0xFFCE9C68);
+    p.oval(24,18,29,25,0xFFCE9C68);
+    p.dot(19,21,0xFF182438);p.dot(26,21,0xFF182438);
+    p.dot(18,20,0xFFFFFFFF);p.dot(25,20,0xFFFFFFFF);
+    p.line(22,25,20,28,0xFFFFC37C);p.line(22,25,24,28,0xFFFFC37C);
+    p.line(14,43,17,46,0xFFC79C68);p.line(29,43,26,46,0xFFC79C68);
+    p.star(5,32,2,0xFFE3F8FF,0xFF95C4F6);
+    return p;
+  }
+
+  private static Painter moth() {
+    Painter p=new Painter(48,44);
+    p.oval(3,11,24,29,0xFF4C427F);
+    p.oval(24,11,45,29,0xFF55458F);
+    p.oval(5,12,22,22,0xFFB7A8E2);
+    p.oval(26,12,43,22,0xFFC6A5E5);
+    p.oval(8,17,20,28,0xFF8BD4C7);
+    p.oval(28,17,40,28,0xFF90E1D5);
+    p.oval(10,18,16,24,0xFFFFF5D4);
+    p.oval(32,18,38,24,0xFFFFF5D4);
+    p.oval(11,25,23,38,0xFF655BA6);
+    p.oval(25,25,37,38,0xFF6858AD);
+    p.oval(14,28,21,34,0xFFC7B4EC);
+    p.oval(27,28,34,34,0xFFD0C4F1);
+    p.oval(22,13,26,37,0xFF313754);
+    p.line(23,14,17,5,0xFFB5DBDE);
+    p.line(25,14,31,5,0xFFB5DBDE);
+    p.star(17,5,1,0xFFFFE6B4,0xFF92CEEE);
+    p.star(31,5,1,0xFFFFE6B4,0xFF92CEEE);
+    return p;
+  }
+
+  private static Painter fox() {
+    Painter p=new Painter(44,44);
+    for(int y=4;y<24;y++){
+      int k=Math.max(0,((24-y)*10)/20);
+      for(int x=10-k;x<=33+k;x++){
+        if(x<0||x>=44)continue;
+        int c=(x+y)%7<2?0xFFECAA72:0xFFCE704B;
+        p.put(x,y,c);
+      }
+    }
+    p.oval(7,12,37,37,0xFFBE674C);
+    p.oval(10,16,34,34,0xFFF7AE74);
+    p.oval(11,25,33,37,0xFFFFE3C5);
+    p.line(7,11,12,2,0xFF9E4942);
+    p.line(12,2,18,13,0xFFFFC28B);
+    p.line(36,11,31,2,0xFF9E4942);
+    p.line(31,2,25,13,0xFFFFC28B);
+    p.oval(12,19,20,25,0xFF20394A);
+    p.oval(24,19,32,25,0xFF20394A);
+    p.dot(17,21,0xFF99F4E4);p.dot(27,21,0xFF99F4E4);
+    p.oval(20,28,24,31,0xFF3D3A49);
+    p.line(22,31,18,33,0xFF946354);p.line(22,31,26,33,0xFF946354);
+    p.star(39,34,2,0xFFFFFFD4,0xFF7DE2C9);
+    return p;
+  }
+
+  private static Painter maple() {
+    Painter p=new Painter(44,44);
+    for(int y=5;y<38;y++)for(int x=5;x<39;x++){
+      double dx=x-22,dy=y-21;
+      double angle=Math.atan2(dy,dx);
+      double radius=15+4*Math.cos(5*angle)+3*Math.cos(7*angle);
+      if(Math.hypot(dx,dy)<radius) {
+        int c= x<19?0xFFB84E45:y<17?0xFFFFC171:0xFFEF8A4F;
+        if((x+y)%9==0)c=0xFFE9AB52;
+        p.put(x,y,c);
+      }
+    }
+    p.line(22,21,29,43,0xFF865249);
+    p.line(22,21,12,12,0xFFFFD29A);
+    p.line(22,21,32,13,0xFFFFD29A);
+    p.line(22,21,13,27,0xFFE7B778);
+    p.line(22,21,33,28,0xFFE7B778);
+    p.star(4,9,2,0xFFFFE0A3,0xFFD58B70);
+    return p;
+  }
+
+  private static Painter snowGlobe() {
+    Painter p=new Painter(44,48);
+    p.oval(4,2,39,40,0x4466B7D9);
+    p.oval(6,4,37,38,0x335BBAD2);
+    p.line(8,12,13,7,0xFFB5EBFF);
+    p.line(13,7,24,5,0xFFB5EBFF);
+    p.rect(7,39,36,43,0xFF90614D);
+    p.rect(9,43,35,47,0xFFB78A60);
+    p.rect(13,44,31,45,0xFFFFDA92);
+    p.rect(20,23,23,38,0xFF694F52);
+    for(int layer=0;layer<3;layer++){
+      int yy=14+layer*7,half=4+layer*4;
+      for(int iy=yy;iy<yy+9;iy++){
+        int dx=Math.min(half,(iy-yy+1)*half/6);
+        for(int ix=22-dx;ix<=22+dx;ix++)p.put(ix,iy,ix%4==0?0xFF67C1A7:0xFF28776F);
+      }
+      p.line(22-half/2,yy+5,22+half/2,yy+5,0xFFEBF9F8);
+    }
+    for(int[] d:new int[][]{{12,16},{31,13},{10,31},{32,29}})
+      p.star(d[0],d[1],1,0xFFFFFFFF,0xFFA6DCF3);
+    p.oval(6,35,38,40,0xFFB9DBE9);
+    return p;
+  }
+
+  private static Painter rose() {
+    Painter p=new Painter(40,48);
+    p.line(21,30,20,47,0xFF2D694D);
+    p.line(21,35,11,31,0xFF39845B);
+    p.line(20,38,32,33,0xFF39845B);
+    p.oval(7,27,19,35,0xFF38825A);
+    p.oval(23,29,35,37,0xFF60A56D);
+    p.oval(7,7,33,33,0xFF8F315A);
+    p.oval(9,5,33,26,0xFFD85581);
+    p.oval(12,8,31,27,0xFFF38EAD);
+    p.oval(14,11,29,25,0xFFAE4069);
+    p.oval(16,12,26,23,0xFFFFB6C9);
+    p.oval(17,13,24,20,0xFFDB668A);
+    p.line(13,22,20,30,0xFFA4355C);
+    p.line(28,22,22,32,0xFFC14B72);
+    p.star(34,7,2,0xFFFFF9DC,0xFFFFBDD5);
+    return p;
+  }
+
+  private static Painter compass() {
+    Painter p=new Painter(44,44);
+    for(int y=3;y<41;y++)for(int x=3;x<41;x++){
+      double d=Math.hypot(x-22,y-22);
+      if(d>16&&d<18)p.put(x,y,0xFFFFD68A);
+      if(d>14.5&&d<16)p.put(x,y,0xFF966E72);
+    }
+    p.line(22,1,22,43,0xFFFFDEA6);
+    p.line(1,22,43,22,0xFFFFDEA6);
+    p.diamond(22,22,13,0xFF385C82);
+    p.diamond(22,22,10,0xFF6A9EB8);
+    p.diamond(22,22,7,0xFF87E5EA);
+    p.diamond(22,22,3,0xFFFFFFFF);
+    p.line(22,7,22,22,0xFFFFC674);
+    p.line(22,22,22,37,0xFF4D6A9B);
+    p.star(22,2,2,0xFFFFFFFF,0xFFFFD697);
+    return p;
+  }
+
+  private static Painter dragon() {
+    Painter p=new Painter(48,48);
+    p.oval(7,20,40,38,0xFF204F5D);
+    p.oval(11,22,35,35,0xFF347E74);
+    p.line(10,28,3,14,0xFF2D7B69);
+    p.line(3,14,21,20,0xFF89C99A);
+    p.line(21,20,28,7,0xFF3D9B81);
+    p.line(28,7,38,17,0xFF88D9B0);
+    p.line(38,17,34,24,0xFF346B6A);
+    for(int i=0;i<6;i++) {
+      int x=12+i*4,y=30-i*2;
+      p.diamond(x,y,3, i%2==0?0xFFB1D2A1:0xFF7CAF91);
+    }
+    p.oval(30,11,45,22,0xFF398477);
+    p.oval(34,11,45,17,0xFF8FD5A1);
+    p.dot(40,16,0xFFFFE6A9);
+    p.dot(41,16,0xFF243E4F);
+    p.line(41,20,47,23,0xFFAFD4A3);
+    p.star(5,40,2,0xFFF5FFCA,0xFF76D1B2);
+    return p;
+  }
+
+  private static Painter shield() {
+    Painter p=new Painter(44,48);
+    for(int y=5;y<44;y++){
+      int d=y<25?16:Math.max(2,(44-y)*16/19);
+      for(int x=22-d;x<=22+d;x++) {
+        int c=x<10||x>34?0xFF8A5B4A:0xFFE9C279;
+        p.put(x,y,c);
+      }
+    }
+    for(int y=8;y<40;y++) {
+      int d=y<23?12:Math.max(1,(40-y)*12/17);
+      for(int x=22-d;x<=22+d;x++) {
+        int c=x<22?0xFF375D89:0xFF4A7DA9;
+        if(y<15)c=0xFF6BA4C4;
+        p.put(x,y,c);
+      }
+    }
+    p.diamond(22,22,10,0xFF284D7C);
+    p.diamond(22,22,7,0xFF9CDDF0);
+    p.diamond(22,22,4,0xFFFFFFFF);
+    p.line(9,9,35,9,0xFFFFE1A5);
+    p.line(22,32,22,41,0xFFFFDA94);
+    p.star(4,9,2,0xFFFFE7AF,0xFFE8B977);
     return p;
   }
 
