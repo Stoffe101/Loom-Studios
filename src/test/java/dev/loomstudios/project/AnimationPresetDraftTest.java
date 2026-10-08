@@ -31,7 +31,7 @@ class AnimationPresetDraftTest {
     p=p.withAnimation(a.withTracks(List.of(original)));
     var before=p;
     assertThrows(IllegalStateException.class,()->AnimationPresetDraft.compose(
-        p,id,AnimationChannel.CAPE,original.id(),AnimationPreset.STARS,1f));
+        before,id,AnimationChannel.CAPE,original.id(),AnimationPreset.STARS,1f));
     assertEquals(before,p,"Simple must not flatten custom Advanced parameter lanes");
     assertEquals(original,before.animation().tracks().getFirst());
     assertEquals(before,LoomProjectCodec.decode(before.encode()));
