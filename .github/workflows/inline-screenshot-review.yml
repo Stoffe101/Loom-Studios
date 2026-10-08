@@ -58,7 +58,7 @@ jobs:
                   print("Missing",requested,"candidates",matches[:12])
                   continue
                 content=z.read(exact)
-                if not content.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+                if not content.startswith(bytes([137,80,78,71,13,10,26,10])):
                   raise ValueError("Not an original PNG: "+exact)
                 (out/alias).write_bytes(content)
                 print("SELECTED",alias,len(content))
