@@ -106,13 +106,19 @@ jobs:
           families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-", "asset-library-")
           # Keep actual GUI3 compact and GUI2 ultrawide examples, not 310 redundant PNGs.
           files = [p for p in src.glob("*.png") if p.name.startswith(families)
-                   and ("-1920x1080-gui3" in p.name or "-3440x1440-gui2" in p.name)]
-          # Focus changes on animation, asset authoring and main workflows.
-          focused = ("creative-", "cape-animation-", "elytra-animation-",
-                     "cape-1920", "elytra-3440", "home-1920",
-                     "smart-import-", "authoring-", "asset-library-")
-          files = sorted(p for p in files if p.name.startswith(focused))
-          # Full captures are generated and validated above. Upload a curated review set.
+                   and (p.name.startswith("asset-library-")
+                        or "-1920x1080-gui3" in p.name
+                        or "-3440x1440-gui2" in p.name)]
+          # Curate for human review, not alphabetical order: first ALL four new
+          # Asset Library profiles, then animation/curves, then familiar editors.
+          focused = ("asset-library-", "creative-", "cape-animation-", "elytra-animation-",
+                     "cape-1920", "elytra-3440", "home-1920", "smart-import-", "authoring-")
+          files = [p for p in files if p.name.startswith(focused)]
+          files.sort(key=lambda p: (
+              next((i for i, prefix in enumerate(focused) if p.name.startswith(prefix)), 99),
+              p.name))
+          # All captures were run and asserted above. The artifact contains the
+          # specific new screens first, preserving useful evidence under a size cap.
           for p in files[:55]:
               shutil.copy2(p, dst / p.name)
           # Contact sheet is a quick review index. Original PNGs remain in artifact.
