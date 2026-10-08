@@ -46,6 +46,10 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         : right - 24;
   }
 
+  private int timelineRight() {
+    return splitPreview() ? curveRight() + 4 : right;
+  }
+
   private record Row(
       UUID layer, UUID track, AnimationParameter parameter, String label, boolean heading) {}
 
@@ -274,7 +278,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
             new Canvas(
                 8,
                 previewMode ? timelineTop : graphTop,
-                right - 16,
+                (splitPreview() ? timelineRight() : right) - 16,
                 height - (previewMode ? timelineTop : graphTop) - 28));
     if (previewMode || splitPreview()) {
       int previewX = previewMode ? 8 : curveRight() + 12;
@@ -349,11 +353,11 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
   }
 
   private int laneLeft() {
-    return Math.min(right - 70, 8 + Math.max(90, Math.min(160, (right - 16) / 3)));
+    return Math.min(timelineRight() - 70, 8 + Math.max(90, Math.min(160, (timelineRight() - 16) / 3)));
   }
 
   private int tickX(int t) {
-    return laneLeft() + (t - startTick) * (right - 14 - laneLeft()) / span();
+    return laneLeft() + (t - startTick) * (timelineRight() - 14 - laneLeft()) / span();
   }
 
   private int atX(double x) {
@@ -361,7 +365,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         0,
         Math.min(
             animation().durationTicks(),
-            startTick + (int) Math.round((x - laneLeft()) * span() / (right - 14 - laneLeft()))));
+            startTick + (int) Math.round((x - laneLeft()) * span() / (timelineRight() - 14 - laneLeft()))));
   }
 
   private List<Row> rows() {
@@ -400,7 +404,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
     @Override
     protected void renderWidget(GuiGraphics g, int mx, int my, float dt) {
       if (!previewMode) {
-        LoomScreenChrome.panel(g, 8, graphTop, right - 8, graphTop + graphHeight);
+        LoomScreenChrome.panel(g, 8, graphTop, timelineRight() - 8, graphTop + graphHeight);
         int l = 24, r = curveRight(), t = graphTop + 22, b = graphTop + graphHeight - 10;
         label(
             g,
@@ -428,7 +432,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         }
         g.disableScissor();
       }
-      LoomScreenChrome.panel(g, 8, timelineTop, right - 8, LoomParameterAnimationScreen.this.height - 28);
+      LoomScreenChrome.panel(g, 8, timelineTop, timelineRight() - 8, LoomParameterAnimationScreen.this.height - 28);
       label(
           g,
           "Time " + String.format(java.util.Locale.ROOT, "%.2fs", tick / 20f) + " · " + zoom + "×",
@@ -441,7 +445,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         label(
             g,
             String.format(java.util.Locale.ROOT, "%.1fs", at / 20f),
-            Math.min(right - 52, x),
+            Math.min(timelineRight() - 52, x),
             timelineTop + 6,
             40,
             LoomUiTheme.TEXT_MUTED);
@@ -449,14 +453,14 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
       var rows = rows();
       int count = Math.max(1, (timelineHeight - 26) / 20);
       scroll = Math.max(0, Math.min(scroll, Math.max(0, rows.size() - count)));
-      g.enableScissor(10, timelineTop + 24, right - 10, LoomParameterAnimationScreen.this.height - 30);
+      g.enableScissor(10, timelineTop + 24, timelineRight() - 10, LoomParameterAnimationScreen.this.height - 30);
       for (int i = 0; i < count && i + scroll < rows.size(); i++) {
         var row = rows.get(i + scroll);
         int y = timelineTop + 24 + i * 20;
         g.fill(
             10,
             y,
-            right - 10,
+            timelineRight() - 10,
             y + 19,
             row.heading()
                 ? 0xFF24384A
@@ -476,7 +480,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
                 .filter(a -> a.id().equals(row.track()))
                 .findFirst()
                 .orElseThrow();
-        g.enableScissor(laneLeft(), timelineTop + 24, right - 12, LoomParameterAnimationScreen.this.height - 30);
+        g.enableScissor(laneLeft(), timelineTop + 24, timelineRight() - 12, LoomParameterAnimationScreen.this.height - 30);
         for (var k : AnimationKeyEditing.keys(tr, row.parameter())) {
           int x = tickX(k.tick());
           boolean sel =
@@ -566,7 +570,7 @@ public final class LoomParameterAnimationScreen extends LoomPointerScreen {
         }
         return;
       }
-      int l = 24, r = right - 24, t = graphTop + 22, b = graphTop + graphHeight - 10;
+      int l = 24, r = curveRight(), t = graphTop + 22, b = graphTop + graphHeight - 10;
       float x = Math.max(0, Math.min(1, (float) (e.x() - l) / (r - l))),
           y = Math.max(0, Math.min(1, (float) (b - e.y()) / (b - t)));
       editSelected(
