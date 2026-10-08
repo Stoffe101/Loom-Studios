@@ -1,5 +1,9 @@
 name: Asset Library visual review
 
+concurrency:
+  group: asset-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches: ["main"]
@@ -11,6 +15,7 @@ on:
       - "src/client/java/dev/loomstudios/client/debug/LoomUiCapture.java"
       - "src/main/java/dev/loomstudios/project/CreativeAssetCatalog.java"
       - "src/main/java/dev/loomstudios/project/AssetPlacement.java"
+      - "src/main/java/dev/loomstudios/project/PremiumAssetArtwork.java"
       - ".github/workflows/asset-library-review.yml"
   workflow_dispatch:
 
@@ -19,7 +24,7 @@ permissions:
 
 jobs:
   asset-review:
-    name: Four-profile real-client Asset Library captures
+    name: 2D and 3D Cape/Elytra captures across four GUI profiles
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -45,13 +50,16 @@ jobs:
           onboardAccessibility:false
           startedCleanly:true
           OPTIONS
-      - name: Capture four actual Asset Library displays
+      - name: Capture sixteen actual authored and worn-cosmetic displays
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           ALSOFT_DRIVERS: "null"
         run: |
-          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=310 -PuiCaptureEnd=314 | tee asset-review.log
-          test "$(find docs/verification/editor-workspace -name 'asset-library-*.png' | wc -l)" -eq 4
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=310 -PuiCaptureEnd=326 | tee asset-review.log
+          test "$(find docs/verification/editor-workspace -name 'asset-library-*.png' | wc -l)" -eq 16
+          for mode in cape-design cape-worn elytra-design elytra-worn; do
+            test "$(find docs/verification/editor-workspace -name "asset-library-${mode}-*.png" | wc -l)" -eq 4
+          done
           grep -q 'LOOM_UI_CAPTURE COMPLETE' asset-review.log
       - name: Decode originals and build contact sheet
         if: always()
@@ -63,17 +71,22 @@ jobs:
           files=sorted(Path("docs/verification/editor-workspace").glob("asset-library-*.png"))
           out=Path("build/asset-library-review")
           out.mkdir(parents=True,exist_ok=True)
-          sheet=Image.new("RGB",(1600,1000),"#0A111B")
+          # Every original is uploaded unmodified. Build one 4×4 index so
+          # reviewers can compare 2D and 3D on Cape/Elytra at the same scale.
+          sheet=Image.new("RGB",(1920, (len(files)+3)//4 * 290),"#0A111B")
           d=ImageDraw.Draw(sheet)
           for i,path in enumerate(files):
               image=Image.open(path).convert("RGB");image.load()
               shutil.copy2(path,out/path.name)
-              image.thumbnail((790,460))
-              x=(i%2)*800;y=(i//2)*500
-              sheet.paste(image,(x,y+28))
-              d.text((x+10,y+8),path.stem,fill="white")
+              image.thumbnail((468,255))
+              x=(i%4)*480;y=(i//4)*290
+              sheet.paste(image,(x,y+25))
+              d.text((x+8,y+7),path.stem,fill="white")
           sheet.save(out/"asset-library-contact-sheet.jpg",quality=88)
-          print("LOOM_ASSET_REVIEW "+str(len(files))+" actual images decoded")
+          print("LOOM_ASSET_REVIEW "+str(len(files))+" original Minecraft images decoded")
+          assert len(files)==16, "Missing required 2D/worn Cape/Elytra screenshots"
+          for mode in ("cape-design","cape-worn","elytra-design","elytra-worn"):
+              assert sum(mode in p.name for p in files)==4, "Missing "+mode
           PY
       - name: Publish actual images for human review
         uses: actions/upload-artifact@v4
