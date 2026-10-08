@@ -1,0 +1,90 @@
+name: Resizable Editor Layout visual review
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/main/java/dev/loomstudios/ui/LoomWorkspaceLayout.java"
+      - "src/client/java/dev/loomstudios/client/ui/LoomInspectorResize.java"
+      - "src/client/java/dev/loomstudios/client/screen/CapeEditorScreen.java"
+      - "src/client/java/dev/loomstudios/client/screen/ElytraEditorScreen.java"
+      - "src/client/java/dev/loomstudios/client/debug/LoomUiCapture.java"
+      - ".github/workflows/layout-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inspector-layout-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  layout-review:
+    name: Eight Cape/Elytra screenshot profiles with widened inspector
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare Minecraft Mesa / Xvfb
+        run: |
+          sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1 python3-pil
+          mkdir -p run-ui-capture
+          rm -f docs/verification/editor-workspace/*.png
+          cat > run-ui-capture/options.txt <<'OPTIONS'
+          version:4671
+          enableVsync:false
+          renderDistance:2
+          simulationDistance:2
+          maxFps:30
+          mipmapLevels:0
+          tutorialStep:none
+          onboardAccessibility:false
+          startedCleanly:true
+          OPTIONS
+      - name: Inspect real widened inspector geometry at required profiles
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          ALSOFT_DRIVERS: "null"
+        run: |
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=330 -PuiCaptureEnd=338 | tee layout-review.log
+          test "$(find docs/verification/editor-workspace -name 'resized-*.png' | wc -l)" -eq 8
+          test "$(grep -c 'LOOM_LAYOUT_RESIZE PASS' layout-review.log)" -eq 8
+          grep -q 'LOOM_UI_CAPTURE COMPLETE' layout-review.log
+      - name: Curate eight true-capture previews
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import shutil
+          files=sorted(Path("docs/verification/editor-workspace").glob("resized-*.png"))
+          out=Path("build/layout-review")
+          out.mkdir(parents=True,exist_ok=True)
+          sheet=Image.new("RGB",(1700,((len(files)+1)//2)*480),"#0B131F")
+          dr=ImageDraw.Draw(sheet)
+          for i,p in enumerate(files):
+              im=Image.open(p).convert("RGB");im.load()
+              shutil.copy2(p,out/p.name)
+              im.thumbnail((835,435))
+              x=(i%2)*850;y=(i//2)*480
+              sheet.paste(im,(x,y+30))
+              dr.text((x+8,y+7),p.stem,fill="white")
+          sheet.save(out/"inspector-layout-contact-sheet.jpg",quality=87)
+          print(f"LOOM_INSPECTOR_REVIEW {len(files)} actual Minecraft screenshots")
+          PY
+      - name: Upload verified layout screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: loom-inspector-layout-review
+          retention-days: 7
+          path: |
+            build/layout-review/
+            layout-review.log
+            run-ui-capture/crash-reports/*.txt
