@@ -51,6 +51,18 @@ class AnimationPresetDraftTest {
     assertEquals(draft,LoomProjectCodec.decode(draft.encode()));
   }
 
+  @Test void loopToggleIsOnlyPresentInDraftUntilExplicitApply() {
+    var source=LoomProjectFactory.blank("Preview loop",9);
+    UUID id=source.cape().layers().getFirst().id();
+    boolean before=source.animation().loop();
+    var temporary=AnimationPresetDraft.compose(source,id,AnimationChannel.CAPE,
+        null,AnimationPreset.STARS,1f,!before);
+    assertEquals(before,source.animation().loop(),"Try must not persist loop settings");
+    assertEquals(!before,temporary.animation().loop());
+    assertEquals(source,LoomProjectCodec.decode(source.encode()));
+    assertEquals(temporary,LoomProjectCodec.decode(temporary.encode()));
+  }
+
   @Test void illegalLayerAndRatesRejectWithoutChangingOriginal() {
     var p=LoomProjectFactory.blank("Safe",3);
     UUID id=p.cape().layers().getFirst().id();
