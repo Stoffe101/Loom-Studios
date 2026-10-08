@@ -24,12 +24,12 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private AnimationPreset preset=AnimationPreset.GLOW;
     private float presetRate=.5F;
     private LoomPlayerPreviewWidget preview;
-    private boolean advanced,tryPreview;
+    private boolean advanced,tryPreview,previewLoop;
     private LoomProject draftCache;
     private String draftKey;
     private int guideTop,guideWidth,studioRight;
     private LoomButton presetButton,rateButton,effectButton;
-    public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;}
+    public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;this.previewLoop=ClientProjectWorkspace.project().animation().loop();}
     private List<LoomLayer> layers(){return(channel==AnimationChannel.CAPE?ClientProjectWorkspace.project().cape():ClientProjectWorkspace.project().elytra()).layers();}
     private AnimationTrack track(){return ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.id().equals(trackId)).findFirst().orElse(null);}
     @Override protected void init(){
@@ -74,6 +74,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                 Component.literal("Customized parameter lanes: edit this track in Advanced.")));
         button(right+8,y+48,halfW,advanced?"Simple mode":"Advanced",()->{
             advanced=!advanced;
+            if(!advanced)previewLoop=ClientProjectWorkspace.project().animation().loop();
             // Switching workspace mode must NEVER rewrite a keyframe or apply a draft.
             tryPreview=false;draftCache=null;
             message=advanced?"Advanced: edit selected keys or parameter curves":
@@ -87,6 +88,15 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                     message=tryPreview?"Trying "+preset.label()+" · nothing added until Apply":
                         "Try stopped · project is unchanged";
                     rebuildWidgets();});
+            var loopButton=button(right+8,y+96,sideW,
+                previewLoop?"Loop: On · repeats":"Loop: Off · play once",
+                ()->{previewLoop=!previewLoop;draftCache=null;
+                    message="Loop "+(previewLoop?"enabled":"disabled")+" for Try · Apply to save";
+                    rebuildWidgets();});
+            loopButton.setIcon(LoomButton.Icon.LOOP);
+            loopButton.setSelected(previewLoop);
+            loopButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.literal("Controls this preview. Only Apply saves the Loop setting.")));
             tryButton.setIcon(tryPreview?LoomButton.Icon.PAUSE:LoomButton.Icon.PLAY);
             tryButton.setPrimary(tryPreview);
             tryButton.active=!customLanes;
@@ -129,10 +139,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         LoomProject source=ClientProjectWorkspace.project();
         if(!tryPreview || advanced)return source;
         String key=ClientProjectWorkspace.revision()+":"+layerId+":"+trackId+":"+preset+
-            ":"+presetRate+":"+channel;
+            ":"+presetRate+":"+channel+":"+previewLoop;
         if(draftCache!=null&&key.equals(draftKey))return draftCache;
         try {
-            draftCache=AnimationPresetDraft.compose(source,layerId,channel,trackId,preset,presetRate);
+            draftCache=AnimationPresetDraft.compose(source,layerId,channel,trackId,preset,presetRate,previewLoop);
             draftKey=key;
             return draftCache;
         } catch(IllegalArgumentException|IllegalStateException ex) {
@@ -153,7 +163,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         try{
             UUID previous=trackId;
             var next=ClientProjectWorkspace.apply(p->
-                AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate));
+                AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate,previewLoop));
             trackId=previous!=null?previous:next.animation().tracks().stream()
                 .filter(t->t.channel()==channel&&t.layerId().equals(layerId))
                 .reduce((a,b)->b).orElseThrow().id();
