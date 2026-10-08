@@ -581,8 +581,15 @@ public final class LoomUiCapture {
     java.util.UUID star=ClientProjectWorkspace.project().cape().layers().stream()
         .filter(l->l.name().equals("Frostfire Star"))
         .map(dev.loomstudios.project.LoomLayer::id).findFirst().orElseThrow();
+    // Exercise the requested "select 3 layers, Pulse/Twinkle all" path.
+    var selected=ClientProjectWorkspace.project().cape().layers().stream()
+        .filter(l->java.util.List.of("Frostfire Star","Moonstone Crescent","Snowkissed Fir")
+            .contains(l.name()))
+        .map(dev.loomstudios.project.LoomLayer::id).toList();
+    if(selected.size()!=3)
+        throw new IllegalStateException("Three-layer Simple Animation fixture missing artwork");
     var studio=new dev.loomstudios.client.screen.LoomAnimationScreen(
-        new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,star);
+        new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,star,selected);
     client.setScreen(studio);
     set(studio,"preset",dev.loomstudios.project.AnimationPreset.STARS);
     var before=ClientProjectWorkspace.project().hash();
