@@ -1,3 +1,13 @@
+## 2026-10-08 — Illustrated Asset Library visual review and context controls — IN PROGRESS
+
+**Screenshots inspected:** focused real Minecraft build at source `e41c7a37` generated all four profiles successfully (1920×1080 GUI2/3, 3440×1440 GUI2/3). The Featured art has visibly different palettes/shading (moonstone/gem/cloud/forest), and 2-column compact / 3-column ultrawide layouts display category navigation and readable clipped names. The old original fixture's cyan moon still occupied the central canvas and did not demonstrate actual placed premium asset quality, so later capture fixture `prepareAssetLibrary` now embeds and shows **Moonstone Crescent** and **Snowkissed Fir** as separate Image layers. A small crescent alpha cutout issue discovered during review was also corrected. Latest capture results still pending.
+
+**Additional UI changes:** selectable asset metadata tooltips with actual source size, compact footer guidance, horizontal-color-run thumbnail fill batching, selected Image-layer opacity decrement/increment and 45-degree rotation actions confined to the otherwise unused contextual toolbar strip. This complements existing on-canvas transform handles; avoids permanently adding more controls when no asset is selected.
+
+**Verification:** New original sprite unit/roundtrip tests and earlier branch Java builds passed. The screenshot displayed from `e41c7a37` is **pre-cutout/fixture/toolbar** and must not be mistaken for final acceptance. Latest SHA and Windows/modded clients remain unverified; PR remains open.
+
+**Next:** inspect focused screenshot after these corrections, verify toolbar bounds/interaction and independent placement, then obtain feedback. Wider pack rollout still future.
+
 ## 2026-10-08 — Illustrated Asset Library quality correction — IN PROGRESS
 
 **Feedback:** first in-game Asset Library screenshots were functional but showed crude white silhouettes. User requested genuinely attractive high-quality editable artwork, not a quota of low-resolution placeholder icons.
