@@ -1,3 +1,9 @@
+## 2026-10-08 — Asset Library foundation: independent project-owned placements — IN PROGRESS
+
+New code on `feature/editable-asset-foundation-2026-10-08` adds `EditableAssetPlacement` with pure Cape/Elytra helpers to place existing `CustomStamp` artwork as **independent, transformable, tintable, named Image layers**, embedded in the project rather than referencing external/local asset files. Placement clips to exact selected Cape UV face or independent Elytra wing/surface. Explicit `convertToPaint` rasterizes to editable pixel artwork while preserving the layer UUID and animation target identity; ordinary placement does not destructively paint another layer. JUnit tests check placement, source independence, serialization/portable codes, opposite-wing isolation and conversion/rejections.
+
+**Status:** source and tests written, GitHub CI not yet verified. There is **no player-facing Asset Library button, drag/drop UI, big catalog or editable child-object collection yet**. The existing 64-layer/channel limit remains, so large starfields need a separately designed bounded collection model. No schema/protocol change.
+
 ## 2026-10-08 — Actions artifact retention and compact visual evidence — IMPLEMENTATION PENDING CI
 
 Repository storage was pressured by the 310-PNG main capture archive (~354 MB ZIP for the accepted runtime) and 24 per-suite comparison screenshot ZIPs. Maintenance branch adds `.github/workflows/artifact-prune.yml` to delete **aged (>24 h) artifacts** except the newest full `loom-editor-screenshots` and two newest `loom-studios-dev` JARs. The cleanup requires Actions write permission and runs when merged to main, weekly and on manual dispatch. Uploads now preserve 310 real-client capture/assertion coverage but publish at most 55 relevant full PNGs plus a JPEG review index; comparison suites retain three original PNGs per suite. Shorter retention and setup-java@v5 included.
