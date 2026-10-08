@@ -308,6 +308,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     minecraft.setScreen(parent);
   }
   @Override public boolean isPauseScreen(){return false;}
+  @Override public boolean isInGameUi(){return true;}
 
   private final class Tile extends AbstractWidget {
     private CreativeAssetCatalog.Entry entry;
