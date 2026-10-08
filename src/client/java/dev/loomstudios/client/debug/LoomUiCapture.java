@@ -51,7 +51,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 330)) {
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 338)) {
                 if(!workflowsVerified) {
                     verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client);
           LoomCreativeVerification.verify(client); verifyAuthoringPayload(client);
@@ -76,7 +76,9 @@ public final class LoomUiCapture {
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
                 int[] target =
-            stage >= 326
+            stage >= 330
+                ? PROFILES[(stage - 330) / 2]
+                : stage >= 326
                 ? PROFILES[stage - 326]
                 : stage >= 310
                 ? PROFILES[(stage - 310) / 4]
@@ -89,7 +91,9 @@ public final class LoomUiCapture {
             }
             if (stage != 20) {
                 client.options.guiScale().set(
-                stage >= 326
+                stage >= 330
+                    ? PROFILES[(stage - 330) / 2][2]
+                    : stage >= 326
                     ? PROFILES[stage - 326][2]
                     : stage >= 310
                     ? PROFILES[(stage - 310) / 4][2]
@@ -228,7 +232,8 @@ public final class LoomUiCapture {
                 client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
                 client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
             }
-            if(stage>=326)prepareAssetLibrary(client,0,true);
+            if(stage>=330)prepareResizedEditor(client,stage);
+            else if(stage>=326)prepareAssetLibrary(client,0,true);
             else if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
              else if(stage>= 278) prepareCreative(client);
       else if (stage >=238)prepareAuthoring(client);else if(stage>=218)prepareChoices(client);else if(stage>=190)prepareUsability(client);
@@ -289,7 +294,12 @@ public final class LoomUiCapture {
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
             String name =
-          index >= 326
+          index >= 330
+              ? "resized-" + ((index - 330) % 2 == 0 ? "cape-" : "elytra-")
+                  + PROFILES[(index - 330) / 2][0] + "x"
+                  + PROFILES[(index - 330) / 2][1] + "-gui"
+                  + PROFILES[(index - 330) / 2][2]
+              : index >= 326
               ? "asset-library-edit-cape-" + PROFILES[index - 326][0] + "x"
                   + PROFILES[index - 326][1] + "-gui" + PROFILES[index - 326][2]
               : index >= 310
@@ -487,6 +497,31 @@ public final class LoomUiCapture {
         System.out.println(
         "LOOM_UI_LIBRARY PASS: right click actions, delete, Trash restore, double click edit,"
             + " isolated draft recovery and explicit save cleanup");
+  }
+
+  private static void prepareResizedEditor(Minecraft client,int index) throws Exception {
+    var p=PROFILES[(index-330)/2];
+    int guiWidth=client.getWindow().getGuiScaledWidth();
+    int guiHeight=client.getWindow().getGuiScaledHeight();
+    int current=dev.loomstudios.ui.LoomWorkspaceLayout.safeInspectorWidth(guiWidth,guiHeight,0);
+    int desired=dev.loomstudios.ui.LoomWorkspaceLayout.safeInspectorWidth(
+        guiWidth,guiHeight,current+62);
+    dev.loomstudios.client.ui.LoomInspectorResize.persist(guiWidth,guiHeight,desired);
+    ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
+    var screen=(index-330)%2==0
+        ? new CapeEditorScreen(new LoomHomeScreen())
+        : new ElytraEditorScreen(new LoomHomeScreen());
+    client.setScreen(screen);
+    var layout=(dev.loomstudios.ui.LoomWorkspaceLayout)
+        field(screen,"workspaceLayout").get(screen);
+    if(layout.preview().width()!=desired)
+      throw new IllegalStateException("Resized inspector mismatch: "+layout.preview().width()
+          +" != "+desired+" at "+p[0]+"x"+p[1]+" GUI"+p[2]);
+    if(layout.canvas().width()<210)
+      throw new IllegalStateException("Resizing crushed artwork canvas");
+    System.out.println("LOOM_LAYOUT_RESIZE PASS "
+        +guiWidth+"x"+guiHeight+" inspector="+desired
+        +" canvas="+layout.canvas().width());
   }
 
   private static String assetLibraryCaptureName(int index) {
