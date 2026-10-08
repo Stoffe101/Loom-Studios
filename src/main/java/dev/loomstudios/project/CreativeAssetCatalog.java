@@ -26,7 +26,7 @@ public final class CreativeAssetCatalog {
 
   public static List<Entry> all() { return ALL; }
   public static List<String> categories() {
-    return List.of("Featured", "All", "Celestial", "Clouds & Mist", "Nature", "Fantasy", "Decorations");
+    return List.of("Featured", "All", "Celestial", "Clouds & Mist", "Nature", "Ocean", "Creatures", "Seasons", "Heraldry", "Fantasy", "Decorations");
   }
 
   public static List<Entry> search(String query, String category) {
