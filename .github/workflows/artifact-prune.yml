@@ -1,0 +1,75 @@
+name: Prune outdated workflow artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/artifact-prune.yml"
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: loom-artifact-retention
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    name: Preserve recent evidence and free artifact storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Retain latest screenshots and builds, prune aged artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // The GitHub Actions API does not automatically reclaim older completed
+            // runs' screenshot ZIPs quickly enough for Loom's large screenshot matrix.
+            // Do not delete newly uploaded, in-progress, or fresh review evidence.
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const artifacts = await github.paginate(github.rest.actions.listArtifactsForRepo, {
+              owner, repo, per_page: 100,
+            });
+            const newest = [...artifacts].filter(a => !a.expired)
+              .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+            const preserved = new Set();
+            // Always preserve the most recent full capture set and two JARs.
+            for (const name of ["loom-editor-screenshots", "loom-studios-dev"]) {
+              const n = name === "loom-studios-dev" ? 2 : 1;
+              for (const a of newest.filter(x => x.name === name).slice(0, n))
+                preserved.add(a.id);
+            }
+            const minAgeMs = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const targets = newest.filter(a =>
+              !preserved.has(a.id) && now - Date.parse(a.created_at) >= minAgeMs);
+            const mb = n => (n / 1048576).toFixed(1);
+            let deleted = 0, freed = 0, failed = 0;
+            core.info(`Found ${newest.length} current artifacts; preserving ${preserved.size} latest build/capture artifacts; ${targets.length} older artifacts eligible.`);
+            for (const a of targets) {
+              try {
+                await github.rest.actions.deleteArtifact({owner, repo, artifact_id: a.id});
+                deleted++;
+                freed += a.size_in_bytes;
+                core.info(`Deleted ${a.id} ${a.name} (${mb(a.size_in_bytes)} MiB), run ${a.workflow_run?.id || "unknown"}`);
+              } catch (err) {
+                if (err.status === 404) continue;
+                failed++;
+                core.warning(`Could not delete artifact ${a.id}: ${err.message}`);
+              }
+            }
+            core.summary.addHeading("Loom artifact retention");
+            core.summary.addTable([
+              [{data:"Eligible older artifacts",header:true},{data:String(targets.length),header:true}],
+              ["Deleted",String(deleted)],
+              ["Reclaimed",mb(freed)+" MiB"],
+              ["Protected recent full screenshot JARs",String(preserved.size)],
+              ["Failures",String(failed)],
+            ]);
+            await core.summary.write();
+            if (failed) core.setFailed(`Failed to remove ${failed} old artifacts`);
