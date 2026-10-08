@@ -17,7 +17,7 @@
 
 **MAIN:** accepted Animation 2.1 runtime/schema5/protocol3; full planning docs merged; artifact-cleanup/storage changes merged and cleanup confirmed.
 
-**OPEN PR #26 — [Animation Studio first UX slice](https://github.com/Stoffe101/Loom-Studios/pull/26):** UI labels, actual layer picker, wide curve+preview. **Not yet merged; scope does not complete the animation UX redesign.**
+**MERGED PR #26 — [Animation Studio first UX slice](https://github.com/Stoffe101/Loom-Studios/pull/26):** commit `0ce5420c6ee0d0dde99c4eee5472791772523df4`; real layer chooser, clearer Simple/Advanced labels and responsive curve+preview with corrected non-overlapping bounds. Standalone [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) and integrated [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153) both succeeded. Does NOT complete the full animation redesign.
 
 **MERGED PR #28 — [Editable Asset Library](https://github.com/Stoffe101/Loom-Studios/pull/28):** commit `c6ac027374c68eea4165f643ab10294ad4ea3886`; verified source `90b6dec2390c485c5059459e6a39bcfbff3bca53` passed Java tests, all 326 real Minecraft capture checks, 16 focused Cape/Elytra 2D+worn captures, and all 24 comparison suites. Contains 29 original illustrated assets and separately editable placed Image layers. Broader art curation/collections/atmospheric work remain open.
 
@@ -26,9 +26,9 @@
 - [x] **M0-01** Merge complete product-improvements roadmap and detailed Animation/Asset/Editor specs into `main` (PR #24).
 - [x] **M0-02** Reclaim full GitHub Actions artifact storage safely; preserve newest evidence/JARs and shorten retention (PR #25 and successful cleanup workflow).
 - [x] **M0-03** Existing Animation 2.1 engine accepted: independent parameter lanes, multi-key moves, easing, onion skin, editable imported frames, references and basic stamps. This is **engine capability**, not good final UX.
-- [ ] **M0-04 · IN PROGRESS** Get PR #26's final build, screenshots, comparison and input tests accepted; merge only on verified head SHA.
+- [x] **M0-04 · DONE** PR #26 merged `0ce5420c`; exact integrated source `81526b9e` passed Java21 and all **326** actual Minecraft screenshots in [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153), plus standalone animation 310-capture [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555). Further UX polish is M1/M2.
 - [x] **M0-05 · DONE** PR #28 merged into main `c6ac0273`. Exact verified source `90b6dec2`: [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) Java tests/326 captures; [focused 16 views](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878); [24 comparison suites](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879). Merge reconciliation changed documentation only.
-- [ ] **M0-06 · TODO** Update stale canonical documents (`SMART_IMPORT.md`, `LOOM_CODES.md`, `UI_COMPATIBILITY.md`) without erasing historical PASS_LOG evidence.
+- [x] **M0-06 · DONE** Current import formats/512px limit, schema-v5 portable animation, and 1×–8× compatibility corrected in canonical live docs (PR #30), historical notes preserved.
 
 **Exit:** `main` is a reliable, CI-verified base; no unmerged PR is presented as production-ready.
 
@@ -107,7 +107,7 @@ This is a **good direction, not the very next task**. The default layout must fi
 ## The immediate next five checkboxes
 
 1. **M0-05 completed.** Maintain the accepted Asset Library code/screenshot baseline. The cyan fixture issue was corrected using a clean 4× project and full-atlas background before the accepted screenshot captures.
-2. **M0-04** Verify and merge the independent Animation UX PR #26 after resolving dependencies and ensuring no regression with #28; don't claim either branch is already in main.
+2. **M0-04 completed.** Begin M1 core editor UX with the prepared contextual Browse/Edit Asset Inspector, cosmetic-focused neutral preview and compact-label fixes; verify 330 capture gates.
 3. **M1-02 / M1-03** Solve obstructive tooltips, clipping and preview-camera hierarchy; add neutral background and proper GUI3 view.
 4. **M1-04 / M2-01** Improve the contextual asset inspector and make Simple Animation clearly navigable.
 5. **M3-02** Review actual art in 2D/3D, reject weak pieces, and only then expand toward M3-03.

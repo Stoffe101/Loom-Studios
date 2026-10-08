@@ -1,14 +1,28 @@
-## 2026-10-08 — Canonical live-doc status cleanup — DONE ON BRANCH (not merged)
+## 2026-10-08 — Mission M0 stabilization / integration / documentation — DONE
 
-**Why:** new UI/creative roadmap links coexist with historical Smart Import PNG-only notes, outdated schema-v3 code-sharing prose and UI_COMPATIBILITY examples incorrectly treating 4× as the heaviest supported artwork resolution.
+**Changes:** merged baseline Creative/Animation/Editor roadmap PR24; reclaimed Actions artifacts via CI PR25; merged editable illustration/stamp-browser + real Cape/Elytra 2D/worn screenshots in PR28; merged animation layer selection / separated live-curve preview in PR26; corrected stale Smart Import, portable codes and 8× UI docs through PR30. [Active Mission Board](ACTIVE_MISSIONS.md) now checks M0-01 through M0-06.
 
-**Changes:** clarified current multi-format ImageIO import and 512px embedded-bound baseline; labeled historical PNG-only notes explicitly; corrected portable project code to schema-v5 animation, leaving hosted/public gallery and animated exports as future; updated UI four-profile compatibility to include 6×/8× project textures and 512×256 memory/performance tests.
+**Accepted code SHAs:** Asset Library runtime source `90b6dec2390c485c5059459e6a39bcfbff3bca53`, merged main `c6ac027374c68eea4165f643ab10294ad4ea3886`; Animation integrated source `81526b9eb618511d10e044ed5417348ebbbce601`, merged main `0ce5420c6ee0d0dde99c4eee5472791772523df4`.
 
-**Architecture/decisions:** no code/serialization/renderer change or new dependency; documentation harmonization only, source of truth remains CURRENT_STATE/PASS_LOG/DECISIONS. No runtime ADR adopted.
+**Verification:** 326 real Minecraft screenshots + Java build/test succeeded on Asset [run37717980898](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) and Animation+Asset integrated [run37719876153](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153); 16 focused worn views in [run37717980878](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878); 24 premium comparison suites in [run37717980879](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879); [storage cleanup run37712798078](https://github.com/Stoffe101/Loom-Studios/actions/runs/37712798078) succeeded with 875 artifacts/roughly13.8GiB reclaimed.
 
-**Testing:** reviewed existing accepted runtime/proposed-feature docs and target strings; Markdown link and content consistency check pending review. **Status:** docs branch has changes; not yet merged or M0-06 accepted.
+**Decisions/compatibility:** retain existing schema-v5/protocol3 and actual project-owned Image layers; do not claim new collection-object model or hosted service; accept primary UI changes without modifying renderer/equipped state. Use existing LoomPlayerPreviewWidget/NanoVG theme; no new dependency. No new persistent format decision adopted.
 
-**Next:** integrate the branch after PR26, verify links and check off M0-06.
+**Remaining risks:** all screenshot/runtime CI evidence is Linux Mesa, not Windows RTX/Iris/shader/dedicated-server acceptance. Screens still need major hierarchy/animation usability improvements; M0 DONE does not mean UX complete. Native asset-browser images look better but the planned 120–150 item first wave and advanced compositing remain future missions.
+
+**Next:** M1 contextual editor, camera/backdrop and tooltip improvements, tested at four profiles with 330 actual screenshots and selected inspector mode; then M2 animation UX, M3 asset quality and further missions. Do not skip acceptance gates.
+
+## 2026-10-08 — First Animation Studio UX implementation — IN PROGRESS
+
+**Why:** advanced keyframe interface has strong functionality but poor discoverability in reference comparison; compact layouts need stable focus, and ultrawide should show curve and cosmetic together.
+
+**What:** `LoomAnimationScreen`: chooser popup with actual layer names and lock information replaces silent cycling; correct beginner/advanced labels/help, track-gated Parameter & Curves entry and Space play/pause. `LoomParameterAnimationScreen`: dual curve+live 3D pane on wide >=1100×520 logical viewports, curve coordinates/hit targets use remaining curve width; smaller layouts preserve toggle workflow, camera remains stable, timeline shows seconds, brand label "Advanced Animation".
+
+**Architecture/compatibility:** no project format, v5 schema, protocol3, layer model, rendering effect or network changes. Existing 4 required GUI profiles remain acceptance targets. Wide split is UI-only; watch for curve handle bounds, preview overlay and scissor issues based on prior Animation2.1 failures.
+
+**Tests:** CI not yet complete; previous accepted 164 tests/310 captures do not prove this branch. **No manual Windows test in this pass.**
+
+**Next:** inspect screenshots and test results, correct UX if needed, then begin editable asset layer/browser implementation. Update DONE only after verified runtime and screens.
 
 ## 2026-10-08 — Artwork diversity and true worn-cosmetic CI — IN PROGRESS
 

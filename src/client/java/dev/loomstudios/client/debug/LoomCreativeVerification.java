@@ -141,10 +141,11 @@ final class LoomCreativeVerification {
     LoomAuthoringVerification.press(lanes, "Reset curve");
     int graphTop = (int) LoomAuthoringVerification.get(lanes, "graphTop");
     int graphHeight = (int) LoomAuthoringVerification.get(lanes, "graphHeight");
-    int right = (int) LoomAuthoringVerification.get(lanes, "right");
+    int curveRight = callInt(lanes, "curveRight");
     var curveBefore = ClientProjectWorkspace.project().animation();
     var curve = curveBefore.tracks().getLast().lanes().getFirst().keys().getFirst().curve();
-    double hx = 24 + curve.x1() * (right - 48);
+    // The wide layout reserves the right part of the graph for a live 3D preview.
+    double hx = 24 + curve.x1() * (curveRight - 24);
     double hy = graphTop + graphHeight - 10 - curve.y1() * (graphHeight - 32);
     lanes.mouseClicked(mouse(hx, hy), false);
     lanes.mouseDragged(mouse(hx + 8, hy - 8), 8, -8);
