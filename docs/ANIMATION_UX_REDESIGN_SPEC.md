@@ -27,6 +27,19 @@ Suggested first card families (extend current actual effects/presets, not new ru
 
 Each card must explain whether it animates layer position, hue, opacity, emissive/glow or a generated effect. Presets must never silently insert extra layers/tracks that the user cannot find. Applying a preset is one Undo step.
 
+### High-priority entry point: **Animate Asset** from the Inspector (M1-04A / M2-00)
+
+A player should **not** need to manually navigate the Animation workspace and rediscover the layer they just placed. The selected asset's Edit Inspector exposes **Animate Asset**, passing its exact saved `layerId`, current channel (`CAPE` or `ELYTRA`), wing/face context for preview, and a return target. This route comes **before** optional new effect families and advanced graph polish.
+
+- First-time animation: open Simple mode with **visual preset cards**, contextual sliders for Speed/Strength and supported options, **Try / Apply / Cancel**, and a real worn-cosmetic preview.
+- Existing animation: label action **Edit Animation** and focus that asset's existing track(s); identify advanced/customized lanes instead of replacing them. Switching Simple ↔ Advanced never applies a recipe or writes project data.
+- **Try must be pure**: isolated evaluated preview, no `.loom` edit, history entry, equip, remote sharing or multiplayer effect. **Apply** creates one Undo step; **Cancel/Back** returns to the selected asset Inspector with unchanged artwork and selection.
+- A renamed/reordered layer still resolves by persistent UUID, not by name or layer index. Left/right Elytra target and face previews must not silently switch.
+- Do not add a parallel asset-specific animation data model or an extra permanent panel. Reuse Animation 2.1 engine, existing animations and Loom's premium UI components.
+- On constrained GUI3 use one compact contextual panel and preview. On ultrawide use the available width. Place large edit/preview actions ahead of verbose explanations and button rows.
+
+**Acceptance:** from a freshly placed star, complete **Animate Asset → Twinkle → Try → Apply → Back to Asset** and later reopen **Edit Animation**; from a cloud on a chosen Elytra wing, create Drift without changing the opposite wing. Verify screenshot layouts, UUID/track identity, source pixels, Save/Undo/Redo and preview/equip parity. Until this is implemented and tested it remains **TODO**, even though the underlying Animation Studio already exists.
+
 ### Advanced Animation (visible but not forced)
 
 Full editor for power users:

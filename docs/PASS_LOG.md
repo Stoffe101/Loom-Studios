@@ -1,3 +1,15 @@
+## 2026-10-08 — Animate Asset Inspector prioritization — DONE (roadmap documentation only)
+
+**Request:** elevate a direct **Animate Asset** workflow from selected editable asset's Inspector, tying current project-owned Cape/Elytra Image layers to Simple/Advanced animation with no lost context.
+
+**Documentation changed:** ACTIVE_MISSIONS adds checkable high-priority **M1-04A/M2-00**; EDITOR_CREATIVE_UX_SPEC specifies the clickable path, visible opacity slider, layer-ID/wing handoff, direct **Edit Animation** for existing tracks, Try/Apply/Cancel semantics, return/navigation and user-friendly acceptance; ANIMATION_UX_REDESIGN_SPEC aligns both modes and existing animation-track preservation; NEXT_WORK and CURRENT_STATE record the priority and strict TODO status.
+
+**Architecture:** intended reuse of the already-implemented Animation 2.1 engine and schema-v5 project-owned layers. No new storage types, project edits, renderer changes or UI code adopted during this documentation pass.
+
+**Verification:** documentation consistency/link checks only. No game/Gradle test executed, no UI action shipped, no new CI screenshots. The mission remains unchecked until exact-head implementation, tests and actual worn Cape/Elytra GUI2/3 screenshot review.
+
+**Next:** implement M1-04A + M2-00 as one cohesive tested workflow, then continue the animation refinements and catalog expansion.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
