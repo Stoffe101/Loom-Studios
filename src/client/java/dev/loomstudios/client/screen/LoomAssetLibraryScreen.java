@@ -251,11 +251,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     // view. One contextual inspector prevents a giant always-visible tool wall.
     int tabW=(w-4)/2;
     var browseTab=addRenderableWidget(new LoomButton(x,top,tabW,20,
-        Component.literal(propertiesTab?"Assets":"● Assets"),
+        Component.literal("Assets"),
         () -> {propertiesTab=false;rebuildWidgets();}));
+    browseTab.setIcon(LoomButton.Icon.IMAGE).setSelected(!propertiesTab);
     var editTab=addRenderableWidget(new LoomButton(x+tabW+4,top,w-tabW-4,20,
-        Component.literal(propertiesTab?"● Edit":"Edit"),
+        Component.literal("Edit"),
         () -> {propertiesTab=true;armed=false;rebuildWidgets();}));
+    editTab.setIcon(LoomButton.Icon.LAYERS).setSelected(propertiesTab);
     editTab.active=layer()!=null&&layer().kind()==LayerKind.IMAGE;
     categoryButton=null;search=null;previous=null;next=null;modeButton=null;
     if(propertiesTab) {
