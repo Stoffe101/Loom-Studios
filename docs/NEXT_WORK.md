@@ -1,3 +1,7 @@
+## 2026-10-08 — Actions artifact storage — TODO verification after merge
+
+On first main merge, inspect the **Prune outdated workflow artifacts** summary and verify GitHub Actions actually removed older archives; if Actions write is denied, report the blocker and remove artifacts from GitHub's UI or adjust repository Actions token permissions with user approval. Verify Build still runs all 310 real client captures, uploads at most 55 selected original screenshot PNGs + contact sheet, and comparison runs retain review PNGs. Confirm space is sufficient for subsequent UX development CI. Maintain current last accepted capture artifacts until a verified newer capture is available.
+
 ## 2026-10-08 — Proposed next implementation tracks — TODO / pending scope review
 
 A **documentation-only** proposal now organizes all user-requested and repo-audited improvements: [Master Roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md), [Creative Asset Library](CREATIVE_ASSET_LIBRARY_SPEC.md), [Animation UX](ANIMATION_UX_REDESIGN_SPEC.md), [Editor UX/Compositing](EDITOR_CREATIVE_UX_SPEC.md). Nothing from these documents should be described as newly delivered.

@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -52,6 +52,7 @@ jobs:
           name: loom-studios-dev
           path: build/libs/*.jar
           if-no-files-found: error
+          retention-days: 7
 
   editor-capture:
     name: Real editor screenshots / Mesa
@@ -61,14 +62,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Install virtual display
-        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1 python3-pil
       - name: Prepare isolated capture client
         run: |
           mkdir -p run-ui-capture
@@ -92,13 +93,51 @@ jobs:
           xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture | tee capture.log
           test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 310
           grep -q 'LOOM_UI_CAPTURE COMPLETE' capture.log
-      - name: Upload screenshot evidence
+      - name: Build compact visual review package
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import shutil
+          src = Path("docs/verification/editor-workspace")
+          dst = Path("build/loom-review-shots")
+          dst.mkdir(parents=True, exist_ok=True)
+          families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-")
+          # Keep actual GUI3 compact and GUI2 ultrawide examples, not 310 redundant PNGs.
+          files = [p for p in src.glob("*.png") if p.name.startswith(families)
+                   and ("-1920x1080-gui3" in p.name or "-3440x1440-gui2" in p.name)]
+          # Focus changes on animation, asset authoring and main workflows.
+          focused = ("creative-", "cape-animation-", "elytra-animation-",
+                     "cape-1920", "elytra-3440", "home-1920",
+                     "smart-import-", "authoring-")
+          files = sorted(p for p in files if p.name.startswith(focused))
+          # Full captures are generated and validated above. Upload a curated review set.
+          for p in files[:55]:
+              shutil.copy2(p, dst / p.name)
+          # Contact sheet is a quick review index. Original PNGs remain in artifact.
+          thumbs = sorted(dst.glob("*.png"))
+          if thumbs:
+              sheet = Image.new("RGB", (1600, ((len(thumbs) + 3) // 4) * 290), "#09111d")
+              draw = ImageDraw.Draw(sheet)
+              for i, p in enumerate(thumbs):
+                  im = Image.open(p).convert("RGB")
+                  im.thumbnail((390, 250))
+                  x = (i % 4) * 400
+                  y = (i // 4) * 290
+                  sheet.paste(im, (x, y + 27))
+                  draw.text((x + 6, y + 6), p.stem[:48], fill="white")
+              sheet.save(dst / "review-contact-sheet.jpg", quality=84)
+          print(f"LOOM_REVIEW_PACKAGE selected={len(thumbs)} original_pngs={len(list(src.glob('*.png')))}")
+          PY
+      - name: Upload selected real-client screenshots and review index
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: loom-editor-screenshots
+          retention-days: 7
           path: |
-            docs/verification/editor-workspace/*.png
+            build/loom-review-shots/
             run-ui-capture/logs/latest.log
             run-ui-capture/crash-reports/*.txt
             capture.log

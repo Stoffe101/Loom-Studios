@@ -1,3 +1,15 @@
+## 2026-10-08 — Actions artifact storage policy — IN PROGRESS (CI workflow change)
+
+**Why:** GitHub Actions artifact storage is full. The former `build.yml` uploaded 310 actual PNG screenshots (~354 MB ZIP), while `premium-ui.yml` uploaded each comparison suite's entire images separately.
+
+**What changed on maintenance branch:** add guarded artifact-prune workflow, preserve latest full screenshot and two JARs, only prune aged artifacts; retain all 310 capture assertions but upload curated up-to-55 original screenshots/contact sheet; retain 3 original screenshots per comparison suite; retention-days 7/5 and setup-java@v5. Existing full screenshot baseline is preserved by name until a newer run is uploaded. No Java source changes.
+
+**Architecture:** CI/storage only; requires scoped `actions:write` token for cleanup, no source schema changes. Cleaner scheduled weekly and on its own main merge; keeps fresh archives at least 24h. This is intentionally a cost/retention policy change rather than deleting all historical evidence indiscriminately.
+
+**Tests:** source/workflow static review only so far. Actual workflow deletion, upload selection and CI must be verified after merge. **Risk:** repository permission may block delete operations; actions quota might delay reclaiming space; curated snapshot is not a substitute for all 310 capture files if someone later wants to inspect every old capture. In that case rerun full capture and inspect on runner or selectively package files.
+
+**Next:** merge and inspect cleanup job summary/actual freed bytes; verify Build and comparison screenshots.
+
 ## 2026-10-08 — Clarified editable Asset Library placement — DONE (documentation correction only)
 
 **User intent refined:** The proposed asset library must open via an **Assets** button in Cape/Elytra; users either drag a thumbnail straight onto the design or select it and then click/drag to place. **Default placement creates an independent editable layer/object**, not a permanent brush dab in the current layer. Later selection must allow move, resize, rotate, recolor, opacity, layer operations, pixel editing, and supported animation.
