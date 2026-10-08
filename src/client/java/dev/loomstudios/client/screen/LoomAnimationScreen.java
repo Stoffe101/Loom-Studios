@@ -73,7 +73,10 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         if(advanced) button(right+104,y+48,92,"Delete track",()->{if(track()!=null)deleteTrack(trackId);});
         else {
             var tryButton=button(right+8,y+72,188,tryPreview?"Stop preview":"Try on 3D · no changes",
-                ()->{tryPreview=!tryPreview;tick=0;cursor=0;playing=tryPreview;draftCache=null;rebuildWidgets();});
+                ()->{tryPreview=!tryPreview;tick=0;cursor=0;playing=tryPreview;draftCache=null;
+                    message=tryPreview?"Trying "+preset.label()+" · nothing added until Apply":
+                        "Try stopped · project is unchanged";
+                    rebuildWidgets();});
             tryButton.setIcon(tryPreview?LoomButton.Icon.PAUSE:LoomButton.Icon.PLAY);
             tryButton.setPrimary(tryPreview);
         }
@@ -127,7 +130,9 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
 
     public void startPreview(){
         tryPreview=true;draftCache=null;
-        playing=true;tick=0;cursor=0;rebuildWidgets();
+        playing=true;tick=0;cursor=0;
+        message="Trying "+preset.label()+" · Apply to keep this effect";
+        rebuildWidgets();
     }
 
     public void applyPreset(){
@@ -135,7 +140,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             UUID previous=trackId;
             var next=ClientProjectWorkspace.apply(p->
                 AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate));
-            trackId=next.animation().tracks().stream()
+            trackId=previous!=null?previous:next.animation().tracks().stream()
                 .filter(t->t.channel()==channel&&t.layerId().equals(layerId))
                 .reduce((a,b)->b).orElseThrow().id();
             tryPreview=false;draftCache=null;draftKey=null;
