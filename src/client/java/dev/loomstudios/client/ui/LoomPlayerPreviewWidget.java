@@ -78,7 +78,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 "projectSupplier"
         );
         this.mode = Objects.requireNonNull(mode, "mode");
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Checkerboard = transparency (preview only). Double-click or top-right: full preview. Drag: rotate · Middle drag: pan · Wheel: zoom")));
+        // Header controls provide contextual help; canvas stays tooltip-free.
     }
 
     public record ViewState(float yaw, float pitch, float zoom,int panX,int panY,dev.loomstudios.client.render.LoomPreviewState.PreviewPose pose,float facing,boolean characterVisible) {
@@ -104,9 +104,38 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             int mouseY,
             float partialTick
     ) {
-        setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(mouseX>=getRight()-39&&mouseX<getRight()-25&&mouseY<getY()+19?"Toggle character (H) · "+(characterVisible?"Hide player to inspect the design":"Show player"):"Drag: rotate · Middle drag: pan · Wheel: zoom · Double-click: full preview")));
+        // Never attach a giant instructional tooltip to the entire 3D view:
+        // it hides the cape on first hover and sometimes floats over the header.
+        // The three small header controls have concise contextual tooltips.
+        String tip=null;
+        if(mouseY>=getY()&&mouseY<getY()+19){
+            if(mouseX>=getRight()-22&&mouseX<getRight()-5)tip="Expand 3D preview";
+            else if(mouseX>=getRight()-39&&mouseX<getRight()-25)
+                tip=characterVisible?"Hide character · inspect cosmetic":"Show character";
+            else if(backgroundToggleAt(mouseX,mouseY))
+                tip="Background: "+LoomPreviewBackground.current().label()+" · click to change";
+        }
+        setTooltip(tip==null?null:
+            net.minecraft.client.gui.components.Tooltip.create(Component.literal(tip)));
         LoomScreenChrome.panel(graphics,getX(),getY(),getRight(),getBottom());
         LoomScreenChrome.panelHeader(graphics,getX(),getY(),getRight(),"3D · "+(mode==Mode.ELYTRA?pose.label():"Cape"));
+        // A small, semantic background switch for accurate color/alpha
+        // inspection. Reuses the existing scenic/neutral/checker preferences.
+        if(getWidth()>=180) {
+            int bx=getRight()-59, by=getY()+4;
+            graphics.fill(bx-1,by-1,bx+13,by+13,LoomUiTheme.BORDER);
+            var background=LoomPreviewBackground.current();
+            int bg=background==LoomPreviewBackground.LIGHT?0xFFCEDBE8:
+                background==LoomPreviewBackground.DARK?0xFF202A38:
+                background==LoomPreviewBackground.CHECKER?0xFF677386:0xFF38638A;
+            graphics.fill(bx,by,bx+12,by+12,bg);
+            if(background==LoomPreviewBackground.CHECKER){
+                graphics.fill(bx,by,bx+6,by+6,0xFFBDC7D1);
+                graphics.fill(bx+6,by+6,bx+12,by+12,0xFFBDC7D1);
+            }
+            if(background==LoomPreviewBackground.SCENIC)
+                graphics.fill(bx+2,by+7,bx+10,by+9,0xFF91AD82);
+        }
         int toggleX=getRight()-39,toggleY=getY()+3;
         LoomCharacterToggle.draw(graphics,toggleX,toggleY,14,characterVisible,mouseX>=toggleX&&mouseX<toggleX+14&&mouseY>=toggleY&&mouseY<toggleY+14);
         // Small, native expand affordance stays inside the preview header.
@@ -234,7 +263,18 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
 
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent event){if(isFocused()&&event.key()==72){characterVisible=!characterVisible;return true;}return super.keyPressed(event);}
 
+    private boolean backgroundToggleAt(double mx,double my){
+        return getWidth()>=180 && mx>=getRight()-61 && mx<getRight()-45
+            && my>=getY()+2 && my<getY()+19;
+    }
+
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
+        if(event.button()==0&&backgroundToggleAt(event.x(),event.y())){
+            LoomPreviewBackground.cycle();
+            playDownSound(Minecraft.getInstance().getSoundManager());
+            return true;
+        }
+
         if(event.button()==0&&event.x()>=getRight()-39&&event.x()<getRight()-25&&event.y()>=getY()+3&&event.y()<getY()+17){characterVisible=!characterVisible;playDownSound(Minecraft.getInstance().getSoundManager());return true;}
         if(event.button()==2 && isMouseOver(event.x(),event.y())) { panning=true;return true; }
         return super.mouseClicked(event,doubleClick);
