@@ -1,3 +1,17 @@
+## 2026-10-08 — Mission M0 stabilization / integration / documentation — DONE
+
+**Changes:** merged baseline Creative/Animation/Editor roadmap PR24; reclaimed Actions artifacts via CI PR25; merged editable illustration/stamp-browser + real Cape/Elytra 2D/worn screenshots in PR28; merged animation layer selection / separated live-curve preview in PR26; corrected stale Smart Import, portable codes and 8× UI docs through PR30. [Active Mission Board](ACTIVE_MISSIONS.md) now checks M0-01 through M0-06.
+
+**Accepted code SHAs:** Asset Library runtime source `90b6dec2390c485c5059459e6a39bcfbff3bca53`, merged main `c6ac027374c68eea4165f643ab10294ad4ea3886`; Animation integrated source `81526b9eb618511d10e044ed5417348ebbbce601`, merged main `0ce5420c6ee0d0dde99c4eee5472791772523df4`.
+
+**Verification:** 326 real Minecraft screenshots + Java build/test succeeded on Asset [run37717980898](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) and Animation+Asset integrated [run37719876153](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153); 16 focused worn views in [run37717980878](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878); 24 premium comparison suites in [run37717980879](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879); [storage cleanup run37712798078](https://github.com/Stoffe101/Loom-Studios/actions/runs/37712798078) succeeded with 875 artifacts/roughly13.8GiB reclaimed.
+
+**Decisions/compatibility:** retain existing schema-v5/protocol3 and actual project-owned Image layers; do not claim new collection-object model or hosted service; accept primary UI changes without modifying renderer/equipped state. Use existing LoomPlayerPreviewWidget/NanoVG theme; no new dependency. No new persistent format decision adopted.
+
+**Remaining risks:** all screenshot/runtime CI evidence is Linux Mesa, not Windows RTX/Iris/shader/dedicated-server acceptance. Screens still need major hierarchy/animation usability improvements; M0 DONE does not mean UX complete. Native asset-browser images look better but the planned 120–150 item first wave and advanced compositing remain future missions.
+
+**Next:** M1 contextual editor, camera/backdrop and tooltip improvements, tested at four profiles with 330 actual screenshots and selected inspector mode; then M2 animation UX, M3 asset quality and further missions. Do not skip acceptance gates.
+
 ## 2026-10-08 — First Animation Studio UX implementation — IN PROGRESS
 
 **Why:** advanced keyframe interface has strong functionality but poor discoverability in reference comparison; compact layouts need stable focus, and ultrawide should show curve and cosmetic together.

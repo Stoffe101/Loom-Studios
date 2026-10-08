@@ -1,3 +1,13 @@
+## 2026-10-08 — Mission M0 complete: stable integrated UI baseline — DONE
+
+**Main integration:** PR #28 merged as `c6ac027374c68eea4165f643ab10294ad4ea3886` (editable Asset Library with 29 original illustrations, true 2D/worn Cape/Elytra previews, 16 focused screenshot profiles, bounded project-owned Image layers). PR #26 merged as `0ce5420c6ee0d0dde99c4eee5472791772523df4` (actual animation layer selector, clearer Simple/Advanced entry, correct separated curve/timeline/3D preview hitboxes). Source and UI data remain schema-v5/protocol3.
+
+**Evidence:** Asset [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) passed Java21/326 actual Minecraft captures; focused [16-image real worn review](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878) and [24 comparison suites](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879) passed. Animation standalone [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719395555) passed and combined [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37719876153) passed Java and **326** actual Minecraft captures. Accepted automated checks are Linux/Mesa/Xvfb, **not Windows/Iris/dedicated-server validation**, which remains M7.
+
+**CI/storage:** [Prune workflow](https://github.com/Stoffe101/Loom-Studios/actions/runs/37712798078) succeeded and deleted 875 obsolete artifacts (~13.8 GiB reclaimed); Builds retain curated original screenshots while running full capture assertions. Documentation PR #30 corrected old PNG-only, schema-v3 and 4×-maximum claims while preserving historical notes. This entry supersedes older IN PROGRESS notes below.
+
+**Next:** proceed to M1 editor UI/UX, beginning with preview background/tooltip clarity and selected-item contextual Browse/Edit controls, then user screenshot review. The M1 branch is unverified and not yet merged.
+
 ## 2026-10-08 — Studio UX 3.0 / animation first slice — IN PROGRESS, CI pending
 
 First implementation on `feature/animation-ux-first-pass-2026-10-08`: actual layer chooser instead of cycling on click in Animation Studio; clearer Simple/Advanced labels, contextual beginner help and disabled Parameters/Curves until a track exists; Space toggles playback. Advanced Parameters & Curves shows **live cosmetic preview alongside curve on wide logical viewports** (>=1100×520), keeps the established focused Curve/3D preview toggle on compact layouts, preserves camera state across rebuilds, and labels the advanced screen without internal version numbers. Modified `LoomAnimationScreen` and `LoomParameterAnimationScreen`.

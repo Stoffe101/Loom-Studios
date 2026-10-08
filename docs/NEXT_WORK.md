@@ -1,3 +1,11 @@
+## 2026-10-08 — M0 accepted; active next work = M1 core editor UI/UX
+
+M0-01 through M0-06 are complete on main (see [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md) and CURRENT_STATE for merged SHAs/CI proof). No more broad unrelated subsystem work is needed to claim M0 done.
+
+**Next implementation order:** (1) integrate the staged M1 preview/asset inspector branch onto verified main, using the already existing Loom premium UI infrastructure; (2) run Java21 tests and focused 20-image Cape/Elytra/selected Edit inspector screenshots, then all 330 actual-client captures and premium comparisons; (3) inspect 1920×1080 GUI3 and 3440×1440 GUI2 with real populated artwork and reject overlapping tooltips, clipped labels, offscreen controls; (4) continue Animation Simple/Advanced redesign, adaptive canvas/preview layout, frame filmstrip and reference drag controls; (5) return to art curation/scatter/soft mist once daily authoring workflows are intuitive. Exact pixel/drag resizing of arbitrary panels and full ElvUI-style docking are separately staged M5 features, after working default layouts.
+
+**Known visual UX debt:** Animation 3440 GUI2 leaves unused right-side vertical space under the 3D preview, while 1920 GUI3 truncates lengthy footer guidance; the M0 curve/widget overlap is fixed, but the overall experience still needs M1/M2 work. Windows optional-mod and dedicated-server acceptance remains M7.
+
 ## 2026-10-08 — Studio UX 3.0 first slice — CI / visual acceptance pending
 
 1. Run Java21 Minecraft 1.21.11 build and existing 164 tests on `feature/animation-ux-first-pass-2026-10-08`.
