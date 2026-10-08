@@ -113,7 +113,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
             else if(mouseX>=getRight()-39&&mouseX<getRight()-25)
                 tip=characterVisible?"Hide character · inspect cosmetic":"Show character";
             else if(backgroundToggleAt(mouseX,mouseY))
-                tip="Background: "+LoomPreviewBackground.current().label()+" · click to change";
+                tip="Background: "+LoomPreviewBackground.current().label()+" · click or B";
         }
         setTooltip(tip==null?null:
             net.minecraft.client.gui.components.Tooltip.create(Component.literal(tip)));
@@ -261,7 +261,11 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
                 );
     }
 
-    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent event){if(isFocused()&&event.key()==72){characterVisible=!characterVisible;return true;}return super.keyPressed(event);}
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent event){
+        if(isFocused()&&event.key()==72){characterVisible=!characterVisible;return true;}
+        if(isFocused()&&event.key()==66){LoomPreviewBackground.cycle();return true;}
+        return super.keyPressed(event);
+    }
 
     private boolean backgroundToggleAt(double mx,double my){
         return getWidth()>=180 && mx>=getRight()-61 && mx<getRight()-45
@@ -353,6 +357,7 @@ public final class LoomPlayerPreviewWidget extends AbstractWidget implements Loo
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {
-        output.add(NarratedElementType.TITLE, getMessage());
+        output.add(NarratedElementType.TITLE,
+                Component.literal("3D preview. Press B to change background, H to toggle character. Rotate by dragging; zoom with mouse wheel."));
     }
 }
