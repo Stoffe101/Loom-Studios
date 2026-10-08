@@ -1,3 +1,7 @@
+## 2026-10-08 — M0 live-document accuracy correction — DOCS BRANCH ONLY
+
+Historical implementation notes in SMART_IMPORT, LOOM_CODES and UI_COMPATIBILITY were clearly separated from current capabilities: multi-format JPEG/GIF/BMP/TIFF/WBMP import alongside PNG, 512px embedded source limit, schema-v5 portable animation contents, and 1×/2×/4×/6×/8× canvas performance obligations. New WebP/hosted services/animated-export features remain proposed. This is **documentation-only**, no Java, assets, CI pipeline or runtime change. Branch `docs/m0-current-docs-audit-2026-10-08` remains pending integration into `main` after the Animation UX PR26 acceptance; do not check off M0-06 until merged and reviewed.
+
 ## 2026-10-08 — Real 2D/3D asset preview and 29-artwork diversity pass — CI PENDING
 
 On Asset Library PR28's feature branch: 17 original illustrated premium assets extended by **12 distinct original ARGB assets** (Ocean koi/wave/coral; Creatures owl/moth/fox; Seasons maple/snow-globe/rose; Heraldry compass/dragon/shield), bringing the Featured quality-first set to **29**. Existing monochrome/basic stamps remain in their own categories. The browser now adds a **live worn-cosmetic preview**: 2D artwork beside actual 3D player/cape/Elytra on comfortable/wide GUIs, and a single focused 2D↔3D toggle on compact GUI3. Preview reuses existing Minecraft player rendering, Loom NanoVG theme and actual unsaved project data; it neither equips nor uploads content.
