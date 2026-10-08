@@ -116,7 +116,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -179,11 +179,28 @@ jobs:
                   if path.name.startswith(('cape-','elytra-')):
                       emit(path.stem+'-inspector',image.crop((image.width//2,140,image.width,image.height-40)))
           PY
+      - name: Select representative review images
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          src=Path("docs/verification/editor-workspace")
+          dst=Path("build/loom-premium-review")
+          dst.mkdir(parents=True,exist_ok=True)
+          imgs=sorted(src.glob("*.png"))
+          # Compare every original above; publish 3 representative PNGs per suite
+          # instead of retaining hundreds of redundant copies across 24 jobs.
+          choices=sorted(set([0,len(imgs)//2,len(imgs)-1])) if imgs else []
+          for idx in choices: shutil.copy2(imgs[idx],dst/imgs[idx].name)
+          print(f"LOOM_PREMIUM_ARTIFACT captured={len(imgs)} selected={len(choices)}")
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: loom-premium-${{ matrix.suite }}
+          retention-days: 5
           path: |
-            docs/verification/editor-workspace/*.png
+            build/loom-premium-review/*.png
             premium-capture.log
             run-ui-capture/logs/latest.log
