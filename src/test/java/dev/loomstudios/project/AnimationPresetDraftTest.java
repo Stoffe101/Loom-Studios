@@ -30,16 +30,24 @@ class AnimationPresetDraftTest {
             new AnimationKeyframe(0,0),new AnimationKeyframe(80,1)))));
     p=p.withAnimation(a.withTracks(List.of(original)));
     var before=p;
-    var draft=AnimationPresetDraft.compose(p,id,AnimationChannel.CAPE,
-        original.id(),AnimationPreset.STARS,1f);
-    assertEquals(before,p);
+    assertThrows(IllegalStateException.class,()->AnimationPresetDraft.compose(
+        p,id,AnimationChannel.CAPE,original.id(),AnimationPreset.STARS,1f));
+    assertEquals(before,p,"Simple must not flatten custom Advanced parameter lanes");
     assertEquals(original,before.animation().tracks().getFirst());
-    assertEquals(1,draft.animation().tracks().size());
-    assertEquals(original.id(),draft.animation().tracks().getFirst().id());
-    assertEquals(AnimationEffectType.PULSE,draft.animation().tracks().getFirst().effect());
-    assertTrue(draft.animation().tracks().getFirst().lanes().isEmpty(),
-        "Applying explicitly replaces the prior custom effect but preview cannot mutate it");
     assertEquals(before,LoomProjectCodec.decode(before.encode()));
+  }
+
+  @Test void basicPresetReplacementKeepsTrackIdentityAndIsSerializable() {
+    var p=LoomProjectFactory.blank("Recipe change",4);
+    UUID id=p.cape().layers().getFirst().id();
+    p=p.withAnimation(AnimationAuthoring.addTrack(
+        p.animation(),id,AnimationChannel.CAPE,AnimationEffectType.PULSE));
+    var old=p.animation().tracks().getFirst();
+    var draft=AnimationPresetDraft.compose(p,id,AnimationChannel.CAPE,
+        old.id(),AnimationPreset.SHIMMER,.5f);
+    assertEquals(old.id(),draft.animation().tracks().getFirst().id());
+    assertEquals(AnimationEffectType.SPARKLE,draft.animation().tracks().getFirst().effect());
+    assertEquals(p,LoomProjectCodec.decode(p.encode()));
     assertEquals(draft,LoomProjectCodec.decode(draft.encode()));
   }
 
