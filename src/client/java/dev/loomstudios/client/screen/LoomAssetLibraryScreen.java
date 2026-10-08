@@ -217,6 +217,8 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
           () -> 37 * ClientProjectWorkspace.revision()
               + 11 * EditorOverlayState.revision() + (editPixels ? 1 : 0)));
       showPreviewController();
+      // Guidance belongs in the footer/inspector, not in a full-canvas tooltip.
+      preview.setTooltip(null);
     }
     if ((wornMode || split) && !editPixels) {
       int wornX=split ? artW+12 : 8;
@@ -225,7 +227,9 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
           wornX,top+25,wornW,height-top-82,
           ClientProjectWorkspace::project,
           wing ? LoomPlayerPreviewWidget.Mode.ELYTRA : LoomPlayerPreviewWidget.Mode.CAPE));
-      wornPreview.restoreViewState(lastWornView);
+      wornPreview.restoreViewState(lastWornView == null
+          ? new LoomPlayerPreviewWidget.ViewState(25.0F,0.0F,1.15F)
+          : lastWornView);
       // Show the decorated outside wing surfaces when first inspecting the
       // artwork. Gliding is still available by clicking the 3D preview header,
       // but its nearly horizontal wings obscure the painted outer faces.
@@ -405,11 +409,16 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     }
     // Compact footer has less room than the left/status text might imply;
     // keep the guidance usable instead of letting it run underneath the center slogan.
+    var activeLayer = layer();
+    String status = activeLayer != null
+        ? activeLayer.name()+" · "+Math.round(activeLayer.opacity()*100f)+"% opacity"
+        : selectedAsset == null ? "Browse assets" : selectedAsset.stamp().name()+" · "+size+" px";
     String footerMessage=LoomUiTheme.compact(width,height)
-        ? selectedAsset==null ? "Choose an asset" : armed ? "Click canvas to place" : "Drag to edit asset"
-        : message;
-    LoomScreenChrome.footer(g,width,height,footerMessage,selectedAsset==null?"Select an asset":
-        selectedAsset.stamp().name()+" · "+size+" px");
+        ? armed ? "Click canvas to place"
+            : activeLayer != null ? "Selected asset · edit / move / rotate" : "Choose an asset"
+        : armed ? "Click or drag on the canvas to place "+selectedAsset.stamp().name()
+            : activeLayer != null ? "Selected: "+activeLayer.name()+" · drag handles to edit" : message;
+    LoomScreenChrome.footer(g,width,height,footerMessage,status);
     renderChoices(g,mx,my);
   }
   @Override public void removed() {
