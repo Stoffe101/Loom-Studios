@@ -231,6 +231,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       int index=page*perPage+i;
       tiles.get(i).entry=index<list.size()?list.get(index):null;
       tiles.get(i).visible=tiles.get(i).entry!=null;
+      if(tiles.get(i).entry!=null){
+        var entry=tiles.get(i).entry;
+        var art=entry.stamp().patch();
+        tiles.get(i).setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+            Component.literal(entry.stamp().name()+" · "+entry.category()
+                +" · "+art.width()+"×"+art.height()+" source pixels")));
+      }
     }
     if(previous!=null)previous.active=page>0;
     if(next!=null)next.active=(page+1)*perPage<list.size();
@@ -317,7 +324,12 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       int[] p=preview.imagePixelAt(mx,my);
       if(p!=null)preview.renderAssetGhost(g,selectedAsset.stamp().patch(),p[0],p[1],size,recolor,color);
     }
-    LoomScreenChrome.footer(g,width,height,message,selectedAsset==null?"Select an asset":
+    // Compact footer has less room than the left/status text might imply;
+    // keep the guidance usable instead of letting it run underneath the center slogan.
+    String footerMessage=LoomUiTheme.compact(width,height)
+        ? selectedAsset==null ? "Choose an asset" : armed ? "Click canvas to place" : "Drag to edit asset"
+        : message;
+    LoomScreenChrome.footer(g,width,height,footerMessage,selectedAsset==null?"Select an asset":
         selectedAsset.stamp().name()+" · "+size+" px");
     renderChoices(g,mx,my);
   }
@@ -355,11 +367,23 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       int sh=Math.max(1,(int)Math.floor(patch.height()*fit));
       int x0=getX()+(getWidth()-sw)/2;
       int y0=getY()+2+Math.max(0,(maxH-sh)/2);
-      for(int py=0;py<sh;py++)for(int px=0;px<sw;px++){
-        int srcX=Math.min(patch.width()-1,(int)((px+.5)/fit));
+      // Adjacent equal-color pixels share a fill draw call. A packed 3-column,
+      // 7-row gallery should not enqueue tens of thousands of draw calls/frame.
+      for(int py=0;py<sh;py++) {
         int srcY=Math.min(patch.height()-1,(int)((py+.5)/fit));
-        int c=raw[srcY*patch.width()+srcX];
-        if((c>>>24)!=0)g.fill(x0+px,y0+py,x0+px+1,y0+py+1,c);
+        int px=0;
+        while(px<sw){
+          int srcX=Math.min(patch.width()-1,(int)((px+.5)/fit));
+          int c=raw[srcY*patch.width()+srcX],end=px+1;
+          if((c>>>24)==0){px=end;continue;}
+          while(end<sw){
+            int nx=Math.min(patch.width()-1,(int)((end+.5)/fit));
+            if(raw[srcY*patch.width()+nx]!=c)break;
+            end++;
+          }
+          g.fill(x0+px,y0+py,x0+end,y0+py+1,c);
+          px=end;
+        }
       }
       if(entry.tags().contains("featured")) {
         // Tiny secondary cyan indicator: this is actual multi-color artwork.
