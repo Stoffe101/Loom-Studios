@@ -109,15 +109,15 @@ jobs:
           src = Path("docs/verification/editor-workspace")
           dst = Path("build/loom-review-shots")
           dst.mkdir(parents=True, exist_ok=True)
-          families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-", "asset-library-")
+          families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-", "asset-library-", "animation-simple-")
           # Keep actual GUI3 compact and GUI2 ultrawide examples, not 310 redundant PNGs.
           files = [p for p in src.glob("*.png") if p.name.startswith(families)
-                   and (p.name.startswith("asset-library-")
+                   and (p.name.startswith("asset-library-") or p.name.startswith("animation-simple-")
                         or "-1920x1080-gui3" in p.name
                         or "-3440x1440-gui2" in p.name)]
           # Curate for human review, not alphabetical order: all sixteen new
           # Asset Library profiles, then animation/curves, then familiar editors.
-          focused = ("asset-library-", "creative-", "cape-animation-", "elytra-animation-",
+          focused = ("animation-simple-", "asset-library-", "creative-", "cape-animation-", "elytra-animation-",
                      "cape-1920", "elytra-3440", "home-1920", "smart-import-", "authoring-")
           files = [p for p in files if p.name.startswith(focused)]
           files.sort(key=lambda p: (
