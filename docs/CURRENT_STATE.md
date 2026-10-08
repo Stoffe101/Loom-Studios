@@ -1,3 +1,9 @@
+## 2026-10-08 — M1 preview usability prototype — IN PROGRESS, CI PENDING
+
+A separate M1 prototype branch based on the unmerged Asset Library work improves LoomPlayerPreviewWidget's header: removes the full-area repeated tooltip that could obscure the design, adds a small background selection control to cycle already-supported Scenic / Neutral light / Neutral dark / Checkerboard settings, with contextual header-only tooltips. The Asset Library also sets a cosmetic-focused initial zoom, avoids giant canvas transform tooltips, and shows the **actual selected layer name and opacity** in its footer rather than "Select an asset" when an Image layer is already selected.
+
+**No new dependency, project format, renderer, or network protocol**. This is a targeted UI improvement reusing existing LoomPreviewBackground, LoomPreferences, LoomPlayerPreviewWidget and premium UI primitives. Branch is not merged and has **no fresh Minecraft CI or screenshot validation**; regression/test and four-profile review are mandatory after M0 integration.
+
 ## 2026-10-08 — Real 2D/3D asset preview and 29-artwork diversity pass — CI PENDING
 
 On Asset Library PR28's feature branch: 17 original illustrated premium assets extended by **12 distinct original ARGB assets** (Ocean koi/wave/coral; Creatures owl/moth/fox; Seasons maple/snow-globe/rose; Heraldry compass/dragon/shield), bringing the Featured quality-first set to **29**. Existing monochrome/basic stamps remain in their own categories. The browser now adds a **live worn-cosmetic preview**: 2D artwork beside actual 3D player/cape/Elytra on comfortable/wide GUIs, and a single focused 2D↔3D toggle on compact GUI3. Preview reuses existing Minecraft player rendering, Loom NanoVG theme and actual unsaved project data; it neither equips nor uploads content.
