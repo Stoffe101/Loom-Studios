@@ -19,7 +19,7 @@
 
 **OPEN PR #26 — [Animation Studio first UX slice](https://github.com/Stoffe101/Loom-Studios/pull/26):** UI labels, actual layer picker, wide curve+preview. **Not yet merged; scope does not complete the animation UX redesign.**
 
-**OPEN PR #28 — [Editable Asset Library](https://github.com/Stoffe101/Loom-Studios/pull/28):** browser/drag or click-to-place, individually editable Image layers, 29 original illustrated assets, actual 2D + worn Cape/Elytra capture fixtures and more efficient CI. A focused visual-review run passed on the snapshot head; full build/comparison were still running at board creation. **Not merged or fully accepted.** Follow the latest actual head SHA/run before updating.
+**MERGED PR #28 — [Editable Asset Library](https://github.com/Stoffe101/Loom-Studios/pull/28):** commit `c6ac027374c68eea4165f643ab10294ad4ea3886`; verified source `90b6dec2390c485c5059459e6a39bcfbff3bca53` passed Java tests, all 326 real Minecraft capture checks, 16 focused Cape/Elytra 2D+worn captures, and all 24 comparison suites. Contains 29 original illustrated assets and separately editable placed Image layers. Broader art curation/collections/atmospheric work remain open.
 
 ### Mission 0 — Protect the foundation (baseline and CI)
 
@@ -27,7 +27,7 @@
 - [x] **M0-02** Reclaim full GitHub Actions artifact storage safely; preserve newest evidence/JARs and shorten retention (PR #25 and successful cleanup workflow).
 - [x] **M0-03** Existing Animation 2.1 engine accepted: independent parameter lanes, multi-key moves, easing, onion skin, editable imported frames, references and basic stamps. This is **engine capability**, not good final UX.
 - [ ] **M0-04 · IN PROGRESS** Get PR #26's final build, screenshots, comparison and input tests accepted; merge only on verified head SHA.
-- [ ] **M0-05 · IN PROGRESS** Get PR #28's final Java tests, **326 main captures**, **16 focused Asset Library 2D/worn captures**, premium comparisons and real artwork review accepted. Correct deficiencies first, then integrate/merge with PR #26 safely.
+- [x] **M0-05 · DONE** PR #28 merged into main `c6ac0273`. Exact verified source `90b6dec2`: [Build](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980898) Java tests/326 captures; [focused 16 views](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980878); [24 comparison suites](https://github.com/Stoffe101/Loom-Studios/actions/runs/37717980879). Merge reconciliation changed documentation only.
 - [ ] **M0-06 · TODO** Update stale canonical documents (`SMART_IMPORT.md`, `LOOM_CODES.md`, `UI_COMPATIBILITY.md`) without erasing historical PASS_LOG evidence.
 
 **Exit:** `main` is a reliable, CI-verified base; no unmerged PR is presented as production-ready.
@@ -55,7 +55,7 @@
 
 ### Mission 3 — Make an excellent Asset Library, not a gallery of placeholders
 
-- [ ] **M3-01 · IN PROGRESS in PR #28** Ship and verify separate editable Image-layer objects from **drag thumbnail to design** or **click then place** in both editors, including pixel-level edits, precise semantic-face UV placement and save/network parity.
+- [x] **M3-01 · DONE (first-stage layer model)** PR #28 implements draggable/click-to-place project-owned Image layers with pixel editing, Cape/wing-face isolation, roundtrip and screenshots. A separate multi-object collection is still M3-05, and Windows/server acceptance remains M7.
 - [ ] **M3-02 · IN PROGRESS in PR #28** Curate **29 starter illustrated assets** across celestial, sky, nature, ocean, creatures, seasons, heraldry, fantasy and decoration. Visually inspect them on both the 2D canvas **and the worn 3D cape/Elytra**, not only in thumbnails; fix ugly ones before adding more.
 - [ ] **M3-03 · TODO** Grow to ~50 genuinely distinct **approved, high-quality** assets, with size/alpha/contrast standards and well-named categories, search, favorites/recent and original/provenance metadata.
 - [ ] **M3-04 · TODO** Complete first broad catalog target only after artwork passes quality gates (proposed 120–150; eventually 300–400 when actually justified). Include trees, flowers, animals, ornamental borders, stars/moons, mist/clouds, emblems, weather and texture kits.
@@ -106,7 +106,7 @@ This is a **good direction, not the very next task**. The default layout must fi
 
 ## The immediate next five checkboxes
 
-1. **M0-05** Verify latest PR #28 on its exact SHA: Java, complete screenshots, focused real worn-cosmetic capture, comparison and UI control correctness; investigate the extra cyan crescent/fixture layering visible in the previous worn Cape preview.
+1. **M0-05 completed.** Maintain the accepted Asset Library code/screenshot baseline. The cyan fixture issue was corrected using a clean 4× project and full-atlas background before the accepted screenshot captures.
 2. **M0-04** Verify and merge the independent Animation UX PR #26 after resolving dependencies and ensuring no regression with #28; don't claim either branch is already in main.
 3. **M1-02 / M1-03** Solve obstructive tooltips, clipping and preview-camera hierarchy; add neutral background and proper GUI3 view.
 4. **M1-04 / M2-01** Improve the contextual asset inspector and make Simple Animation clearly navigable.
