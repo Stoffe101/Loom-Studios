@@ -1,3 +1,17 @@
+## 2026-10-08 — Approved? No. Proposed next implementation tracks — TODO / design review
+
+A **documentation-only** proposal now organizes all user-requested and repo-audited improvements: [Master Roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md), [Creative Asset Library](CREATIVE_ASSET_LIBRARY_SPEC.md), [Animation UX](ANIMATION_UX_REDESIGN_SPEC.md), [Editor UX/Compositing](EDITOR_CREATIVE_UX_SPEC.md). Nothing from these documents should be described as newly delivered.
+
+**Immediate next steps, in priority order:**
+
+1. **M0 hardware verification:** install current schema5 client/server, back up existing projects, run ordinary Windows 1.21.11 client on target hardware, stress 8× GIF/layer/animation projects; test Sodium/Iris/shaders/resource reloads and dedicated multiplayer. Record actual performance and issues.
+2. **M1 Studio UX 3.0 planning and implementation (after confirmation):** four-profile screenshots, compact and ultrawide composition, animation Simple/Advanced workspace, visual key/curve interactions, frame filmstrip and reference drag handles. Preserve current v5 project semantics. User review should precede a giant merge.
+3. **M2 Creative Asset Library (after scope review):** build 120–150 original curated starter stamps with thumbnails/categories/search, place/scatter interactions and editable Misty Night recipe. Plan expansion toward 300–400 genuine distinct assets; do not treat variation count as completion.
+4. **M3 atmospheric brush/compositing**, then **M4 animation export/import/library refinement**; **M5 direct 3D painting** is an isolated feasibility spike. Each new persistent typed layer/format requires migration/compatibility approval first.
+5. **DOC-01 cleanup:** move superseded historical statements out of live-status sections of SMART_IMPORT, LOOM_CODES, UI_COMPATIBILITY and old checkpoints; keep PASS_LOG as history and CURRENT_STATE accurate.
+
+**Acceptance rule:** follow [DOCUMENTATION_RULES.md](DOCUMENTATION_RULES.md) after each actual pass; test real screens and hardware, do not count the planning documents as implemented. The earlier exact-source Animation 2.1 acceptance follows below.
+
 ## Animation 2.1 / creative authoring — DONE: ready for user testing (2026-10-04)
 
 Accepted runtime source `7288c5877fcc5b708ae1ef945096e8a119323b49`. [Build263](https://github.com/Stoffe101/Loom-Studios/actions/runs/37201892306) passes both jobs: **164 tests, zero failures/errors/skips**, **310 actual Minecraft captures**. [Comparison38](https://github.com/Stoffe101/Loom-Studios/actions/runs/37201892320) passes all **24 suites /210 captures**. Java21, Minecraft1.21.11, Fabric Loader0.18.4, Fabric API0.141.1, Linux/Mesa/Xvfb without optional mods. All32 new creative screenshots were extracted and visually reviewed at1920×1080 and3440×1440, GUI2/GUI3. Timeline rows fit, the live preview is visible and enlarged, custom easing renders, reference/frame/stamp panels have inset controls. Existing full-suite visible-widget bounds/nonoverlap checks pass. Reference targets01/04/05 were reinspected: workshop frame, inset panels, cyan/purple selection. Focused tabs intentionally keep compact controls out of the main drawing area.
