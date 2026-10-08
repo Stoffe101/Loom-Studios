@@ -24,7 +24,9 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private AnimationPreset preset=AnimationPreset.GLOW;
     private float presetRate=.5F;
     private LoomPlayerPreviewWidget preview;
-    private boolean advanced;
+    private boolean advanced,tryPreview;
+    private LoomProject draftCache;
+    private String draftKey;
     private int guideTop,guideWidth;
     private LoomButton presetButton,rateButton,effectButton;
     public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;}
@@ -54,14 +56,27 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         int workTop=top+26;
         var view=preview==null?null:preview.viewState();
         int previewHeight=Math.max(40,Math.min(180,bottom-workTop-(advanced?184:124)));
-        preview=addRenderableWidget(new LoomPlayerPreviewWidget(right+8,workTop,188,previewHeight,ClientProjectWorkspace::project,channel==AnimationChannel.CAPE?LoomPlayerPreviewWidget.Mode.CAPE:LoomPlayerPreviewWidget.Mode.ELYTRA));
+        preview=addRenderableWidget(new LoomPlayerPreviewWidget(right+8,workTop,188,previewHeight,this::previewProject,channel==AnimationChannel.CAPE?LoomPlayerPreviewWidget.Mode.CAPE:LoomPlayerPreviewWidget.Mode.ELYTRA));
         preview.restoreViewState(view);preview.setTimelineTickSupplier(()->tick);
         int y=workTop+previewHeight+5;
         presetButton=button(right+8,y,188,"Preset: "+preset.label(),()->showChoices(presetButton,"Animation preset",Arrays.stream(AnimationPreset.values()).map(p->new LoomChoicePopup.Option<>(p,p.label(),p.description())).toList(),preset,p->{preset=p;rebuildWidgets();}));presetButton.setIcon(LoomButton.Icon.DOWN);
         rateButton=button(right+8,y+24,92,"Rate "+presetRate+" Hz",()->showChoices(rateButton,"Cycles per second",List.of(.25F,.5F,1F,2F).stream().map(r->new LoomChoicePopup.Option<>(r,r+" Hz",r==.25F?"One cycle every four seconds":r==.5F?"One cycle every two seconds":r==1F?"One cycle per second":"Two cycles per second")).toList(),presetRate,r->{presetRate=r;rebuildWidgets();}));rateButton.setIcon(LoomButton.Icon.DOWN);
         button(right+104,y+24,92,"Apply & play",this::applyPreset);
-        button(right+8,y+48,92,advanced?"Simple mode":"Advanced",()->{advanced=!advanced;message=advanced?"Advanced: edit selected effect, keys or parameter curves":"Simple: choose a preset and apply it to the selected layer";rebuildWidgets();});
-        button(right+104,y+48,92,"Delete track",()->{if(track()!=null)deleteTrack(trackId);});
+        button(right+8,y+48,92,advanced?"Simple mode":"Advanced",()->{
+            advanced=!advanced;
+            // Switching workspace mode must NEVER rewrite a keyframe or apply a draft.
+            tryPreview=false;draftCache=null;
+            message=advanced?"Advanced: edit selected keys or parameter curves":
+                "Choose a visual effect and Try before Apply";
+            rebuildWidgets();
+        });
+        if(advanced) button(right+104,y+48,92,"Delete track",()->{if(track()!=null)deleteTrack(trackId);});
+        else {
+            var tryButton=button(right+8,y+72,188,tryPreview?"Stop preview":"Try on 3D · no changes",
+                ()->{tryPreview=!tryPreview;tick=0;cursor=0;playing=tryPreview;draftCache=null;rebuildWidgets();});
+            tryButton.setIcon(tryPreview?LoomButton.Icon.PAUSE:LoomButton.Icon.PLAY);
+            tryButton.setPrimary(tryPreview);
+        }
         if(advanced){
             effectButton=button(right+8,y+72,188,"Effect: "+(track()==null?chosen:track().effect()).displayName(),()->showChoices(effectButton,"Animation effect",Arrays.stream(AnimationEffectType.values()).map(e->new LoomChoicePopup.Option<>(e,e.displayName(),e.description())).toList(),track()==null?chosen:track().effect(),e->{chosen=e;if(track()!=null)changeTrack(t->t.withEffect(e));rebuildWidgets();}));effectButton.setIcon(LoomButton.Icon.DOWN);
             LoomSlider value=addRenderableWidget(new LoomSlider(right+8,y+96,188,(track()==null?chosen:track().effect()).valueLabel(),()->track()==null?0:AnimationEvaluator.valueAt(track(),ClientProjectWorkspace.project().animation(),tick),v->{if(track()!=null)changeTrack(t->AnimationAuthoring.addOrReplaceKeyframe(t,tick,(float)v));}));value.active=track()!=null;value.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal((track()==null?chosen:track().effect()).description()+". Editing changes the key at the current timeline position.")));
@@ -75,23 +90,58 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
             track()==null?"Apply a preset or add a track first":"Animate separate properties and edit easing with a live cosmetic preview")));
         }
         guideTop=workTop;guideWidth=right-24;
-        timeline=addRenderableWidget(new LoomAnimationTimelineWidget(8,workTop+66,right-8,bottom-workTop-66,ClientProjectWorkspace::project,channel,()->trackId,()->tick,()->playing,this,false));
+        timeline=null;
+        if(advanced){
+            timeline=addRenderableWidget(new LoomAnimationTimelineWidget(8,workTop+66,right-8,
+                bottom-workTop-66,ClientProjectWorkspace::project,channel,()->trackId,
+                ()->tick,()->playing,this,false));
+        } else {
+            addRenderableWidget(new LoomAnimationPresetGallery(8,workTop+66,right-16,
+                bottom-workTop-68,()->preset,chosen->{
+                    preset=chosen;draftCache=null;
+                    message=chosen.label()+": "+chosen.description()+" · Try or Apply";
+                    rebuildWidgets();
+                }));
+        }
     }
+    /**
+     * An uncommitted visual preview is built from a project snapshot. It never
+     * enters the editing session, undo history, or multiplayer/equip state.
+     */
+    private LoomProject previewProject(){
+        LoomProject source=ClientProjectWorkspace.project();
+        if(!tryPreview || advanced)return source;
+        String key=ClientProjectWorkspace.revision()+":"+layerId+":"+trackId+":"+preset+
+            ":"+presetRate+":"+channel;
+        if(draftCache!=null&&key.equals(draftKey))return draftCache;
+        try {
+            draftCache=AnimationPresetDraft.compose(source,layerId,channel,trackId,preset,presetRate);
+            draftKey=key;
+            return draftCache;
+        } catch(IllegalArgumentException|IllegalStateException ex) {
+            message=ex.getMessage();
+            tryPreview=false;draftCache=null;draftKey=null;
+            return source;
+        }
+    }
+
+    public void startPreview(){
+        tryPreview=true;draftCache=null;
+        playing=true;tick=0;cursor=0;rebuildWidgets();
+    }
+
     public void applyPreset(){
         try{
-            var animation=ClientProjectWorkspace.project().animation();
-            int period=Math.round(20/presetRate);
-            int duration=Math.min(LoomAnimation.MAX_DURATION_TICKS,((animation.durationTicks()+period-1)/period)*period);
-            var recipe=preset.create(layerId,channel,duration,presetRate);
-            if(animation.tracks().size()>=LoomAnimation.MAX_TRACKS&&track()==null)throw new IllegalStateException("Delete a track before adding another");
-            var current=track();
-            if(current!=null){
-                var replacement=new AnimationTrack(current.id(),layerId,channel,recipe.effect(),true,recipe.speed(),true,recipe.keyframes(),recipe.parameters());
-                ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.replaceTrack(AnimationAuthoring.changeDuration(p.animation(),duration),replacement)));trackId=replacement.id();
-            }else{
-                ClientProjectWorkspace.apply(p->{var tracks=new ArrayList<>(p.animation().tracks());tracks.add(recipe);return p.withAnimation(AnimationAuthoring.changeDuration(p.animation(),duration).withTracks(tracks));});trackId=recipe.id();
-            }
-            tick=0;cursor=0;playing=true;message=preset.label()+" applied to selected layer · "+presetRate+" cycles/sec · Save to keep changes";rebuildWidgets();
+            UUID previous=trackId;
+            var next=ClientProjectWorkspace.apply(p->
+                AnimationPresetDraft.compose(p,layerId,channel,previous,preset,presetRate));
+            trackId=next.animation().tracks().stream()
+                .filter(t->t.channel()==channel&&t.layerId().equals(layerId))
+                .reduce((a,b)->b).orElseThrow().id();
+            tryPreview=false;draftCache=null;draftKey=null;
+            tick=0;cursor=0;playing=true;
+            message=preset.label()+" applied · Save when ready · Ctrl+Z to undo";
+            rebuildWidgets();
         }catch(IllegalArgumentException|IllegalStateException e){message=e.getMessage();}
     }
 
@@ -119,12 +169,13 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(hasChoices())return super.keyPressed(e);if(e.hasControlDownWithQuirk()&&e.key()==90){ClientProjectWorkspace.undo();rebuildWidgets();return true;}if(e.hasControlDownWithQuirk()&&e.key()==89){ClientProjectWorkspace.redo();rebuildWidgets();return true;}if(e.key()==32){togglePlayback();rebuildWidgets();return true;}return super.keyPressed(e);}
     @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));LoomScreenChrome.panel(g,8,guideTop,width-204,guideTop+61);
         var f=minecraft.font;
-        dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves" : "1. Choose layer   2. Choose preset   3. Apply & play",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
+        dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves" : "1. Choose an effect   2. Try it in 3D   3. Apply & Save",16,guideTop+8,guideWidth,9,LoomUiTheme.ACCENT,false);
         var lines=new ArrayList<String>();String line="";
         for(String word:preset.description().split(" ")){if(!line.isEmpty()&&f.width(line+" "+word)>guideWidth){lines.add(line);line=word;}else line=line.isEmpty()?word:line+" "+word;}
         if(!line.isEmpty())lines.add(line);
         for(int i=0;i<Math.min(2,lines.size());i++)dev.loomstudios.client.ui.premium.PremiumControls.label(g,lines.get(i),16,guideTop+24+i*12,guideWidth,9,LoomUiTheme.TEXT_MUTED,false);
-        super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-130),playing?"Playing":"Paused");}
+        super.render(g,mx,my,dt);LoomScreenChrome.footer(g,width,height,font.plainSubstrByWidth(message,width-130),
+        tryPreview?"UNSAVED PREVIEW":playing?"Playing":"Paused");}
     @Override public void removed(){if(timeline!=null)timeline.closeGesture();ClientProjectWorkspace.endCompoundEdit();super.removed();}
     @Override public void onClose(){minecraft.setScreen(parent);}
     @Override public boolean isPauseScreen(){return false;}
