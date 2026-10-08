@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   asset-review:
-    name: 2D and 3D Cape/Elytra captures across four GUI profiles
+    name: 2D/worn Cape-Elytra and Edit Inspector across four GUI profiles
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -50,13 +50,14 @@ jobs:
           onboardAccessibility:false
           startedCleanly:true
           OPTIONS
-      - name: Capture sixteen actual authored and worn-cosmetic displays
+      - name: Capture twenty real authored, worn and Edit Inspector displays
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           ALSOFT_DRIVERS: "null"
         run: |
-          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=310 -PuiCaptureEnd=326 | tee asset-review.log
-          test "$(find docs/verification/editor-workspace -name 'asset-library-*.png' | wc -l)" -eq 16
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=310 -PuiCaptureEnd=330 | tee asset-review.log
+          test "$(find docs/verification/editor-workspace -name 'asset-library-*.png' | wc -l)" -eq 20
+          test "$(find docs/verification/editor-workspace -name 'asset-library-edit-cape-*.png' | wc -l)" -eq 4
           for mode in cape-design cape-worn elytra-design elytra-worn; do
             test "$(find docs/verification/editor-workspace -name "asset-library-${mode}-*.png" | wc -l)" -eq 4
           done
@@ -84,8 +85,8 @@ jobs:
               d.text((x+8,y+7),path.stem,fill="white")
           sheet.save(out/"asset-library-contact-sheet.jpg",quality=88)
           print("LOOM_ASSET_REVIEW "+str(len(files))+" original Minecraft images decoded")
-          assert len(files)==16, "Missing required 2D/worn Cape/Elytra screenshots"
-          for mode in ("cape-design","cape-worn","elytra-design","elytra-worn"):
+          assert len(files)==20, "Missing 2D/worn and selected-layer Edit screenshots"
+          for mode in ("cape-design","cape-worn","elytra-design","elytra-worn","edit-cape"):
               assert sum(mode in p.name for p in files)==4, "Missing "+mode
           PY
       - name: Publish actual images for human review
