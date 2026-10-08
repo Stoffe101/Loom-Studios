@@ -506,16 +506,31 @@ public final class LoomUiCapture {
     int current=dev.loomstudios.ui.LoomWorkspaceLayout.safeInspectorWidth(guiWidth,guiHeight,0);
     int desired=dev.loomstudios.ui.LoomWorkspaceLayout.safeInspectorWidth(
         guiWidth,guiHeight,current+62);
-    dev.loomstudios.client.ui.LoomInspectorResize.persist(guiWidth,guiHeight,desired);
+    dev.loomstudios.client.ui.LoomInspectorResize.reset(guiWidth,guiHeight);
     ClientProjectWorkspace.open(fixturePath,client.player.getUUID());
     var screen=(index-330)%2==0
         ? new CapeEditorScreen(new LoomHomeScreen())
         : new ElytraEditorScreen(new LoomHomeScreen());
     client.setScreen(screen);
+    var before=(dev.loomstudios.ui.LoomWorkspaceLayout)
+        field(screen,"workspaceLayout").get(screen);
+    // Simulate a *real UI divider drag*, not just pre-populating preferences.
+    double grabX=before.preview().left()-3.0;
+    double grabY=before.tools().top()+32.0;
+    var down=new net.minecraft.client.input.MouseButtonEvent(
+        grabX,grabY,new net.minecraft.client.input.MouseButtonInfo(0,0));
+    if(!screen.mouseClicked(down,false))
+      throw new IllegalStateException("Inspector divider refused mouse down");
+    double dropX=guiWidth-8-desired-3;
+    var move=new net.minecraft.client.input.MouseButtonEvent(
+        dropX,grabY,new net.minecraft.client.input.MouseButtonInfo(0,0));
+    if(!screen.mouseDragged(move,dropX-grabX,0)
+        || !screen.mouseReleased(move))
+      throw new IllegalStateException("Inspector divider did not complete drag");
     var layout=(dev.loomstudios.ui.LoomWorkspaceLayout)
         field(screen,"workspaceLayout").get(screen);
     if(layout.preview().width()!=desired)
-      throw new IllegalStateException("Resized inspector mismatch: "+layout.preview().width()
+      throw new IllegalStateException("Inspector drag did not resize: "+layout.preview().width()
           +" != "+desired+" at "+p[0]+"x"+p[1]+" GUI"+p[2]);
     if(layout.canvas().width()<210)
       throw new IllegalStateException("Resizing crushed artwork canvas");
