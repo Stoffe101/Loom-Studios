@@ -67,6 +67,20 @@ jobs:
           if len(files)<4:
             raise ValueError("Not enough original screenshots to review")
           PY
+      - name: Make lightweight inline image previews
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq python3-pil >/dev/null
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          for path in sorted(Path("docs/review-screenshots").glob("*.png")):
+              with Image.open(path) as original:
+                  im=original.convert("RGB")
+                  im.thumbnail((1440,900))
+                  dest=path.with_suffix(".jpg")
+                  im.save(dest,format="JPEG",quality=80,optimize=True,progressive=True)
+                  print("INLINE", dest, dest.stat().st_size)
+          PY
       - name: Commit review images only on dedicated temporary branch
         run: |
           git config user.name "github-actions[bot]"
