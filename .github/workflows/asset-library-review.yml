@@ -1,0 +1,87 @@
+name: Asset Library visual review
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/client/java/dev/loomstudios/client/screen/LoomAssetLibraryScreen.java"
+      - "src/client/java/dev/loomstudios/client/screen/CapeEditorScreen.java"
+      - "src/client/java/dev/loomstudios/client/screen/ElytraEditorScreen.java"
+      - "src/client/java/dev/loomstudios/client/ui/LoomImagePreviewWidget.java"
+      - "src/client/java/dev/loomstudios/client/debug/LoomUiCapture.java"
+      - "src/main/java/dev/loomstudios/project/CreativeAssetCatalog.java"
+      - "src/main/java/dev/loomstudios/project/AssetPlacement.java"
+      - ".github/workflows/asset-library-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  asset-review:
+    name: Four-profile real-client Asset Library captures
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Set up real Minecraft software renderer
+        run: |
+          sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1 python3-pil
+          mkdir -p run-ui-capture
+          rm -f docs/verification/editor-workspace/*.png
+          cat > run-ui-capture/options.txt <<'OPTIONS'
+          version:4671
+          enableVsync:false
+          renderDistance:2
+          simulationDistance:2
+          maxFps:30
+          mipmapLevels:0
+          tutorialStep:none
+          onboardAccessibility:false
+          startedCleanly:true
+          OPTIONS
+      - name: Capture four actual Asset Library displays
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          ALSOFT_DRIVERS: "null"
+        run: |
+          xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture -PuiCaptureStart=310 -PuiCaptureEnd=314 | tee asset-review.log
+          test "$(find docs/verification/editor-workspace -name 'asset-library-*.png' | wc -l)" -eq 4
+          grep -q 'LOOM_UI_CAPTURE COMPLETE' asset-review.log
+      - name: Decode originals and build contact sheet
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import shutil
+          files=sorted(Path("docs/verification/editor-workspace").glob("asset-library-*.png"))
+          out=Path("build/asset-library-review")
+          out.mkdir(parents=True,exist_ok=True)
+          sheet=Image.new("RGB",(1600,1000),"#0A111B")
+          d=ImageDraw.Draw(sheet)
+          for i,path in enumerate(files):
+              image=Image.open(path).convert("RGB");image.load()
+              shutil.copy2(path,out/path.name)
+              image.thumbnail((790,460))
+              x=(i%2)*800;y=(i//2)*500
+              sheet.paste(image,(x,y+28))
+              d.text((x+10,y+8),path.stem,fill="white")
+          sheet.save(out/"asset-library-contact-sheet.jpg",quality=88)
+          print("LOOM_ASSET_REVIEW "+str(len(files))+" actual images decoded")
+          PY
+      - name: Publish actual images for human review
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loom-asset-library-review
+          retention-days: 7
+          path: |
+            build/asset-library-review/
+            asset-review.log
+            run-ui-capture/crash-reports/*.txt
