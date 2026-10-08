@@ -1,3 +1,7 @@
+## 2026-10-08 — M1 first UI follow-up — PENDING M0
+
+After accepting/merging PR26 and PR28 into main, integrate the M1 preview-usability prototype, run the full 326-image capture and 16 focused Asset Library captures at GUI2/3 with both Cape and Elytra. Verify the new backdrop icon never overlaps "3D · Pose", visibility or fullscreen icon at compact widths; confirms focus/hover/hitboxes, avoids screen-wide tooltip obstructions, uses neutral backdrop consistently with local preferences and shows selected layer name/opacities. Follow with canvas-first panel organization, intelligent inspector and numeric layout sizing. This branch is **not DONE** until tests/screenshots pass.
+
 ## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
 
 1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
