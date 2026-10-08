@@ -1,3 +1,12 @@
+## 2026-10-08 — Asset Library implementation first slice — CI and visual review pending
+
+1. Build Java21 Minecraft1.21.11 / Fabric and run full tests including `AssetPlacementTest`, `CreativeAssetCatalogTest`; inspect compile and schema5 round-trip.
+2. Run all **314** real Minecraft captures; individually inspect `asset-library-cape-*` at four profiles against approved reference02 and visual collection focus. Review dense GUI3 for grid clipping/preview proportions.
+3. Exercise user journey: open Assets from Cape/Elytra, select star/cloud/tree, drag tile over artwork **or** click then drag/place, check one newly selected editable IMAGE layer, move/rotate/recolor/opacity through existing layer UI, edit source pixels, Undo/Redo, save/reopen and portable code. Verify no outside-face/other-wing bleed.
+4. Review UI state changes after browsing and returning to editors, no lost draft/false equip/scale drift or texture cache leak. If any failures, fix before merging.
+5. M2 follow-up: expand original quality-controlled art catalog, asset collections with individually addressable children for many stars, scalable thumbnail atlas, scatter mode and editable theme recipes. This is not part of the stage-one deliverable.
+6. Share actual screenshot artifact images with user for look/feel feedback before broader expansion.
+
 ## 2026-10-08 — Actions artifact storage — TODO verification after merge
 
 On first main merge, inspect the **Prune outdated workflow artifacts** summary and verify GitHub Actions actually removed older archives; if Actions write is denied, report the blocker and remove artifacts from GitHub's UI or adjust repository Actions token permissions with user approval. Verify Build still runs all 310 real client captures, uploads at most 55 selected original screenshot PNGs + contact sheet, and comparison runs retain review PNGs. Confirm space is sufficient for subsequent UX development CI. Maintain current last accepted capture artifacts until a verified newer capture is available.
