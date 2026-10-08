@@ -1,3 +1,15 @@
+## 2026-10-08 — Artwork diversity and true worn-cosmetic CI — IN PROGRESS
+
+**Why:** user was not satisfied with thumbnails-only captures or limited icon diversity; demanded art that actually looks good on the Cape/Elytra and requested improved CI.
+
+**Changes:** corrected initial compile failure in contextual toolbar (duplicate `step` local). Added `LoomPlayerPreviewWidget` inside Asset Library, displaying 2D editing alongside actual 3D wearable cosmetic on wide displays and a focused switch for compact GUI3, no runtime format change. Replaced screenshot fixture with 16 real 2D/worn snapshots on a clean dark backdrop, populated by independently editable Moonstone Crescent/Frostfire Star/Snowkissed Fir or left/right-wing Prismatic Crystal/Aurora Ribbon/Runic Halo. Added 12 colored illustrations to the 17-piece starter set, now 29, with new Ocean/Creatures/Seasons/Heraldry categories. Added actual-layer validation to screenshot fixture. CI capture total 326; focused review job asserts 4 screenshots of each mode and builds 4×4 contact sheet. CI workflows now cancel obsolete PR runs, preserving main-branch checks and reducing storage costs.
+
+**Architecture:** uses existing Image/Layer/3D rendering, original ARGB pixels embedded into .loom, stable v5/schema/protocol and local preview isolation. Two wings retain independent UVs. New art is original code-authored pixel drawings, not external assets. Collection-instance storage and scatter remain future scope.
+
+**Verification:** prior successful isolated 4-profile visual pass shows shaded thumbnails, but **does not test this 29-item/worn-3D commit**. Compile/tests, 16-image focused CI, full 326-image CI and comparison suites are pending. No Windows/shader/manual user acceptance. Latest failed runs on previous commit exposed a duplicate local variable, now corrected; do not conceal failed history or claim new runs green prematurely.
+
+**Next:** retrieve actual successful latest 3D screenshots and review at all four GUI profiles; fix bugs and update this log with exact runs/SHA and approval, then show representative images inline to user.
+
 ## 2026-10-08 — Illustrated Asset Library visual review and context controls — IN PROGRESS
 
 **Screenshots inspected:** focused real Minecraft build at source `e41c7a37` generated all four profiles successfully (1920×1080 GUI2/3, 3440×1440 GUI2/3). The Featured art has visibly different palettes/shading (moonstone/gem/cloud/forest), and 2-column compact / 3-column ultrawide layouts display category navigation and readable clipped names. The old original fixture's cyan moon still occupied the central canvas and did not demonstrate actual placed premium asset quality, so later capture fixture `prepareAssetLibrary` now embeds and shows **Moonstone Crescent** and **Snowkissed Fir** as separate Image layers. A small crescent alpha cutout issue discovered during review was also corrected. Latest capture results still pending.
