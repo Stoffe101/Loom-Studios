@@ -32,6 +32,11 @@ public final class AnimationPresetDraft {
                 .filter(t -> t.channel() == channel && t.layerId().equals(layerId)
                         && t.id().equals(selectedTrackId))
                 .findFirst().orElse(null);
+        // A Simple recipe cannot faithfully represent multi-parameter
+        // authoring. Never silently destroy an Advanced track's custom lanes.
+        if (current != null && !current.lanes().isEmpty())
+            throw new IllegalStateException(
+                    "Customized animation: use Advanced to edit this track");
         if (current == null && animation.tracks().size() >= LoomAnimation.MAX_TRACKS)
             throw new IllegalStateException("Delete an existing track before adding another");
         var next = AnimationAuthoring.changeDuration(animation, duration);
