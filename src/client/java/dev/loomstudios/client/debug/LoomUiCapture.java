@@ -488,12 +488,22 @@ public final class LoomUiCapture {
 
   private static void prepareAssetLibrary(Minecraft client) throws Exception {
     ClientProjectWorkspace.open(fixturePath, client.player.getUUID());
+    // Capture the *actual new multicolor art placed on the cape*, not the
+    // old monochrome Crescent Moon. Keep two separately editable Image layers.
     var moon = dev.loomstudios.project.CreativeAssetCatalog
-        .search("Crescent Moon", "Celestial").getFirst().stamp();
-    ClientProjectWorkspace.apply(p -> dev.loomstudios.project.AssetPlacement.place(
-        p, dev.loomstudios.project.AnimationChannel.CAPE, moon.name(), moon.patch(),
-        dev.loomstudios.project.CapeUvRegion.OUTSIDE, null, null,
-        .5, .42, 6, false, 0));
+        .search("Moonstone Crescent", "Featured").getFirst().stamp();
+    var tree = dev.loomstudios.project.CreativeAssetCatalog
+        .search("Snowkissed Fir", "Featured").getFirst().stamp();
+    ClientProjectWorkspace.apply(p -> {
+      p = dev.loomstudios.project.AssetPlacement.place(
+          p, dev.loomstudios.project.AnimationChannel.CAPE, moon.name(), moon.patch(),
+          dev.loomstudios.project.CapeUvRegion.OUTSIDE, null, null,
+          .76, .34, 21, false, 0);
+      return dev.loomstudios.project.AssetPlacement.place(
+          p, dev.loomstudios.project.AnimationChannel.CAPE, tree.name(), tree.patch(),
+          dev.loomstudios.project.CapeUvRegion.OUTSIDE, null, null,
+          .80, .83, 24, false, 0);
+    });
     var id = ClientProjectWorkspace.project().cape().layers().getLast().id();
     var screen = new dev.loomstudios.client.screen.LoomAssetLibraryScreen(
         new LoomHomeScreen(), false, id, dev.loomstudios.project.CapeUvRegion.OUTSIDE,
