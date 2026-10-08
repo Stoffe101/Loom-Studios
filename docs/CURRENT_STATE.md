@@ -1,3 +1,7 @@
+## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
+
+Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
+
 ## 2026-10-08 — M1 Asset Browse / Edit contextual workflow — IMPLEMENTED ON BRANCH, CI PENDING
 
 The Asset Library now separates **Assets** (search/category/thumbnail and click/drag to place) from **Edit** (selected layer controls). Placing a new asset opens the Edit tab directly. The contextual controls nudge by 1 actual atlas pixel, resize uniformly by 1 pixel, adjust opacity in 10% steps, rotate 15°, and flip H/V, with locked layers disabled. This sits beside the existing 2D+3D preview without changing schema-v5 or equipped-state semantics. `LoomAssetLibraryScreen` and the existing `LayerTransform`/`AssetPlacement` APIs are reused.
