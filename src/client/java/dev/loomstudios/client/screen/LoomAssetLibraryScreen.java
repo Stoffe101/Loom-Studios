@@ -349,7 +349,8 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
         Component.literal(l.name()+" · "+Math.round(l.opacity()*100)+"% opacity")));
     int half=(w-4)/2;
     boolean canEdit=!l.locked();
-    y+=27;
+    // Reserve two concise live readouts beneath the selected item.
+    y+=55;
     var minus=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Opacity −10%"),
         ()->nudgeSelectedOpacity(-.1f)));
     var plus=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Opacity +10%"),
@@ -502,6 +503,25 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     LoomScreenChrome.renderBackdrop(g,width,height);
     LoomScreenChrome.renderBrandHeader(g,width,"Asset Library",LoomUiTheme.compact(width,height));
     super.render(g,mx,my,dt);
+    if(propertiesTab){
+      var selected=layer();
+      if(selected!=null&&selected.kind()==LayerKind.IMAGE){
+        var t=selected.imageData().transform();
+        var c=canvas();
+        int leftPanel=width-(width>=1300?Math.min(350,width/4)
+            :Math.max(182,Math.min(244,width/3)))-8+8;
+        int headerTop=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8;
+        int centerX=(int)Math.round(t.centerX()*c.width()-faceLeft());
+        int centerY=(int)Math.round(t.centerY()*c.height()-faceTop());
+        PremiumText.drawString(g,font,
+            Component.literal("Center: "+centerX+", "+centerY+" px"),
+            leftPanel,headerTop+52,LoomUiTheme.TEXT_MUTED,false);
+        PremiumText.drawString(g,font,
+            Component.literal("Size: "+Math.round(t.width()*c.width())+"×"
+                +Math.round(t.height()*c.height())+" · "+Math.round(t.rotationDegrees())+"°"),
+            leftPanel,headerTop+65,LoomUiTheme.TEXT_MUTED,false);
+      }
+    }
     if(!editPixels&&selectedAsset!=null&&(armed||draggingTile||placing)&&preview!=null){
       int[] p=preview.imagePixelAt(mx,my);
       if(p!=null)preview.renderAssetGhost(g,selectedAsset.stamp().patch(),p[0],p[1],size,recolor,color);
