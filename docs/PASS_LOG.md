@@ -1,3 +1,15 @@
+## 2026-10-08 — Editable Asset Library first implementation — IN PROGRESS
+
+**Why:** user explicitly clarified that the library is a **button and visual browser** where dragging an asset thumbnail onto the design, or clicking then dragging/placing, should create an **independently editable** element, not a flattened brush mark.
+
+**Implementation on feature branch:** `AssetPlacement` produces bounded ImageLayerData clipped to the selected Cape/Elytra semantic face and copied into .loom, with precise source-pixel edit and transform methods; `CreativeAssetCatalog` seeds original themed shapes independent of six existing stamps; both editors open a new `LoomAssetLibraryScreen` with search/category/tiles, selected ghost, drag/drop and click placement, transform handles, pixel-edit mode and return selection. The focused original Creative Assets screen remains reachable through Tools.
+
+**Architecture:** stage one uses **one schema5 Image layer per object**. This retains validated serialization, undo and network compatibility without a new data type; a future bounded collection layer with child instances is still required for dense compositions over 64 layers. Catalog assets are authoring-only but placed pixels are project-owned. Both wing surface and Cape region clipping are enforced.
+
+**Tests added:** unit tests for exact asset isolation, embedded source/pixel editing, serializer/portable roundtrip and invalid bounds; catalog stability/search. Capture fixture adds four real Minecraft display profiles (expected 314). **CI pending, not yet a verified success**. No Windows/GPU/modpack acceptance; performance must be measured and files reviewed.
+
+**Next:** GitHub build and screenshots; correct compilation/UI issues; inspect user-facing images and take feedback before declaring milestone DONE or moving to mass catalog/scatter. No status claimed beyond IN PROGRESS.
+
 ## 2026-10-08 — Actions artifact storage policy — IN PROGRESS (CI workflow change)
 
 **Why:** GitHub Actions artifact storage is full. The former `build.yml` uploaded 310 actual PNG screenshots (~354 MB ZIP), while `premium-ui.yml` uploaded each comparison suite's entire images separately.
