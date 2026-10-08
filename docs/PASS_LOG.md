@@ -1,3 +1,15 @@
+## 2026-10-08 — Premium Asset Inspector + multi-layer animation priority — IN PROGRESS (not accepted)
+
+**Request:** user approved six remaining UX themes and explicitly prioritized Inspector quality above new artwork. Current UI's many +/- buttons do not feel premium; native slider should control opacity. Also requested obvious edit/resize panel controls and WoW ElvUI-inspired eventual workspace layouts. New M2 use case: Ctrl-left-click three layers, apply Pulse to all once.
+
+**Code:** in `LoomAssetLibraryScreen` a native `LoomSlider` replaces opacity +/- buttons, grouped Position/Transform subsections reduce 12 simultaneous controls, and a primary Animate Asset/Edit Animation button uses persistent selected layer ID/channel to open existing Animation Studio without creating a second engine. Locked targets cannot invoke it. Simple gallery and resizing work remain separate open PRs and need integration.
+
+**Decisions:** UI-only first slice, no changes to persisted Animation2.1/schema5/network3. M2 batch operations need ordered UUID selection and pure Try on all layers, atomic commit/Undo with MAX_TRACKS checks and non-destructive handling of existing advanced lanes.
+
+**Verification:** not yet run on this head. CI, screenshot comparison, interaction testing (locked, existing-track, Save/Back, Ctrl-click future) must precede completion. Do not mark M1-04 / M1-04A DONE yet.
+
+**Next:** review CI and screenshots, correct layout, merge; then implement robust multiselect + batch under M2-06.
+
 ## 2026-10-08 — Animate Asset Inspector prioritization — DONE (roadmap documentation only)
 
 **Request:** elevate a direct **Animate Asset** workflow from selected editable asset's Inspector, tying current project-owned Cape/Elytra Image layers to Simple/Advanced animation with no lost context.
