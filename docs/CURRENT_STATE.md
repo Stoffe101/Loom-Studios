@@ -1,3 +1,7 @@
+## 2026-10-08 — M1 separate inspector-resize completion — CI PENDING
+
+Main merge #31 was confirmed to contain the Asset Browse/Edit inspector, tooltip and worn-preview work, but **not** the following six independently authored resizing files. This follow-up PR explicitly adds `LoomInspectorResize` to both Cape and Elytra editor layouts, the associated workspace sizing and unit tests, and the `layout-review.yml` capture check. It restores the original M1 responsive panel-resize implementation without pulling stale branch history. **Not yet merged/accepted**. Requires exact-head Java build, real-editor screenshots, layout-review captures and no GUI3 text overlap. The ElvUI-style free panel docking/numeric size UI remains later scope.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
