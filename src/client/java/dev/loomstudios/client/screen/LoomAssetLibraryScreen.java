@@ -315,7 +315,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     @Override protected void renderWidget(GuiGraphics g,int mx,int my,float dt){
       if(entry==null)return;
       boolean selected=selectedAsset!=null&&selectedAsset.stamp().id().equals(entry.stamp().id());
-      int outline=selected?LoomUiTheme.ACCENT:isHovered()?LoomUiTheme.ACCENT_ALT:LoomUiTheme.BORDER;
+      int outline=selected?LoomUiTheme.ACCENT:isMouseOver(mx,my)?LoomUiTheme.ACCENT_ALT:LoomUiTheme.BORDER;
       g.fill(getX(),getY(),getRight(),getBottom(),outline);
       g.fill(getX()+1,getY()+1,getRight()-1,getBottom()-1,LoomUiTheme.PANEL_INNER);
       var patch=entry.stamp().patch();
