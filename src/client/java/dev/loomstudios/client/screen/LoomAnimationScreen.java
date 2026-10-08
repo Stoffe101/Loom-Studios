@@ -31,6 +31,16 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private int guideTop,guideWidth,studioRight;
     private LoomButton presetButton,rateButton,effectButton;
     public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;if(layerId!=null)selectedLayerIds.add(layerId);this.previewLoop=ClientProjectWorkspace.project().animation().loop();}
+    /** The main editor can carry Ctrl-click layer selections into the studio. */
+    public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID primary,
+            Collection<UUID> selectedLayers){
+        this(parent,channel,primary);
+        if(selectedLayers!=null&&!selectedLayers.isEmpty()){
+            selectedLayerIds.clear();selectedLayerIds.addAll(selectedLayers);
+            if(primary==null || !selectedLayerIds.contains(primary))
+                layerId=selectedLayerIds.iterator().next();
+        }
+    }
     private LoomCanvas canvas(){return channel==AnimationChannel.CAPE
         ? ClientProjectWorkspace.project().cape() : ClientProjectWorkspace.project().elytra();}
     private List<LoomLayer> layers(){return canvas().layers();}
