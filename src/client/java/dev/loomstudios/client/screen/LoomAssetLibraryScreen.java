@@ -295,13 +295,24 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       addRenderableWidget(new LoomButton(x+2*(step+4),bottom,w-2*(step+4),20,
           Component.literal("More Tools"),() -> minecraft.setScreen(
               new LoomCreativeAssetsScreen(this,wing,layerId,face,selectedWing,surface,color,null))));
-      addRenderableWidget(new LoomButton(x,bottom+23,step,20,Component.literal("Smaller"),
-          () -> {size=Math.max(1,size-1);}));
-      addRenderableWidget(new LoomButton(x+step+4,bottom+23,step,20,
-          Component.literal("Larger"),() -> {size=Math.min(256,size+1);}));
-      modeButton=addRenderableWidget(new LoomButton(x+2*(step+4),bottom+23,
-          w-2*(step+4),20,Component.literal(recolor?"Tint ON":"Tint OFF"),
-          () -> {recolor=!recolor;modeButton.setMessage(Component.literal(recolor?"Tint ON":"Tint OFF"));}));
+      // Placement size is continuous and instantly previewed in the ghost,
+      // not buried behind repeated Smaller/Larger clicks.
+      int maxStampSize=Math.max(2,Math.min(256,Math.max(faceW(),faceH())));
+      var stampSize=addRenderableWidget(new LoomSlider(x,bottom+23,w-69,"Asset size",
+          ()->(size-1)/(double)(maxStampSize-1),
+          v->size=Math.max(1,Math.min(maxStampSize,1+(int)Math.round(v*(maxStampSize-1))))));
+      stampSize.format(v->size+" px");
+      stampSize.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+          Component.literal("Scale artwork before placing · source pixels stay editable")));
+      modeButton=addRenderableWidget(new LoomButton(x+w-65,bottom+23,65,22,
+          Component.literal("Tint"),() -> {
+            recolor=!recolor;
+            modeButton.setSelected(recolor);
+            message=recolor?"Tint selected asset with active color":"Original asset colors";
+          }));
+      modeButton.setIcon(LoomButton.Icon.PALETTE).setSelected(recolor);
+      modeButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+          Component.literal("Optional tint. Off preserves each artwork's original colors")));
     }
     pixelButton=addRenderableWidget(new LoomButton(8,height-51,112,20,
         Component.literal(editPixels?"Return to Design":"Edit Selected Pixels"),
