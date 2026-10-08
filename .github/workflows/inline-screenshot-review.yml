@@ -1,0 +1,76 @@
+name: Publish current CI images for inline review
+
+on:
+  push:
+    branches: [ci/inline-screenshot-review-2026-10-08]
+    paths:
+      - .github/workflows/inline-screenshot-review.yml
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  inline-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Fetch successful CI artifact packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/loom-ci docs/review-screenshots
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11537095257/zip" > /tmp/loom-ci/asset.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11536641881/zip" > /tmp/loom-ci/animation.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11535267949/zip" > /tmp/loom-ci/layout.zip
+      - name: Select the real screenshots without resizing or regenerating
+        run: |
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          sources = {
+            "asset": Path("/tmp/loom-ci/asset.zip"),
+            "animation": Path("/tmp/loom-ci/animation.zip"),
+            "layout": Path("/tmp/loom-ci/layout.zip"),
+          }
+          patterns = [
+            ("asset", "asset-library-edit-cape-1920x1080-gui3.png", "asset-inspector-1920-gui3.png"),
+            ("asset", "asset-library-edit-cape-3440x1440-gui2.png", "asset-inspector-ultrawide-gui2.png"),
+            ("asset", "asset-library-cape-worn-1920x1080-gui3.png", "cape-worn-1920-gui3.png"),
+            ("asset", "asset-library-elytra-worn-3440x1440-gui2.png", "elytra-worn-ultrawide-gui2.png"),
+            ("animation", "animation-simple-cape-1920x1080-gui3.png", "simple-animation-1920-gui3.png"),
+            ("animation", "animation-simple-cape-3440x1440-gui2.png", "simple-animation-ultrawide-gui2.png"),
+            ("layout", "inspector-layout-cape-1920x1080-gui3.png", "panel-resize-1920-gui3.png"),
+          ]
+          out=Path("docs/review-screenshots")
+          for name,zippath in sources.items():
+            with zipfile.ZipFile(zippath) as z:
+              names=[n for n in z.namelist() if n.lower().endswith(".png")]
+              print(f"{name} contains {len(names)} PNG images")
+              for origin, requested, alias in [p for p in patterns if p[0]==name]:
+                exact=next((n for n in names if Path(n).name == requested),None)
+                if exact is None:
+                  token = requested.split("-1920")[0].split("-3440")[0]
+                  matches=[n for n in names if token in Path(n).name]
+                  print("Missing",requested,"candidates",matches[:12])
+                  continue
+                content=z.read(exact)
+                if not content.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+                  raise ValueError("Not an original PNG: "+exact)
+                (out/alias).write_bytes(content)
+                print("SELECTED",alias,len(content))
+          files=list(out.glob("*.png"))
+          print("PUBLISHED",len(files),"original PNG screenshots")
+          if len(files)<4:
+            raise ValueError("Not enough original screenshots to review")
+          PY
+      - name: Commit review images only on dedicated temporary branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/review-screenshots/
+          git commit -m "ci(review): provide actual PNGs from successful UI runs" || exit 0
+          git push
