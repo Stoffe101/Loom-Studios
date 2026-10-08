@@ -1,3 +1,11 @@
+## 2026-10-08 — Editable Asset Library foundation — CI pending; UI follows
+
+1. Run unit/runtime build on `feature/editable-asset-foundation-2026-10-08`; verify new `EditableAssetPlacementTest` along with existing 164 tests and schema5 portable data.
+2. On success begin the user-facing **Assets button + categorized thumbnail drawer in Cape/Elytra**. Must support drag thumbnail onto design **or** click thumbnail then click/drag placement. Placement creates an independent Image layer, highlights it, and exposes transform/color/opacity/mask/animation and explicit Edit Pixels.
+3. Add starter original star/cloud/tree variants and visual screenshots on actual client in four profiles. Default placement should never silently stamp into current Paint layer; repeated brush painting remains explicitly selectable.
+4. Scope the 64-layer limit honestly, then design future grouped editable-instance collection after confirming simple layer placement and UI. Avoid new schema until required.
+5. Review screenshot artifacts with the user before claiming fully polished UX.
+
 ## 2026-10-08 — Actions artifact storage — TODO verification after merge
 
 On first main merge, inspect the **Prune outdated workflow artifacts** summary and verify GitHub Actions actually removed older archives; if Actions write is denied, report the blocker and remove artifacts from GitHub's UI or adjust repository Actions token permissions with user approval. Verify Build still runs all 310 real client captures, uploads at most 55 selected original screenshot PNGs + contact sheet, and comparison runs retain review PNGs. Confirm space is sufficient for subsequent UX development CI. Maintain current last accepted capture artifacts until a verified newer capture is available.
