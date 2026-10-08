@@ -17,6 +17,10 @@ Every meaningful pass must record:
 - current status
 - next work
 
+## Live check-off mission board
+
+- [Active Mission Board](ACTIVE_MISSIONS.md) — **the current, actionable check-off list** with priorities, stage exit gates, existing PR status, next five tasks, and a future ElvUI-inspired workspace-layout editor. Tick only verified/accepted tasks and keep CURRENT_STATE / PASS_LOG / NEXT_WORK in sync.
+
 ## Canonical documents
 
 - `LOOM_STUDIOS_DESIGN_SPEC.md` — product vision, features, UX, and visual direction
