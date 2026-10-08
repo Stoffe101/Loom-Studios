@@ -1,3 +1,13 @@
+## 2026-10-08 — Approved priority update: Inspector first, then M2 multi-layer presets — NEXT
+
+1. Complete premium Inspector PR: native Opacity slider (1% precision, Undo one drag), big **Animate Asset / Edit Animation** action preserving exact UUID/channel, grouped Position/Transform controls and responsive GUI2/GUI3 hitboxes. Confirm real screenshot artifacts.
+2. Verify/merge PR #32's resizable Cape/Elytra inspector handles. Provide an obvious **Resize Panels** label/help, numeric width in **logical GUI pixels**, saved per-layout sizes, Reset to default, and clamping on scale/resolution changes. The fully free ElvUI-like panel layout mode remains future M5 work.
+3. Fix/accept PR #33's prototype Simple visual preset gallery/isolated Try and keep Advanced lanes/curve edit unchanged. Mark anything red/unfinished as pending.
+4. **M2-06:** Ctrl+click selects multiple layers in editor and Animation, with selected count and visual highlights; one preset may be tried/applied atomically to the selected layers, one Undo; existing custom tracks never get silently overwritten. Test invalid/locked/channel mismatch/track limits and at least three assets.
+5. Continue M1/M2 themes: adaptive canvas/preview, direct Reference handles, frame filmstrip with native blank animation, mask/selection visualization, contextual curve and tooltip clarity at compact and ultrawide. Deprioritize mass artwork expansion until these workflows feel premium.
+
+**CI:** Run full screenshots with actual populated Cape and Elytra editing; inspect, share actual original captures inline after successful builds, don't infer green from code-only changes.
+
 ## 2026-10-08 — High-priority Inspector "Animate Asset" flow — PLANNED / NEXT DESIGN INTEGRATION
 
 **Priority update:** make **M1-04A / M2-00** the next mainline *user workflow* after the selected-asset inspector is stable, ahead of optional layout polish, mass catalog expansion and unrelated animation capabilities. From a selected independently editable Cape/Elytra Image layer, show **Animate Asset** (or **Edit Animation** if tracks already exist) beside Edit Pixels; launch the existing Simple/Advanced Animation Studio with that layer's persistent UUID, channel, exact target/wing and return context. Offer visual effects, slider-based Speed/Strength, pure **Try**, explicit **Apply/Cancel**, and return to the **same selected asset**.
