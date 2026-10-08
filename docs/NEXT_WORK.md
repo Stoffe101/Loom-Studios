@@ -1,4 +1,4 @@
-## 2026-10-08 — Approved? No. Proposed next implementation tracks — TODO / design review
+## 2026-10-08 — Proposed next implementation tracks — TODO / pending scope review
 
 A **documentation-only** proposal now organizes all user-requested and repo-audited improvements: [Master Roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md), [Creative Asset Library](CREATIVE_ASSET_LIBRARY_SPEC.md), [Animation UX](ANIMATION_UX_REDESIGN_SPEC.md), [Editor UX/Compositing](EDITOR_CREATIVE_UX_SPEC.md). Nothing from these documents should be described as newly delivered.
 
