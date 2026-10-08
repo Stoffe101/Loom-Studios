@@ -336,8 +336,12 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       hint.active=false;
       return;
     }
+    String shortName=l.name();
+    if(font.width(shortName)>w-16)
+      shortName=font.plainSubstrByWidth(shortName,
+          Math.max(8,w-16-font.width("…")))+"…";
     var header=addRenderableWidget(new LoomButton(x,y,w,20,
-        Component.literal(l.name()),()->{}));
+        Component.literal(shortName),()->{}));
     header.active=false;
     header.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
         Component.literal(l.name()+" · "+Math.round(l.opacity()*100)+"% opacity")));
