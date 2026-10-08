@@ -51,7 +51,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 326)) {
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 330)) {
                 if(!workflowsVerified) {
                     verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client);
           LoomCreativeVerification.verify(client); verifyAuthoringPayload(client);
@@ -76,7 +76,9 @@ public final class LoomUiCapture {
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
                 int[] target =
-            stage >= 310
+            stage >= 326
+                ? PROFILES[stage - 326]
+                : stage >= 310
                 ? PROFILES[(stage - 310) / 4]
                 : stage >= 278
                 ? PROFILES[(stage - 278) / 8]
@@ -87,7 +89,9 @@ public final class LoomUiCapture {
             }
             if (stage != 20) {
                 client.options.guiScale().set(
-                stage >= 310
+                stage >= 326
+                    ? PROFILES[stage - 326][2]
+                    : stage >= 310
                     ? PROFILES[(stage - 310) / 4][2]
                     : stage >= 278
                     ? PROFILES[(stage - 278) / 8][2]
@@ -224,7 +228,8 @@ public final class LoomUiCapture {
                 client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
                 client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
             }
-            if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
+            if(stage>=326)prepareAssetLibrary(client,0,true);
+            else if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
              else if(stage>= 278) prepareCreative(client);
       else if (stage >=238)prepareAuthoring(client);else if(stage>=218)prepareChoices(client);else if(stage>=190)prepareUsability(client);
             client.screen.setFocused(null);
@@ -284,7 +289,10 @@ public final class LoomUiCapture {
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
             String name =
-          index >= 310
+          index >= 326
+              ? "asset-library-edit-cape-" + PROFILES[index - 326][0] + "x"
+                  + PROFILES[index - 326][1] + "-gui" + PROFILES[index - 326][2]
+              : index >= 310
               ? assetLibraryCaptureName(index)
               : index >= 278
               ? creativeCaptureName(index)
@@ -555,6 +563,10 @@ public final class LoomUiCapture {
   }
 
   private static void prepareAssetLibrary(Minecraft client,int mode) throws Exception {
+    prepareAssetLibrary(client,mode,false);
+  }
+
+  private static void prepareAssetLibrary(Minecraft client,int mode,boolean showInspector) throws Exception {
     // Use a dedicated clean 4× design. The older generic Moonlit capture
     // fixture contains a bright cyan crescent on other UV faces that could
     // appear in the worn preview and falsify our artwork-quality evidence.
@@ -625,6 +637,7 @@ public final class LoomUiCapture {
         dev.loomstudios.project.ElytraSurface.OUTSIDE,0xFF45DDE8);
     client.setScreen(screen);
     if(mode%2==1)screen.showWornPreview(true);
+    if(showInspector)screen.showEditInspector();
   }
 
   private static String creativeCaptureName(int index) {

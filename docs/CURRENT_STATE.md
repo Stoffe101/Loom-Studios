@@ -1,3 +1,19 @@
+## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
+
+Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
+
+## 2026-10-08 — M1 Asset Browse / Edit contextual workflow — IMPLEMENTED ON BRANCH, CI PENDING
+
+The Asset Library now separates **Assets** (search/category/thumbnail and click/drag to place) from **Edit** (selected layer controls). Placing a new asset opens the Edit tab directly. The contextual controls nudge by 1 actual atlas pixel, resize uniformly by 1 pixel, adjust opacity in 10% steps, rotate 15°, and flip H/V, with locked layers disabled. This sits beside the existing 2D+3D preview without changing schema-v5 or equipped-state semantics. `LoomAssetLibraryScreen` and the existing `LayerTransform`/`AssetPlacement` APIs are reused.
+
+**Pending acceptance:** screenshots at all required GUI2/GUI3 profiles, test actual hitboxes/correct selected object/Undo/save, and confirm the inspector never overlaps Save/Back or collection scrolling. This is **not merged or verified**, and future numeric position textboxes/dockable layout remain distinct later work.
+
+## 2026-10-08 — M1 preview usability prototype — IN PROGRESS, CI PENDING
+
+A separate M1 prototype branch based on the unmerged Asset Library work improves LoomPlayerPreviewWidget's header: removes the full-area repeated tooltip that could obscure the design, adds a small background selection control to cycle already-supported Scenic / Neutral light / Neutral dark / Checkerboard settings, with contextual header-only tooltips. The Asset Library also sets a cosmetic-focused initial zoom, avoids giant canvas transform tooltips, and shows the **actual selected layer name and opacity** in its footer rather than "Select an asset" when an Image layer is already selected.
+
+**No new dependency, project format, renderer, or network protocol**. This is a targeted UI improvement reusing existing LoomPreviewBackground, LoomPreferences, LoomPlayerPreviewWidget and premium UI primitives. Branch is not merged and has **no fresh Minecraft CI or screenshot validation**; regression/test and four-profile review are mandatory after M0 integration.
+
 ## 2026-10-08 — Mission M0 complete: stable integrated UI baseline — DONE
 
 **Main integration:** PR #28 merged as `c6ac027374c68eea4165f643ab10294ad4ea3886` (editable Asset Library with 29 original illustrations, true 2D/worn Cape/Elytra previews, 16 focused screenshot profiles, bounded project-owned Image layers). PR #26 merged as `0ce5420c6ee0d0dde99c4eee5472791772523df4` (actual animation layer selector, clearer Simple/Advanced entry, correct separated curve/timeline/3D preview hitboxes). Source and UI data remain schema-v5/protocol3.
