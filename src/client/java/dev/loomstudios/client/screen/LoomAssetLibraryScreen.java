@@ -230,13 +230,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     else if(layer()!=null&&layer().kind()==LayerKind.IMAGE) {
       // A minimal *contextual* property strip. Do not add permanent chrome
       // while nothing is selected; transform handles stay on the artwork.
-      int controls=Math.max(0,right-12-124), step=Math.min(86,(controls-8)/3);
-      if(step>=52){
-        var less=addRenderableWidget(new LoomButton(124,height-51,step,20,
+      int controls=Math.max(0,right-12-124), propertyStep=Math.min(86,(controls-8)/3);
+      if(propertyStep>=52){
+        var less=addRenderableWidget(new LoomButton(124,height-51,propertyStep,20,
             Component.literal("Opacity −"),()->nudgeSelectedOpacity(-.1f)));
-        var more=addRenderableWidget(new LoomButton(128+step,height-51,step,20,
+        var more=addRenderableWidget(new LoomButton(128+propertyStep,height-51,propertyStep,20,
             Component.literal("Opacity +"),()->nudgeSelectedOpacity(.1f)));
-        var rotate=addRenderableWidget(new LoomButton(132+2*step,height-51,step,20,
+        var rotate=addRenderableWidget(new LoomButton(132+2*propertyStep,height-51,propertyStep,20,
             Component.literal("Rotate ↻"),()->editTransform(t->
                 t.withRotation(t.rotationDegrees()+45))));
         boolean editable=!layer().locked();
