@@ -1,6 +1,9 @@
 # Loom Studios — Loom Codes / Sharing
 
-**Status:** Local/offline sharing MVP implemented; local visual-runtime verification pending.
+> **Current-status note (2026-10-08):** Portable-code and .loom project exports use the current schema-v5 model and migrate old supported formats on import. Existing `LS-...` strings are fingerprints, **not** online lookup codes. Current static PNG export evaluates the project at tick 0; animated GIF/APNG/sprite-sheet export is future work. This is separate from sharing editable project data via `LSP1:`.
+
+
+**Status:** Local/offline sharing is implemented in the accepted schema-v5 runtime; Windows/target-platform acceptance and future hosted-service design remain open.
 
 ## Product rule
 
@@ -33,7 +36,7 @@ Payload pipeline:
 
 Decode is bounded by explicit prefix, maximum code length, maximum compressed bytes, bounded inflation, maximum normal project serialized size, and final `LoomProjectCodec` validation/migration.
 
-Portable codes include the complete editable project: Cape layers, Elytra layers, runtime settings and schema-v3 animation tracks/keyframes.
+Portable codes include the complete editable project: Cape layers, Elytra layers, runtime settings and schema-v5 animation tracks/keyframes and supported effect/parameter data.
 
 ## Import identity
 
