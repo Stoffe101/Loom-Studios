@@ -1,3 +1,15 @@
+## 2026-10-08 — First Animation Studio UX implementation — IN PROGRESS
+
+**Why:** advanced keyframe interface has strong functionality but poor discoverability in reference comparison; compact layouts need stable focus, and ultrawide should show curve and cosmetic together.
+
+**What:** `LoomAnimationScreen`: chooser popup with actual layer names and lock information replaces silent cycling; correct beginner/advanced labels/help, track-gated Parameter & Curves entry and Space play/pause. `LoomParameterAnimationScreen`: dual curve+live 3D pane on wide >=1100×520 logical viewports, curve coordinates/hit targets use remaining curve width; smaller layouts preserve toggle workflow, camera remains stable, timeline shows seconds, brand label "Advanced Animation".
+
+**Architecture/compatibility:** no project format, v5 schema, protocol3, layer model, rendering effect or network changes. Existing 4 required GUI profiles remain acceptance targets. Wide split is UI-only; watch for curve handle bounds, preview overlay and scissor issues based on prior Animation2.1 failures.
+
+**Tests:** CI not yet complete; previous accepted 164 tests/310 captures do not prove this branch. **No manual Windows test in this pass.**
+
+**Next:** inspect screenshots and test results, correct UX if needed, then begin editable asset layer/browser implementation. Update DONE only after verified runtime and screens.
+
 ## 2026-10-08 — Actions artifact storage policy — IN PROGRESS (CI workflow change)
 
 **Why:** GitHub Actions artifact storage is full. The former `build.yml` uploaded 310 actual PNG screenshots (~354 MB ZIP), while `premium-ui.yml` uploaded each comparison suite's entire images separately.
