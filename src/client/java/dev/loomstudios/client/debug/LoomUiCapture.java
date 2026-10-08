@@ -521,7 +521,7 @@ public final class LoomUiCapture {
         grabX,grabY,new net.minecraft.client.input.MouseButtonInfo(0,0));
     if(!screen.mouseClicked(down,false))
       throw new IllegalStateException("Inspector divider refused mouse down");
-    double dropX=guiWidth-8-desired-3;
+    double dropX=guiWidth-8-desired;
     var move=new net.minecraft.client.input.MouseButtonEvent(
         dropX,grabY,new net.minecraft.client.input.MouseButtonInfo(0,0));
     if(!screen.mouseDragged(move,dropX-grabX,0)
