@@ -1,3 +1,19 @@
+## 2026-10-08 — M2-06 safe layer multiselect/batch animation — IMPLEMENTED ON PR, VERIFICATION NEXT
+
+- Fix prior compile regression of AnimationPresetDraftTest lambda; verify Java21 full tests and `AnimationPresetBatchTest` for exactly three independent tracks, original-project purity, existing tracks untouched, duplicate/missing/channel-invalid cases, rate and track-limit refusal.
+- Verify Ctrl+click layer selection **both in Cape/Elytra editor and inside Simple Animation**; visually show three selected rows/count, Try in actual worn preview, one atomic Apply/Undo. Check that clicking visibility/lock controls still works.
+- Test screen rebuild, scrolling, compact/ultrawide interaction hitboxes, true canvas/wing target fidelity and profile screenshot expectations with populated assets.
+- Reconcile M2 PR with current `main`, incorporating M1 Inspector handoff and resizable-panel implementation when those are accepted. Do not overwrite their CSS-like/native panel layout code with stale branch copies. No false DONE until latest SHA checks pass.
+- Defer blanket art catalog expansion; finish premium asset Inspector/resize first, then M2 Simple/Advanced timeline, reference handles, frames and masking.
+
+## 2026-10-08 — M2 visual preset and isolated preview acceptance — NEXT
+
+1. Verify `AnimationPresetDraftTest` and full Java21 project tests; Preview must not change source project/hash or undo state, and switching Simple/Advanced must preserve custom lanes/keyframes. Explicit Apply is the only destructive replacement path and must be one undoable action.
+2. Capture **all 334** actual Minecraft screenshots, plus fast four-profile `animation-simple-cape-*` images from workflow `animation-review.yml` (1920×1080 GUI2/3 and 3440×1440 GUI2/3). Inspect card labels, hover/selection, authentic worn 3D visual and no sidebar overflow or tooltips over graphics.
+3. Ensure old Advanced timeline and parameter editor remain reachable and unchanged across 1×–8× Cape/Elytra. Screen capture must show a real star Image layer, not an empty placeholder.
+4. Integrate M1 resize PR32 and reconcile M2 branch against the accepted main SHA before M2 merge.
+5. After accepting M2-01 visual foundation, implement Try/Apply/Cancel feedback, plain-language Speed/Strength/Direction/Loop controls where effects support them, clearer parameter icons, collapsed timeline and editable frame filmstrip. Do not claim M2 DONE after this slice.
+
 ## 2026-10-08 — High-priority Inspector "Animate Asset" flow — PLANNED / NEXT DESIGN INTEGRATION
 
 **Priority update:** make **M1-04A / M2-00** the next mainline *user workflow* after the selected-asset inspector is stable, ahead of optional layout polish, mass catalog expansion and unrelated animation capabilities. From a selected independently editable Cape/Elytra Image layer, show **Animate Asset** (or **Edit Animation** if tracks already exist) beside Edit Pixels; launch the existing Simple/Advanced Animation Studio with that layer's persistent UUID, channel, exact target/wing and return context. Offer visual effects, slider-based Speed/Strength, pure **Try**, explicit **Apply/Cancel**, and return to the **same selected asset**.

@@ -40,6 +40,7 @@ import dev.loomstudios.project.SurfaceEdits;
 import dev.loomstudios.ui.LoomWorkspaceLayout;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.LinkedHashSet;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -64,6 +65,8 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
     private int brushSize = 1;
     private boolean linkedMirror = true;
     private UUID selectedLayerId;
+    /** Ordered Ctrl-click layer selection passed to Simple Animation. */
+    private final LinkedHashSet<UUID> animationSelection=new LinkedHashSet<>();
     private UUID selectedTrackId;
     private int timelineTick;
     private double timelineCursor;
@@ -475,7 +478,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         addRenderableWidget(timelineWidget);timelineWidget.visible=false;timelineWidget.active=false;
         canvasWidget.setSurface(()->wingSurface);
         int w=Math.max(1,(centerRight-centerLeft- 12)/ 4),y=timelineTop;
-        iconButton(centerLeft,y,w,22,"Animate",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId))).setIconOnly(false);
+        iconButton(centerLeft,y,w,22,"Animate",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId,animationTargets()))).setIconOnly(false);
         LoomButton[] surfaceButton={null};
         surfaceButton[0]=iconButton(centerLeft+w+4,y,w,22,wingSurface.label(),LoomButton.Icon.DOWN,()->showChoices(surfaceButton[0],"Wing surface",java.util.Arrays.stream(dev.loomstudios.project.ElytraSurface.values()).map(face->new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(face,face.label(),"Edit both wings on this face")).toList(),wingSurface,face->{wingSurface=face;selection=null;rebuildWidgets();})).setIconOnly(false);
         iconButton(centerLeft+2*(w+4),y,w,22,"Tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,true,selectedLayerId,null,selectionWing,wingSurface,selectedColor)))
@@ -510,7 +513,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         inspectorColorButton = iconButton(rightPanelLeft + w + gap, y, w, tabHeight, "Color", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.COLOR)).setIconOnly(false);
         inspectorPropertiesButton = iconButton(rightPanelLeft + 2 * (w + gap), y, w, tabHeight, "Props", LoomButton.Icon.NONE, () -> setInspectorTab(InspectorTab.PROPERTIES)).setIconOnly(false);
         inspectorAnimationButton = iconButton(rightPanelLeft + 3 * (w + gap), y, rightPanelRight - (rightPanelLeft + 3 * (w + gap)), tabHeight, "Anim", LoomButton.Icon.NONE, () -> {
-            if(inspectorTab==InspectorTab.ANIMATION)minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId));else setInspectorTab(InspectorTab.ANIMATION);
+            if(inspectorTab==InspectorTab.ANIMATION)minecraft.setScreen(new LoomAnimationScreen(this,AnimationChannel.ELYTRA,selectedLayerId,animationTargets()));else setInspectorTab(InspectorTab.ANIMATION);
         }).setIconOnly(false);
         inspectorAnimationButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Animation properties · Click again for full timeline studio")));
         buildLayerInspector(); buildColorInspector(); buildPropertyInspector(); buildAnimationInspector();
@@ -522,7 +525,7 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
         int count = ClientProjectWorkspace.project().elytra().layers().size();
         var r = rows.row(Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4)));
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
-                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,true,selectedLayerId))));
+                () -> ClientProjectWorkspace.project().elytra(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setElytraThumbnails(true).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,true,selectedLayerId))).setMultiSelection(animationSelection,this::toggleAnimationSelection));
         r = rows.row(22);
         layerAddButton = cellButton(r, 0, 3, "Add layer", LoomButton.Icon.PLUS, this::addLayer);
         layerDuplicateButton = cellButton(r, 1, 3, "Duplicate layer", LoomButton.Icon.COPY, this::duplicateLayer);
@@ -1271,6 +1274,26 @@ public final class ElytraEditorScreen extends LoomPointerScreen {
                 )
         );
         updateButtonStates();
+    }
+
+    private java.util.List<UUID> animationTargets() {
+        var current=ClientProjectWorkspace.project().elytra().layers()
+            .stream().map(LoomLayer::id).toList();
+        animationSelection.retainAll(current);
+        return animationSelection.isEmpty()
+            ? java.util.List.of(selectedLayerId)
+            : java.util.List.copyOf(animationSelection);
+    }
+
+    private void toggleAnimationSelection(UUID id,net.minecraft.client.input.MouseButtonEvent event) {
+        if(event.hasControlDown()){
+            if(!animationSelection.add(id) && animationSelection.size()>1)
+                animationSelection.remove(id);
+        }else{
+            animationSelection.clear();
+            animationSelection.add(id);
+        }
+        selectLayer(id);
     }
 
     private void selectLayer(UUID layerId) {

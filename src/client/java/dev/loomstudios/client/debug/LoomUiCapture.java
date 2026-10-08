@@ -51,7 +51,7 @@ public final class LoomUiCapture {
                 create.setAccessible(true); create.invoke(screen); stage = Integer.getInteger("loom.uiCaptureStart", 0); wait = 80; return;
             }
             if (client.player == null || client.level == null || wait-- > 0) return;
-            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 330)) {
+            if (stage >= Integer.getInteger("loom.uiCaptureEnd", 334)) {
                 if(!workflowsVerified) {
                     verifyWorkflows(client); verifyInputAndPreview(client); verifyLibraryWorkflows(client); verifySafetyWorkflows(client); verifyPolishWorkflows(client); verifyUsability(client); LoomAuthoringVerification.verify(client);
           LoomCreativeVerification.verify(client); verifyAuthoringPayload(client);
@@ -76,7 +76,9 @@ public final class LoomUiCapture {
             int[] p = PROFILES[profile];
             if (!prepared && stage != 20) {
                 int[] target =
-            stage >= 326
+            stage >= 330
+                ? PROFILES[stage - 330]
+                : stage >= 326
                 ? PROFILES[stage - 326]
                 : stage >= 310
                 ? PROFILES[(stage - 310) / 4]
@@ -89,7 +91,9 @@ public final class LoomUiCapture {
             }
             if (stage != 20) {
                 client.options.guiScale().set(
-                stage >= 326
+                stage >= 330
+                    ? PROFILES[stage - 330][2]
+                    : stage >= 326
                     ? PROFILES[stage - 326][2]
                     : stage >= 310
                     ? PROFILES[(stage - 310) / 4][2]
@@ -228,7 +232,8 @@ public final class LoomUiCapture {
                 client.options.guiScale().set(PROFILES[(stage-182)/2][2]);client.resizeDisplay();
                 client.setScreen(new dev.loomstudios.client.screen.LoomPremiumPrototypeScreen(stage%2==0));
             }
-            if(stage>=326)prepareAssetLibrary(client,0,true);
+            if(stage>=330)prepareSimpleAnimation(client);
+             else if(stage>=326)prepareAssetLibrary(client,0,true);
             else if(stage>=310)prepareAssetLibrary(client,(stage-310)%4);
              else if(stage>= 278) prepareCreative(client);
       else if (stage >=238)prepareAuthoring(client);else if(stage>=218)prepareChoices(client);else if(stage>=190)prepareUsability(client);
@@ -289,7 +294,10 @@ public final class LoomUiCapture {
             }
             Path dir = Path.of("../docs/verification/editor-workspace"); Files.createDirectories(dir);
             String name =
-          index >= 326
+          index >= 330
+              ? "animation-simple-cape-" + PROFILES[index-330][0] + "x"
+                  + PROFILES[index-330][1] + "-gui" + PROFILES[index-330][2]
+              : index >= 326
               ? "asset-library-edit-cape-" + PROFILES[index - 326][0] + "x"
                   + PROFILES[index - 326][1] + "-gui" + PROFILES[index - 326][2]
               : index >= 310
@@ -475,9 +483,14 @@ public final class LoomUiCapture {
         if(!ClientProjectWorkspace.isDirty()||!ClientProjectWorkspace.project().name().equals("Recovered draft"))throw new IllegalStateException("Draft recovery lost edits");
         ClientProjectWorkspace.save();
         if(Files.exists(draft))throw new IllegalStateException("Explicit save retained stale recovery draft");
-        var animation=new dev.loomstudios.client.screen.LoomAnimationScreen(new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,ClientProjectWorkspace.project().cape().layers().getFirst().id());client.setScreen(animation);animation.addTrack();
+        var animation=new dev.loomstudios.client.screen.LoomAnimationScreen(new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,ClientProjectWorkspace.project().cape().layers().getFirst().id());client.setScreen(animation);
+        // Simple intentionally has no timeline. The existing drag/Undo
+        // regression belongs in Advanced, without rewriting any track data.
+        set(animation,"advanced",true);call(animation,"rebuildWidgets");
+        animation.addTrack();
         var original=ClientProjectWorkspace.project().animation();
         var timeline=(AbstractWidget)field(animation,"timeline").get(animation);
+        if(timeline==null)throw new IllegalStateException("Advanced timeline missing");
         Method left=timeline.getClass().getDeclaredMethod("timelineLeft"),top=timeline.getClass().getDeclaredMethod("rowTop");left.setAccessible(true);top.setAccessible(true);
         int x=(int)left.invoke(timeline),y=(int)top.invoke(timeline)+10;
         animation.mouseClicked(mouse(x,y,0),false);animation.mouseDragged(mouse(x+30,y,0),30,0);animation.mouseReleased(mouse(x+30,y,0));
@@ -560,6 +573,29 @@ public final class LoomUiCapture {
     return dev.loomstudios.project.CreativeAssetCatalog.search(name,"Featured")
         .stream().filter(e->e.stamp().name().equals(name))
         .findFirst().orElseThrow().stamp();
+  }
+
+  private static void prepareSimpleAnimation(Minecraft client) throws Exception {
+    // Review actual star artwork in a real Simple Animation UI, not empty tabs.
+    prepareAssetLibrary(client,0);
+    java.util.UUID star=ClientProjectWorkspace.project().cape().layers().stream()
+        .filter(l->l.name().equals("Frostfire Star"))
+        .map(dev.loomstudios.project.LoomLayer::id).findFirst().orElseThrow();
+    // Exercise the requested "select 3 layers, Pulse/Twinkle all" path.
+    var selected=ClientProjectWorkspace.project().cape().layers().stream()
+        .filter(l->java.util.List.of("Frostfire Star","Moonstone Crescent","Snowkissed Fir")
+            .contains(l.name()))
+        .map(dev.loomstudios.project.LoomLayer::id).toList();
+    if(selected.size()!=3)
+        throw new IllegalStateException("Three-layer Simple Animation fixture missing artwork");
+    var studio=new dev.loomstudios.client.screen.LoomAnimationScreen(
+        new LoomHomeScreen(),dev.loomstudios.project.AnimationChannel.CAPE,star,selected);
+    client.setScreen(studio);
+    set(studio,"preset",dev.loomstudios.project.AnimationPreset.STARS);
+    var before=ClientProjectWorkspace.project().hash();
+    studio.startPreview();
+    if(!before.equals(ClientProjectWorkspace.project().hash()))
+        throw new IllegalStateException("Try changed project content without Apply");
   }
 
   private static void prepareAssetLibrary(Minecraft client,int mode) throws Exception {
