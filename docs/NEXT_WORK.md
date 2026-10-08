@@ -1,3 +1,9 @@
+## 2026-10-08 — Active mission queue / visual review — PLANNING ONLY
+
+The current ordered check-off board is [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md). Immediate emphasis: (1) verify/accept PR28's real worn Cape/Elytra + 2D results and all latest CI, investigate the extra cyan crescent; (2) verify/accept PR26 animation changes without merging unchecked state; (3) fix obstructive tooltips/weak canvas & cosmetic focus at GUI3 and ultrawide; (4) contextual edit properties and Simple Animation; (5) curate art quality before growing the catalog.
+
+**ElvUI-inspired editable layout:** accepted for roadmap consideration, **not implemented or next in line**. Stage splitters and numeric sizes after stable workspace semantics; later Edit Layout unlock/snap/dock, named profiles and recoverable reset. No code or functionality is claimed by this documentation entry.
+
 ## 2026-10-08 — Actions artifact storage — TODO verification after merge
 
 On first main merge, inspect the **Prune outdated workflow artifacts** summary and verify GitHub Actions actually removed older archives; if Actions write is denied, report the blocker and remove artifacts from GitHub's UI or adjust repository Actions token permissions with user approval. Verify Build still runs all 310 real client captures, uploads at most 55 selected original screenshot PNGs + contact sheet, and comparison runs retain review PNGs. Confirm space is sufficient for subsequent UX development CI. Maintain current last accepted capture artifacts until a verified newer capture is available.
