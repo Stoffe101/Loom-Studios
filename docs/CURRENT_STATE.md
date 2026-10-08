@@ -4,6 +4,12 @@ First implementation on `feature/animation-ux-first-pass-2026-10-08`: actual lay
 
 **Status:** not yet accepted or merged, no new persisted schema/network data or asset-library implementation. Await Minecraft 1.21.11 CI, all 164 tests, all 310 screenshot assertions, and visual review of actual animation screenshots at four profiles before claiming DONE. Existing Animation 2.1 runtime remains last fully accepted. Next: review captures, fix layout/input issues, then begin editable Asset Library browser as a separate tested slice.
 
+## 2026-10-08 — Active mission-board planning checkpoint — DOCUMENTATION ONLY
+
+Created [ACTIVE_MISSIONS.md](ACTIVE_MISSIONS.md), a living, checkable product queue grounded in approved reference screens and the real 2D/worn Cape screenshots. Distinguishes accepted current baseline on main, open Animation UX PR26 and open Asset Library PR28 (29 original illustrated starter assets, focused real-client capture) from still-planned work. Orders stable UI hierarchy, animation usability and asset-art quality ahead of a future ElvUI-like layout editor. Includes exact splitters/numeric sizes before complex docking, 4 required GUI profiles, visible reset, actual Windows/mod compatibility, and schema/network safety.
+
+**No Java, art, CI, runtime, test or schema change in this pass.** No open PR is newly verified or merged merely by creating a board. When a mission is implemented, update this canonical state with **exact SHA and CI evidence** and then check it off.
+
 ## 2026-10-08 — Actions artifact retention and compact visual evidence — IMPLEMENTATION PENDING CI
 
 Repository storage was pressured by the 310-PNG main capture archive (~354 MB ZIP for the accepted runtime) and 24 per-suite comparison screenshot ZIPs. Maintenance branch adds `.github/workflows/artifact-prune.yml` to delete **aged (>24 h) artifacts** except the newest full `loom-editor-screenshots` and two newest `loom-studios-dev` JARs. The cleanup requires Actions write permission and runs when merged to main, weekly and on manual dispatch. Uploads now preserve 310 real-client capture/assertion coverage but publish at most 55 relevant full PNGs plus a JPEG review index; comparison suites retain three original PNGs per suite. Shorter retention and setup-java@v5 included.
