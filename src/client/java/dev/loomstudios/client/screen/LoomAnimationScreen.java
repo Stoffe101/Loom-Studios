@@ -27,13 +27,17 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     private boolean advanced,tryPreview;
     private LoomProject draftCache;
     private String draftKey;
-    private int guideTop,guideWidth;
+    private int guideTop,guideWidth,studioRight;
     private LoomButton presetButton,rateButton,effectButton;
     public LoomAnimationScreen(Screen parent,AnimationChannel channel,UUID layerId){super(Component.literal("Animation studio"));this.parent=parent;this.channel=channel;this.layerId=layerId;}
     private List<LoomLayer> layers(){return(channel==AnimationChannel.CAPE?ClientProjectWorkspace.project().cape():ClientProjectWorkspace.project().elytra()).layers();}
     private AnimationTrack track(){return ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.id().equals(trackId)).findFirst().orElse(null);}
     @Override protected void init(){
-        int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8,right=width-204,bottom=height-28;
+        int top=LoomScreenChrome.headerHeight(LoomUiTheme.compact(width,height))+8;
+        int inspectorWidth=width>=1400?370:width>=950?275:204;
+        int right=width-inspectorWidth,bottom=height-28;
+        studioRight=right;
+        int sideW=inspectorWidth-16,halfW=(sideW-4)/2;
         if(layerId==null||layers().stream().noneMatch(l->l.id().equals(layerId)))layerId=layers().getFirst().id();
         if(track()==null)trackId=ClientProjectWorkspace.project().animation().tracks().stream().filter(t->t.channel()==channel&&t.layerId().equals(layerId)).map(AnimationTrack::id).findFirst().orElse(null);
         addRenderableWidget(new LoomButton(8,top,54,20,Component.literal("Back"),this::onClose));
@@ -52,22 +56,23 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
         layerChoice[0].setTooltip(net.minecraft.client.gui.components.Tooltip.create(
             Component.literal("Choose the Cape or Elytra layer to animate. Existing keyframes stay intact.")));
         addRenderableWidget(new LoomButton(right-80,top,80,20,Component.literal("Save"),()->{try{ClientProjectWorkspace.save();message="Saved animation";}catch(java.io.IOException e){message="Save failed";}}));
-        addRenderableWidget(new LoomButton(right+8,top,188,20,Component.literal("Undo / Ctrl+Z"),()->{ClientProjectWorkspace.undo();rebuildWidgets();}));
+        addRenderableWidget(new LoomButton(right+8,top,sideW,20,Component.literal("Undo / Ctrl+Z"),()->{ClientProjectWorkspace.undo();rebuildWidgets();}));
         int workTop=top+26;
         var view=preview==null?null:preview.viewState();
-        int previewHeight=Math.max(40,Math.min(180,bottom-workTop-(advanced?184:124)));
-        preview=addRenderableWidget(new LoomPlayerPreviewWidget(right+8,workTop,188,previewHeight,this::previewProject,channel==AnimationChannel.CAPE?LoomPlayerPreviewWidget.Mode.CAPE:LoomPlayerPreviewWidget.Mode.ELYTRA));
+        int previewHeight=Math.max(40,Math.min(width>=950?270:180,
+            bottom-workTop-(advanced?184:124)));
+        preview=addRenderableWidget(new LoomPlayerPreviewWidget(right+8,workTop,sideW,previewHeight,this::previewProject,channel==AnimationChannel.CAPE?LoomPlayerPreviewWidget.Mode.CAPE:LoomPlayerPreviewWidget.Mode.ELYTRA));
         preview.restoreViewState(view);preview.setTimelineTickSupplier(()->tick);
         int y=workTop+previewHeight+5;
-        presetButton=button(right+8,y,188,"Preset: "+preset.label(),()->showChoices(presetButton,"Animation preset",Arrays.stream(AnimationPreset.values()).map(p->new LoomChoicePopup.Option<>(p,p.label(),p.description())).toList(),preset,p->{preset=p;rebuildWidgets();}));presetButton.setIcon(LoomButton.Icon.DOWN);
-        rateButton=button(right+8,y+24,92,"Rate "+presetRate+" Hz",()->showChoices(rateButton,"Cycles per second",List.of(.25F,.5F,1F,2F).stream().map(r->new LoomChoicePopup.Option<>(r,r+" Hz",r==.25F?"One cycle every four seconds":r==.5F?"One cycle every two seconds":r==1F?"One cycle per second":"Two cycles per second")).toList(),presetRate,r->{presetRate=r;rebuildWidgets();}));rateButton.setIcon(LoomButton.Icon.DOWN);
+        presetButton=button(right+8,y,sideW,"Preset: "+preset.label(),()->showChoices(presetButton,"Animation preset",Arrays.stream(AnimationPreset.values()).map(p->new LoomChoicePopup.Option<>(p,p.label(),p.description())).toList(),preset,p->{preset=p;rebuildWidgets();}));presetButton.setIcon(LoomButton.Icon.DOWN);
+        rateButton=button(right+8,y+24,halfW,"Rate "+presetRate+" Hz",()->showChoices(rateButton,"Cycles per second",List.of(.25F,.5F,1F,2F).stream().map(r->new LoomChoicePopup.Option<>(r,r+" Hz",r==.25F?"One cycle every four seconds":r==.5F?"One cycle every two seconds":r==1F?"One cycle per second":"Two cycles per second")).toList(),presetRate,r->{presetRate=r;rebuildWidgets();}));rateButton.setIcon(LoomButton.Icon.DOWN);
         boolean customLanes=track()!=null&&!track().lanes().isEmpty();
-        var applyButton=button(right+104,y+24,92,"Apply & play",this::applyPreset);
+        var applyButton=button(right+12+halfW,y+24,sideW-halfW-4,"Apply & play",this::applyPreset);
         applyButton.active=!customLanes;
         if(customLanes)applyButton.setTooltip(
             net.minecraft.client.gui.components.Tooltip.create(
                 Component.literal("Customized parameter lanes: edit this track in Advanced.")));
-        button(right+8,y+48,92,advanced?"Simple mode":"Advanced",()->{
+        button(right+8,y+48,halfW,advanced?"Simple mode":"Advanced",()->{
             advanced=!advanced;
             // Switching workspace mode must NEVER rewrite a keyframe or apply a draft.
             tryPreview=false;draftCache=null;
@@ -75,9 +80,9 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                 "Choose a visual effect and Try before Apply";
             rebuildWidgets();
         });
-        if(advanced) button(right+104,y+48,92,"Delete track",()->{if(track()!=null)deleteTrack(trackId);});
+        if(advanced) button(right+12+halfW,y+48,sideW-halfW-4,"Delete track",()->{if(track()!=null)deleteTrack(trackId);});
         else {
-            var tryButton=button(right+8,y+72,188,tryPreview?"Stop preview":"Try on 3D · no changes",
+            var tryButton=button(right+8,y+72,sideW,tryPreview?"Stop preview":"Try on 3D · no changes",
                 ()->{tryPreview=!tryPreview;tick=0;cursor=0;playing=tryPreview;draftCache=null;
                     message=tryPreview?"Trying "+preset.label()+" · nothing added until Apply":
                         "Try stopped · project is unchanged";
@@ -90,12 +95,12 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
                     "Customized animation: use Advanced to edit this track safely.")));
         }
         if(advanced){
-            effectButton=button(right+8,y+72,188,"Effect: "+(track()==null?chosen:track().effect()).displayName(),()->showChoices(effectButton,"Animation effect",Arrays.stream(AnimationEffectType.values()).map(e->new LoomChoicePopup.Option<>(e,e.displayName(),e.description())).toList(),track()==null?chosen:track().effect(),e->{chosen=e;if(track()!=null)changeTrack(t->t.withEffect(e));rebuildWidgets();}));effectButton.setIcon(LoomButton.Icon.DOWN);
-            LoomSlider value=addRenderableWidget(new LoomSlider(right+8,y+96,188,(track()==null?chosen:track().effect()).valueLabel(),()->track()==null?0:AnimationEvaluator.valueAt(track(),ClientProjectWorkspace.project().animation(),tick),v->{if(track()!=null)changeTrack(t->AnimationAuthoring.addOrReplaceKeyframe(t,tick,(float)v));}));value.active=track()!=null;value.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal((track()==null?chosen:track().effect()).description()+". Editing changes the key at the current timeline position.")));
-            button(right+8,y+120,60,"+ Key",()->{if(track()!=null)addKeyframe(trackId);});
-            button(right+72,y+120,60,"- Key",()->{if(track()!=null)removeKeyframe(trackId);});
-            button(right+136,y+120,60,"Speed",()->{if(track()!=null)cycleTrackSpeed(trackId);});
-            var curveButton = button(right+8,y+144,188,
+            effectButton=button(right+8,y+72,sideW,"Effect: "+(track()==null?chosen:track().effect()).displayName(),()->showChoices(effectButton,"Animation effect",Arrays.stream(AnimationEffectType.values()).map(e->new LoomChoicePopup.Option<>(e,e.displayName(),e.description())).toList(),track()==null?chosen:track().effect(),e->{chosen=e;if(track()!=null)changeTrack(t->t.withEffect(e));rebuildWidgets();}));effectButton.setIcon(LoomButton.Icon.DOWN);
+            LoomSlider value=addRenderableWidget(new LoomSlider(right+8,y+96,sideW,(track()==null?chosen:track().effect()).valueLabel(),()->track()==null?0:AnimationEvaluator.valueAt(track(),ClientProjectWorkspace.project().animation(),tick),v->{if(track()!=null)changeTrack(t->AnimationAuthoring.addOrReplaceKeyframe(t,tick,(float)v));}));value.active=track()!=null;value.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal((track()==null?chosen:track().effect()).description()+". Editing changes the key at the current timeline position.")));
+            button(right+8,y+120,(sideW-8)/3,"+ Key",()->{if(track()!=null)addKeyframe(trackId);});
+            button(right+12+(sideW-8)/3,y+120,(sideW-8)/3,"- Key",()->{if(track()!=null)removeKeyframe(trackId);});
+            button(right+16+2*((sideW-8)/3),y+120,sideW-8-2*((sideW-8)/3),"Speed",()->{if(track()!=null)cycleTrackSpeed(trackId);});
+            var curveButton = button(right+8,y+144,sideW,
           "Parameters & curves",()->{if(track()!=null)minecraft.setScreen(new LoomParameterAnimationScreen(this, channel,trackId,tick));});
         curveButton.active = track()!=null;
         curveButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(
@@ -181,7 +186,7 @@ public final class LoomAnimationScreen extends LoomPointerScreen implements Loom
     @Override public void deleteTrack(UUID id){ClientProjectWorkspace.apply(p->p.withAnimation(AnimationAuthoring.removeTrack(p.animation(),id)));trackId=null;rebuildWidgets();}
     @Override public void tick(){if(refreshPending&&!ClientProjectWorkspace.session().isCompoundEditActive()){refreshPending=false;rebuildWidgets();}if(playing){var a=ClientProjectWorkspace.project().animation();cursor+=a.playbackSpeed();if(cursor>a.durationTicks()){if(a.loop())cursor%=a.durationTicks();else{cursor=a.durationTicks();playing=false;}}tick=(int)cursor;}}
     @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){if(hasChoices())return super.keyPressed(e);if(e.hasControlDownWithQuirk()&&e.key()==90){ClientProjectWorkspace.undo();rebuildWidgets();return true;}if(e.hasControlDownWithQuirk()&&e.key()==89){ClientProjectWorkspace.redo();rebuildWidgets();return true;}if(e.key()==32){togglePlayback();rebuildWidgets();return true;}return super.keyPressed(e);}
-    @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));LoomScreenChrome.panel(g,8,guideTop,width-204,guideTop+61);
+    @Override public void render(GuiGraphics g,int mx,int my,float dt){LoomScreenChrome.renderBackdrop(g,width,height);LoomScreenChrome.renderBrandHeader(g,width,channel.displayName()+" animation",LoomUiTheme.compact(width,height));LoomScreenChrome.panel(g,8,guideTop,studioRight,guideTop+61);
         var f=minecraft.font;
         dev.loomstudios.client.ui.premium.PremiumControls.label(g,advanced ? "Advanced: select a track, edit keys, open Parameters & curves"
             : track()!=null&&!track().lanes().isEmpty()
