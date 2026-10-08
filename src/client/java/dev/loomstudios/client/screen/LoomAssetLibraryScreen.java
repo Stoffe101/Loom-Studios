@@ -118,6 +118,16 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     } catch (IllegalArgumentException | IllegalStateException e) { message = e.getMessage(); }
   }
 
+  private void nudgeSelectedOpacity(float delta) {
+    var selected=layer();
+    if(selected==null||selected.locked())return;
+    float value=Math.max(0,Math.min(1,Math.round((selected.opacity()+delta)*10)/10f));
+    ClientProjectWorkspace.apply(p -> wing
+        ? ProjectEdits.setElytraLayerOpacity(p,layerId,value)
+        : ProjectEdits.setCapeLayerOpacity(p,layerId,value));
+    message=selected.name()+" opacity "+Math.round(value*100)+"%";
+  }
+
   private void showPreviewController() {
     if (editPixels) {
       preview.setPixelAction((x,y) -> {
@@ -217,6 +227,22 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     if(editPixels) addRenderableWidget(new LoomButton(124,height-51,66,20,
         Component.literal(erasePixels?"Eraser":"Pencil"),
         () -> {erasePixels=!erasePixels;rebuildWidgets();}));
+    else if(layer()!=null&&layer().kind()==LayerKind.IMAGE) {
+      // A minimal *contextual* property strip. Do not add permanent chrome
+      // while nothing is selected; transform handles stay on the artwork.
+      int controls=Math.max(0,right-12-124), step=Math.min(86,(controls-8)/3);
+      if(step>=52){
+        var less=addRenderableWidget(new LoomButton(124,height-51,step,20,
+            Component.literal("Opacity −"),()->nudgeSelectedOpacity(-.1f)));
+        var more=addRenderableWidget(new LoomButton(128+step,height-51,step,20,
+            Component.literal("Opacity +"),()->nudgeSelectedOpacity(.1f)));
+        var rotate=addRenderableWidget(new LoomButton(132+2*step,height-51,step,20,
+            Component.literal("Rotate ↻"),()->editTransform(t->
+                t.withRotation(t.rotationDegrees()+45))));
+        boolean editable=!layer().locked();
+        less.active=editable;more.active=editable;rotate.active=editable;
+      }
+    }
     updateTiles();
   }
 
