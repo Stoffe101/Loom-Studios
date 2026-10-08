@@ -1,3 +1,9 @@
+## 2026-10-08 — Studio UX 3.0 / animation first slice — IN PROGRESS, CI pending
+
+First implementation on `feature/animation-ux-first-pass-2026-10-08`: actual layer chooser instead of cycling on click in Animation Studio; clearer Simple/Advanced labels, contextual beginner help and disabled Parameters/Curves until a track exists; Space toggles playback. Advanced Parameters & Curves shows **live cosmetic preview alongside curve on wide logical viewports** (>=1100×520), keeps the established focused Curve/3D preview toggle on compact layouts, preserves camera state across rebuilds, and labels the advanced screen without internal version numbers. Modified `LoomAnimationScreen` and `LoomParameterAnimationScreen`.
+
+**Status:** not yet accepted or merged, no new persisted schema/network data or asset-library implementation. Await Minecraft 1.21.11 CI, all 164 tests, all 310 screenshot assertions, and visual review of actual animation screenshots at four profiles before claiming DONE. Existing Animation 2.1 runtime remains last fully accepted. Next: review captures, fix layout/input issues, then begin editable Asset Library browser as a separate tested slice.
+
 ## 2026-10-08 — Actions artifact retention and compact visual evidence — IMPLEMENTATION PENDING CI
 
 Repository storage was pressured by the 310-PNG main capture archive (~354 MB ZIP for the accepted runtime) and 24 per-suite comparison screenshot ZIPs. Maintenance branch adds `.github/workflows/artifact-prune.yml` to delete **aged (>24 h) artifacts** except the newest full `loom-editor-screenshots` and two newest `loom-studios-dev` JARs. The cleanup requires Actions write permission and runs when merged to main, weekly and on manual dispatch. Uploads now preserve 310 real-client capture/assertion coverage but publish at most 55 relevant full PNGs plus a JPEG review index; comparison suites retain three original PNGs per suite. Shorter retention and setup-java@v5 included.
