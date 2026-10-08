@@ -36,7 +36,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
   private final int color;
   private UUID layerId;
   private CreativeAssetCatalog.Entry selectedAsset;
-  private String category = "All", query = "", message = "Drag an asset onto the design, or click then place";
+  private String category = "Featured", query = "", message = "Choose artwork · drag or click to place";
   private int size = 9, page;
   private boolean recolor, armed, draggingTile, placing, editPixels, erasePixels, draggingObject;
   private int startPixelX, startPixelY, lastX, lastY;
@@ -57,6 +57,9 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     this.selectedWing = selectedWing == null ? ElytraWing.LEFT : selectedWing;
     this.surface = surface == null ? ElytraSurface.OUTSIDE : surface;
     this.color = color;
+    // A 1x Cape cannot represent a 48px painterly sprite. At 4x/8x
+    // start with a proportionally larger placement so source detail survives.
+    size = Math.min(256, 7 * CanvasResolution.fromCanvas(canvas()).scale());
   }
 
   private AnimationChannel channel() {
@@ -236,7 +239,16 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       preview.setPixelAction(null);
       preview.setTransformController(null);
     }
-    message="Selected "+entry.stamp().name()+" · click or drag onto the design";
+    // Large cloudbanks and trees should fill a composition; individual stars
+    // should not cover an entire cape by default. The controls remain adjustable.
+    int resolution=scale();
+    String family=entry.category();
+    int base=family.equals("Clouds & Mist") ? 9
+        : family.equals("Nature") ? 7
+        : entry.stamp().name().contains("Star") ? 4 : 6;
+    size=Math.max(3, Math.min(256, base*resolution));
+    message="Selected "+entry.stamp().name()+" · click or drag onto the design"
+        +(resolution<4 && entry.tags().contains("featured") ? " · finer detail at 4×/8×" : "");
   }
   private void placeAt(double mx,double my,int longest) {
     if(selectedAsset==null||preview==null)return;
@@ -327,14 +339,32 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       g.fill(getX()+1,getY()+1,getRight()-1,getBottom()-1,LoomUiTheme.PANEL_INNER);
       var patch=entry.stamp().patch();
       int[] raw=patch.data();
-      int s=Math.max(1,Math.min(3,Math.min(27/patch.width(),24/patch.height())));
-      int x0=getX()+getWidth()/2-patch.width()*s/2, y0=getY()+3;
-      for(int y=0;y<patch.height();y++)for(int x=0;x<patch.width();x++){
-        int c=raw[y*patch.width()+x];if((c>>>24)!=0)
-          g.fill(x0+x*s,y0+y*s,x0+(x+1)*s,y0+(y+1)*s,c);
+      // Correct nearest-neighbour fit for both a 3px icon and a 48px
+      // original illustration. The previous thumbnail loop drew 48x48
+      // artwork beyond a 49px-high tile, clipping most of the asset.
+      int maxW=Math.max(1,getWidth()-8), maxH=Math.max(1,getHeight()-20);
+      double fit=Math.min(3.0, Math.min(maxW/(double)patch.width(),
+          maxH/(double)patch.height()));
+      int sw=Math.max(1,(int)Math.floor(patch.width()*fit));
+      int sh=Math.max(1,(int)Math.floor(patch.height()*fit));
+      int x0=getX()+(getWidth()-sw)/2;
+      int y0=getY()+2+Math.max(0,(maxH-sh)/2);
+      for(int py=0;py<sh;py++)for(int px=0;px<sw;px++){
+        int srcX=Math.min(patch.width()-1,(int)((px+.5)/fit));
+        int srcY=Math.min(patch.height()-1,(int)((py+.5)/fit));
+        int c=raw[srcY*patch.width()+srcX];
+        if((c>>>24)!=0)g.fill(x0+px,y0+py,x0+px+1,y0+py+1,c);
       }
-      PremiumText.drawString(g,font,Component.literal(entry.stamp().name()),
-          getX()+3,getBottom()-13,LoomUiTheme.TEXT,false);
+      if(entry.tags().contains("featured")) {
+        // Tiny secondary cyan indicator: this is actual multi-color artwork.
+        g.fill(getRight()-7,getY()+3,getRight()-4,getY()+6,LoomUiTheme.ACCENT);
+      }
+      String name=entry.stamp().name();
+      int maxText=Math.max(8,getWidth()-8);
+      if(font.width(name)>maxText)
+        name=font.plainSubstrByWidth(name,Math.max(4,maxText-font.width("…")))+"…";
+      PremiumText.drawString(g,font,Component.literal(name),
+          getX()+4,getBottom()-13,LoomUiTheme.TEXT,false);
     }
     @Override public void onClick(MouseButtonEvent e,boolean twice){
       if(entry==null)return;
