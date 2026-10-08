@@ -15,6 +15,14 @@ public final class AnimationPresetDraft {
     public static LoomProject compose(LoomProject source, UUID layerId,
             AnimationChannel channel, UUID selectedTrackId,
             AnimationPreset preset, float cyclesPerSecond) {
+        return compose(source,layerId,channel,selectedTrackId,preset,cyclesPerSecond,
+                source.animation().loop());
+    }
+
+    /** Preview-specific loop preference becomes project state only through explicit Apply. */
+    public static LoomProject compose(LoomProject source, UUID layerId,
+            AnimationChannel channel, UUID selectedTrackId,
+            AnimationPreset preset, float cyclesPerSecond, boolean loop) {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(layerId, "layerId");
         Objects.requireNonNull(channel, "channel");
@@ -52,6 +60,6 @@ public final class AnimationPresetDraft {
             tracks.add(recipe);
             next = next.withTracks(tracks);
         }
-        return source.withAnimation(next);
+        return source.withAnimation(next.withLoop(loop));
     }
 }
