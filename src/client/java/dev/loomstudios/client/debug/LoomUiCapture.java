@@ -489,6 +489,23 @@ public final class LoomUiCapture {
     return "asset-library-" + view + "-" + p[0] + "x" + p[1] + "-gui" + p[2];
   }
 
+  /** Complete opaque atlas background, including edges and inside wing panels. */
+  private static dev.loomstudios.project.LoomProject addGalleryAtlas(
+      dev.loomstudios.project.LoomProject project, boolean wing) {
+    var canvas=wing?project.elytra():project.cape();
+    int[] pixels=new int[32*16];
+    for(int y=0;y<16;y++)for(int x=0;x<32;x++)
+      pixels[y*32+x]=((x+y)%9==0?0xFF142649:0xFF0D1935);
+    var img=new dev.loomstudios.image.PixelImage(32,16,pixels);
+    var data=dev.loomstudios.project.ImageLayerData.placed(
+        img,canvas.width(),canvas.height(),
+        new dev.loomstudios.project.NormalizedRect(0,0,1,1),
+        dev.loomstudios.image.ImagePlacementMode.STRETCH);
+    return wing
+        ? dev.loomstudios.project.ProjectEdits.addElytraImageLayer(project,"Night Fabric",data)
+        : dev.loomstudios.project.ProjectEdits.addCapeImageLayer(project,"Night Fabric",data);
+  }
+
   /** Semantic-face background, stored as ordinary project-owned ARGB pixels. */
   private static dev.loomstudios.project.LoomProject addGalleryBackdrop(
       dev.loomstudios.project.LoomProject project, boolean wing,
@@ -538,12 +555,22 @@ public final class LoomUiCapture {
   }
 
   private static void prepareAssetLibrary(Minecraft client,int mode) throws Exception {
-    ClientProjectWorkspace.open(fixturePath, client.player.getUUID());
+    // Use a dedicated clean 4× design. The older generic Moonlit capture
+    // fixture contains a bright cyan crescent on other UV faces that could
+    // appear in the worn preview and falsify our artwork-quality evidence.
+    var clean=dev.loomstudios.project.LoomProjectFactory.blank(
+        "Asset Review · Clean Night",System.currentTimeMillis());
+    clean=dev.loomstudios.project.ProjectResizer.resizeCape(
+        clean,dev.loomstudios.project.CanvasResolution.ULTRA);
+    clean=dev.loomstudios.project.ProjectResizer.resizeElytra(
+        clean,dev.loomstudios.project.CanvasResolution.ULTRA);
+    ClientProjectWorkspace.open(LocalProjectLibrary.save(clean),client.player.getUUID());
     // Each fixture uses ORIGINAL pixel assets in independently editable project-owned
     // image layers. Do not merely show preview tiles and claim these are worn art.
     boolean elytra=mode>=2;
     ClientProjectWorkspace.apply(p -> {
       if (!elytra) {
+        p=addGalleryAtlas(p,false);
         p=addGalleryBackdrop(p,false,null);
         var moon=galleryStamp("Moonstone Crescent");
         var star=galleryStamp("Frostfire Star");
@@ -564,6 +591,7 @@ public final class LoomUiCapture {
       var left=dev.loomstudios.project.ElytraWing.LEFT;
       var right=dev.loomstudios.project.ElytraWing.RIGHT;
       var face=dev.loomstudios.project.ElytraSurface.OUTSIDE;
+      p=addGalleryAtlas(p,true);
       p=addGalleryBackdrop(p,true,left);
       p=addGalleryBackdrop(p,true,right);
       var crystal=galleryStamp("Prismatic Crystal");
