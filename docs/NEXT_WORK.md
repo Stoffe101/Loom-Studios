@@ -1,3 +1,11 @@
+## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
+
+1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
+2. Run **focused 16-capture** job at 1920×1080 GUI2/3 and 3440×1440 GUI2/3: Cape 2D and worn, Elytra 2D and worn. Confirm each screenshot **actually shows the multicolor artwork on the canvas/cosmetic**, not merely catalog thumbnails, and previews reflect project-owned layers. Inspect both wing faces and clipping independently.
+3. Run all 326 standard screenshots and premium comparison suites on latest SHA. Verify responsive dual-pane layout, focused mobile-like GUI3, selected-asset toolbar, frame-rate/cache, scissor and no overlapping controls. Document any failed test without calling work DONE.
+4. Once all four categories are visually approved, provide representative original PNGs directly in chat and ask user for art-direction feedback. A passing Gradle build alone is not a visual acceptance.
+5. Future work: curated pack expansion, browsing/favorites, deterministic starfield collections/scatter/mist and editable recipes; do not ship 120–150 low-quality near-identical icons for a count target.
+
 ## 2026-10-08 — Illustrated asset quality gate — TESTING NEXT
 
 - Check CI Build Java21 and `PremiumAssetArtworkTest` for every new 28–48px source image: >5 palette values, transparency, no duplicate rasters, exact embedded multicolor save/portable roundtrip.
