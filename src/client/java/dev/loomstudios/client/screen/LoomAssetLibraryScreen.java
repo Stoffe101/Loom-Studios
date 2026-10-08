@@ -238,43 +238,59 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     }
 
     int x=right+4, w=width-x-8;
-    categoryButton=addRenderableWidget(new LoomButton(x,top,w,20,
-        Component.literal("Category: "+category),() -> showChoices(categoryButton, "Choose asset category",
-            CreativeAssetCatalog.categories().stream()
-                .map(v -> new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(v,v,
-                    v.equals("All")?"Browse everything":"Browse "+v)).toList(),
-            category,c -> {category=c;page=0;updateTiles();categoryButton.setMessage(Component.literal("Category: "+category));})));
-    categoryButton.setIcon(LoomButton.Icon.DOWN);
-    search=addRenderableWidget(new EditBox(font,x,top+24,w,18,Component.literal("Find artwork")));
-    search.setHint(Component.literal("Search stars, cloud, trees…"));
-    search.setValue(query);
-    search.setResponder(v -> {query=v;page=0;updateTiles();});
-    int gridTop=top+47, gridBottom=height-73;
-    int columns=w>=300?3:2;
-    int tileWidth=(w-(columns-1)*6)/columns;
-    int tileHeight=height>=510?72:height>=420?61:52;
-    int rows=Math.max(1,(gridBottom-gridTop)/tileHeight);
-    for(int i=0;i<rows*columns;i++){
-      var tile=addRenderableWidget(new Tile(
-          x+(i%columns)*(tileWidth+6),gridTop+(i/columns)*tileHeight,
-          tileWidth, tileHeight-3));
-      tiles.add(tile);
+    // Assets and Edit are clear separate tasks, using the same canvas and 3D
+    // view. One contextual inspector prevents a giant always-visible tool wall.
+    int tabW=(w-4)/2;
+    var browseTab=addRenderableWidget(new LoomButton(x,top,tabW,20,
+        Component.literal(propertiesTab?"Assets":"● Assets"),
+        () -> {propertiesTab=false;rebuildWidgets();}));
+    var editTab=addRenderableWidget(new LoomButton(x+tabW+4,top,w-tabW-4,20,
+        Component.literal(propertiesTab?"● Edit":"Edit"),
+        () -> {propertiesTab=true;armed=false;rebuildWidgets();}));
+    editTab.active=layer()!=null&&layer().kind()==LayerKind.IMAGE;
+    categoryButton=null;search=null;previous=null;next=null;modeButton=null;
+    if(propertiesTab) {
+      buildAssetProperties(x,top+25,w);
+    } else {
+      categoryButton=addRenderableWidget(new LoomButton(x,top+24,w,20,
+          Component.literal("Category: "+category),() -> showChoices(categoryButton, "Choose asset category",
+              CreativeAssetCatalog.categories().stream()
+                  .map(v -> new dev.loomstudios.client.ui.LoomChoicePopup.Option<>(v,v,
+                      v.equals("All")?"Browse everything":"Browse "+v)).toList(),
+              category,c -> {category=c;page=0;updateTiles();
+                categoryButton.setMessage(Component.literal("Category: "+category));})));
+      categoryButton.setIcon(LoomButton.Icon.DOWN);
+      search=addRenderableWidget(new EditBox(font,x,top+47,w,18,Component.literal("Find artwork")));
+      search.setHint(Component.literal("Search stars, cloud, trees…"));
+      search.setValue(query);
+      search.setResponder(v -> {query=v;page=0;updateTiles();});
+      int gridTop=top+70, gridBottom=height-73;
+      int columns=w>=300?3:2;
+      int tileWidth=(w-(columns-1)*6)/columns;
+      int tileHeight=height>=510?72:height>=420?61:52;
+      int rows=Math.max(1,(gridBottom-gridTop)/tileHeight);
+      for(int i=0;i<rows*columns;i++){
+        var tile=addRenderableWidget(new Tile(
+            x+(i%columns)*(tileWidth+6),gridTop+(i/columns)*tileHeight,
+            tileWidth, tileHeight-3));
+        tiles.add(tile);
+      }
+      int bottom=height-72, step=(w-8)/3;
+      previous=addRenderableWidget(new LoomButton(x,bottom,step,20,Component.literal("◀ Prev"),
+          () -> {page=Math.max(0,page-1);updateTiles();}));
+      next=addRenderableWidget(new LoomButton(x+step+4,bottom,step,20,
+          Component.literal("Next ▶"),() -> {page++;updateTiles();}));
+      addRenderableWidget(new LoomButton(x+2*(step+4),bottom,w-2*(step+4),20,
+          Component.literal("More Tools"),() -> minecraft.setScreen(
+              new LoomCreativeAssetsScreen(this,wing,layerId,face,selectedWing,surface,color,null))));
+      addRenderableWidget(new LoomButton(x,bottom+23,step,20,Component.literal("Smaller"),
+          () -> {size=Math.max(1,size-1);}));
+      addRenderableWidget(new LoomButton(x+step+4,bottom+23,step,20,
+          Component.literal("Larger"),() -> {size=Math.min(256,size+1);}));
+      modeButton=addRenderableWidget(new LoomButton(x+2*(step+4),bottom+23,
+          w-2*(step+4),20,Component.literal(recolor?"Tint ON":"Tint OFF"),
+          () -> {recolor=!recolor;modeButton.setMessage(Component.literal(recolor?"Tint ON":"Tint OFF"));}));
     }
-    int bottom=height-72, step=(w-8)/3;
-    previous=addRenderableWidget(new LoomButton(x,bottom,step,20,Component.literal("◀ Prev"),
-        () -> {page=Math.max(0,page-1);updateTiles();}));
-    next=addRenderableWidget(new LoomButton(x+step+4,bottom,step,20,
-        Component.literal("Next ▶"),() -> {page++;updateTiles();}));
-    addRenderableWidget(new LoomButton(x+2*(step+4),bottom,w-2*(step+4),20,
-        Component.literal("Tools"),() -> minecraft.setScreen(
-            new LoomCreativeAssetsScreen(this,wing,layerId,face,selectedWing,surface,color,null))));
-    addRenderableWidget(new LoomButton(x,bottom+23,step,20,Component.literal("Smaller"),
-        () -> {size=Math.max(1,size-1);}));
-    addRenderableWidget(new LoomButton(x+step+4,bottom+23,step,20,
-        Component.literal("Larger"),() -> {size=Math.min(256,size+1);}));
-    modeButton=addRenderableWidget(new LoomButton(x+2*(step+4),bottom+23,
-        w-2*(step+4),20,Component.literal(recolor?"Tint ON":"Tint OFF"),
-        () -> {recolor=!recolor;modeButton.setMessage(Component.literal(recolor?"Tint ON":"Tint OFF"));}));
     pixelButton=addRenderableWidget(new LoomButton(8,height-51,112,20,
         Component.literal(editPixels?"Return to Design":"Edit Selected Pixels"),
         () -> {var l=layer();if(l==null||l.kind()!=LayerKind.IMAGE){message="Place or select an Image layer first";return;}
@@ -284,7 +300,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     if(editPixels) addRenderableWidget(new LoomButton(124,height-51,66,20,
         Component.literal(erasePixels?"Eraser":"Pencil"),
         () -> {erasePixels=!erasePixels;rebuildWidgets();}));
-    else if(layer()!=null&&layer().kind()==LayerKind.IMAGE) {
+    else if(!propertiesTab&&layer()!=null&&layer().kind()==LayerKind.IMAGE) {
       // A minimal *contextual* property strip. Do not add permanent chrome
       // while nothing is selected; transform handles stay on the artwork.
       int controls=Math.max(0,right-12-124), propertyStep=Math.min(86,(controls-8)/3);
@@ -301,6 +317,72 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
       }
     }
     updateTiles();
+  }
+
+  private void buildAssetProperties(int x,int y,int w) {
+    var l=layer();
+    if(l==null||l.kind()!=LayerKind.IMAGE) {
+      var hint=addRenderableWidget(new LoomButton(x,y,w,20,
+          Component.literal("Select an editable layer"),()->{}));
+      hint.active=false;
+      return;
+    }
+    var header=addRenderableWidget(new LoomButton(x,y,w,20,
+        Component.literal(l.name()),()->{}));
+    header.active=false;
+    header.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+        Component.literal(l.name()+" · "+Math.round(l.opacity()*100)+"% opacity")));
+    int half=(w-4)/2;
+    boolean canEdit=!l.locked();
+    y+=27;
+    var minus=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Opacity −10%"),
+        ()->nudgeSelectedOpacity(-.1f)));
+    var plus=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Opacity +10%"),
+        ()->nudgeSelectedOpacity(.1f)));
+    y+=26;
+    var left=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("◀ Move 1px"),
+        ()->nudgeAsset(-1,0)));
+    var rightButton=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
+        Component.literal("Move 1px ▶"),()->nudgeAsset(1,0)));
+    y+=26;
+    var up=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("▲ Up 1px"),
+        ()->nudgeAsset(0,-1)));
+    var down=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
+        Component.literal("▼ Down 1px"),()->nudgeAsset(0,1)));
+    y+=26;
+    var smaller=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Size −1px"),
+        ()->resizeAsset(-1)));
+    var bigger=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Size +1px"),
+        ()->resizeAsset(1)));
+    y+=26;
+    var ccw=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Rotate −15°"),
+        ()->editTransform(t->t.withRotation(t.rotationDegrees()-15))));
+    var cw=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,
+        Component.literal("Rotate +15°"),
+        ()->editTransform(t->t.withRotation(t.rotationDegrees()+15))));
+    y+=26;
+    var flipH=addRenderableWidget(new LoomButton(x,y,half,20,Component.literal("Flip H"),
+        ()->editTransform(t->t.withMirrors(!t.mirrorHorizontal(),t.mirrorVertical()))));
+    var flipV=addRenderableWidget(new LoomButton(x+half+4,y,w-half-4,20,Component.literal("Flip V"),
+        ()->editTransform(t->t.withMirrors(t.mirrorHorizontal(),!t.mirrorVertical()))));
+    for(var control:new LoomButton[]{minus,plus,left,rightButton,up,down,smaller,bigger,ccw,cw,flipH,flipV})
+      control.active=canEdit;
+  }
+
+  private void nudgeAsset(int dx,int dy) {
+    var c=canvas();
+    editTransform(t->t.withCenter(t.centerX()+dx/(double)c.width(),
+        t.centerY()+dy/(double)c.height()));
+  }
+
+  private void resizeAsset(int pixelDelta) {
+    var c=canvas();
+    editTransform(t->{
+      double current=t.width()*c.width();
+      double adjusted=Math.max(1.0,current+pixelDelta);
+      double ratio=adjusted/current;
+      return t.withSize(t.width()*ratio,t.height()*ratio);
+    });
   }
 
   private List<CreativeAssetCatalog.Entry> filtered() {
