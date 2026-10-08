@@ -1,3 +1,13 @@
+## 2026-10-08 — Resizable Cape/Elytra Inspector with safe widths — IN PROGRESS (feature branch)
+
+**What/why:** to address overly narrow fixed panels and prepare for future ElvUI-like layout flexibility, extend shared `LoomWorkspaceLayout` with clamped optional right Inspector width, add local-only `LoomInspectorResize` with drag ghost / right-click reset and distinct compact/wide saved sizes, wire both Cape/Elytra editors, and create required-profile layout tests + 8 actual-capture CI scenes.
+
+**Architecture:** no changes to project schema5, runtime cache/network protocol3 or built-in graphics dependencies; only editor UI preferences. Existing 1×–8× artwork and preview state should be preserved during a one-time screen rebuild on release. Bounds clamp extreme/untrusted saved preference data to leave at least ~210 logical px canvas and 190px inspector.
+
+**Testing:** unit/screenshot CI still pending; 338-image full capture check, 8 focused real captures at required GUI2/3, and manual mouse drag/reset/window resize acceptance remain TODO. Do not mark M1-06 DONE until verified.
+
+**Next:** reconcile with merged PR31, run tests/screenshots, inspect original captures, fix if necessary before merging.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
