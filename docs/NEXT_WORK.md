@@ -1,3 +1,11 @@
+## 2026-10-08 — Studio UX 3.0 first slice — CI / visual acceptance pending
+
+1. Run Java21 Minecraft 1.21.11 build and existing 164 tests on `feature/animation-ux-first-pass-2026-10-08`.
+2. Capture all 310 editor screenshots. **Individually inspect** the new Animation studio, parameter lanes, curve graph and live preview (1920×1080 GUI2/3 and 3440×1440 GUI2/3); test the wide split preview doesn't steal or misplace curve handles and compact layout remains unchanged.
+3. Exercise new layer dropdown, failed/no-track Parameters button, Simple/Advanced switches and Space playback; save/undo/preview isolation.
+4. After acceptance/merge, start editable Asset Library work in independently tested slices: editor Assets button, thumbnail browser, drag/click-to-place as **independent editable layers by default**, then original curated packs, starfield collection architecture, scatter, mist/recipes.
+5. Capture/share actual artifact screenshots with user for visual feedback. Do not merge layout failures merely because screenshots decode.
+
 ## 2026-10-08 — Asset diversity, worn previews and CI visual gate — NEXT / PENDING
 
 1. Validate Java21, Minecraft1.21.11, full unit tests after 29 original detailed assets and live 3D Asset Library preview changes.
