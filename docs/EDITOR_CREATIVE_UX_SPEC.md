@@ -53,6 +53,21 @@ Keep workspace preferences local (mode, split sizes, active tool, zoom/pan, prev
 
 At a comfortable size: type icon, small thumbnail, concise layer name, visibility/lock, selectable opacity/blend, and meaningful badges for Animation, GIF/Frames, Mask, Clip, Alpha Lock and Emissive. On compact GUI3 collapse low-priority fields into a tooltip/contextual inspector without clipping text. Keep layer hover/selection/drag states visually different. Existing organization groups remain recognizable while true render groups are planned separately.
 
+## 2A. Asset Library entry, object selection and properties
+
+The [Creative Asset Library spec](CREATIVE_ASSET_LIBRARY_SPEC.md) is an **object-first editor workflow**, not simply a paint brush. In both Cape and Elytra editors, users click **Assets**, then either (A) drag an asset thumbnail directly onto the canvas and release, or (B) click an item to attach a translucent preview to the cursor and click/drag on the canvas to place it. **Default result: a newly selected independent editable asset layer**, with direct transform handles and properties. The asset can be renamed, moved, scaled, rotated, recolored, opacity-adjusted, masked, animated, and pixel-edited later.
+
+The library drawer and layer selection must work together:
+- Do not close or completely replace the main editor when opening Assets; preserve canvas, preview and existing unsaved edits.
+- Hovering the canvas shows source-size-correct ghost and valid wing/face targeting. Drop outside cancels. After drop, the new asset remains selected for editing.
+- Selected asset inspector shows simple high-frequency controls and `Edit Pixels` entry. `Edit Pixels` must genuinely allow source artwork modification, possibly by editing/copying/rasterizing into a Paint layer while retaining an undoable path, not pretend a static image has native painting when unsupported.
+- **Stamp Into Current Paint Layer** is an opt-in alternate painting mode, never silent default.
+- One asset per ordinary layer works for a moon or tree, but a 50-star sky should become a bounded **Asset Collection** with independently selectable object instances. This is **future typed architecture**, not existing schema5 functionality, and requires versioning/migration, deterministic network export and layer-cap safety.
+- Clear separation between selecting/editing the placed object versus choosing an asset to place. On-canvas dragging of an already placed item moves it instead of repeatedly stamping copies.
+- Inspect resize/swap/duplicate/rename/delete/undo/redo with various zoom levels, after Save and with separate Elytra wings.
+
+Acceptance: without knowing Loom internals, a user drags a star from the library onto the cape, recolors and resizes it, reopens later and still moves that star independently. A second user clicks a pine-tree asset and drags to place it on one Elytra wing. Both outcomes must look correct in 2D and 3D, and neither requires a custom texture pack on another multiplayer client.
+
 ## 3. Selection, masks and guided editing (UX-04/06/07)
 
 **Current:** Wand, exact selection, mask paint/reveal/hide/invert, alpha lock, clipping and color/gradient controls are present.
