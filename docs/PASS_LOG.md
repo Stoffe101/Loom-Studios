@@ -1,3 +1,15 @@
+## 2026-10-08 — M1 preview context and unobstructed tooltips — IN PROGRESS
+
+**Why:** actual in-game Asset Library screenshots showed a tooltip floating over major controls, artwork not fully centered on initial worn view, hidden neutral inspection background choice, and footer sometimes saying "Select an asset" even when a selected layer exists.
+
+**Source changes (M1 prototype branch):** `LoomPlayerPreviewWidget` limits tooltips to three small header affordances and exposes an existing persisted `LoomPreviewBackground` cycle in the widget header; `LoomAssetLibraryScreen` removes canvas-wide tooltip, chooses 1.15× worn-view initial zoom and labels selected layer/opacity in footer.
+
+**Architecture/compatibility:** UI presentation and local user preference only; no schema5/protocol3/data migration or new rendering dependency. Preserve Scenic, Neutral light/dark and Checker choices. Preview UI work must not modify equipped cosmetics.
+
+**Tests:** CI and actual screenshots pending M0 merge. This pass is explicitly **not accepted**. Need four profile review, user review, hover/click/focus regression and compatibility checks.
+
+**Next:** finish M0 branch integrations, rebase onto accepted main, trigger targeted CI then the full matrix; only mark M1 subtask done after verifying captures.
+
 ## 2026-10-08 — Artwork diversity and true worn-cosmetic CI — IN PROGRESS
 
 **Why:** user was not satisfied with thumbnails-only captures or limited icon diversity; demanded art that actually looks good on the Cape/Elytra and requested improved CI.
