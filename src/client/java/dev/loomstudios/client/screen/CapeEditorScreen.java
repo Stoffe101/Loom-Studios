@@ -182,6 +182,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
     private int canvasBottom;
     private int contextTop;
     private int rightPanelLeft;
+    private boolean inspectorDividerDragging;
+    private int proposedInspectorWidth;
     private int rightPanelRight;
     private int previewBottom;
     private int inspectorTop;
@@ -207,7 +209,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                     Component.literal("Back"), this::onClose));
             return;
         }
-        workspaceLayout = LoomWorkspaceLayout.create(width, height, false, 0);
+        workspaceLayout = LoomWorkspaceLayout.create(width, height, false, 0,
+                dev.loomstudios.client.ui.LoomInspectorResize.preference(width,height));
         compactMode = workspaceLayout.compact();
         var layout = workspaceLayout;
         contentTop = layout.tools().top(); contentBottom = layout.tools().bottom();
@@ -2760,6 +2763,21 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 partialTick
         );
         updateButtonStates();
+        if(!hasChoices()) {
+            int divider=rightPanelLeft-3;
+            boolean hover=dev.loomstudios.client.ui.LoomInspectorResize.onDivider(
+                mouseX,mouseY,divider,contentTop,contentBottom);
+            int pendingRight=inspectorDividerDragging
+                ? width-8-proposedInspectorWidth : rightPanelLeft;
+            dev.loomstudios.client.ui.LoomInspectorResize.render(
+                graphics,divider,contentTop,contentBottom,hover||inspectorDividerDragging,
+                inspectorDividerDragging,pendingRight);
+            if(inspectorDividerDragging)
+                dev.loomstudios.client.ui.premium.PremiumText.drawString(graphics,font,
+                    Component.literal(proposedInspectorWidth+" GUI px"),
+                    Math.min(width-115,Math.max(10,pendingRight+9)),
+                    (contentTop+contentBottom)/2-26,LoomUiTheme.ACCENT,false);
+        }
     }
 
     private void closePaletteWindow() {
@@ -2774,6 +2792,20 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             MouseButtonEvent event,
             boolean doubleClick
     ) {
+        if(!workspaceTooSmall && !hasChoices()
+            && dev.loomstudios.client.ui.LoomInspectorResize.onDivider(
+                event.x(),event.y(),rightPanelLeft-3,contentTop,contentBottom)) {
+            if(event.button()==1) {
+                dev.loomstudios.client.ui.LoomInspectorResize.reset(width,height);
+                rebuildWidgets();
+                return true;
+            }
+            if(event.button()==0) {
+                inspectorDividerDragging=true;
+                proposedInspectorWidth=workspaceLayout.preview().width();
+                return true;
+            }
+        }
         if (paletteWindowVisible && paletteWindow != null && paletteWindow.visible
                 && paletteWindow.isMouseOver(event.x(),event.y())) {
             boolean handled=paletteWindow.mouseClicked(event,doubleClick);
@@ -2790,6 +2822,11 @@ public final class CapeEditorScreen extends LoomPointerScreen {
             double dx,
             double dy
     ) {
+        if(inspectorDividerDragging && event.button()==0) {
+            proposedInspectorWidth=dev.loomstudios.client.ui.LoomInspectorResize
+                .requestedAtX(width,height,event.x());
+            return true;
+        }
         if (paletteWindowVisible
                 && paletteWindow != null
                 && paletteWindow.visible
@@ -2802,6 +2839,13 @@ public final class CapeEditorScreen extends LoomPointerScreen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        if(inspectorDividerDragging && event.button()==0) {
+            inspectorDividerDragging=false;
+            dev.loomstudios.client.ui.LoomInspectorResize.persist(
+                width,height,proposedInspectorWidth);
+            rebuildWidgets();
+            return true;
+        }
         if (paletteWindowVisible
                 && paletteWindow != null
                 && paletteWindow.visible
