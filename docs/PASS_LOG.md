@@ -1,3 +1,15 @@
+## 2026-10-08 — Editable Asset Library foundation code + tests — IN PROGRESS
+
+**Why:** user clarified that assets from a library must drag/click into the design as individually editable layers rather than permanent paint dabs. Existing six built-in stamps are not a full asset browser.
+
+**Code:** added `src/main/java/dev/loomstudios/project/EditableAssetPlacement.java` with Cape/Elytra semantic-face placement of `CustomStamp` as new project-owned Image layer, preserving source pixels, transform and mask/alpha/animation compatibility. `convertToPaint` explicitly rasterizes Image to Paint with same layer UUID so pixel editing is real rather than a fake Image-layer operation. Added JUnit `EditableAssetPlacementTest` checking serialized project/portable code parity, invalid inputs, left/right Elytra isolation, image relocation and exact raster conversion.
+
+**Architecture:** only existing Image/Paint layer data and ProjectEdits; schema5/protocol3 unchanged, source pixels embedded in .loom so peer client needs no separate asset library. Independent layers remain bounded at 64/channel; multi-object collection UI and persistent schema are future scope. Data doesn't depend on local reference sidecars.
+
+**Tests:** JUnit written but not executed yet. CI and real-client screenshots pending. Existing tests remain current last verified result on prior runtime.
+
+**Next:** verify tests in CI, add actual Assets browser and click/drag placement UI with curated original packs and reference screenshot review.
+
 ## 2026-10-08 — Actions artifact storage policy — IN PROGRESS (CI workflow change)
 
 **Why:** GitHub Actions artifact storage is full. The former `build.yml` uploaded 310 actual PNG screenshots (~354 MB ZIP), while `premium-ui.yml` uploaded each comparison suite's entire images separately.
