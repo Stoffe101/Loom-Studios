@@ -157,7 +157,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
         () -> {})).active=false;
     addRenderableWidget(new LoomButton(right-76,top,72,20,Component.literal("Done"),this::onClose));
     preview = addRenderableWidget(new LoomImagePreviewWidget(8,top+25,right-12,
-        height-top-54,
+        height-top-82,
         Component.literal(editPixels ? "Edit Asset Pixels" : "Your Design · Drop assets here"),
         this::image,
         () -> 37 * ClientProjectWorkspace.revision()
@@ -184,7 +184,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
           tileWidth, tileHeight-3));
       tiles.add(tile);
     }
-    int bottom=height-69, step=(w-8)/3;
+    int bottom=height-72, step=(w-8)/3;
     previous=addRenderableWidget(new LoomButton(x,bottom,step,20,Component.literal("◀ Prev"),
         () -> {page=Math.max(0,page-1);updateTiles();}));
     next=addRenderableWidget(new LoomButton(x+step+4,bottom,step,20,
@@ -199,13 +199,13 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     modeButton=addRenderableWidget(new LoomButton(x+2*(step+4),bottom+23,
         w-2*(step+4),20,Component.literal(recolor?"Tint ON":"Tint OFF"),
         () -> {recolor=!recolor;modeButton.setMessage(Component.literal(recolor?"Tint ON":"Tint OFF"));}));
-    pixelButton=addRenderableWidget(new LoomButton(8,height-25,112,20,
+    pixelButton=addRenderableWidget(new LoomButton(8,height-51,112,20,
         Component.literal(editPixels?"Return to Design":"Edit Selected Pixels"),
         () -> {var l=layer();if(l==null||l.kind()!=LayerKind.IMAGE){message="Place or select an Image layer first";return;}
           if(!l.imageData().frames().isEmpty()){message="Animated images use the Frame Editor";return;}
           editPixels=!editPixels;armed=false;rebuildWidgets();}));
     pixelButton.active=layer()!=null&&layer().kind()==LayerKind.IMAGE;
-    if(editPixels) addRenderableWidget(new LoomButton(124,height-25,66,20,
+    if(editPixels) addRenderableWidget(new LoomButton(124,height-51,66,20,
         Component.literal(erasePixels?"Eraser":"Pencil"),
         () -> {erasePixels=!erasePixels;rebuildWidgets();}));
     updateTiles();
