@@ -1,3 +1,15 @@
+## 2026-10-08 — M2 simple visual preset workspace — IN PROGRESS, TESTING REQUIRED
+
+**Why:** user's repeated complaint was animation being difficult to understand/use despite powerful Animation 2.1 internals; the original Simple mode was still just text dropdowns above a confusing keyframe timeline.
+
+**What changed:** `LoomAnimationPresetGallery` displays seven existing effects as selected visual cards with readable names, short outcomes and deterministic waveform miniatures. `LoomAnimationScreen` uses the gallery in Simple and keeps full timeline in Advanced. `AnimationPresetDraft` is a pure composer shared between isolated `Try on 3D` and Apply, preserving selected-track identity on explicit replacement, without changing project on preview. A memoized draft reduces repeated project recreation on render frames. New purity tests and 334-photo full + focused four-profile CI fixtures produce real images.
+
+**Architecture/decisions:** no new effect, schema5 change or protocol3 change. Candidate projects are never copied to the editing session; viewport playhead is preview-only. User must explicitly Apply to replace a stock track. Do not claim Simple mode can safely edit a fully customized advanced track without using Advanced; mode switching itself never rewrites.
+
+**Verification:** new tests/CI and actual screenshot visual inspection **pending on feature branch**; no Windows/driver/modpack validation here. This is a first M2-01 increment, not all M2.
+
+**Next:** integrate PR32 first if accepted; run exact M2 GitHub CI/screenshots and review high-density GUI3, then continue speed/strength controls and advanced timeline UX.
+
 ## 2026-10-08 — M1 Edit Inspector four-profile capture extension — CI PENDING
 
 Added UI capture stages 326–329, increasing full expected real Minecraft screenshots from 326 to **330**, to specifically render the selected Cape asset's Browse/Edit inspector at all four physical/GUI-scale profiles. These complement the existing 16 2D/worn Cape/Elytra screenshots, so UI tests no longer claim an unobserved contextual panel works. The capture fixture calls `showEditInspector()` on a genuine project-owned Image layer and the Build workflow asserts 330 captures. This is a testing-only extension with no data/protocol behavior change. **No capture or CI result exists yet for this branch**.
