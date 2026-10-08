@@ -564,7 +564,7 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
             Component.literal(font.plainSubstrByWidth(sub,Math.max(16,bound))),
             inset,headerTop+17,LoomUiTheme.TEXT_MUTED,false);
         PremiumText.drawString(g,font,Component.literal("POSITION  ·  X / Y (px)"),
-            inset,headerTop+(height<350?113:129),LoomUiTheme.TEXT_MUTED,false);
+            inset,headerTop+(height<350?113:132),LoomUiTheme.TEXT_MUTED,false);
       }
     }
     if(!editPixels&&selectedAsset!=null&&(armed||draggingTile||placing)&&preview!=null){
