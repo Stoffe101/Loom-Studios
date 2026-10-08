@@ -1,3 +1,9 @@
+## 2026-10-08 — Actions artifact retention and compact visual evidence — IMPLEMENTATION PENDING CI
+
+Repository storage was pressured by the 310-PNG main capture archive (~354 MB ZIP for the accepted runtime) and 24 per-suite comparison screenshot ZIPs. Maintenance branch adds `.github/workflows/artifact-prune.yml` to delete **aged (>24 h) artifacts** except the newest full `loom-editor-screenshots` and two newest `loom-studios-dev` JARs. The cleanup requires Actions write permission and runs when merged to main, weekly and on manual dispatch. Uploads now preserve 310 real-client capture/assertion coverage but publish at most 55 relevant full PNGs plus a JPEG review index; comparison suites retain three original PNGs per suite. Shorter retention and setup-java@v5 included.
+
+**Status:** workflow changes require GitHub Actions execution to verify permissions, retained image selection and reclaimed storage. Do not label cleanup DONE until the actual prune job reports deletions and the follow-on Build/Comparison passes. No Java/runtime model change, no schema/protocol impact, no false claim of GUI polish from a storage change.
+
 ## 2026-10-08 — Future creative UX and asset-library research — PLANNING ONLY
 
 A complete **proposed** improvement backlog was documented in [FUTURE_IMPROVEMENTS_ROADMAP.md](FUTURE_IMPROVEMENTS_ROADMAP.md), [CREATIVE_ASSET_LIBRARY_SPEC.md](CREATIVE_ASSET_LIBRARY_SPEC.md), [ANIMATION_UX_REDESIGN_SPEC.md](ANIMATION_UX_REDESIGN_SPEC.md) and [EDITOR_CREATIVE_UX_SPEC.md](EDITOR_CREATIVE_UX_SPEC.md). It covers the large themed stamp catalog (stars/clouds/trees/etc.), scatter, soft mist painting, layered recipes, animation Simple/Advanced redesign, frame filmstrip, adaptive panels, compositing, animated export and the previously audited improvements.
