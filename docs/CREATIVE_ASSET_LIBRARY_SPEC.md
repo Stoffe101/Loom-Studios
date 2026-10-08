@@ -18,14 +18,45 @@ The library should contain **many distinct usable designs**, not 400 copies of o
 - Some artistic templates and preset animations already exist.
 
 **Proposed:**
-- Large **dedicated Stamp Tool** accessible in both main editors with searchable thumbnail browser.
+- A visible **Asset Library** button in **both main editors**, opening a thumbnail browser. This is an asset-object placement tool, **not primarily a stamp brush**.
 - Extensive original icon/artwork catalogue with scale, density and variant diversity.
-- On-canvas hover ghost and drag placement, stamp-on-new-layer, quick actions, scatter/streak modes.
+- Two first-class placement paths: **drag an item from the library onto the cape/Elytra**, or **click to select then click/drag to position the live ghost on the canvas**.
+- **Every single placed decorative asset creates its own editable layer by default** (or becomes a separately selectable editable object inside a purpose-built collection layer). Explicit Stamp/Paint mode may rasterize into the current Paint layer, but is **not** the default.
 - Cohesive theme recipes combining assets, gradients, mist, palette, compositing and optional animation.
 - More helpful alpha painting/soft atmospheric brushes and procedural environment effects.
 - Built-ins stored as separate read-only assets so they do not exhaust the 64-entry **user-created** stamp library.
 
 These are extensions of existing features, not a reason to replace their validated persistence.
+
+## 2A. Core interaction clarification: place editable assets, not permanent paint dabs
+
+**User intent, clarified 2026-10-08:** The library opens with a button in the Cape or Elytra editor. The player can (A) **drag a chosen asset directly from the library onto the design and release to place it**, or (B) **click the asset in the library, move to the canvas, then click or click-and-drag to place/position it**. Placement displays a translucent exact-pixel ghost and snapping guides. After placement the player should be able to select the asset on the canvas or in Layers and modify it **at any time**.
+
+**Default semantics (required):** One distinct asset object, independently editable. For low counts, it should appear immediately as a named **editable layer** such as `Crescent Moon`, `Pine Tree`, or `Star 01`. Do **not** secretly stamp it permanently into the currently selected Paint layer. Apply as a single undoable operation, select the new item, leave the Asset Library accessible, and show its contextual controls.
+
+**What "fully editable" must mean:**
+- Position precisely by dragging; scale with handles (including non-uniform where safe), rotate, flip, align, snap, duplicate, copy/paste and change layer order.
+- Set opacity, tint/colors (multicolor retained vs recolor as explicit choices), blend mode, clipping/mask and supported emissive/glow effects.
+- Animate the asset/layer with existing effect tracks, preserving exact target IDs after reordering/duplication.
+- Edit the asset's actual constituent pixels using familiar Pencil/Eraser/Fill/Wand tools. `Edit Pixels` must be a **real editable mode** backed by saved artwork, or an explicit reversible conversion/copy to Paint data, not a misleading button that only changes opacity.
+- Rename, lock, hide, delete, undo/redo; preserve all edits after save/reopen/portable-code import and network equip. Missing local library assets must not break previously placed objects.
+
+**Architecture constraint and staged recommendation:**
+- **First implementation without forcing an immediate schema update:** one placed asset = a project-owned Image layer (or Paint layer only when the player explicitly chooses `Rasterize/Stamp Into Current Layer`), using existing independent source/transform/opacity/mask capabilities. Inspect/extend actual pixel-edit support rather than assuming all Image sources are paintable. Embed/copy source pixels into the `.loom` project; the preinstalled catalog is only an authoring convenience.
+- The current project limit is **64 layers per channel**. A night sky with 80 individual stars cannot consume 80 layers. Do not silently exceed budgets or flatten independent objects on reaching the limit.
+- **Scaled solution (future typed model):** an `Asset Collection` / `Asset Composition Layer` with **individually addressable child instances**. One `Starfield` collection layer might contain dozens of stars, each individually selectable/movable/recolored/rotated/edited without spamming the visible layer list. Collections show expandable object rows in an inspector. A distinct `Moon` or `Tree Line` may stay as its own layer. An object is not the same as a layer: they can be independent while sharing the parent collection for composition.
+- Adding persistent instance objects likely requires a new bounded schema/protocol with migration, stable instance IDs, exact embedded source pixels, deterministic rasterization, cache invalidation, grouping masks/effects, and tests. **This is PROPOSED, not something schema5 currently supports.** Do not implement it implicitly or promise hundreds of independent objects before architecture validation.
+- Stamping into an existing Paint layer remains an **explicit secondary quick-paint option** for experienced users. Scatter may place a whole starfield as an editable collection or, in an intentionally selected raster mode, as a Paint layer.
+
+**UI language:** Label the entry **Assets** or **Asset Library**, not just `Stamps`, to convey that the library includes stars, tree silhouettes, clouds, decorations, emblems and other reusable artwork. A separate `Stamp Brush` submode preserves repeated-dab painting.
+
+### Exact behavioral examples
+
+1. Click **Assets** → **Stars** → drag an 8-point star thumbnail onto the cape → release → `Eight-Point Star` appears as the selected independent layer with transform handles; change color/opacity and move it later.
+2. Click **Assets** → **Nature** → `Pine Tree` → click on Elytra outside-left face then drag to size → release → tree appears without altering the right wing or underlying sky layer.
+3. Click **Assets** → **Celestial** → `Crescent Moon` → place → choose **Edit Pixels** → modify the moon's edge pixels → switch back to transform/animate; reopening preserves the changes.
+4. Want 50 stars? Select **Starfield Collection** or **Scatter into Editable Collection** → place many variants → select an individual star inside the collection and recolor or reposition it. Do not create 50 flat layers unless the player explicitly requests independent layers and budgets allow.
+5. Press Escape while placing or dragging to cancel with **zero change**. An asset dropped outside canvas never creates a ghost layer or silently paints stray pixels.
 
 ## 3. Catalogue strategy and size
 
@@ -79,21 +110,26 @@ Targets may be adjusted after reviewing actual asset quality and density. Do **n
 - Directional pieces should use semantic anchors: center for stars/hearts, trunk bottom for trees, ridge/baseline for borders, floor/horizon for fog/cloud banks.
 - Standardized preview framing lets users understand actual ink coverage, not just empty asset margins.
 
-## 4. Stamp browser: player interaction
+## 4. Asset Library browser: player interaction
 
 ### Entry and layout
 
-A visible **Stamp** tool appears in Cape/Elytra tool rail. Selecting it opens a **contextual Stamp Library drawer**; it should not permanently add 100 controls to the editor. On narrow GUI3, the catalog becomes a compact single-column/grid sheet or bounded popup and can be dismissed to preserve the canvas.
+A conspicuous **Assets** button appears in both Cape and Elytra editors. Clicking opens a **contextual Asset Library drawer**, not a permanent tool wall or a separate full-screen editor. The canvas remains visible as a live drop target. At narrow GUI3, use a compact bounded overlay/drawer and collapse it automatically or temporarily after the player picks an asset, allowing the player to place it.
 
-Suggested rough structure (interaction concept, not pixel-perfect layout):
+Conceptual layout:
+- Search (e.g., "crescent", "pine", "cloud"), Favorites and Recent.
+- Categories as thumbnails/pills: All, Stars, Sky, Trees, Nature, Fantasy, Shapes, More.
+- Grid of actual asset thumbnails with short name, variant tags and accessible hover/focus preview.
+- Selected asset shows **Drag onto design** / **Click to place** help and a small preview.
+- Default mode is **Place Editable Asset**. Advanced choices are **Add to Existing Collection**, **Create Collection**, **Scatter Brush** and **Stamp into Current Paint Layer** (explicitly destructive/rasterized).
+- After placement, contextual property controls are near the artwork or in the existing inspector: Position, Scale, Rotation, Flip, Color/Tint, Opacity, Blend, Mask, Glow, Edit Pixels, Animate.
+- Save and Undo remain reachable. Collection is the only scrolling area; the rest of the editor's chrome does not scroll.
 
-- Header: search field (e.g., "crescent", "pine", "star"), Favorites and Recent.
-- Pack pills/tabs: All, Celestial, Sky, Nature, Fantasy, Shapes, More.
-- Thumbnail grid with meaningful artwork, name on hover/focus, optional palette marker.
-- Selected stamp preview, small controls for Size, Rotation, Mirror, Opacity and Color.
-- Actions: **Stamp**, **Scatter**, **Place on New Layer**, **Manage My Stamps**.
+**Two equally supported gestures:**
+1. **Drag from library:** press/drag an item thumbnail, ghost follows cursor across browser boundary into design, release on a valid pixel/face to commit the independent editable item, release elsewhere to cancel.
+2. **Click to pick:** click a thumbnail to arm a placement cursor; moving into canvas shows true-scale ghost. Click to place at default size, or press-and-drag to size/position and release to commit. Escape/right-click cancels; the selected item can immediately be repositioned with visible handles.
 
-No unbounded whole-screen scrolling. Grid is the scrolling collection; the canvas, Save and Undo remain visible/reachable.
+Provide accessible keyboard placement with Move/Nudge/Confirm/Cancel for players unable to drag. No accidental painting when drag enters/stops over the canvas. A placement does not equip or publish cosmetic content.
 
 ### Search and discovery
 
@@ -106,17 +142,18 @@ No unbounded whole-screen scrolling. Grid is the scrolling collection; the canva
 
 ### Placement and edit semantics
 
-1. Hover the canvas to see a **translucent, cursor-anchored stamp preview** at actual texture resolution.
-2. Click once to place; drag for repeated stamping (respect paint tool gesture semantics).
-3. Mouse wheel with modifier or a compact control adjusts scale; rotation/mirror/flip and snapping are accessible without reopening screens.
-4. **Place on New Layer** creates a named Paint layer and applies the placement in a single Undo step, without publishing/equipping.
-5. Stamps respect exact selection, layer lock, current wing/face, masks and Alpha Lock.
-6. If a stamp reaches a semantic face edge, offer explicit Clip/Wrap-across-seam behavior where supported; **never silently paint the other Elytra wing**.
-7. Use current authored color or retained palette colors as a deliberate choice; never unintentionally overwrite multicolor source art.
-8. After placing, user can undo the gesture immediately, resize/move the new layer or choose another stamp.
-9. On high-DPI/GUI scale, the preview is aligned with the exact clicked UV/pixel. No one-pixel drift after pan/zoom.
+1. Every default placement creates an **independently editable layer/object**, visibly selected with canvas transform handles and a clear name. The player can come back hours later and change it.
+2. Transparent live ghost accurately matches final authored pixels at 1× through 8×; coordinate mapping remains exact under zoom, pan and GUI scale.
+3. Drag from the library **or** click-to-arm followed by click/click-drag on the canvas, with cancel/confirm behavior as specified above. Dragging after an item has been placed should **move that object**, not accidentally repeat-stamp new copies. Repeat-stamping is a separate brush mode.
+4. Edit position/size/rotation/mirror/recolor/opacity/blend and supported mask/glow/animation in the existing contextual layer inspector. Provide a real pixel editing action, not only a flat-image transform panel.
+5. For sparse compositions, use one normal editable project-owned layer per instance. Multiple independent effects and layer ordering should work just like existing Image/Gradient/Paint content.
+6. To avoid exceeding **64 layers/channel**, a future collection model groups many individually selectable child instances; avoid prematurely flattening or rejecting the user's intended starfield without offering an alternate workflow.
+7. Keep **Stamp into Current Layer** as an explicit secondary mode for repeated brush dabs and quick pixel painting, with a warning that independently moving the object later will require its own layer or selection.
+8. Lock/selection/masks/Alpha Lock and per-face scope must be respected. Never leak painted pixels to the opposite Elytra wing, or silently wrap past a seam.
+9. Recolor mono assets from current color; preserve multicolor artwork until the player explicitly requests tint/remap. Never discard custom source pixel edits.
+10. A single placement or transform gesture is one Undo step; save/reload/import/export and multiplayer output must not depend on local builtin/custom asset-library availability.
 
-Existing custom stamps remain valid; the new library discovers them under My Stamps alongside built-ins.
+Existing custom stamps remain valid in My Assets/My Stamps, and the current Stamp Brush workflow stays available.
 
 ## 5. Scatter Brush (deterministic)
 
