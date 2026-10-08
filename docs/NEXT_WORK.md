@@ -1,3 +1,11 @@
+## 2026-10-08 — Illustrated asset quality gate — TESTING NEXT
+
+- Check CI Build Java21 and `PremiumAssetArtworkTest` for every new 28–48px source image: >5 palette values, transparency, no duplicate rasters, exact embedded multicolor save/portable roundtrip.
+- Run all 314 real-client captures and focused Asset Library four-profile workflow on the **latest** SHA (do not cite an earlier passing image run as evidence for new artwork).
+- Extract actual original PNGs and review at 1920×1080 GUI3/GUI2 and 3440×1440 GUI3/GUI2; evaluate star, moon, cloud, tree thumbnails, long names, centered canvas, visible headers, controls, no overlap, clipped text or unsafely small targets. Curated art may need more iterations, especially small-screen legibility.
+- Test placing multiple illustrated assets as editable Image layers, moving/rotating/painting on source, preserving alpha/crop/face and color over saves/equip/network. Test at 1×, 4× and 8×; do not falsely promise true soft detail at 1×.
+- Present new actual screenshots to user for art-direction acceptance. Only then consider expanding to 120–150 distinctive, original licensed assets, editable collections and scatter.
+
 ## 2026-10-08 — Asset Library implementation first slice — CI and visual review pending
 
 1. Build Java21 Minecraft1.21.11 / Fabric and run full tests including `AssetPlacementTest`, `CreativeAssetCatalogTest`; inspect compile and schema5 round-trip.
