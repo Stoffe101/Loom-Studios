@@ -673,7 +673,23 @@ public final class LoomUiCapture {
         dev.loomstudios.project.ElytraSurface.OUTSIDE,0xFF45DDE8);
     client.setScreen(screen);
     if(mode%2==1)screen.showWornPreview(true);
-    if(showInspector)screen.showEditInspector();
+    if(showInspector) {
+      screen.showEditInspector();
+      var sliders=screen.children().stream()
+          .filter(c->c instanceof dev.loomstudios.client.ui.LoomSlider)
+          .map(c->(dev.loomstudios.client.ui.LoomSlider)c).toList();
+      var labels=sliders.stream().map(c->c.getMessage().getString()).toList();
+      if(!labels.equals(java.util.List.of("Opacity","Rotation","Width")))
+        throw new IllegalStateException("Asset Inspector must expose the three responsive sliders: "+labels);
+      long numeric=screen.children().stream().filter(c->
+          c instanceof net.minecraft.client.gui.components.EditBox).count();
+      if(numeric!=2)throw new IllegalStateException("Asset Inspector needs two editable pixel coordinates");
+      if(screen.children().stream().anyMatch(c -> c instanceof AbstractWidget w &&
+          w.getMessage().getString().startsWith("Opacity −")))
+        throw new IllegalStateException("Legacy button-wall inspector is still present");
+      System.out.println("LOOM_ASSET_SLIDER_INSPECTOR PASS "+
+          screen.width+"x"+screen.height+" 3 sliders, 2 numeric fields");
+    }
   }
 
   private static String creativeCaptureName(int index) {
