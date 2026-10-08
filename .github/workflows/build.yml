@@ -91,7 +91,7 @@ jobs:
           ALSOFT_DRIVERS: "null"
         run: |
           xvfb-run -a -s '-screen 0 3440x1440x24' ./gradlew --no-daemon -Dorg.gradle.jvmargs=-Xmx1G --max-workers=2 runClient -PuiCapture | tee capture.log
-          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 310
+          test "$(find docs/verification/editor-workspace -name '*.png' | wc -l)" -eq 314
           grep -q 'LOOM_UI_CAPTURE COMPLETE' capture.log
       - name: Build compact visual review package
         if: always()
@@ -103,14 +103,14 @@ jobs:
           src = Path("docs/verification/editor-workspace")
           dst = Path("build/loom-review-shots")
           dst.mkdir(parents=True, exist_ok=True)
-          families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-")
+          families = ("creative-", "cape-", "elytra-", "smart-import-", "home-", "codes-", "authoring-", "asset-library-")
           # Keep actual GUI3 compact and GUI2 ultrawide examples, not 310 redundant PNGs.
           files = [p for p in src.glob("*.png") if p.name.startswith(families)
                    and ("-1920x1080-gui3" in p.name or "-3440x1440-gui2" in p.name)]
           # Focus changes on animation, asset authoring and main workflows.
           focused = ("creative-", "cape-animation-", "elytra-animation-",
                      "cape-1920", "elytra-3440", "home-1920",
-                     "smart-import-", "authoring-")
+                     "smart-import-", "authoring-", "asset-library-")
           files = sorted(p for p in files if p.name.startswith(focused))
           # Full captures are generated and validated above. Upload a curated review set.
           for p in files[:55]:
