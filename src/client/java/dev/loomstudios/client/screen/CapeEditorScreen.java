@@ -33,6 +33,7 @@ import dev.loomstudios.ui.LoomWorkspaceLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.LinkedHashSet;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -60,6 +61,8 @@ public final class CapeEditorScreen extends LoomPointerScreen {
     private SymmetryMode symmetryMode = SymmetryMode.NONE;
     private PixelSelection selection;
     private UUID selectedLayerId;
+    /** Ordered Ctrl-click layer selection passed to Simple Animation. */
+    private final LinkedHashSet<UUID> animationSelection=new LinkedHashSet<>();
     private int selectedGradientStopIndex;
 
     private LoomButton pencilButton;
@@ -223,7 +226,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         buildTopNavigation(layout.headerHeight(), layout.navHeight(), 8);
         buildToolRail(); buildCanvasToolbar(22); buildCanvas(); buildContextBar();
         int actionWidth=(canvasRight-canvasLeft- 8)/ 3;
-        iconButton(canvasLeft,canvasBottom+3,actionWidth,22,"Animate cape",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId))).setIconOnly(false);
+        iconButton(canvasLeft,canvasBottom+3,actionWidth,22,"Animate cape",LoomButton.Icon.PLAY,()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId,animationTargets()))).setIconOnly(false);
         iconButton(canvasLeft+actionWidth+4,canvasBottom+3,actionWidth,22,"Surface tools",LoomButton.Icon.SELECT,()->minecraft.setScreen(new LoomSurfaceToolsScreen(this,false,selectedLayerId,capeRegion,null,null,selectedColor)))
         .setIconOnly(false);
     iconButton(
@@ -533,7 +536,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         inspectorLayersButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
         inspectorColorButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
         inspectorPropertiesButton.setIcon(LoomButton.Icon.NONE).setIconOnly(false);
-        addRenderableWidget(new LoomButton(rightPanelLeft+3*(tabWidth+tabGap),tabsY,rightPanelRight-(rightPanelLeft+3*(tabWidth+tabGap)),inspectorTabHeight,Component.literal("Anim"),()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId))));
+        addRenderableWidget(new LoomButton(rightPanelLeft+3*(tabWidth+tabGap),tabsY,rightPanelRight-(rightPanelLeft+3*(tabWidth+tabGap)),inspectorTabHeight,Component.literal("Anim"),()->minecraft.setScreen(new LoomAnimationScreen(this,dev.loomstudios.project.AnimationChannel.CAPE,selectedLayerId,animationTargets()))));
         buildLayerInspector(); buildColorInspector(); buildPropertyInspector();
     }
 
@@ -544,7 +547,7 @@ public final class CapeEditorScreen extends LoomPointerScreen {
         int listHeight = Math.min(Math.max(44, 20 + count * 18), workspaceLayout.inspector().height() - (inspectorRows().padding() + 2 * inspectorRows().stride() + 4));
         var r = rows.row(listHeight);
         layerListWidget = addRenderableWidget(new LoomLayerListWidget(r.left(), r.top(), r.width(), r.height(),
-                () -> workspaceState.project().cape(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,selectedLayerId))));
+                () -> workspaceState.project().cape(), () -> selectedLayerId, this::selectLayer, this::toggleLayerVisibility, this::toggleLayerLock).setManage(()->minecraft.setScreen(new LoomLayerManagerScreen(this,false,selectedLayerId))).setMultiSelection(animationSelection,this::toggleAnimationSelection));
         r = rows.row(22);
         layerAddButton = cellButton(r, 0, 3, "Add paint layer", LoomButton.Icon.PLUS, this::addLayer);
         layerGradientAddButton = cellButton(r, 1, 3, "Add gradient layer", LoomButton.Icon.GRADIENT, this::addGradientLayer);
@@ -1557,6 +1560,26 @@ public final class CapeEditorScreen extends LoomPointerScreen {
                 .orElseThrow(() -> new IllegalStateException(
                         "Selected cape layer does not exist"
                 ));
+    }
+
+    private java.util.List<UUID> animationTargets() {
+        var current=workspaceState.project().cape().layers()
+            .stream().map(LoomLayer::id).toList();
+        animationSelection.retainAll(current);
+        return animationSelection.isEmpty()
+            ? java.util.List.of(selectedLayerId)
+            : java.util.List.copyOf(animationSelection);
+    }
+
+    private void toggleAnimationSelection(UUID id,net.minecraft.client.input.MouseButtonEvent event) {
+        if(event.hasControlDown()){
+            if(!animationSelection.add(id) && animationSelection.size()>1)
+                animationSelection.remove(id);
+        }else{
+            animationSelection.clear();
+            animationSelection.add(id);
+        }
+        selectLayer(id);
     }
 
     private void selectLayer(UUID layerId) {
