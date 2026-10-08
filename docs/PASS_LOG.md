@@ -1,3 +1,13 @@
+## 2026-10-08 — Clarified editable Asset Library placement — DONE (documentation correction only)
+
+**User intent refined:** The proposed asset library must open via an **Assets** button in Cape/Elytra; users either drag a thumbnail straight onto the design or select it and then click/drag to place. **Default placement creates an independent editable layer/object**, not a permanent brush dab in the current layer. Later selection must allow move, resize, rotate, recolor, opacity, layer operations, pixel editing, and supported animation.
+
+**Documentation changes:** Corrected [CREATIVE_ASSET_LIBRARY_SPEC.md](CREATIVE_ASSET_LIBRARY_SPEC.md), [FUTURE_IMPROVEMENTS_ROADMAP.md](FUTURE_IMPROVEMENTS_ROADMAP.md), [EDITOR_CREATIVE_UX_SPEC.md](EDITOR_CREATIVE_UX_SPEC.md) and [NEXT_WORK.md](NEXT_WORK.md). Explicitly separated **editable object placement** from opt-in Stamp Brush painting. A one-object-per-layer first pass can reuse current project-owned image data, but **64 layers/channel** requires a future bounded `Asset Collection` model with independently editable instances for dense starfields. No new typed layer, schema/protocol or pixel-edit backend has been implemented; those designs still need validation.
+
+**Evidence and status:** clarification to proposed design only; existing v5 built-in/custom stamp system remains current behavior. No code/runtime tests or screenshot captures run for this docs-only adjustment. Planning docs should not be labeled implemented. 
+
+**Next:** design a compact asset-browser/drop interaction prototype and validate default-layer semantics plus editable collection/persistence before implementation.
+
 ## 2026-10-08 — Creative roadmap, large asset catalog, animation and editor UX — DONE (documentation/research only)
 
 **Why:** user asked for one fully documented set of all previously reviewed repository/UI improvement suggestions plus a much larger library of usable stamp assets (many different stars, trees, clouds, foliage, shapes, etc.), friendlier animation workflows, easy atmospheric effects and editable creative presets.
