@@ -145,6 +145,15 @@ public final class LoomAssetLibraryScreen extends LoomPointerScreen {
     rebuildWidgets();
   }
 
+  /** Display the actual selected Image layer inspector for screenshot/UI acceptance. */
+  public void showEditInspector() {
+    if(layer()==null||layer().kind()!=LayerKind.IMAGE)return;
+    propertiesTab=true;
+    armed=false;
+    editPixels=false;
+    rebuildWidgets();
+  }
+
   private void showPreviewController() {
     if(preview==null)return;
     if (editPixels) {
